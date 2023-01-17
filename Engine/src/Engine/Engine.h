@@ -1,6 +1,5 @@
 #pragma once
-
-#include "DllSetting.h"
+#include "DllMacro.h"
 
 namespace KGCA41B {
 	class DLL_API Engine
@@ -10,6 +9,8 @@ namespace KGCA41B {
 		virtual ~Engine();
 		void Run();
 	};
+
+	Engine* CreateEngine();
 }
 
 

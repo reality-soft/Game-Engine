@@ -1,13 +1,9 @@
-#include "Engine_include.h"
+#include <Engine_include.h>
 
 class TestGame : public KGCA41B::Engine {
 
 };
 
-int main() {
-	TestGame* testGame = new TestGame;
-
-	testGame->Run();
-
-	delete testGame;
+KGCA41B::Engine* KGCA41B::CreateEngine() {
+	return new Engine();
 }

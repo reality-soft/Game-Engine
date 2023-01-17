@@ -29,5 +29,8 @@
     <ClCompile Include="src\Engine\DllMacro.h">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\EntryPoint.h">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
