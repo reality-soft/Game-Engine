@@ -59,6 +59,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\vendor\spdlog\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,6 +77,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\vendor\spdlog\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -88,10 +90,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\Log.h" />
     <ClInclude Include="src\Engine\Engine.h" />
     <ClInclude Include="src\Engine_include.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Log.cpp" />
     <ClCompile Include="src\Engine\DllMacro.h" />
     <ClCompile Include="src\Engine\Engine.cpp" />
   </ItemGroup>
