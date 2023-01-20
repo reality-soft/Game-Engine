@@ -97,3 +97,30 @@ bool DX11App::Init(POINT _bufferSize, HWND _hWnd)
 
 	return true;
 }
+
+void DX11App::PreRender(bool _solidOn, bool _alphaOn, bool _depthOn)
+{
+    if (_alphaOn)
+        dx11Context->OMSetBlendState(DXStates.AlphaBlend(), 0, -1);
+
+    if (_depthOn)
+        dx11Context->OMSetDepthStencilState(DXStates.DepthDefault(), 0xff);
+
+    if (_solidOn)
+        dx11Context->RSSetState(DXStates.CullClockwise());
+    else
+        dx11Context->RSSetState(DXStates.Wireframe());
+
+    dx11Context->OMSetRenderTargets(1, dx11RTView.GetAddressOf(), dx11DSView.Get());
+    dx11Context->ClearRenderTargetView(GetRenderTargetView(), clearcolor);
+    dx11Context->ClearDepthStencilView(GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1, 0);
+    dx11Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void DX11App::PostRender(bool _vsyncOn)
+{
+    if (_vsyncOn)
+        dx11SwapChain.Get()->Present(1, 0);
+    else
+        dx11SwapChain.Get()->Present(0, 0);
+}
