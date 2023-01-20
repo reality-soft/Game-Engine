@@ -26,10 +26,24 @@ private:
     ComPtr<ID3D11RenderTargetView> dx11RTView = nullptr;
     ComPtr<ID3D11DepthStencilView> dx11DSView = nullptr;
 
+    D3D11_VIEWPORT                 viewPort;
     DirectX::CommonStates DXStates;
 
 public:
-    D3D11_VIEWPORT                 viewPort;
     float clearcolor[4] = { 0.03, 0.03, 0.03, 1 };
 
+    //=======================================================값반환 함수
+    ID3D11Device* GetDevice() { return dx11Device.Get(); }
+    ID3D11DeviceContext* GetDeviceContext() { return dx11Context.Get(); }
+    IDXGIFactory* GetFactory() { return dxgiFactory.Get(); }
+    IDXGISwapChain* GetSwapChain() { return dx11SwapChain.Get(); }
+
+    ID3D11RenderTargetView* GetRenderTargetView() { return dx11RTView.Get(); }
+    ID3D11RenderTargetView** GetRenderTargetViewAddress() { return dx11RTView.GetAddressOf(); }
+
+    ID3D11DepthStencilView* GetDepthStencilView() { return dx11DSView.Get(); }
+    ID3D11DepthStencilView** GetDepthStencilViewAddress() { return dx11DSView.GetAddressOf(); }
+
+    D3D11_VIEWPORT          GetViewPort() { return viewPort; }
+    D3D11_VIEWPORT* GetViewPortAddress() { return &viewPort; }
 };
