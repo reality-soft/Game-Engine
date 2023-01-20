@@ -6,6 +6,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\DX11App.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
     <ClInclude Include="src\Engine\DllMacro.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -18,20 +21,20 @@
     <ClInclude Include="src\Engine\Log.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\common.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
     <ClInclude Include="src\Engine_include.h" />
-    <ClInclude Include="src\Engine\DX11App.h" />
-    <ClInclude Include="src\Engine\common.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\DX11App.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
     <ClCompile Include="src\Engine\Engine.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Log.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\DX11App.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\premake5.lua" />
   </ItemGroup>
 </Project>

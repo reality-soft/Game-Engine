@@ -73,12 +73,19 @@ project "TestGame"
 	includedirs
 	{
 		"Engine/vendor/spdlog/include",
-		"Engine/src"
+		"Engine/src",
+		"../SDK/DirectXTK/include"
+	}
+
+	libdirs
+	{
+		"../SDK/DirectXTK/lib"
 	}
 
 	links
 	{
-		"Engine"
+		"Engine",
+		"DirectXTK_D"
 	}
 
 	filter "system:windows"
