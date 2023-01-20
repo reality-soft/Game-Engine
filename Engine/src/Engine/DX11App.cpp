@@ -124,3 +124,67 @@ void DX11App::PostRender(bool _vsyncOn)
     else
         dx11SwapChain.Get()->Present(0, 0);
 }
+
+bool DX11App::OnResize(HWND _hWnd, UINT newX, UINT newY)
+{
+    if (dx11Device == nullptr)
+        return false;
+
+    HRESULT hr;
+
+    //=== ·»´õÅ¸±ê ¹× ¿¬µ¿µÈ ¹öÆÛ ÇØÁ¦
+    dx11Context.Get()->OMSetRenderTargets(0, 0, 0);
+    dx11RTView.ReleaseAndGetAddressOf();
+    dx11DSView.ReleaseAndGetAddressOf();
+
+    dx11Context.Get()->ClearState();
+    dx11Context.Get()->Flush();
+
+    //=== ¹é¹öÆÛ ¸®»çÀÌÁî
+    DXGI_SWAP_CHAIN_DESC currentSD;
+    hr = dx11SwapChain.Get()->GetDesc(&currentSD);
+    hr = dx11SwapChain.Get()->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+
+    //=== ¹é¹öÆÛÀÇ ÅØ½ºÃ³·Î »õ·Î¿î ·»´õÅ¸±ê ºä »ý¼º
+    ID3D11Texture2D* texture = nullptr;
+    hr = dx11SwapChain.Get()->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&texture);
+    hr = dx11Device.Get()->CreateRenderTargetView(texture, NULL, dx11RTView.GetAddressOf());
+
+    //=== ±íÀÌ_½ºÅÙ½Ç ¹öÆÛ »ý¼º
+    DXGI_SWAP_CHAIN_DESC scd;
+    dx11SwapChain.Get()->GetDesc(&scd);
+    D3D11_TEXTURE2D_DESC td;
+    ZeroMemory(&td, sizeof(td));
+    td.Width = scd.BufferDesc.Width;
+    td.Height = scd.BufferDesc.Height;
+    td.MipLevels = 1;
+    td.ArraySize = 1;
+    td.Format = DXGI_FORMAT_R24G8_TYPELESS;
+    td.SampleDesc.Count = 1;
+    td.Usage = D3D11_USAGE_DEFAULT;
+    td.CPUAccessFlags = 0;
+    td.MiscFlags = 0;
+    td.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    hr = dx11Device.Get()->CreateTexture2D(&td, NULL, &texture);
+
+    //=== ±íÀÌ_½ºÅÙ½Ç ºä »ý¼º.
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+    ZeroMemory(&dsvDesc, sizeof(dsvDesc));
+    dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    hr = dx11Device.Get()->CreateDepthStencilView(texture, &dsvDesc, dx11DSView.GetAddressOf());
+
+
+    texture->Release();
+
+    //=== ºäÆ÷Æ® »ý¼º
+    viewPort.Width = (float)newX;
+    viewPort.Height = (float)newY;
+    viewPort.MinDepth = 0.0f;
+    viewPort.MaxDepth = 1.0f;
+    viewPort.TopLeftX = 0.0f;
+    viewPort.TopLeftY = 0.0f;
+    dx11Context.Get()->RSSetViewports(1, &viewPort);
+    return true;
+}
