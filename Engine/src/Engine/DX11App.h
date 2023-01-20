@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <dinput.h>
+
 #include "CommonStates.h"
 
 #pragma comment(lib, "d3d11.lib")
@@ -10,6 +11,7 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "DirectXTK_D.lib")
 
 class DX11App
 {
@@ -27,7 +29,7 @@ private:
     ComPtr<ID3D11DepthStencilView> dx11DSView = nullptr;
 
     D3D11_VIEWPORT                 viewPort;
-    DirectX::CommonStates DXStates;
+    DirectX::CommonStates DXStates = DirectX::CommonStates(dx11Device.Get());
 
 public:
     float clearcolor[4] = { 0.03, 0.03, 0.03, 1 };
@@ -46,4 +48,12 @@ public:
 
     D3D11_VIEWPORT          GetViewPort() { return viewPort; }
     D3D11_VIEWPORT* GetViewPortAddress() { return &viewPort; }
+
+public:
+    bool Init(POINT _bufferSize, HWND _hWnd);
+
+    void PreRender(bool _solidOn, bool _alphaOn, bool _depthOn);
+    void PostRender(bool _vsyncOn);
+
+    bool OnResize(HWND _hWnd, UINT newX, UINT newY);
 };
