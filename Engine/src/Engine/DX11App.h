@@ -6,54 +6,47 @@
 
 #include "CommonStates.h"
 
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "dinput8.lib")
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "DirectXTK_D.lib")
-
 class DX11App
 {
 	SINGLETON(DX11App);
 
 private:
     //=======================================================디바이스
-    ComPtr<IDXGIFactory>           dxgiFactory = nullptr;
+    ComPtr<IDXGIFactory>           dxgi_factory;
 
-    ComPtr<ID3D11Device>           dx11Device = nullptr;
-    ComPtr<ID3D11DeviceContext>    dx11Context = nullptr;
-    ComPtr<IDXGISwapChain>         dx11SwapChain = nullptr;
+    ComPtr<ID3D11Device>           dx11_device;
+    ComPtr<ID3D11DeviceContext>    dx11_context;
+    ComPtr<IDXGISwapChain>         dx11_swap_chain;
 
-    ComPtr<ID3D11RenderTargetView> dx11RTView = nullptr;
-    ComPtr<ID3D11DepthStencilView> dx11DSView = nullptr;
+    ComPtr<ID3D11RenderTargetView> dx11_rtview;
+    ComPtr<ID3D11DepthStencilView> dx11_dsview;
 
-    D3D11_VIEWPORT                 viewPort;
-    DirectX::CommonStates DXStates = DirectX::CommonStates(dx11Device.Get());
+    D3D11_VIEWPORT                 view_port;
+    DirectX::CommonStates dx_states = DirectX::CommonStates(dx11_device.Get());
 
 public:
-    float clearcolor[4] = { 0.03, 0.03, 0.03, 1 };
+    float clear_color[4] = { 0.03, 0.03, 0.03, 1 };
 
     //=======================================================값반환 함수
-    ID3D11Device* GetDevice() { return dx11Device.Get(); }
-    ID3D11DeviceContext* GetDeviceContext() { return dx11Context.Get(); }
-    IDXGIFactory* GetFactory() { return dxgiFactory.Get(); }
-    IDXGISwapChain* GetSwapChain() { return dx11SwapChain.Get(); }
+    ID3D11Device* GetDevice() { return dx11_device.Get(); }
+    ID3D11DeviceContext* GetDeviceContext() { return dx11_context.Get(); }
+    IDXGIFactory* GetFactory() { return dxgi_factory.Get(); }
+    IDXGISwapChain* GetSwapChain() { return dx11_swap_chain.Get(); }
 
-    ID3D11RenderTargetView* GetRenderTargetView() { return dx11RTView.Get(); }
-    ID3D11RenderTargetView** GetRenderTargetViewAddress() { return dx11RTView.GetAddressOf(); }
+    ID3D11RenderTargetView* GetRenderTargetView() { return dx11_rtview.Get(); }
+    ID3D11RenderTargetView** GetRenderTargetViewAddress() { return dx11_rtview.GetAddressOf(); }
 
-    ID3D11DepthStencilView* GetDepthStencilView() { return dx11DSView.Get(); }
-    ID3D11DepthStencilView** GetDepthStencilViewAddress() { return dx11DSView.GetAddressOf(); }
+    ID3D11DepthStencilView* GetDepthStencilView() { return dx11_dsview.Get(); }
+    ID3D11DepthStencilView** GetDepthStencilViewAddress() { return dx11_dsview.GetAddressOf(); }
 
-    D3D11_VIEWPORT          GetViewPort() { return viewPort; }
-    D3D11_VIEWPORT* GetViewPortAddress() { return &viewPort; }
+    D3D11_VIEWPORT          GetViewPort() { return view_port; }
+    D3D11_VIEWPORT* GetViewPortAddress() { return &view_port; }
 
 public:
-    bool Init(POINT _bufferSize, HWND _hWnd);
+    bool OnInit(POINT buffer_size, HWND hwnd);
 
-    void PreRender(bool _solidOn, bool _alphaOn, bool _depthOn);
-    void PostRender(bool _vsyncOn);
+    void PreRender(bool solid_on, bool alpha_on, bool depth_on);
+    void PostRender(bool vsync_on);
 
-    bool OnResize(HWND _hWnd, UINT newX, UINT newY);
+    bool OnResize(HWND hwnd, UINT new_x, UINT new_y);
 };
