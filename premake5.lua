@@ -75,7 +75,7 @@ project "Engine"
 
 project "TestGame"
 	location "TestGame"
-	kind "ConsoleApp"
+	kind "WindowedApp"
 	language "C++"
 
 	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
@@ -91,6 +91,7 @@ project "TestGame"
 	{
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
+		"../SDK/DirectXTK/include"
 	}
 
 	libdirs

@@ -95,21 +95,23 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
 
     texture->Release();
 
+    dx_states = new DirectX::CommonStates(dx11_device.Get());
+
 	return true;
 }
 
 void DX11App::PreRender(bool solid_on, bool alpha_on, bool depth_on)
 {
     if (alpha_on)
-        dx11_context->OMSetBlendState(dx_states.AlphaBlend(), 0, -1);
+        dx11_context->OMSetBlendState(dx_states->AlphaBlend(), 0, -1);
 
     if (depth_on)
-        dx11_context->OMSetDepthStencilState(dx_states.DepthDefault(), 0xff);
+        dx11_context->OMSetDepthStencilState(dx_states->DepthDefault(), 0xff);
 
     if (solid_on)
-        dx11_context->RSSetState(dx_states.CullClockwise());
+        dx11_context->RSSetState(dx_states->CullClockwise());
     else
-        dx11_context->RSSetState(dx_states.Wireframe());
+        dx11_context->RSSetState(dx_states->Wireframe());
 
     dx11_context->OMSetRenderTargets(1, dx11_rtview.GetAddressOf(), dx11_dsview.Get());
     dx11_context->ClearRenderTargetView(GetRenderTargetView(), clear_color);
@@ -125,7 +127,7 @@ void DX11App::PostRender(bool _vsyncOn)
         dx11_swap_chain.Get()->Present(0, 0);
 }
 
-bool DX11App::OnResize(HWND hwnd, UINT new_x, UINT new_y)
+bool DX11App::Resize(UINT new_x, UINT new_y)
 {
     if (dx11_device == nullptr)
         return false;
@@ -187,4 +189,13 @@ bool DX11App::OnResize(HWND hwnd, UINT new_x, UINT new_y)
     view_port.TopLeftY = 0.0f;
     dx11_context.Get()->RSSetViewports(1, &view_port);
     return true;
+}
+
+void DX11App::OnRelease()
+{
+    if (dx_states)
+    {
+        delete dx_states;
+        dx_states = nullptr;
+    }
 }
