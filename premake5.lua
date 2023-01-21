@@ -85,7 +85,7 @@ project "TestGame"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp"
-	}
+	} 
 
 	includedirs
 	{
