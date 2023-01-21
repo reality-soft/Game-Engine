@@ -1,9 +1,11 @@
 #include <Engine_include.h>
 
-class TestGame : public KGCA41B::Engine {
 
-};
+int WINAPI wWinMain(HINSTANCE hinstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+{
+	ENGINE->OnInit(hinstance, L"Game-Engine", {1920, 1080});
 
-KGCA41B::Engine* KGCA41B::CreateEngine() {
-	return new Engine();
+	ENGINE->Run();
+
+	return 0;
 }
