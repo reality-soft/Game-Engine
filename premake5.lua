@@ -1,6 +1,6 @@
 workspace "Game-Engine"
 	architecture "x86_64"
-
+	toolset "v143"
 	configurations
 	{
 		"Debug",
@@ -15,8 +15,8 @@ project "Engine"
 	kind "SharedLib"
 	language "C++"
 
-	targetdir("bin/" .. outputdir .. "/%{prj.name}")
-	objdir("bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
+	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -24,16 +24,32 @@ project "Engine"
 		"%{prj.name}/src/**.cpp"
 	}
 
+	libdirs
+	{
+		"../SDK/DirectXTK/lib"
+	}
+
 	includedirs
 	{
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/vendor/spdlog/include",
+		"../SDK/DirectXTK/include"
+	}
+
+	links
+	{
+		"d3d11.lib",
+		"d3dcompiler.lib",
+		"dxgi.lib",
+		"dinput8.lib",
+		"dxguid.lib",
+		"DirectXTK_D.lib"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "off"
 		systemversion "latest"
-
+		runtime "Debug"
 		defines
 		{
 			"PLATFORM_WINDOWS",
@@ -42,12 +58,13 @@ project "Engine"
 
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/TestGame")
+			("{COPY} %{cfg.buildtarget.relpath} ../TestGame")
 		}
 
 	filter "configurations:Debug"
 		defines "_DEBUG"
 		symbols "On"
+
 	filter "configurations:Release"
 		defines "_RELEASE"
 		optimize "On"
@@ -61,8 +78,8 @@ project "TestGame"
 	kind "ConsoleApp"
 	language "C++"
 
-	targetdir("bin/" .. outputdir .. "/%{prj.name}")
-	objdir("bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
+	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -74,18 +91,16 @@ project "TestGame"
 	{
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
-		"../SDK/DirectXTK/include"
 	}
 
 	libdirs
 	{
-		"../SDK/DirectXTK/lib"
+
 	}
 
 	links
 	{
 		"Engine",
-		"DirectXTK_D"
 	}
 
 	filter "system:windows"
