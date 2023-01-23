@@ -26,13 +26,15 @@ project "Engine"
 
 	libdirs
 	{
-		"../SDK/DirectXTK/lib"
+		"../SDK/DirectXTK/lib",
+		"../SDK/FBXSDK/lib/debug"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/vendor/spdlog/include",
-		"../SDK/DirectXTK/include"
+		"../SDK/DirectXTK/include",
+		"../SDK/FBXSDK/include"
 	}
 
 	links
@@ -42,7 +44,10 @@ project "Engine"
 		"dxgi.lib",
 		"dinput8.lib",
 		"dxguid.lib",
-		"DirectXTK_D.lib"
+		"DirectXTK_D.lib",
+		"libfbxsdk-md.lib",
+		"libxml2-md.lib",
+		"zlib-md.lib"
 	}
 
 	filter "system:windows"
@@ -91,7 +96,8 @@ project "TestGame"
 	{
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
-		"../SDK/DirectXTK/include"
+		"../SDK/DirectXTK/include",
+		"../SDK/FBXSDK/include"
 	}
 
 	libdirs
