@@ -7,9 +7,11 @@
 #include <windows.h>
 #include <tchar.h>
 #include <atlconv.h>
+#include <DirectXMath.h>
 
 using namespace std;
 using namespace Microsoft::WRL;
+using namespace DirectX;
 
 
 
