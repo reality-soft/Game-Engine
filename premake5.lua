@@ -1,6 +1,6 @@
 workspace "Game-Engine"
 	architecture "x86_64"
-
+	toolset "v143"
 	configurations
 	{
 		"Debug",
@@ -15,8 +15,8 @@ project "Engine"
 	kind "SharedLib"
 	language "C++"
 
-	targetdir("bin/" .. outputdir .. "/%{prj.name}")
-	objdir("bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
+	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -24,16 +24,37 @@ project "Engine"
 		"%{prj.name}/src/**.cpp"
 	}
 
+	libdirs
+	{
+		"../SDK/DirectXTK/lib",
+		"../SDK/FBXSDK/lib/debug"
+	}
+
 	includedirs
 	{
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/vendor/spdlog/include",
+		"../SDK/DirectXTK/include",
+		"../SDK/FBXSDK/include"
+	}
+
+	links
+	{
+		"d3d11.lib",
+		"d3dcompiler.lib",
+		"dxgi.lib",
+		"dinput8.lib",
+		"dxguid.lib",
+		"DirectXTK_D.lib",
+		"libfbxsdk-md.lib",
+		"libxml2-md.lib",
+		"zlib-md.lib"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "off"
 		systemversion "latest"
-
+		runtime "Debug"
 		defines
 		{
 			"PLATFORM_WINDOWS",
@@ -42,12 +63,13 @@ project "Engine"
 
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/TestGame")
+			("{COPY} %{cfg.buildtarget.relpath} ../TestGame")
 		}
 
 	filter "configurations:Debug"
 		defines "_DEBUG"
 		symbols "On"
+
 	filter "configurations:Release"
 		defines "_RELEASE"
 		optimize "On"
@@ -58,27 +80,34 @@ project "Engine"
 
 project "TestGame"
 	location "TestGame"
-	kind "ConsoleApp"
+	kind "WindowedApp"
 	language "C++"
 
-	targetdir("bin/" .. outputdir .. "/%{prj.name}")
-	objdir("bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
+	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp"
-	}
+	} 
 
 	includedirs
 	{
 		"Engine/vendor/spdlog/include",
-		"Engine/src"
+		"Engine/src",
+		"../SDK/DirectXTK/include",
+		"../SDK/FBXSDK/include"
+	}
+
+	libdirs
+	{
+
 	}
 
 	links
 	{
-		"Engine"
+		"Engine",
 	}
 
 	filter "system:windows"
