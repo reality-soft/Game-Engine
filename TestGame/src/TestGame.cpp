@@ -1,11 +1,30 @@
-#include <Engine_include.h>
+#include "TestGame.h"
 
 
 int WINAPI wWinMain(HINSTANCE hinstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	ENGINE->OnInit(hinstance, L"Game-Engine", {1920, 1080});
 
-	ENGINE->Run();
+	TestGame test_game;
 
+	ENGINE->Run(&test_game);
+
+	ENGINE->OnRelease();
 	return 0;
+}
+
+void TestGame::OnInit()
+{
+}
+
+void TestGame::OnUpdate()
+{
+}
+
+void TestGame::OnRender()
+{
+}
+
+void TestGame::OnRelease()
+{
 }
