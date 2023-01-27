@@ -46,6 +46,18 @@ namespace KGCA41B
 		XMMATRIX  mat_skeleton[255];
 	};
 
+	enum class AxisType
+	{
+		FROWARD,
+		RIGHT,
+		UP,
+		YAW,
+		PITCH,
+		ROLL,
+
+		IDLE
+	};
+
 	enum class ActionType
 	{
 		JUMP,
@@ -59,6 +71,6 @@ namespace KGCA41B
 		SKILL2,
 		SKILL3,
 
-		IDLE,
+		IDLE
 	};
 }
