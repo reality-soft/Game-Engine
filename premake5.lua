@@ -22,12 +22,14 @@ project "Engine"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.hpp",
 		"premake5.lua"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/src/ECS",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include"
 	}

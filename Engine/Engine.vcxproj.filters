@@ -4,11 +4,17 @@
     <Filter Include="src">
       <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\ECS">
+      <UniqueIdentifier>{F76D2FA9-634D-AE44-6C65-391BD8C314A6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Engine">
       <UniqueIdentifier>{12A1320E-FE58-745B-6760-4DB753370F4C}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ECS\entt.hpp">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="src\Engine\DX11App.h">
       <Filter>src\Engine</Filter>
     </ClInclude>
@@ -42,6 +48,8 @@
     <ClInclude Include="src\Engine_include.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\Components.h" />
+    <ClInclude Include="src\Engine\Shader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\DX11App.cpp">
@@ -62,6 +70,7 @@
     <ClCompile Include="src\Engine\Scene.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
