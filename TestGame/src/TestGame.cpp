@@ -1,11 +1,21 @@
-#include <Engine_include.h>
+#include "TestGame.h"
 
+using namespace KGCA41B;
 
-int WINAPI wWinMain(HINSTANCE hinstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+void TestGame::OnInit()
 {
-	ENGINE->OnInit(hinstance, L"Game-Engine", {1920, 1080});
+	TIMER->Init();
+}
 
-	ENGINE->Run();
+void TestGame::OnUpdate()
+{
+	TIMER->Update();
+}
 
-	return 0;
+void TestGame::OnRender()
+{
+}
+
+void TestGame::OnRelease()
+{
 }

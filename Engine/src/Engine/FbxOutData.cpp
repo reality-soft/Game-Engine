@@ -1,19 +1,22 @@
 #include "FbxOutData.h"
 
-void IndexWeight::insert(int index_, float weight_)
-{	
-	for (int i = 0; i < 8; i++)
+namespace KGCA41B
+{
+	void IndexWeight::insert(int index_, float weight_)
 	{
-		if (weight_ > weight[i])
+		for (int i = 0; i < 8; i++)
 		{
-			for (int j = 7; j > i; --j)
+			if (weight_ > weight[i])
 			{
-				index[j] = index[j - 1];
-				weight[j] = weight[j - 1];
+				for (int j = 7; j > i; --j)
+				{
+					index[j] = index[j - 1];
+					weight[j] = weight[j - 1];
+				}
+				index[i] = index_;
+				weight[i] = weight_;
+				break;
 			}
-			index[i] = index_;
-			weight[i] = weight_;
-			break;
 		}
-	}	
+	}
 }
