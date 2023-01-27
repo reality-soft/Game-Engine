@@ -62,7 +62,7 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     if (FAILED(hr))
         return false;
 
-    ZeroMemory(texture, sizeof(ID3D11Texture2D));
+    texture->Release();
 
     // 깊이_스텐실 버퍼 생성
 
@@ -135,24 +135,26 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     HRESULT hr;
 
     // 렌더타깃 및 연동된 버퍼 해제
-    dx11_context.Get()->OMSetRenderTargets(0, 0, 0);
+    dx11_context.Get()->OMSetRenderTargets(0, nullptr, nullptr);
     dx11_rtview.ReleaseAndGetAddressOf();
     dx11_dsview.ReleaseAndGetAddressOf();
 
     dx11_context.Get()->ClearState();
     dx11_context.Get()->Flush();
-
+     
     // 백버퍼 리사이즈
     DXGI_SWAP_CHAIN_DESC swap_chain_desc;
     hr = dx11_swap_chain.Get()->GetDesc(&swap_chain_desc);
     hr = dx11_swap_chain.Get()->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 
     // 백버퍼의 텍스처로 새로운 렌더타깃 뷰 생성
-    ID3D11Texture2D* texture = nullptr;
-    hr = dx11_swap_chain.Get()->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&texture);
-    hr = dx11_device.Get()->CreateRenderTargetView(texture, NULL, dx11_rtview.GetAddressOf());
+    ComPtr<ID3D11Texture2D> rt_texture;
+    hr = dx11_swap_chain.Get()->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)rt_texture.GetAddressOf());
+    hr = dx11_device.Get()->CreateRenderTargetView(rt_texture.Get(), NULL, dx11_rtview.GetAddressOf());
+
 
     // 깊이_스텐실 버퍼 생성
+    ComPtr<ID3D11Texture2D> ds_texture;
     DXGI_SWAP_CHAIN_DESC scd;
     dx11_swap_chain.Get()->GetDesc(&scd);
     D3D11_TEXTURE2D_DESC td;
@@ -168,17 +170,14 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     td.MiscFlags = 0;
     td.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-    hr = dx11_device.Get()->CreateTexture2D(&td, NULL, &texture);
+    hr = dx11_device.Get()->CreateTexture2D(&td, NULL, ds_texture.GetAddressOf());
 
     // 깊이_스텐실 뷰 생성.
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
     ZeroMemory(&dsvDesc, sizeof(dsvDesc));
     dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    hr = dx11_device.Get()->CreateDepthStencilView(texture, &dsvDesc, dx11_dsview.GetAddressOf());
-
-
-    texture->Release();
+    hr = dx11_device.Get()->CreateDepthStencilView(ds_texture.Get(), &dsvDesc, dx11_dsview.GetAddressOf());
 
     // 뷰포트 생성
     view_port.Width =  (float)new_x;
@@ -188,6 +187,7 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     view_port.TopLeftX = 0.0f;
     view_port.TopLeftY = 0.0f;
     dx11_context.Get()->RSSetViewports(1, &view_port);
+
     return true;
 }
 

@@ -21,13 +21,8 @@ project "Engine"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
-	}
-
-	libdirs
-	{
-		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug"
+		"%{prj.name}/src/**.cpp",
+		"premake5.lua"
 	}
 
 	includedirs
@@ -37,17 +32,23 @@ project "Engine"
 		"../SDK/FBXSDK/include"
 	}
 
+	libdirs
+	{
+		"../SDK/DirectXTK/lib",
+		"../SDK/FBXSDK/lib/debug"
+	}
+
 	links
 	{
-		"d3d11.lib",
-		"d3dcompiler.lib",
-		"dxgi.lib",
-		"dinput8.lib",
-		"dxguid.lib",
-		"DirectXTK_D.lib",
-		"libfbxsdk-md.lib",
-		"libxml2-md.lib",
-		"zlib-md.lib"
+		"d3d11",
+		"d3dcompiler",
+		"dxgi",
+		"dinput8",
+		"dxguid",
+		"DirectXTK_D",
+		"libfbxsdk-md",
+		"libxml2-md",
+		"zlib-md"
 	}
 
 	filter "system:windows"
@@ -55,6 +56,7 @@ project "Engine"
 		staticruntime "off"
 		systemversion "latest"
 		runtime "Debug"
+
 		defines
 		{
 			"PLATFORM_WINDOWS",
@@ -63,7 +65,7 @@ project "Engine"
 
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../TestGame")
+			("{COPY} %{cfg.buildtarget.relpath} ../../output/bin/" .. outputdir .. "/TestGame")
 		}
 
 	filter "configurations:Debug"
@@ -102,18 +104,24 @@ project "TestGame"
 
 	libdirs
 	{
-
+		"../output/bin/Debug-windows-x86_64/Engine/",
+		"../SDK/DirectXTK/lib",
+		"../SDK/FBXSDK/lib/debug"
 	}
 
 	links
 	{
 		"Engine",
+		"libfbxsdk-md",
+		"libxml2-md",
+		"zlib-md"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "Off"
 		systemversion "latest"
+		runtime "Debug"
 
 		defines
 		{

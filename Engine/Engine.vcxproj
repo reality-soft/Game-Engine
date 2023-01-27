@@ -93,7 +93,7 @@
       <ImportLibrary>..\..\output\bin\Debug-windows-x86_64\Engine\Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\TestGame &gt; nul)</Command>
+      <Command>IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,7 +120,7 @@
       <ImportLibrary>..\..\output\bin\Release-windows-x86_64\Engine\Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\TestGame &gt; nul)</Command>
+      <Command>IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -147,18 +147,19 @@
       <ImportLibrary>..\..\output\bin\Dist-windows-x86_64\Engine\Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\TestGame &gt; nul)</Command>
+      <Command>IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Engine\DataTypes.h" />
     <ClInclude Include="src\Engine\DX11App.h" />
+    <ClInclude Include="src\Engine\DataTypes.h" />
     <ClInclude Include="src\Engine\DllMacro.h" />
     <ClInclude Include="src\Engine\Engine.h" />
     <ClInclude Include="src\Engine\EntryPoint.h" />
     <ClInclude Include="src\Engine\FbxLoader.h" />
     <ClInclude Include="src\Engine\FbxOutData.h" />
     <ClInclude Include="src\Engine\Log.h" />
+    <ClInclude Include="src\Engine\Scene.h" />
     <ClInclude Include="src\Engine\common.h" />
     <ClInclude Include="src\Engine_include.h" />
   </ItemGroup>
@@ -168,6 +169,10 @@
     <ClCompile Include="src\Engine\FbxLoader.cpp" />
     <ClCompile Include="src\Engine\FbxOutData.cpp" />
     <ClCompile Include="src\Engine\Log.cpp" />
+    <ClCompile Include="src\Engine\Scene.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\premake5.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

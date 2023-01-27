@@ -1,7 +1,8 @@
 #pragma once
-#include "DllMacro.h"
 #include "common.h"
 #include "DX11App.h"
+#include "Scene.h"
+#include "DllMacro.h"
 
 namespace KGCA41B {
 	class DLL_API Engine
@@ -11,7 +12,7 @@ namespace KGCA41B {
 
 	public:
 		bool OnInit(HINSTANCE hinstance, LPCWSTR title, POINT wnd_size);
-		void Run();
+		void Run(Scene* scene);
 		void OnResized();
 		void OnRelease();
 

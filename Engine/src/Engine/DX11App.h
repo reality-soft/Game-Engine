@@ -1,12 +1,11 @@
 #include "common.h"
-
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <dinput.h>
-
 #include "CommonStates.h"
+#include "DllMacro.h"
 
-class DX11App
+class DLL_API DX11App
 {
 	SINGLETON(DX11App);
 #define DX11APP DX11App::GetInst()

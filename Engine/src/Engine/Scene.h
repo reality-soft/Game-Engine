@@ -1,14 +1,17 @@
 #pragma once
+#include "FbxLoader.h"
 
-class Scene
+namespace KGCA41B
 {
-public:
-	Scene() = default;
-	~Scene() = default;
+	class DLL_API Scene
+	{
+	public:
+		Scene() = default;
+		~Scene() = default;
 
-	virtual void OnInit() = 0;
-	virtual void OnUpdate() = 0;
-	virtual void OnRender() = 0;
-	virtual void OnRelease() = 0;
-};
-
+		virtual void OnInit() = 0;
+		virtual void OnUpdate() = 0;
+		virtual void OnRender() = 0;
+		virtual void OnRelease() = 0;
+	};
+}

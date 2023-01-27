@@ -1,5 +1,4 @@
 #include "Engine.h"
-#include "Scene.h"
 #include "iostream"
 
 LRESULT CALLBACK WindowProc(
@@ -15,7 +14,7 @@ LRESULT CALLBACK WindowProc(
 		return 0;
 
 	case WM_SIZE:
-		KGCA41B::Engine::GetInst()->OnResized();
+		ENGINE->OnResized();
 		break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
