@@ -1,5 +1,5 @@
 #include "CameraSystem.h"
-#include "../Engine/TimeMgr.h"
+#include "TimeMgr.h"
 
 using namespace KGCA41B;
 
