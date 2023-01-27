@@ -28,8 +28,10 @@ project "Engine"
 
 	includedirs
 	{
-		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/src/Engine",
+		"%{prj.name}/src/Engine/SingletonClass",
 		"%{prj.name}/src/ECS",
+		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include"
 	}
