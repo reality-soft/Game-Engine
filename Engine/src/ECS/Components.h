@@ -61,7 +61,8 @@ namespace KGCA41B
 
 	struct InputMapping : public Component
 	{
-		float axis_value = 0; // -1 ~ 0 ~ +1
+		AxisType axis_type;
+		float axis_value[6] = { 0, };
 		vector<ActionType> actions;
 	};
 }
