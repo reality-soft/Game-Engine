@@ -4,3 +4,4 @@
 #include "Engine/FbxLoader.h"
 #include "Engine/Log.h"
 #include "Engine/EntryPoint.h"
+#include "Engine/TimeMgr.h"
