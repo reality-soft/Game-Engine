@@ -1,14 +1,11 @@
 #pragma once
-#include <Engine_include.h>
+#include "Engine_include.h"
 
-class TestGame : public Scene
+class TestGame : public KGCA41B::Scene
 {
-private:
-	//FbxLoader fbx_loader;
-
 public:
-	virtual void OnInit() override;
-	virtual void OnUpdate() override;
-	virtual void OnRender() override;
-	virtual void OnRelease() override;
+	virtual void OnInit();
+	virtual void OnUpdate();
+	virtual void OnRender();
+	virtual void OnRelease();
 };
