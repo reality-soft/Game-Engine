@@ -7,7 +7,7 @@
 
 class DLL_API DX11App
 {
-	SINGLETON(DX11App);
+	SINGLETON(DX11App)
 #define DX11APP DX11App::GetInst()
 
 public:

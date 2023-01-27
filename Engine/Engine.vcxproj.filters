@@ -50,6 +50,9 @@
     </ClInclude>
     <ClInclude Include="src\ECS\Components.h" />
     <ClInclude Include="src\Engine\Shader.h" />
+    <ClInclude Include="src\ECS\System.h" />
+    <ClInclude Include="src\ECS\CameraSystem.h" />
+    <ClInclude Include="src\Engine\TimeMgr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\DX11App.cpp">
@@ -71,6 +74,9 @@
       <Filter>src\Engine</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Shader.cpp" />
+    <ClCompile Include="src\ECS\System.cpp" />
+    <ClCompile Include="src\ECS\CameraSystem.cpp" />
+    <ClCompile Include="src\Engine\TimeMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
