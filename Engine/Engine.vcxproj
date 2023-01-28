@@ -151,6 +151,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\ECS\RenderSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\Components.h" />
     <ClInclude Include="src\ECS\InputSystem.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="src\Engine_include.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ECS\RenderSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\InputSystem.cpp" />
     <ClCompile Include="src\ECS\System.cpp" />

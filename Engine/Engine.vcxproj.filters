@@ -72,6 +72,7 @@
     <ClInclude Include="src\Engine_include.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\RenderSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ECS\CameraSystem.cpp">
@@ -110,6 +111,7 @@
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
+    <ClCompile Include="src\ECS\RenderSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
