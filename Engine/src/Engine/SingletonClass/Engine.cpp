@@ -1,5 +1,4 @@
 #include "Engine.h"
-#include "iostream"
 
 LRESULT CALLBACK WindowProc(
 	HWND hWnd,
@@ -36,6 +35,7 @@ namespace KGCA41B {
 
 	void Engine::Run(Scene* scene)
 	{
+		TIMER->Init();
 		scene->OnInit();
 
 		bool done = false;
@@ -53,6 +53,7 @@ namespace KGCA41B {
 				break;
 
 			// Updates
+			TIMER->Update();
 			scene->OnUpdate();
 
 			DX11APP->PreRender(true, true, true);
@@ -60,7 +61,7 @@ namespace KGCA41B {
 			// Render Here
 			scene->OnRender();
 
-			DX11APP->PostRender(true);
+			DX11APP->PostRender(false);
 		}
 		scene->OnRelease();
 	}
