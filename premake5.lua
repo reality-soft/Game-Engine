@@ -33,13 +33,15 @@ project "Engine"
 		"%{prj.name}/src/ECS",
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
-		"../SDK/FBXSDK/include"
+		"../SDK/FBXSDK/include",
+		"../SDK/FMOD/include"
 	}
 
 	libdirs
 	{
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug"
+		"../SDK/FBXSDK/lib/debug",
+		"../SDK/FMOD/lib/debug"
 	}
 
 	links
@@ -52,7 +54,9 @@ project "Engine"
 		"DirectXTK_D",
 		"libfbxsdk-md",
 		"libxml2-md",
-		"zlib-md"
+		"zlib-md",
+		"fmod_vc",
+		"fmodL_vc"
 	}
 
 	filter "system:windows"
@@ -107,14 +111,15 @@ project "TestGame"
 		"Engine/src/Engine/SingletonClass",
 		"Engine/src/ECS",
 		"../SDK/DirectXTK/include",
-		"../SDK/FBXSDK/include"
+		"../SDK/FBXSDK/include",
+		"../SDK/FMOD/include"
 	}
 
 	libdirs
 	{
-		"../output/bin/Debug-windows-x86_64/Engine/",
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug"
+		"../SDK/FBXSDK/lib/debug",
+		"../SDK/FMOD/lib/debug"
 	}
 
 	links
@@ -122,7 +127,9 @@ project "TestGame"
 		"Engine",
 		"libfbxsdk-md",
 		"libxml2-md",
-		"zlib-md"
+		"zlib-md",
+		"fmod_vc",
+		"fmodL_vc"
 	}
 
 	filter "files:**VS.hlsl"
