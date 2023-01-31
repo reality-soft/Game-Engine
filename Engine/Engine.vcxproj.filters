@@ -12,6 +12,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ECS\CameraSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\ComponentSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\System.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="src\ECS\entt.hpp">
       <Filter>src\ECS</Filter>
     </ClInclude>
@@ -42,19 +54,29 @@
     <ClInclude Include="src\Engine\Scene.h">
       <Filter>src\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\Shader.h">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\TimeMgr.h">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
     <ClInclude Include="src\Engine\common.h">
       <Filter>src\Engine</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine_include.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\ECS\Components.h" />
-    <ClInclude Include="src\Engine\Shader.h" />
-    <ClInclude Include="src\ECS\System.h" />
-    <ClInclude Include="src\ECS\CameraSystem.h" />
-    <ClInclude Include="src\Engine\TimeMgr.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ECS\CameraSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\ComponentSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\System.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
     <ClCompile Include="src\Engine\DX11App.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
@@ -73,10 +95,12 @@
     <ClCompile Include="src\Engine\Scene.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\Shader.cpp" />
-    <ClCompile Include="src\ECS\System.cpp" />
-    <ClCompile Include="src\ECS\CameraSystem.cpp" />
-    <ClCompile Include="src\Engine\TimeMgr.cpp" />
+    <ClCompile Include="src\Engine\Shader.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\TimeMgr.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
