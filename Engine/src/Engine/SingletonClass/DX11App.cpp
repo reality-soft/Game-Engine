@@ -53,19 +53,20 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
 
     // 스왑체인으로부터 얻어온 텍스처로 렌더타깃 뷰 생성
 
-    ID3D11Texture2D* texture;
-    hr = dx11_swap_chain.Get()->GetBuffer(NULL, __uuidof(ID3D11Texture2D), (void**)(&texture));
+    ID3D11Texture2D* rt_texture;
+    hr = dx11_swap_chain.Get()->GetBuffer(NULL, __uuidof(ID3D11Texture2D), (void**)(&rt_texture));
     if (FAILED(hr))
         return false;
 
-    hr = dx11_device.Get()->CreateRenderTargetView(texture, nullptr, dx11_rtview.GetAddressOf());
+    hr = dx11_device.Get()->CreateRenderTargetView(rt_texture, nullptr, dx11_rtview.GetAddressOf());
     if (FAILED(hr))
         return false;
 
-    texture->Release();
+    rt_texture->Release();
 
     // 깊이_스텐실 버퍼 생성
 
+    ID3D11Texture2D* ds_texture;
     D3D11_TEXTURE2D_DESC texture_desc;
     ZeroMemory(&texture_desc, sizeof(texture_desc));
     texture_desc.Width = buffer_size.x;
@@ -79,7 +80,7 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     texture_desc.MiscFlags = 0;
     texture_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-    hr = dx11_device->CreateTexture2D(&texture_desc, 0, &texture);
+    hr = dx11_device->CreateTexture2D(&texture_desc, 0, &ds_texture);
     if (FAILED(hr))
         return false;
 
@@ -89,13 +90,21 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     ZeroMemory(&dsv_desc, sizeof(dsv_desc));
     dsv_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    hr = dx11_device->CreateDepthStencilView(texture, &dsv_desc, dx11_dsview.GetAddressOf());
+    hr = dx11_device->CreateDepthStencilView(ds_texture, &dsv_desc, dx11_dsview.GetAddressOf());
     if (FAILED(hr))
         return false;
 
-    texture->Release();
+    ds_texture->Release();
 
     dx_states = new DirectX::CommonStates(dx11_device.Get());
+
+    view_port.Width = (float)buffer_size.x;
+    view_port.Height = (float)buffer_size.y;
+    view_port.MinDepth = 0.0f;
+    view_port.MaxDepth = 1.0f;
+    view_port.TopLeftX = 0.0f;
+    view_port.TopLeftY = 0.0f;
+    dx11_context.Get()->RSSetViewports(1, &view_port);
 
 	return true;
 }
@@ -109,7 +118,7 @@ void DX11App::PreRender(bool solid_on, bool alpha_on, bool depth_on)
         dx11_context->OMSetDepthStencilState(dx_states->DepthDefault(), 0xff);
 
     if (solid_on)
-        dx11_context->RSSetState(dx_states->CullClockwise());
+        dx11_context->RSSetState(dx_states->CullNone());
     else
         dx11_context->RSSetState(dx_states->Wireframe());
 
@@ -141,7 +150,7 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
 
     dx11_context.Get()->ClearState();
     dx11_context.Get()->Flush();
-     
+    
     // 백버퍼 리사이즈
     DXGI_SWAP_CHAIN_DESC swap_chain_desc;
     hr = dx11_swap_chain.Get()->GetDesc(&swap_chain_desc);

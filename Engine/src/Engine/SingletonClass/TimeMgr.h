@@ -21,7 +21,7 @@ namespace KGCA41B
 		void Update();
 
 		double GetDeltaTime();
-		int GetFPS();
+		float GetFPS();
 		float GetGameTime();
 	};
 }

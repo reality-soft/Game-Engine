@@ -12,26 +12,31 @@ namespace KGCA41B
 		XMFLOAT2   t;
 	};
 
-	struct SkinnedVertex : public Vertex
+	struct SkinnedVertex
 	{
+		XMFLOAT3   p;
+		XMFLOAT3   n;
+		XMFLOAT4   c;
+		XMFLOAT2   t;
 		XMFLOAT4   i;
 		XMFLOAT4   w;
 
 		SkinnedVertex operator +=(const Vertex& vertex)
 		{
-			p = vertex.p;
-			n = vertex.n;
-			c = vertex.c;
-			t = vertex.t;
+			this->p = vertex.p;
+			this->n = vertex.n;
+			this->c = vertex.c;
+			this->t = vertex.t;
 
 			return *this;
 		}
 	};
 
+	template <typename VertexType>
 	struct SingleMesh
 	{
-		vector<Vertex> vertices;
-		ID3D11Buffer* vertex_buffer;
+		vector<VertexType> vertices;
+		ComPtr<ID3D11Buffer> vertex_buffer;
 	};
 
 	struct CbTransform

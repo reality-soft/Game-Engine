@@ -10,15 +10,27 @@
     <Filter Include="src\Engine">
       <UniqueIdentifier>{12A1320E-FE58-745B-6760-4DB753370F4C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Engine\SingletonClass">
+      <UniqueIdentifier>{EA53BE88-5616-F212-9FC6-809F0BC8CAF0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\ECS\CameraSystem.h">
-      <Filter>src\ECS</Filter>
-    </ClInclude>
     <ClInclude Include="src\ECS\ComponentSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\AnimationSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\CameraSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="src\ECS\Components.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\InputSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\RenderSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
     <ClInclude Include="src\ECS\System.h">
@@ -27,16 +39,10 @@
     <ClInclude Include="src\ECS\entt.hpp">
       <Filter>src\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine\DX11App.h">
-      <Filter>src\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="src\Engine\DataTypes.h">
       <Filter>src\Engine</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\DllMacro.h">
-      <Filter>src\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Engine\Engine.h">
       <Filter>src\Engine</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\EntryPoint.h">
@@ -57,8 +63,17 @@
     <ClInclude Include="src\Engine\Shader.h">
       <Filter>src\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine\TimeMgr.h">
-      <Filter>src\Engine</Filter>
+    <ClInclude Include="src\Engine\SingletonClass\DX11App.h">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\SingletonClass\Engine.h">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\SingletonClass\InputMgr.h">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\SingletonClass\TimeMgr.h">
+      <Filter>src\Engine\SingletonClass</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\common.h">
       <Filter>src\Engine</Filter>
@@ -68,20 +83,23 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ECS\ComponentSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\AnimationSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
     <ClCompile Include="src\ECS\CameraSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
-    <ClCompile Include="src\ECS\ComponentSystem.cpp">
+    <ClCompile Include="src\ECS\InputSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\RenderSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\System.cpp">
       <Filter>src\ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Engine\DX11App.cpp">
-      <Filter>src\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Engine\Engine.cpp">
-      <Filter>src\Engine</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\FbxLoader.cpp">
       <Filter>src\Engine</Filter>
@@ -98,8 +116,17 @@
     <ClCompile Include="src\Engine\Shader.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\TimeMgr.cpp">
-      <Filter>src\Engine</Filter>
+    <ClCompile Include="src\Engine\SingletonClass\DX11App.cpp">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\SingletonClass\Engine.cpp">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\SingletonClass\InputMgr.cpp">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp">
+      <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

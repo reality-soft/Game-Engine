@@ -42,7 +42,7 @@ namespace KGCA41B
 			subresource_data.pSysMem = &this->cb_transform_;
 			if (FAILED(DX11App::GetInst()->GetDevice()->CreateBuffer(&buffer_desc, &subresource_data, &this->cb_buffer_)))
 			{
-				MessageBox(nullptr, L"»ó¼ö ¹öÆÛ »ý¼º ½ÇÆÐ", L"¿À·ù", 0);
+				MessageBox(nullptr, L"ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½", L"ï¿½ï¿½ï¿½", 0);
 				assert(nullptr);
 			}
 		}
@@ -70,7 +70,7 @@ namespace KGCA41B
 
 				if (FAILED(DX11App::GetInst()->GetDevice()->CreateBuffer(&vertex_buffer_desc, &vertex_buffer_data, &single_mesh.vertex_buffer)))
 				{
-					MessageBox(nullptr, L"¹öÅØ½º ¹öÆÛ »ý¼º ½ÇÆÐ", L"¿À·ù", 0);
+					MessageBox(nullptr, L"ï¿½ï¿½ï¿½Ø½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½", L"ï¿½ï¿½ï¿½", 0);
 					assert(nullptr);
 				}
 			}
@@ -100,7 +100,7 @@ namespace KGCA41B
 
 			if (FAILED(DX11App::GetInst()->GetDevice()->CreateBuffer(&bufferDesc, &subresourceData, this->bone_buffer_.GetAddressOf())))
 			{
-				MessageBox(nullptr, L"½ºÄÌ·¹Åæ »ó¼ö ¹öÆÛ »ý¼º ½ÇÆÐ", L"¿À·ù", 0);
+				MessageBox(nullptr, L"ï¿½ï¿½ï¿½Ì·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½", L"ï¿½ï¿½ï¿½", 0);
 				assert(nullptr);
 			}
 		}
@@ -135,7 +135,7 @@ namespace KGCA41B
 
 	struct InputMapping : public Component
 	{
-		AxisType axis_type;
+		vector<AxisType> axis_types;
 		float axis_value[6] = { 0, };
 		vector<ActionType> actions;
 	};

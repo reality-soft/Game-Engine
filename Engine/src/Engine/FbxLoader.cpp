@@ -446,14 +446,12 @@ namespace KGCA41B {
 
 	XMMATRIX FbxLoader::FbxToDxConvert(FbxAMatrix& fbx_matrix)
 	{
-		XMMATRIX dx_matrix =
-		{
-			(float)fbx_matrix.Get(0, 0), (float)fbx_matrix.Get(1, 0), (float)fbx_matrix.Get(2, 0), (float)fbx_matrix.Get(3, 0),
-			(float)fbx_matrix.Get(0, 1), (float)fbx_matrix.Get(1, 1), (float)fbx_matrix.Get(2, 1), (float)fbx_matrix.Get(3, 1),
-			(float)fbx_matrix.Get(0, 2), (float)fbx_matrix.Get(1, 2), (float)fbx_matrix.Get(2, 2), (float)fbx_matrix.Get(3, 2),
-			(float)fbx_matrix.Get(0, 3), (float)fbx_matrix.Get(1, 3), (float)fbx_matrix.Get(2, 3), (float)fbx_matrix.Get(3, 3)
-		};
-		dx_matrix = XMMatrixTranspose(dx_matrix);
+		XMMATRIX dx_matrix;
+		dx_matrix.r[0] = { (float)fbx_matrix.Get(0, 0), (float)fbx_matrix.Get(0, 2), (float)fbx_matrix.Get(0, 1), 0.0f };
+		dx_matrix.r[1] = { (float)fbx_matrix.Get(2, 0), (float)fbx_matrix.Get(2, 2), (float)fbx_matrix.Get(2, 1), 0.0f };
+		dx_matrix.r[2] = { (float)fbx_matrix.Get(1, 0), (float)fbx_matrix.Get(1, 2), (float)fbx_matrix.Get(1, 1), 0.0f };
+		dx_matrix.r[3] = { (float)fbx_matrix.Get(3, 0), (float)fbx_matrix.Get(3, 2), (float)fbx_matrix.Get(3, 1), 1.0f };
+
 		return dx_matrix;
 	}
 
@@ -480,20 +478,21 @@ namespace KGCA41B {
 			FbxAMatrix cluster_transform;
 			FbxAMatrix cluster_link_transform;
 
-			fbx_cluster->GetTransformMatrix(cluster_transform);
-			fbx_cluster->GetTransformLinkMatrix(cluster_link_transform);
+			fbx_cluster->GetTransformLinkMatrix(cluster_transform);
+			fbx_cluster->GetTransformMatrix(cluster_link_transform);
 
-			FbxAMatrix bind_pose = cluster_transform.Inverse() * cluster_link_transform;
+			FbxAMatrix bind_pose = cluster_link_transform.Inverse() * cluster_transform;
 
 			XMMATRIX bind_pose_matrix = FbxToDxConvert(bind_pose);
-			bind_pose_matrix = XMMatrixInverse(nullptr, bind_pose_matrix);
+			XMVECTOR det;
+			bind_pose_matrix = XMMatrixInverse(&det, bind_pose_matrix);
 			out_mesh->bind_poses.insert(std::make_pair(bone_ID, bind_pose_matrix));
 
 
 			// 임의의 1개 정점에 영향을 미치는 뼈대의 개수
 			int index_weight_count = fbx_cluster->GetControlPointIndicesCount();
 			int* indices = fbx_cluster->GetControlPointIndices();
-			float* weights = (float*)fbx_cluster->GetControlPointWeights();
+			double* weights = (double*)fbx_cluster->GetControlPointWeights();
 			for (int vertex = 0; vertex < index_weight_count; vertex++)
 			{
 				int vertex_index = indices[vertex];

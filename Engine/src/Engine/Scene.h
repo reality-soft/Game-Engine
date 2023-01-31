@@ -1,8 +1,10 @@
 #pragma once
-#include "FbxLoader.h"
+#include "common.h"
+#include "DllMacro.h"
+#include "TimeMgr.h"
+#include "InputMgr.h"
 
-namespace KGCA41B
-{
+namespace KGCA41B {
 	class DLL_API Scene
 	{
 	public:

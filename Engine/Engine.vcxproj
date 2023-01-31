@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\spdlog\include;src\ECS;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\Engine;src\Engine\SingletonClass;src\ECS;vendor\spdlog\include;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -102,7 +102,7 @@
       <WarningLevel>Level3</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\spdlog\include;src\ECS;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\Engine;src\Engine\SingletonClass;src\ECS;vendor\spdlog\include;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -129,7 +129,7 @@
       <WarningLevel>Level3</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\spdlog\include;src\ECS;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\Engine;src\Engine\SingletonClass;src\ECS;vendor\spdlog\include;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -151,37 +151,45 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\ComponentSystem.h" />
     <ClInclude Include="src\ECS\Components.h" />
+    <ClInclude Include="src\ECS\InputSystem.h" />
+    <ClInclude Include="src\ECS\RenderSystem.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\ECS\entt.hpp" />
-    <ClInclude Include="src\Engine\DX11App.h" />
     <ClInclude Include="src\Engine\DataTypes.h" />
     <ClInclude Include="src\Engine\DllMacro.h" />
-    <ClInclude Include="src\Engine\Engine.h" />
     <ClInclude Include="src\Engine\EntryPoint.h" />
     <ClInclude Include="src\Engine\FbxLoader.h" />
     <ClInclude Include="src\Engine\FbxOutData.h" />
     <ClInclude Include="src\Engine\Log.h" />
     <ClInclude Include="src\Engine\Scene.h" />
     <ClInclude Include="src\Engine\Shader.h" />
-    <ClInclude Include="src\Engine\TimeMgr.h" />
+    <ClInclude Include="src\Engine\SingletonClass\DX11App.h" />
+    <ClInclude Include="src\Engine\SingletonClass\Engine.h" />
+    <ClInclude Include="src\Engine\SingletonClass\InputMgr.h" />
+    <ClInclude Include="src\Engine\SingletonClass\TimeMgr.h" />
     <ClInclude Include="src\Engine\common.h" />
     <ClInclude Include="src\Engine_include.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\ComponentSystem.cpp" />
+    <ClCompile Include="src\ECS\InputSystem.cpp" />
+    <ClCompile Include="src\ECS\RenderSystem.cpp" />
     <ClCompile Include="src\ECS\System.cpp" />
-    <ClCompile Include="src\Engine\DX11App.cpp" />
-    <ClCompile Include="src\Engine\Engine.cpp" />
     <ClCompile Include="src\Engine\FbxLoader.cpp" />
     <ClCompile Include="src\Engine\FbxOutData.cpp" />
     <ClCompile Include="src\Engine\Log.cpp" />
     <ClCompile Include="src\Engine\Scene.cpp" />
     <ClCompile Include="src\Engine\Shader.cpp" />
-    <ClCompile Include="src\Engine\TimeMgr.cpp" />
+    <ClCompile Include="src\Engine\SingletonClass\DX11App.cpp" />
+    <ClCompile Include="src\Engine\SingletonClass\Engine.cpp" />
+    <ClCompile Include="src\Engine\SingletonClass\InputMgr.cpp" />
+    <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
