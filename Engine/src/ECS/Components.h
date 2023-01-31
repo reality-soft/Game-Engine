@@ -65,4 +65,22 @@ namespace KGCA41B
 		float axis_value[6] = { 0, };
 		vector<ActionType> actions;
 	};
+
+	struct SoundListener : public Component
+	{
+
+	};
+
+	struct SoundQueue
+	{
+		wstring sound_filename;
+		float	sound_volume;
+		bool	is_looping;
+	};
+
+	struct SoundGenerator : public Component
+	{
+		queue<SoundQueue> sound_queue_list;
+	};
+
 }
