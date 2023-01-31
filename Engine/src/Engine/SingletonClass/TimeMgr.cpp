@@ -13,23 +13,16 @@ void TimeMgr::Init()
 
 void TimeMgr::Update()
 {
-	BOOL isUpdated = QueryPerformanceCounter((LARGE_INTEGER*)&cur_time);
+	QueryPerformanceCounter((LARGE_INTEGER*)&cur_time);
 	delta_time = ((double)cur_time.QuadPart - (double)last_time.QuadPart) / (double)period_frequency.QuadPart;
 
-	static float frames = 0.0f;
-	static double oneSec = 0.0f;
-
-	frames += 1.0f;
-	oneSec += delta_time;
-	game_time += delta_time;
-	if (oneSec >= 1.0f)
+	fps = 0;
+	for (double i = 0; i < 1.0; i += delta_time)
 	{
-		fps = frames;
-
-		frames = 0;
-		oneSec = 0;
+		fps++;
 	}
 
+	game_time += delta_time;
 	last_time = cur_time;
 }
 
@@ -38,9 +31,9 @@ double TimeMgr::GetDeltaTime()
 	return delta_time;
 }
 
-int TimeMgr::GetFPS()
+float TimeMgr::GetFPS()
 {
-	return (int)fps;
+	return fps;
 }
 
 float TimeMgr::GetGameTime()
