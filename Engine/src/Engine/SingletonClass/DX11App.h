@@ -1,3 +1,4 @@
+#pragma once
 #include "common.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -52,3 +53,20 @@ private:
     D3D11_VIEWPORT                 view_port;
 
 };
+
+
+static XMMATRIX InterpolByTime(XMMATRIX& a, XMMATRIX& b, float t)
+{
+    XMMATRIX result;
+
+    for (int i = 0; i < 4; i++)
+    {
+        XMVECTOR row_a = XMLoadFloat4((XMFLOAT4*)&a.r[i]);
+        XMVECTOR row_b = XMLoadFloat4((XMFLOAT4*)&b.r[i]);
+        XMVECTOR row_result = XMVectorLerp(row_a, row_b, t);
+        XMStoreFloat4((XMFLOAT4*)&result.r[i], row_result);
+    }
+
+    return result;
+}
+
