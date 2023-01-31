@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ECS\AnimationSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="src\ECS\CameraSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
@@ -22,6 +25,9 @@
       <Filter>src\ECS</Filter>
     </ClInclude>
     <ClInclude Include="src\ECS\InputSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\RenderSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
     <ClInclude Include="src\ECS\System.h">
@@ -72,13 +78,18 @@
     <ClInclude Include="src\Engine_include.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\ECS\RenderSystem.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ECS\AnimationSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
     <ClCompile Include="src\ECS\CameraSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\InputSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\RenderSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\System.cpp">
@@ -111,7 +122,6 @@
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
-    <ClCompile Include="src\ECS\RenderSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />

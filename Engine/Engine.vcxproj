@@ -151,10 +151,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\ECS\RenderSystem.h" />
+    <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\Components.h" />
     <ClInclude Include="src\ECS\InputSystem.h" />
+    <ClInclude Include="src\ECS\RenderSystem.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\ECS\entt.hpp" />
     <ClInclude Include="src\Engine\DataTypes.h" />
@@ -173,9 +174,10 @@
     <ClInclude Include="src\Engine_include.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ECS\RenderSystem.cpp" />
+    <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\InputSystem.cpp" />
+    <ClCompile Include="src\ECS\RenderSystem.cpp" />
     <ClCompile Include="src\ECS\System.cpp" />
     <ClCompile Include="src\Engine\FbxLoader.cpp" />
     <ClCompile Include="src\Engine\FbxOutData.cpp" />

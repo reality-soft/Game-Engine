@@ -95,13 +95,17 @@ project "TestGame"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/Shader/**.hlsl"
 	} 
 
 	includedirs
 	{
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
+		"Engine/src/Engine",
+		"Engine/src/Engine/SingletonClass",
+		"Engine/src/ECS",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include"
 	}
@@ -121,6 +125,16 @@ project "TestGame"
 		"zlib-md"
 	}
 
+	filter "files:**VS.hlsl"
+		shadertype "Vertex"
+		shaderentry "VS"
+	    shadermodel "5.0"
+
+	filter "files:**PS.hlsl"
+	    shadertype "Pixel"
+		shaderentry "PS"
+	    shadermodel "5.0"
+
 	filter "system:windows"
 		cppdialect "C++17"
 		staticruntime "Off"
@@ -130,6 +144,11 @@ project "TestGame"
 		defines
 		{
 			"PLATFORM_WINDOWS"
+		}
+
+		postbuildcommands
+		{
+			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"Shader\\*.cso\""
 		}
 
 	filter "configurations:Debug"
