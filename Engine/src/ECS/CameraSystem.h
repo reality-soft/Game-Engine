@@ -9,7 +9,8 @@ namespace KGCA41B
 		CameraSystem();
 		~CameraSystem();
 
-		virtual void OnCreate(entt::registry& reg, string tag);
+		void TargetTag(entt::registry& reg, string tag);
+		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
 	private:
