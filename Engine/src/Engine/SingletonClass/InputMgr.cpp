@@ -32,7 +32,7 @@ bool InputMgr::Init(HWND hwnd, HINSTANCE hinstacne)
 	return true;
 }
 
-void InputMgr::Update()
+int InputMgr::Update()
 {
 	HRESULT hr;
 
@@ -42,7 +42,7 @@ void InputMgr::Update()
 		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
 			di_keyboard->Acquire();
 		else
-			return;
+			return KEY_NO_STATE;
 	}
 
 	hr = di_mouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&mouse_state);
@@ -51,8 +51,18 @@ void InputMgr::Update()
 		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
 			di_mouse->Acquire();
 		else
-			return;
+			return MOUSE_NO_STATE;
 	}
+
+	current_mousepos.x += mouse_state.lX;
+	current_mousepos.y += mouse_state.lY;
+
+	current_mousepos.x = max(current_mousepos.x, 0);
+	current_mousepos.x = min(current_mousepos.x, screen_size.x);
+	current_mousepos.y = max(current_mousepos.y, 0);
+	current_mousepos.y = min(current_mousepos.y, screen_size.y);
+
+	return -1;
 }
 
 bool InputMgr::IsKeyPressed(UCHAR dik)
@@ -86,26 +96,12 @@ int InputMgr::GetKeyEvent(UCHAR dik)
 
 POINT InputMgr::GetMousePosition()
 {
-	POINT mousepos;
-	mousepos.x = mouse_state.lX;
-	mousepos.y = mouse_state.lY;
-
-	mousepos.x = max(mousepos.x, 0);
-	mousepos.x = min(mousepos.x, screen_size.x);
-	mousepos.y = max(mousepos.y, 0);
-	mousepos.y = min(mousepos.y, screen_size.y);
-
-	return mousepos;
+	return current_mousepos;
 }
 
-POINT InputMgr::GetMouseVelocity()
+XMFLOAT2 InputMgr::GetMouseVelocity()
 {
-	static POINT lastpos = { 0, };
-	POINT curpos = GetMousePosition();
-	POINT velocity = { curpos.x - lastpos.x, curpos.y - lastpos.y };
-	lastpos = curpos;
-
-	return velocity;
+	return XMFLOAT2(mouse_state.lX, mouse_state.lY);
 }
 
 XMINT3 InputMgr::GetMouseButton()
