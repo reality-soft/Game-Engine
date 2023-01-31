@@ -1,8 +1,5 @@
-#pragma once
-#include "common.h"
 #include "DX11App.h"
 #include "Scene.h"
-#include "DllMacro.h"
 
 namespace KGCA41B {
 	class DLL_API Engine

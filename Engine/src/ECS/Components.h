@@ -22,13 +22,13 @@ namespace KGCA41B
 
 	struct StaticMesh : public Component
 	{
-		vector<SingleMesh> mesh_list;
+		vector<SingleMesh<Vertex>> mesh_list;
 		VsDefault vs_default;
 	};
 
 	struct SkeletalMesh : public Component
 	{
-		vector<SingleMesh> mesh_list;
+		vector<SingleMesh<SkinnedVertex>> mesh_list;
 		VsSkinned vs_skinned;
 	};
 
@@ -61,7 +61,7 @@ namespace KGCA41B
 
 	struct InputMapping : public Component
 	{
-		AxisType axis_type;
+		vector<AxisType> axis_types;
 		float axis_value[6] = { 0, };
 		vector<ActionType> actions;
 	};

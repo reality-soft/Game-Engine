@@ -32,6 +32,11 @@ ID3D11VertexShader* VsDefault::Get()
 	return vs.Get();
 }
 
+ID3D11InputLayout* KGCA41B::VsDefault::InputLayoyt()
+{
+    return input_layout.Get();
+}
+
 bool VsSkinned::LoadCompiled(wstring cso_file)
 {
     HRESULT hr;

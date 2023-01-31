@@ -243,3 +243,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/TestGame/Resource
+/TestGame/Shader/SkinningVS.cso
+/TestGame/Shader/SkinningPS.cso
+/TestGame/Shader/BasicShapeVS.cso
+/TestGame/Shader/BasicShapePS.cso
