@@ -7,6 +7,7 @@
 #include "ECS/CameraSystem.h"
 #include "ECS/InputSystem.h"
 #include "ECS/AnimationSystem.h"
+#include "ECS/SoundSystem.h"
 
 #include "Engine/Scene.h"
 #include "Engine/FbxLoader.h"
