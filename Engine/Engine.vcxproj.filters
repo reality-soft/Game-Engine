@@ -69,8 +69,14 @@
     <ClInclude Include="src\Engine\SingletonClass\InputMgr.h">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\SingletonClass\ResourceMgr.h">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClInclude>
     <ClInclude Include="src\Engine\SingletonClass\TimeMgr.h">
       <Filter>src\Engine\SingletonClass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Texture.h">
+      <Filter>src\Engine</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\common.h">
       <Filter>src\Engine</Filter>
@@ -78,8 +84,6 @@
     <ClInclude Include="src\Engine_include.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine\SingletonClass\ResourceMgr.h" />
-    <ClInclude Include="src\Engine\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ECS\AnimationSystem.cpp">
@@ -121,16 +125,17 @@
     <ClCompile Include="src\Engine\SingletonClass\InputMgr.cpp">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\SingletonClass\ResourceMgr.cpp">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClCompile>
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\SingletonClass\ResourceMgr.cpp" />
-    <ClCompile Include="src\Engine\Texture.cpp" />
+    <ClCompile Include="src\Engine\Texture.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="src\dev.txt" />
   </ItemGroup>
 </Project>
