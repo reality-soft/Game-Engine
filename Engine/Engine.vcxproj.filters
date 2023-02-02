@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\ECS\ComponentSystem.h">
-      <Filter>src\ECS</Filter>
-    </ClInclude>
     <ClInclude Include="src\ECS\AnimationSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
@@ -85,9 +82,6 @@
     <ClInclude Include="src\Engine\Texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ECS\ComponentSystem.cpp">
-      <Filter>src\ECS</Filter>
-    </ClCompile>
     <ClCompile Include="src\ECS\AnimationSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
