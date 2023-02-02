@@ -23,7 +23,7 @@ void SoundSystem::OnUpdate(entt::registry& reg)
 {
     CheckGenerators(reg);
 
-    CheckPoolPlaying();
+    CheckPlayingPool();
 
     fmod_system_->update();
 }
@@ -65,7 +65,7 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
     }
 }
 
-void SoundSystem::CheckPoolPlaying()
+void SoundSystem::CheckPlayingPool()
 {
     for (auto iter = sound_pool_play.begin(); iter != sound_pool_play.end(); )
     {

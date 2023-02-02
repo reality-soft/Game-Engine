@@ -39,7 +39,7 @@ namespace KGCA41B {
 		bool OnRelease();
 	public:
 		void CheckGenerators(entt::registry& reg);
-		void CheckPoolPlaying();
+		void CheckPlayingPool();
 	public:
 		void Play(wstring sound_name, bool looping, float volume, FXMVECTOR generate_pos);
 		void LoadDir(wstring directory_address);
