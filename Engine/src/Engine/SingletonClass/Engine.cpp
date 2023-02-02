@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "ResourceMgr.h"
 
 LRESULT CALLBACK WindowProc(
 	HWND hWnd,
