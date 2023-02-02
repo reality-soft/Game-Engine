@@ -10,8 +10,9 @@ public:
 	virtual void OnRelease();
 
 public:
+	void LoadResource();
 	void CreatePlayer();
-	void CreateObjectFromFbx(string filepath);
+	void CreateCharacter();
 
 private:
 	entt::registry reg_scene;

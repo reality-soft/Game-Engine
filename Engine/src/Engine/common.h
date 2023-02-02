@@ -8,7 +8,10 @@
 #include <tchar.h>
 #include <atlconv.h>
 #include <DirectXMath.h>
-
+#include <iostream>
+#include <locale>
+#include <codecvt>
+#include <functional>
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;

@@ -5,12 +5,14 @@ using namespace KGCA41B;
 void TestGame::OnInit()
 {
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
+	LoadResource();
 
 	ent_player = reg_scene.create();
 	ent_object = reg_scene.create();
 
 	CreatePlayer();
-	CreateObjectFromFbx("Resource/RumbaDancing.fbx");
+	//CreateObjectFromFbx("Resource/RumbaDancing.fbx");
+	CreateCharacter();
 
 	sys_render.OnCreate(reg_scene);
 	sys_animation.OnCreate(reg_scene);
@@ -26,13 +28,22 @@ void TestGame::OnUpdate()
 }
 
 void TestGame::OnRender()
-{
+{   
 	sys_animation.OnUpdate(reg_scene);
 	sys_render.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRelease()
 {
+	RESOURCE->Release();
+}
+
+void TestGame::LoadResource()
+{
+	RESOURCE->Init(nullptr);
+	RESOURCE->PushResource<FbxLoader>("player", "Resource/RumbaDancing.fbx");
+	RESOURCE->PushResource<VsSkinned>("player", "Shader/SkinningVS.cso");
+	RESOURCE->PushResource<PsDefault>("player", "Shader/SkinningPS.cso");
 }
 
 void TestGame::CreatePlayer()
@@ -60,42 +71,26 @@ void TestGame::CreatePlayer()
 	reg_scene.emplace<InputMapping>(ent_player, comp_inputmapping);
 }
 
-void TestGame::CreateObjectFromFbx(string filepath)
+void TestGame::CreateCharacter()
 {
-	FbxLoader fbx_loader;
-	fbx_loader.LoadFromFbxFile(filepath);
-	fbx_loader.LoadAnimation(FbxTime::eFrames60);
-
 	SkeletalMesh comp_skm;
-	comp_skm.vs_skinned.LoadCompiled(L"Shader/SkinningVS.cso");
 	Skeleton comp_skeleton;
-	for (auto mesh : fbx_loader.out_mesh_list)
-	{
-		SingleMesh<SkinnedVertex> single_mesh;
-		single_mesh.vertices = mesh->skinned_vertices;
-		comp_skm.mesh_list.push_back(single_mesh);
-
-		comp_skeleton.bind_poses.merge(mesh->bind_poses);
-	}
-
 	Animation comp_animation;
-	for (auto anim : fbx_loader.out_anim_list)
-	{
-		comp_animation.anim_track = anim->animations;
-		comp_animation.start_frame = anim->start_frame;
-		comp_animation.end_frame = anim->end_frame;
-	}
-
 	Material comp_material;
-	comp_material.ps_default.LoadCompiled(L"Shader/SkinningPS.cso");
-
 	Transform comp_transform;
+
+	comp_skm.mesh_id = "player";
+	comp_skm.shader_id = "player";
+
+	comp_skeleton.skeleton_id = "player";
+	comp_animation.anim_id = "player";
+
+	comp_material.shader_id = "player";
+	comp_material.texture_id = "null";
 
 	reg_scene.emplace<SkeletalMesh>(ent_object, comp_skm);
 	reg_scene.emplace<Skeleton>(ent_object, comp_skeleton);
 	reg_scene.emplace<Animation>(ent_object, comp_animation);
 	reg_scene.emplace<Material>(ent_object, comp_material);
 	reg_scene.emplace<Transform>(ent_object, comp_transform);
-
-	fbx_loader.Destroy();
 }

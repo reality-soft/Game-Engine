@@ -33,9 +33,6 @@ namespace KGCA41B
 	{
 		bool is_skinned = false;
 
-		FbxAMatrix fbx_local_matrix;
-		FbxNode* fbx_node = nullptr;
-
 		string mesh_name;
 		string material_name;
 		vector<Vertex> vertices;
@@ -47,7 +44,6 @@ namespace KGCA41B
 
 	struct OutAnimData
 	{
-
 		map<UINT, vector<XMMATRIX>> animations;
 		UINT start_frame = 0;
 		UINT end_frame = 0;
