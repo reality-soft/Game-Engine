@@ -151,6 +151,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\SingletonClass\ResourceMgr.h" />
     <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\Components.h" />
@@ -172,8 +173,10 @@
     <ClInclude Include="src\Engine\SingletonClass\TimeMgr.h" />
     <ClInclude Include="src\Engine\common.h" />
     <ClInclude Include="src\Engine_include.h" />
+    <ClInclude Include="src\Engine\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\SingletonClass\ResourceMgr.cpp" />
     <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\InputSystem.cpp" />
@@ -188,9 +191,13 @@
     <ClCompile Include="src\Engine\SingletonClass\Engine.cpp" />
     <ClCompile Include="src\Engine\SingletonClass\InputMgr.cpp" />
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp" />
+    <ClCompile Include="src\Engine\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="src\dev.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
