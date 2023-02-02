@@ -23,7 +23,26 @@ namespace KGCA41B
 		CbTransform cb_transform;
 		ComPtr<ID3D11Buffer> cb_buffer;
 
-		virtual void OnConstruct() override {};
+		virtual void OnConstruct() override {
+			this->world_matrix = this->cb_transform.world_matrix = XMMatrixIdentity();
+			this->view_matrix = this->cb_transform.world_matrix = XMMatrixIdentity();
+			this->projection_matrix = this->cb_transform.world_matrix = XMMatrixIdentity();
+
+			D3D11_BUFFER_DESC desc;
+			D3D11_SUBRESOURCE_DATA subdata;
+
+			ZeroMemory(&desc, sizeof(desc));
+			ZeroMemory(&subdata, sizeof(subdata));
+
+			desc.ByteWidth = sizeof(CbTransform);
+
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+			subdata.pSysMem = &this->cb_transform;
+			HRESULT hr;
+			hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, &this->cb_buffer);
+		};
 	};
 
 	struct StaticMesh : public Transform
@@ -66,7 +85,24 @@ namespace KGCA41B
 		CbSkeleton cb_skeleton;
 		ComPtr<ID3D11Buffer> cb_buffer;
 
-		virtual void OnConstruct() override {};
+		virtual void OnConstruct() override {
+			for (int i = 0; i < 255; ++i)
+				this->cb_skeleton.mat_skeleton[i] = XMMatrixIdentity();
+
+			D3D11_BUFFER_DESC desc;
+			D3D11_SUBRESOURCE_DATA subdata;
+
+			ZeroMemory(&desc, sizeof(desc));
+			ZeroMemory(&subdata, sizeof(subdata));
+
+			desc.ByteWidth = sizeof(CbSkeleton);
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			subdata.pSysMem = this->cb_buffer.GetAddressOf();
+
+			HRESULT hr;
+			hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, this->cb_buffer.GetAddressOf());
+		};
 	};
 
 	struct Animation : public Component
