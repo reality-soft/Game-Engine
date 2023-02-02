@@ -9,6 +9,14 @@ namespace KGCA41B {
 			delete out_mesh;
 			out_mesh = nullptr;
 		}
+		out_mesh_list.clear();
+
+		for (auto out_anim : out_anim_list)
+		{
+			delete out_anim;
+			out_anim = nullptr;
+		}
+		out_anim_list.clear();
 
 		for (auto node : node_list)
 		{
@@ -129,7 +137,6 @@ namespace KGCA41B {
 		FbxAMatrix local_matrix = geom;
 		local_matrix = local_matrix.Inverse();
 		local_matrix = local_matrix.Transpose();
-		out_mesh->fbx_local_matrix = local_matrix;
 
 		// Layer °³³ä
 		FbxLayerElementUV* vertex_uv_layer = nullptr;
