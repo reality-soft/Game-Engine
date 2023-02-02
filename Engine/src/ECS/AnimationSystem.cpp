@@ -1,5 +1,6 @@
 #include "AnimationSystem.h"
 #include "TimeMgr.h"
+#include "ResourceMgr.h"
 
 using namespace KGCA41B;
 
@@ -30,14 +31,17 @@ void AnimationSystem::OnUpdate(entt::registry& reg)
 
 void AnimationSystem::PlayAnimation(Skeleton& skeleton, Animation& animation)
 {
-	static float keyframe = animation.start_frame;
-	
-	if (keyframe >= animation.end_frame)
-		keyframe = animation.start_frame;
+	map<UINT, XMMATRIX>* res_skeleton = RESOURCE->UseResource<map<UINT, XMMATRIX>>(skeleton.skeleton_id);
+	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation.anim_id);
 
-	for (auto bp : skeleton.bind_poses)
+	static float keyframe = res_animation->begin()->start_frame;
+	
+	if (keyframe >= res_animation->begin()->end_frame)
+		keyframe = res_animation->begin()->start_frame;
+
+	for (auto bp : *res_skeleton)
 	{
-		XMMATRIX anim_matrix = bp.second * animation.anim_track.find(bp.first)->second[keyframe];
+		XMMATRIX anim_matrix = bp.second * res_animation->begin()->animations.find(bp.first)->second[keyframe];
 		skeleton.cb_skeleton.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
 	}
 
