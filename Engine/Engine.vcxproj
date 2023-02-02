@@ -154,6 +154,7 @@
     <ClInclude Include="src\Engine\SingletonClass\ResourceMgr.h" />
     <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
+    <ClInclude Include="src\ECS\ComponentSystem.h" />
     <ClInclude Include="src\ECS\Components.h" />
     <ClInclude Include="src\ECS\InputSystem.h" />
     <ClInclude Include="src\ECS\RenderSystem.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="src\Engine\SingletonClass\ResourceMgr.cpp" />
     <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
+    <ClCompile Include="src\ECS\ComponentSystem.cpp" />
     <ClCompile Include="src\ECS\InputSystem.cpp" />
     <ClCompile Include="src\ECS\RenderSystem.cpp" />
     <ClCompile Include="src\ECS\System.cpp" />

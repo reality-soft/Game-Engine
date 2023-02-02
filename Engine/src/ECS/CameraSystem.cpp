@@ -52,8 +52,8 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 	for (auto ent : view_trans)
 	{
 		auto& trans = view_trans.get<Transform>(ent);
-		trans.view_matrix = view_matrix;
-		trans.projection_matrix = projection_matrix;
+		trans.view_matrix_ = view_matrix;
+		trans.projection_matrix_ = projection_matrix;
 	}
 }
 

@@ -9,19 +9,47 @@ namespace KGCA41B
 	struct Component
 	{
 		string tag;
+		virtual void OnConstruct() {};
+		virtual void OnDestroy() {};
+		virtual void OnUpdate() {};
 	};
 
 	struct Transform : public Component
 	{
-		XMMATRIX world_matrix;
-		XMMATRIX view_matrix;
-		XMMATRIX projection_matrix;
+		XMMATRIX world_matrix_;
+		XMMATRIX view_matrix_;
+		XMMATRIX projection_matrix_;
 
-		CbTransform cb_transform;
-		ComPtr<ID3D11Buffer> cb_buffer;
+		CbTransform cb_transform_;
+		ComPtr<ID3D11Buffer> cb_buffer_;
+
+		virtual void OnConstruct() override {
+
+			this->world_matrix_ = this->cb_transform_.world_matrix = XMMatrixIdentity();
+			this->world_matrix_ = this->cb_transform_.world_matrix = XMMatrixIdentity();
+			this->world_matrix_ = this->cb_transform_.world_matrix = XMMatrixIdentity();
+
+			D3D11_BUFFER_DESC buffer_desc;
+			D3D11_SUBRESOURCE_DATA subresource_data;
+
+			ZeroMemory(&buffer_desc, sizeof(buffer_desc));
+			ZeroMemory(&subresource_data, sizeof(subresource_data));
+
+			buffer_desc.ByteWidth = sizeof(CbTransform);
+			buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+			buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+
+			subresource_data.pSysMem = &this->cb_transform_;
+			if (FAILED(DX11App::GetInst()->GetDevice()->CreateBuffer(&buffer_desc, &subresource_data, &this->cb_buffer_)))
+			{
+				MessageBox(nullptr, L"��� ���� �� ����", L"���", 0);
+				assert(nullptr);
+			}
+		}
 	};
 
-	struct StaticMesh : public Component
+	struct StaticMesh : public Transform
 	{
 		string mesh_id;
 		string shader_id;
@@ -29,6 +57,7 @@ namespace KGCA41B
 
 	struct SkeletalMesh : public Component
 	{
+
 		string mesh_id;
 		string shader_id;
 	};
