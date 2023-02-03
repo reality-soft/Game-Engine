@@ -1,0 +1,51 @@
+#pragma once
+#include "common.h"
+#include "DllMacro.h"
+#include "DX11App.h"
+
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_internal.h"
+
+namespace KGCA41B
+{
+	enum class GUIEVENT
+	{
+		
+	};
+
+	class DLL_API GuiWidget
+	{
+	public:
+		GuiWidget() = default;
+		~GuiWidget() = default;
+
+	public:
+		virtual void Update() = 0;
+		virtual void Render() = 0;
+
+	protected:
+		void PreRender();
+		void PostRender();
+	};
+
+	class DLL_API GUIMgr
+	{
+		SINGLETON(GUIMgr);
+#define GUI GUIMgr::GetInst()
+
+	public:
+		void Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context);
+		void RenderWidgets();
+
+		void AddWidget(string widget_name, GuiWidget* widget);
+		GuiWidget* FindWidget(string widget_name);
+		ImGuiContext* GetContext();
+		ImFont* imfont;
+	private:
+		ImGuiContext* context;
+		map<string, GuiWidget*> widgets;
+	};
+}
+
