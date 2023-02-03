@@ -66,6 +66,9 @@
     <ClInclude Include="src\Engine\SingletonClass\Engine.h">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\SingletonClass\GUIMgr.h">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClInclude>
     <ClInclude Include="src\Engine\SingletonClass\InputMgr.h">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClInclude>
@@ -120,6 +123,9 @@
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\SingletonClass\Engine.cpp">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\SingletonClass\GUIMgr.cpp">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\SingletonClass\InputMgr.cpp">

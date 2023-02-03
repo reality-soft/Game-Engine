@@ -29,17 +29,20 @@ project "Engine"
 	includedirs
 	{
 		"%{prj.name}/src/Engine",
-		"%{prj.name}/src/Engine/SingletonClass",
 		"%{prj.name}/src/ECS",
+		"%{prj.name}/src/GUI",
+		"%{prj.name}/src/Engine/SingletonClass",
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
-		"../SDK/FBXSDK/include"
+		"../SDK/FBXSDK/include",
+		"../SDK/IMGUI/include"
 	}
 
 	libdirs
 	{
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug"
+		"../SDK/FBXSDK/lib/debug",
+		"../SDK/IMGUI/lib"
 	}
 
 	links
@@ -52,7 +55,8 @@ project "Engine"
 		"DirectXTK_D",
 		"libfbxsdk-md",
 		"libxml2-md",
-		"zlib-md"
+		"zlib-md",
+		"ImGui_Win32_Dx11_D"
 	}
 
 	filter "system:windows"
@@ -104,17 +108,19 @@ project "TestGame"
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
 		"Engine/src/Engine",
-		"Engine/src/Engine/SingletonClass",
 		"Engine/src/ECS",
+		"Engine/src/Engine/SingletonClass",
 		"../SDK/DirectXTK/include",
-		"../SDK/FBXSDK/include"
+		"../SDK/FBXSDK/include",
+		"../SDK/IMGUI/include"
 	}
 
 	libdirs
 	{
 		"../output/bin/Debug-windows-x86_64/Engine/",
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug"
+		"../SDK/FBXSDK/lib/debug",
+		"../SDK/IMGUI/lib"
 	}
 
 	links
@@ -122,7 +128,8 @@ project "TestGame"
 		"Engine",
 		"libfbxsdk-md",
 		"libxml2-md",
-		"zlib-md"
+		"zlib-md",
+		"ImGui_Win32_Dx11_D"
 	}
 
 	filter "files:**VS.hlsl"
