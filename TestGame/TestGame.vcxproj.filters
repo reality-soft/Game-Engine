@@ -22,16 +22,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\BasicShapePS.hlsl">
+    <FxCompile Include="HLSL\BasicShapePS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\BasicShapeVS.hlsl">
+    <FxCompile Include="HLSL\BasicShapeVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\SkinningPS.hlsl">
+    <FxCompile Include="HLSL\SkinningPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\SkinningVS.hlsl">
+    <FxCompile Include="HLSL\SkinningVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

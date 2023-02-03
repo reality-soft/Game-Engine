@@ -148,7 +148,7 @@ project "TestGame"
 
 		postbuildcommands
 		{
-			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"Shader\\*.cso\""
+			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\""
 		}
 
 	filter "configurations:Debug"

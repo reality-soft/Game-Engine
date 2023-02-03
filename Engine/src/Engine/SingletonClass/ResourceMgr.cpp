@@ -2,8 +2,9 @@
 
 using namespace KGCA41B;
 
-bool ResourceMgr::Init(LPCWSTR packagefile)
+bool ResourceMgr::Init(string packagefile)
 {
+    directory = packagefile;
 	return true;
 }
 
@@ -143,4 +144,9 @@ bool ResourceMgr::ImportPsDefault(string filename)
 
     resdic_ps_default.insert(make_pair(current_id, ps_default));
     return true;
+}
+
+bool ResourceMgr::ImportTexture(string filename)
+{
+    return false;
 }
