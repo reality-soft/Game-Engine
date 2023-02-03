@@ -6,18 +6,38 @@ void TestGame::OnInit()
 {
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 
-	sys_sound.OnCreate(reg_scene);
+	FMOD_MGR->Init();
+	RESOURCE->Init(nullptr);
+
+
+	RESOURCE->PushResource<FMOD::Sound>("sample", "D:/Sound/getitem.mp3");
+
+	sys_sound.OnCreate(reg_scene); 
+	sys_input.OnCreate(reg_scene);
 
 	ent_player = reg_scene.create();
-	CreatePlayer();
-
 	ent_sound = reg_scene.create();
+
+	CreatePlayer();
 	CreateSound();
 }
 
 void TestGame::OnUpdate()
 {
+	FMOD_MGR->Update();
+	int result = DINPUT->Update();
+
+	static float time = 0;
+	time += TIMER->GetDeltaTime();
+	if (DINPUT->IsKeyPressed(DIK_SPACE) && time >= 2.0f)
+	{
+		CreateSound();
+		time = 0;
+	}
+		
+
 	sys_sound.OnUpdate(reg_scene);
+	sys_input.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRender()
@@ -28,7 +48,8 @@ void TestGame::OnRender()
 
 void TestGame::OnRelease()
 {
-	sys_sound.OnRelease();
+	RESOURCE->Release();
+	FMOD_MGR->Release();
 }
 
 void TestGame::CreatePlayer()
@@ -39,21 +60,27 @@ void TestGame::CreatePlayer()
 	transform_comp.world_matrix.r[3].m128_f32[0] = 0;
 	transform_comp.world_matrix.r[3].m128_f32[1] = 0;
 	transform_comp.world_matrix.r[3].m128_f32[2] = 0;
+
+	reg_scene.emplace<Transform>(ent_sound);
+	reg_scene.emplace<SoundGenerator>(ent_sound);
 }
 
 void TestGame::CreateSound()
 {
-	auto& transform_comp = reg_scene.emplace<Transform>(ent_sound);
-	auto& generator_comp = reg_scene.emplace<SoundGenerator>(ent_sound);
+	auto& transform_comp = reg_scene.get<Transform>(ent_sound);
+	auto& generator_comp = reg_scene.get<SoundGenerator>(ent_sound);
 
-	transform_comp.world_matrix.r[3].m128_f32[0] = -200;
+	static float dir = 100;
+	dir *= -1.0f;
+
+	transform_comp.world_matrix.r[3].m128_f32[0] = dir;
 	transform_comp.world_matrix.r[3].m128_f32[1] = 0;
 	transform_comp.world_matrix.r[3].m128_f32[2] = 0;
 
 	SoundQueue que;
 	que.sound_type = SFX;
-	que.is_looping = true;
-	que.sound_filename = L"D:/Sound/getitem.mp3";
+	que.is_looping = false;
+	que.sound_filename = "sample";
 	que.sound_volume = 100.0f;
 	generator_comp.sound_queue_list.push(que);
 }
