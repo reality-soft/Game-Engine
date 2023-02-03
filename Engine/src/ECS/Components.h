@@ -70,13 +70,8 @@ namespace KGCA41B
 	{
 
 	};
-
-	struct SoundQueue
-	{
-		wstring sound_filename;
-		float	sound_volume;
-		bool	is_looping;
-	};
+	
+	
 
 	struct SoundGenerator : public Component
 	{
