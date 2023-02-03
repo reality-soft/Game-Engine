@@ -9,6 +9,10 @@
 #include <tchar.h>
 #include <atlconv.h>
 #include <DirectXMath.h>
+#include <iostream>
+#include <locale>
+#include <codecvt>
+#include <functional>
 #include "fmod.hpp"
 
 using namespace std;

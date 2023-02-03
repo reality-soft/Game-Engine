@@ -2,12 +2,16 @@
 #include "entt.hpp"
 #include "../Engine/DataTypes.h"
 #include "../Engine/Shader.h"
+#include "../Engine/Texture.h"
 
 namespace KGCA41B
 {
 	struct Component
 	{
 		string tag;
+		virtual void OnConstruct() {};
+		virtual void OnDestroy() {};
+		virtual void OnUpdate() {};
 	};
 
 	struct Transform : public Component
@@ -20,22 +24,23 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> cb_buffer;
 	};
 
-	struct StaticMesh : public Component
+	struct StaticMesh : public Transform
 	{
-		vector<SingleMesh<Vertex>> mesh_list;
-		VsDefault vs_default;
+		string mesh_id;
+		string shader_id;
 	};
 
 	struct SkeletalMesh : public Component
 	{
-		vector<SingleMesh<SkinnedVertex>> mesh_list;
-		VsSkinned vs_skinned;
+
+		string mesh_id;
+		string shader_id;
 	};
 
 	struct Material : public Component
 	{
-		PsDefault ps_default;
-		vector<ID3D11ShaderResourceView*> srv_list;
+		string shader_id;
+		string texture_id;
 	};
 
 	struct Camera : public Component
@@ -47,16 +52,14 @@ namespace KGCA41B
 
 	struct Skeleton : public Component
 	{
-		map<UINT, XMMATRIX> bind_poses;
+		string skeleton_id;
 		CbSkeleton cb_skeleton;
 		ComPtr<ID3D11Buffer> cb_buffer;
 	};
 
 	struct Animation : public Component
 	{
-		map<UINT, vector<XMMATRIX>> anim_track;
-		UINT start_frame = 0;
-		UINT end_frame = 0;
+		string anim_id;
 	};
 
 	struct InputMapping : public Component

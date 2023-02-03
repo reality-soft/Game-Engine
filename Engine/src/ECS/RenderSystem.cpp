@@ -1,5 +1,5 @@
 #include "RenderSystem.h"
-
+#include "ResourceMgr.h"
 using namespace KGCA41B;
 
 RenderSystem::RenderSystem()
@@ -19,8 +19,6 @@ void RenderSystem::OnCreate(entt::registry& reg)
 	HRESULT hr;
 	auto view_trs = reg.view<Transform>();
 	auto view_skt = reg.view<Skeleton>();
-	auto view_stm = reg.view<StaticMesh>();
-	auto view_skm = reg.view<SkeletalMesh>();
 
 	for (auto ent : view_trs)
 	{
@@ -62,46 +60,6 @@ void RenderSystem::OnCreate(entt::registry& reg)
 		subdata.pSysMem = skeleton.cb_buffer.GetAddressOf();
 
 		hr = device->CreateBuffer(&desc, &subdata, skeleton.cb_buffer.GetAddressOf());
-	}
-
-	for (auto ent : view_skm)
-	{
-		auto& skm = view_skm.get<SkeletalMesh>(ent);
-		for (auto& single_mesh : skm.mesh_list)
-		{
-			D3D11_BUFFER_DESC desc;
-			D3D11_SUBRESOURCE_DATA subdata;
-
-			ZeroMemory(&desc, sizeof(desc));
-			ZeroMemory(&subdata, sizeof(subdata));
-
-			desc.ByteWidth = sizeof(SkinnedVertex) * single_mesh.vertices.size();
-			desc.Usage = D3D11_USAGE_DEFAULT;
-			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			subdata.pSysMem = single_mesh.vertices.data();
-
-			hr = device->CreateBuffer(&desc, &subdata, single_mesh.vertex_buffer.GetAddressOf());
-		}		
-	}
-
-	for (auto ent : view_stm)
-	{
-		auto& stm = view_stm.get<StaticMesh>(ent);
-		for (auto& single_mesh : stm.mesh_list)
-		{
-			D3D11_BUFFER_DESC desc;
-			D3D11_SUBRESOURCE_DATA subdata;
-
-			ZeroMemory(&desc, sizeof(desc));
-			ZeroMemory(&subdata, sizeof(subdata));
-
-			desc.ByteWidth = sizeof(Vertex) * single_mesh.vertices.size();
-			desc.Usage = D3D11_USAGE_DEFAULT;
-			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			subdata.pSysMem = single_mesh.vertices.data();
-
-			hr = device->CreateBuffer(&desc, &subdata, single_mesh.vertex_buffer.GetAddressOf());
-		}
 	}
 }
 
@@ -147,10 +105,13 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 void RenderSystem::SetMaterial(Material& material)
 {
-	device_context->PSSetShader(material.ps_default.Get(), 0, 0);
+	PsDefault* shader = RESOURCE->UseResource<PsDefault>(material.shader_id);
+	Texture* texture = RESOURCE->UseResource<Texture>(material.texture_id);
 
-	if (material.srv_list.size() > 0)
-		device_context->PSSetShaderResources(0, material.srv_list.size(), material.srv_list.data());
+	device_context->PSSetShader(shader->Get(), 0, 0);
+
+	if (texture != nullptr && texture->srv_list.size() > 0)
+		device_context->PSSetShaderResources(0, texture->srv_list.size(), texture->srv_list.data());
 }
 
 void RenderSystem::SetCbTransform(Transform& transform)
@@ -171,12 +132,16 @@ void RenderSystem::SetCbSkeleton(Skeleton& skeleton)
 
 void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)
 {
-	for (auto single_mesh : static_mesh.mesh_list)
+	vector<SingleMesh<Vertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<Vertex>>>(static_mesh.mesh_id);
+	VsDefault* shader = RESOURCE->UseResource<VsDefault>(static_mesh.shader_id);
+
+	for (auto single_mesh : *mesh_list)
 	{
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		device_context->IASetInputLayout(static_mesh.vs_default.InputLayoyt());
-		device_context->VSSetShader(static_mesh.vs_default.Get(), 0, 0);
+
+		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->VSSetShader(shader->Get(), 0, 0);
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		device_context->Draw(single_mesh.vertices.size(), 0);
 	}
@@ -184,13 +149,16 @@ void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)
 
 void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
 {
-	for (auto single_mesh : skeletal_mesh.mesh_list)
+	vector<SingleMesh<SkinnedVertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<SkinnedVertex>>>(skeletal_mesh.mesh_id);
+	VsSkinned* shader = RESOURCE->UseResource<VsSkinned>(skeletal_mesh.shader_id);
+
+	for (auto single_mesh : *mesh_list)
 	{
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		device_context->IASetInputLayout(skeletal_mesh.vs_skinned.InputLayoyt());
-		device_context->VSSetShader(skeletal_mesh.vs_skinned.Get(), 0, 0);
+		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->VSSetShader(shader->Get(), 0, 0);
 		device_context->Draw(single_mesh.vertices.size(), 0);
 	}
 }

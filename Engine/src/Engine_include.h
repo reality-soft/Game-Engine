@@ -2,6 +2,7 @@
 
 #include "Engine/SingletonClass/Engine.h"
 #include "Engine/SingletonClass/TimeMgr.h"
+#include "Engine/SingletonClass/ResourceMgr.h"
 
 #include "ECS/RenderSystem.h"
 #include "ECS/CameraSystem.h"
