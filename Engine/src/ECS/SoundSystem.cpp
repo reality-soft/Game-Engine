@@ -7,16 +7,16 @@ using namespace KGCA41B;
 void SoundSystem::OnCreate(entt::registry& reg)
 {
     sound_directory_address_ = SOUND_PATH;
-
     if (sound_directory_address_.empty())
         return;
 
-    FMOD_RESULT hr = FMOD::System_Create(&fmod_system_);
-    fmod_system_->init(32, FMOD_INIT_NORMAL, nullptr);
+    // FMOD 시스템 생성
+    CreateFmodSystem();
+    
+    // FMOD 채널 그룹 생성
+    CreateFmodChannelGroup();
 
     LoadDir(sound_directory_address_);
-
-    MakeSoundPool();
 }
 
 void SoundSystem::OnUpdate(entt::registry& reg)
@@ -28,9 +28,17 @@ void SoundSystem::OnUpdate(entt::registry& reg)
     fmod_system_->update();
 }
 
-bool SoundSystem::OnRelease()
+void SoundSystem::OnRelease()
 {
-    return false;
+    for (auto& pair : sound_resource_list_)
+    {
+        pair.second->release();
+    }
+
+    sfx_channel_group_->release();
+    music_channel_group_->release();
+
+    fmod_system_->release();
 }
 
 void SoundSystem::CheckGenerators(entt::registry& reg)
@@ -56,7 +64,7 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
                 XMVECTOR listener_position = XMVectorSet(listener_transform.world_matrix.r[3].m128_f32[0], listener_transform.world_matrix.r[3].m128_f32[1],
                     listener_transform.world_matrix.r[3].m128_f32[2], 0);
                 XMVECTOR pos = genertor_position - listener_position;
-                Play(queue.sound_filename, queue.is_looping, queue.sound_volume, pos);
+                Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
             }
 
             // 재생했다면 큐에서 제거
@@ -67,48 +75,79 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
 
 void SoundSystem::CheckPlayingPool()
 {
-    for (auto iter = sound_pool_play.begin(); iter != sound_pool_play.end(); )
+    for (auto iter = sound_play_list.begin(); iter != sound_play_list.end(); )
     {
-        SoundData* sound = *iter;
+        Sound* sound = *iter;
         // 재생 중인 사운드의 현재 시간 갱신
         sound->channel->getPosition(&sound->current_time, FMOD_TIMEUNIT_MS);
 
-        // 갱신된 사운드가 끝났다면 다시 풀에 넣기, FMOD::Sound는 다시 Play하면 재사용된다.
+        // 갱신된 사운드가 끝났다면 초기화 하고 Sound만 풀에 넣기
         if (sound->current_time >= sound->total_time)
         {
-            sound_pool_wait[sound->sound_filename].push(sound);
+            sound->channel->stop();
+            sound->channel = nullptr;
+            sound->sound_filename = L"";
+            sound->total_time = 0;
+            sound->current_time = 0;
 
-            iter = sound_pool_play.erase(iter);
-            if (iter == sound_pool_play.end())
+            iter = sound_play_list.erase(iter);
+
+            sound_pool.push(sound);
+
+            if (iter == sound_play_list.end())
                 break;
         }
         iter++;
     }
 }
 
-void SoundSystem::Play(wstring sound_name, bool looping, float volume, FXMVECTOR generate_pos)
+void SoundSystem::Play(wstring sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos)
 {
-    if (sound_pool_wait.find(sound_name) == sound_pool_wait.end())
+    if (sound_resource_list_.find(sound_name) == sound_resource_list_.end())
         return;
-
 
     // TODO : 3DAttrubutes 인자 Velocity 값 조정 필요, 3DLevel 값 조정 필요
     FMOD_VECTOR pos = { generate_pos.m128_f32[0], generate_pos.m128_f32[1], generate_pos.m128_f32[2] };
 
+    FMOD_VECTOR vel;
+    vel.x = -pos.x;
+    vel.y = -pos.y;
+    vel.z = -pos.z;
+
     // TODO : 사운드 풀을 이용해 사운드 데이터 가져오기
-    SoundData* sound_data = sound_pool_wait[sound_name].front();
-    sound_pool_wait[sound_name].pop();
+    Sound* sound_data = LoadSoundFromPool();
+    sound_data->sound_filename = sound_name;
+    sound_data->sound = sound_resource_list_[sound_name];
 
+    //sound_data->sound->set3DMinMaxDistance(0, 10);
     sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-    sound_data->channel->setVolume(volume);
 
-    sound_data->sound->set3DMinMaxDistance(0, 300);
-    sound_data->channel->set3DAttributes(&pos, &pos);
+    if(sound_type == MUSIC)
+        fmod_system_->playSound(sound_data->sound, music_channel_group_, false, &sound_data->channel);
+    else    
+        fmod_system_->playSound(sound_data->sound, sfx_channel_group_, false, &sound_data->channel);
+        
+    sound_data->channel->setVolume(volume);
+    sound_data->channel->set3DAttributes(&pos, &vel);
     sound_data->channel->set3DLevel(6);
 
-    fmod_system_->playSound(sound_data->sound, nullptr, false, &sound_data->channel);
+    sound_play_list.push_back(sound_data);
+}
 
-    sound_pool_play.push_back(sound_data);
+void KGCA41B::SoundSystem::CreateFmodSystem()
+{
+    FMOD_RESULT hr;
+
+    // FMOD 시스템 생성
+    hr = FMOD::System_Create(&fmod_system_);
+    hr = fmod_system_->init(CHANNEL_MAX_COUNT, FMOD_INIT_NORMAL, nullptr);
+}
+
+void KGCA41B::SoundSystem::CreateFmodChannelGroup()
+{
+    FMOD_RESULT hr;
+    hr = fmod_system_->createChannelGroup("sfxChannelGroup", &sfx_channel_group_);
+    hr = fmod_system_->createChannelGroup("musicChannelGroup", &music_channel_group_);
 }
 
 void SoundSystem::LoadDir(wstring directory_address)
@@ -136,25 +175,34 @@ void SoundSystem::LoadDir(wstring directory_address)
 
 void SoundSystem::LoadFile(wstring file_address)
 {
-    SoundData* newSound = new SoundData;
+    FMOD::Sound* newSound;
 
-    FMOD_RESULT hr = fmod_system_->createSound(to_wm(file_address).c_str(), (FMOD_MODE)(FMOD_3D), nullptr, &newSound->sound);
-    if (hr == FMOD_OK)
+    FMOD_RESULT hr = fmod_system_->createSound(to_wm(file_address).c_str(), (FMOD_MODE)(FMOD_3D), nullptr, &newSound);
+    if (hr != FMOD_OK)
     {
-        newSound->sound_filename = file_address;
-        newSound->sound->getLength(&newSound->total_time, FMOD_TIMEUNIT_MS);
+        return;
     }
     sound_resource_list_.insert({ file_address, newSound});
 }
 
-void SoundSystem::MakeSoundPool()
+void KGCA41B::SoundSystem::CreateSoundPool()
 {
-    for (auto& resource : sound_resource_list_)
+    Sound* init_sound_data = new Sound;
+    for (int i = 0; i < POOL_SIZE; i++)
     {
-        for (int i = 0; i < POOL_SIZE; i++)
-        {
-            sound_pool_wait[resource.first].push(resource.second);
-        }
-            
+        Sound* newSound = new Sound(*init_sound_data);
+        sound_pool.push(newSound);
     }
+        
+    delete init_sound_data;
+}
+
+Sound* KGCA41B::SoundSystem::LoadSoundFromPool()
+{
+    if (sound_pool.size() == 0)
+        CreateSoundPool();
+
+    Sound* sound = sound_pool.front();
+    sound_pool.pop();
+    return sound;
 }
