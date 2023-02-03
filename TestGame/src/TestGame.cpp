@@ -1,35 +1,45 @@
 #include "TestGame.h"
+#include "SampleWidget.h"
+
 
 using namespace KGCA41B;
 
 void TestGame::OnInit()
 {
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
-	LoadResource();
 
-	ent_player = reg_scene.create();
-	ent_object = reg_scene.create();
+	//LoadResource();
 
-	CreatePlayer();
-	CreateCharacter();
+	//ent_player = reg_scene.create();
+	//ent_object = reg_scene.create();
 
-	sys_render.OnCreate(reg_scene);
-	sys_animation.OnCreate(reg_scene);
-	sys_camera.TargetTag(reg_scene, "Player");
-	sys_camera.OnCreate(reg_scene);
-	sys_input.OnCreate(reg_scene);
+	//CreatePlayer();
+	//CreateCharacter();
+
+	//sys_render.OnCreate(reg_scene);
+	//sys_animation.OnCreate(reg_scene);
+	//sys_camera.TargetTag(reg_scene, "Player");
+	//sys_camera.OnCreate(reg_scene);
+	//sys_input.OnCreate(reg_scene);
+
+	//GUI
+	SampleWidget* sample_widget = new SampleWidget;
+	GUI->AddWidget("sample", sample_widget);
 }
 
 void TestGame::OnUpdate()
 {
-	sys_input.OnUpdate(reg_scene);
-	sys_camera.OnUpdate(reg_scene);
+	//sys_input.OnUpdate(reg_scene);
+	//sys_camera.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRender()
 {   
-	sys_animation.OnUpdate(reg_scene);
-	sys_render.OnUpdate(reg_scene);
+	//sys_animation.OnUpdate(reg_scene);
+	//sys_render.OnUpdate(reg_scene);
+
+	// GUI
+	GUI->RenderWidgets();
 }
 
 void TestGame::OnRelease()
