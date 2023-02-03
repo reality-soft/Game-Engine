@@ -12,6 +12,8 @@
 #include <locale>
 #include <codecvt>
 #include <functional>
+#include <set>
+#include <algorithm>
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;

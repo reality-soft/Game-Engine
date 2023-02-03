@@ -91,10 +91,13 @@ void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 
+		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
 		device_context->IASetInputLayout(shader->InputLayoyt());
 		device_context->VSSetShader(shader->Get(), 0, 0);
-		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		device_context->Draw(single_mesh.vertices.size(), 0);
+
+		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
 	}
 }
 
@@ -108,8 +111,11 @@ void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		
 		device_context->IASetInputLayout(shader->InputLayoyt());
 		device_context->VSSetShader(shader->Get(), 0, 0);
-		device_context->Draw(single_mesh.vertices.size(), 0);
+
+		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
 	}
 }

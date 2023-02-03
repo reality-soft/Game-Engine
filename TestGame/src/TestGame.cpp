@@ -14,7 +14,6 @@ void TestGame::OnInit()
 	ent_object = reg_scene.create();
 
 	CreatePlayer();
-	//CreateObjectFromFbx("Resource/RumbaDancing.fbx");
 	CreateCharacter();
 
 	sys_render.OnCreate(reg_scene);
@@ -43,8 +42,8 @@ void TestGame::OnRelease()
 
 void TestGame::LoadResource()
 {
-	RESOURCE->Init(nullptr);
-	RESOURCE->PushResource<FbxLoader>("player", "Resource/RumbaDancing.fbx");
+	RESOURCE->Init("../../Contents/");
+	RESOURCE->PushResource<FbxLoader>("player", "FBX/RumbaDancing.fbx");
 	RESOURCE->PushResource<VsSkinned>("player", "Shader/SkinningVS.cso");
 	RESOURCE->PushResource<PsDefault>("player", "Shader/SkinningPS.cso");
 }

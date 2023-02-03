@@ -2,8 +2,9 @@
 
 using namespace KGCA41B;
 
-bool ResourceMgr::Init(LPCWSTR packagefile)
+bool ResourceMgr::Init(string packagefile)
 {
+    directory = packagefile;
 	return true;
 }
 
@@ -27,9 +28,10 @@ bool ResourceMgr::ImportFbx(string filename)
     for (auto out_mesh : fbx_loader.out_mesh_list)
     {
         if (out_mesh->is_skinned)
-        {
+        { 
             SingleMesh<SkinnedVertex> single_mesh;
             single_mesh.vertices = out_mesh->skinned_vertices;
+            single_mesh.indices = out_mesh->indices;
             res_skeletal_mesh.push_back(single_mesh);
             res_skeleton.merge(out_mesh->bind_poses);
         }
@@ -37,6 +39,7 @@ bool ResourceMgr::ImportFbx(string filename)
         {
             SingleMesh<Vertex> single_mesh;
             single_mesh.vertices = out_mesh->vertices;
+            single_mesh.indices = out_mesh->indices;
             res_static_mesh.push_back(single_mesh);
         }
     }
@@ -50,13 +53,12 @@ bool ResourceMgr::ImportFbx(string filename)
 
     for (auto& single_mesh : res_static_mesh)
     {
-        CreateVertexBuffers(single_mesh);
+        CreateBuffers(single_mesh);
     }
     for (auto& single_mesh : res_skeletal_mesh)
     {
-        CreateVertexBuffers(single_mesh);
+        CreateBuffers(single_mesh);
     }
-
 
 
     if (res_static_mesh.size() > 0)
@@ -75,10 +77,13 @@ bool ResourceMgr::ImportFbx(string filename)
     return true;
 }
 
-bool ResourceMgr::CreateVertexBuffers(SingleMesh<Vertex>& mesh)
+bool ResourceMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
 {
     D3D11_BUFFER_DESC desc;
     D3D11_SUBRESOURCE_DATA subdata;
+    HRESULT hr;
+
+    // CreateVertexBuffer
 
     ZeroMemory(&desc, sizeof(desc));
     ZeroMemory(&subdata, sizeof(subdata));
@@ -88,17 +93,34 @@ bool ResourceMgr::CreateVertexBuffers(SingleMesh<Vertex>& mesh)
     desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     subdata.pSysMem = mesh.vertices.data();
 
-    HRESULT hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
+    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
+    if (FAILED(hr))
+        return false;
+
+    // CreateIndexBuffer
+
+    ZeroMemory(&desc, sizeof(desc));
+    ZeroMemory(&subdata, sizeof(subdata));
+
+    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    subdata.pSysMem = mesh.indices.data();
+
+    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
     if (FAILED(hr))
         return false;
 
     return true;
 }
 
-bool ResourceMgr::CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh)
+bool ResourceMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh)
 {
     D3D11_BUFFER_DESC desc;
     D3D11_SUBRESOURCE_DATA subdata;
+    HRESULT hr;
+
+    // CreateVertexBuffer
 
     ZeroMemory(&desc, sizeof(desc));
     ZeroMemory(&subdata, sizeof(subdata));
@@ -108,7 +130,21 @@ bool ResourceMgr::CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh)
     desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     subdata.pSysMem = mesh.vertices.data();
 
-    HRESULT hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
+    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
+    if (FAILED(hr))
+        return false;
+
+    // CreateIndexBuffer
+
+    ZeroMemory(&desc, sizeof(desc));
+    ZeroMemory(&subdata, sizeof(subdata));
+
+    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    subdata.pSysMem = mesh.indices.data();
+
+    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
     if (FAILED(hr))
         return false;
 
@@ -143,4 +179,9 @@ bool ResourceMgr::ImportPsDefault(string filename)
 
     resdic_ps_default.insert(make_pair(current_id, ps_default));
     return true;
+}
+
+bool ResourceMgr::ImportTexture(string filename)
+{
+    return false;
 }

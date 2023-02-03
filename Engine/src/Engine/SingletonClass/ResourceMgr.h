@@ -14,7 +14,7 @@ namespace KGCA41B
 		string directory;
 
 	public:
-		bool Init(LPCWSTR packagefile); // 통합 패키지 파일을 불러오고 없으면 빈 값
+		bool Init(string packagefile); // 통합 패키지 파일을 불러오고 없으면 빈 값
 		void Release();
 
 		template<typename T>
@@ -37,12 +37,13 @@ namespace KGCA41B
 
 		bool ImportFbx(string filename);
 
-		bool CreateVertexBuffers(SingleMesh<Vertex>& mesh);
-		bool CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh);
+		bool CreateBuffers(SingleMesh<Vertex>& mesh);
+		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
 
 		bool ImportVsDefault(string filename);
 		bool ImportVsSkinned(string filename);
 		bool ImportPsDefault(string filename);
+		bool ImportTexture(string filename);
 	};
 
 
@@ -56,19 +57,23 @@ namespace KGCA41B
 
 		if (typeid(T) == typeid(FbxLoader))
 		{
-			result = ImportFbx(filename);
+			result = ImportFbx(directory + filename);
 		}
 		else if (typeid(T) == typeid(VsDefault))
 		{
-			result = ImportVsDefault(filename);
+			result = ImportVsDefault(directory + filename);
 		}
 		else if (typeid(T) == typeid(VsSkinned))
 		{
-			result = ImportVsSkinned(filename);
+			result = ImportVsSkinned(directory + filename);
 		}
 		else if (typeid(T) == typeid(PsDefault)) 
 		{
-			result = ImportPsDefault(filename);
+			result = ImportPsDefault(directory + filename);
+		}
+		else if (typeid(T) == typeid(Texture))
+		{
+			result = ImportTexture(directory + filename);
 		}
 
 		return result;

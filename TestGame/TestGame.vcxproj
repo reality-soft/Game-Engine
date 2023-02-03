@@ -92,7 +92,7 @@
       <AdditionalLibraryDirectories>..\..\output\bin\Debug-windows-x86_64\Engine;..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "Shader\*.cso"</Command>
+      <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "..\..\Contents\Shader\*.cso"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -118,7 +118,7 @@
       <AdditionalLibraryDirectories>..\..\output\bin\Debug-windows-x86_64\Engine;..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "Shader\*.cso"</Command>
+      <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "..\..\Contents\Shader\*.cso"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -144,7 +144,7 @@
       <AdditionalLibraryDirectories>..\..\output\bin\Debug-windows-x86_64\Engine;..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "Shader\*.cso"</Command>
+      <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "..\..\Contents\Shader\*.cso"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -155,22 +155,22 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\BasicShapePS.hlsl">
+    <FxCompile Include="HLSL\BasicShapePS.hlsl">
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>PS</EntryPointName>
     </FxCompile>
-    <FxCompile Include="Shader\BasicShapeVS.hlsl">
+    <FxCompile Include="HLSL\BasicShapeVS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>VS</EntryPointName>
     </FxCompile>
-    <FxCompile Include="Shader\SkinningPS.hlsl">
+    <FxCompile Include="HLSL\SkinningPS.hlsl">
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>PS</EntryPointName>
     </FxCompile>
-    <FxCompile Include="Shader\SkinningVS.hlsl">
+    <FxCompile Include="HLSL\SkinningVS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>VS</EntryPointName>

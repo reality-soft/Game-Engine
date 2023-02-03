@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{FC0C0CD1-E8AE-36A7-D169-4AFBBDAABDF7}</UniqueIdentifier>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{18D9857C-0410-870D-ADFC-6C109912030F}</UniqueIdentifier>
     </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
@@ -22,17 +22,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\BasicShapePS.hlsl">
-      <Filter>Shader</Filter>
+    <FxCompile Include="HLSL\BasicShapePS.hlsl">
+      <Filter>HLSL</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\BasicShapeVS.hlsl">
-      <Filter>Shader</Filter>
+    <FxCompile Include="HLSL\BasicShapeVS.hlsl">
+      <Filter>HLSL</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\SkinningPS.hlsl">
-      <Filter>Shader</Filter>
+    <FxCompile Include="HLSL\SkinningPS.hlsl">
+      <Filter>HLSL</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\SkinningVS.hlsl">
-      <Filter>Shader</Filter>
+    <FxCompile Include="HLSL\SkinningVS.hlsl">
+      <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

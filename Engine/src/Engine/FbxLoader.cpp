@@ -58,9 +58,8 @@ namespace KGCA41B {
 
 		FbxSystemUnit::m.ConvertScene(fbx_scene);
 
-		//FbxAxisSystem::DirectX.ConvertScene(pFbxScene);
-		//FbxGeometryConverter converter(pFbxManager);
-		//converter.Triangulate(pFbxScene, true);
+		FbxGeometryConverter converter(fbx_manager);
+		converter.Triangulate(fbx_scene, true);
 
 		root_node = fbx_scene->GetRootNode();
 		PreProcess(root_node);
@@ -164,107 +163,87 @@ namespace KGCA41B {
 			out_mesh->material_name = surface_material->GetName();
 		}
 
+		// 정점
+		UINT cp_count = fbx_mesh->GetControlPointsCount();
+		UINT poly_count = fbx_mesh->GetPolygonCount();
 
-		int polygon_count = fbx_mesh->GetPolygonCount();
-		int face_count = 0;
-		int polygon_index = 0;
-		int iSubMtrl = 0;
+		vector<Vertex> vertices; vertices.resize(cp_count);		
+		vector<SkinnedVertex> skinned_vertices; skinned_vertices.resize(cp_count);
 
-		FbxVector4* control_point = fbx_mesh->GetControlPoints();
-		for (int poly = 0; poly < polygon_count; poly++)
+		vector<Vertex> control_points; control_points.resize(cp_count);
+		for (UINT cp = 0; cp < cp_count; ++cp)
 		{
-			int poly_size = fbx_mesh->GetPolygonSize(poly);
-			face_count = poly_size - 2;
-
-			for (int face = 0; face < face_count; face++)
-			{
-				// 정점컬러인덱스
-				int vertex_color[3] = { 0, face + 2, face + 1 };
-
-				// 정점인덱스
-				int vertex_index[3];
-				vertex_index[0] = fbx_mesh->GetPolygonVertex(poly, 0);
-				vertex_index[1] = fbx_mesh->GetPolygonVertex(poly, face + 2);
-				vertex_index[2] = fbx_mesh->GetPolygonVertex(poly, face + 1);
-
-				int uv_index[3];
-				uv_index[0] = fbx_mesh->GetTextureUVIndex(poly, 0);
-				uv_index[1] = fbx_mesh->GetTextureUVIndex(poly, face + 2);
-				uv_index[2] = fbx_mesh->GetTextureUVIndex(poly, face + 1);
-
-				for (int index = 0; index < 3; index++)
-				{
-					int vertex_ID = vertex_index[index];
-					FbxVector4 v = geom.MultT(control_point[vertex_ID]);
-
-					Vertex vertex;
-					SkinnedVertex skinned_vertex;
-
-					vertex.p.x = v.mData[0];
-					vertex.p.y = v.mData[2];
-					vertex.p.z = v.mData[1];
-					vertex.c = XMFLOAT4(1, 1, 1, 1);
-
-					if (vertex_color_layer)
-					{
-						FbxColor c = ReadColor(
-							fbx_mesh,
-							vertex_color_layer,
-							vertex_index[index],
-							polygon_index + vertex_color[index]);
-						vertex.c.x = c.mRed;
-						vertex.c.y = c.mGreen;
-						vertex.c.z = c.mBlue;
-						vertex.c.w = 1.0f;
-					}
-
-					if (vertex_uv_layer)
-					{
-						FbxVector2 t = ReadUV(
-							fbx_mesh,
-							vertex_uv_layer,
-							vertex_index[index],
-							uv_index[index]);
-						vertex.t.x = t.mData[0];
-						vertex.t.y = 1.0f - t.mData[1];
-					}
-
-					if (vertex_normal_layer)
-					{
-						FbxVector4 n = ReadNormal(
-							fbx_mesh,
-							vertex_normal_layer,
-							vertex_index[index],
-							polygon_index + vertex_color[index]);
-						n = local_matrix.MultT(n);
-						vertex.n.x = n.mData[0];
-						vertex.n.y = n.mData[2];
-						vertex.n.z = n.mData[1];
-					}
-
-					if (out_mesh->is_skinned)
-					{
-						IndexWeight* index_weight = &out_mesh->index_weight[vertex_ID];
-						skinned_vertex.i.x = index_weight->index[0];
-						skinned_vertex.i.y = index_weight->index[1];
-						skinned_vertex.i.z = index_weight->index[2];
-						skinned_vertex.i.w = index_weight->index[3];
-						skinned_vertex.w.x = index_weight->weight[0];
-						skinned_vertex.w.y = index_weight->weight[1];
-						skinned_vertex.w.z = index_weight->weight[2];
-						skinned_vertex.w.w = index_weight->weight[3];
-
-						skinned_vertex += vertex;
-						out_mesh->skinned_vertices.push_back(skinned_vertex);
-					}
-					else
-					{
-						out_mesh->vertices.push_back(vertex);
-					}
-				}
-			}
-			polygon_index += poly_size;
+			
+			control_points[cp].p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[0]);
+			control_points[cp].p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[2]);
+			control_points[cp].p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[1]);
 		}
+
+		UINT vertex_counter = 0;
+		for (int p = 0; p < poly_count; ++p)
+		{
+			for (int v = 0; v < 3; ++v)
+			{
+				UINT vertex_index;
+				switch (v)
+				{
+				case 0: vertex_index = (UINT)fbx_mesh->GetPolygonVertex(p, 0); break;
+				case 1: vertex_index = (UINT)fbx_mesh->GetPolygonVertex(p, 2); break;
+				case 2: vertex_index = (UINT)fbx_mesh->GetPolygonVertex(p, 1); break;					
+				}
+
+				out_mesh->indices.push_back(vertex_index);
+
+				if (vertex_color_layer)
+				{
+					FbxColor c = ReadColor(fbx_mesh, vertex_color_layer, vertex_index, vertex_counter);
+					vertices[vertex_index].c.x = c.mRed;
+					vertices[vertex_index].c.y = c.mGreen;
+					vertices[vertex_index].c.z = c.mBlue;
+					vertices[vertex_index].c.w = 1.0f;
+				} else { vertices[vertex_index].c = { 1, 1, 1, 1 }; }				
+
+				if (vertex_uv_layer)
+				{
+					FbxVector2 t = ReadUV(fbx_mesh, vertex_uv_layer, vertex_index, vertex_counter);
+					vertices[vertex_index].t.x = t.mData[0];
+					vertices[vertex_index].t.y = 1.0f - t.mData[1];
+				}
+
+				if (vertex_normal_layer)
+				{
+					FbxVector4 n = ReadNormal(fbx_mesh, vertex_normal_layer, vertex_index, vertex_counter);
+					n = local_matrix.MultT(n);
+					vertices[vertex_index].n.x = n.mData[0];
+					vertices[vertex_index].n.y = n.mData[1];
+					vertices[vertex_index].n.z = n.mData[2];
+				}
+
+				vertices[vertex_index].p = control_points[vertex_index].p;
+
+				if (out_mesh->is_skinned)
+				{
+					IndexWeight* index_weight = &out_mesh->index_weight[vertex_index];
+
+					skinned_vertices[vertex_index].i.x = index_weight->index[0];
+					skinned_vertices[vertex_index].i.y = index_weight->index[1];
+					skinned_vertices[vertex_index].i.z = index_weight->index[2];
+					skinned_vertices[vertex_index].i.w = index_weight->index[3];
+
+					skinned_vertices[vertex_index].w.x = index_weight->weight[0];
+					skinned_vertices[vertex_index].w.y = index_weight->weight[1];
+					skinned_vertices[vertex_index].w.z = index_weight->weight[2];
+					skinned_vertices[vertex_index].w.w = index_weight->weight[3];
+
+					skinned_vertices[vertex_index] += vertices[vertex_index]; 
+				}
+
+				vertex_counter++;
+			}
+		}
+
+		out_mesh->vertices = vertices;
+		out_mesh->skinned_vertices = skinned_vertices;
 	}
 
 	FbxVector2 FbxLoader::ReadUV(FbxMesh* fbx_mesh, FbxLayerElementUV* vertex_uv_layer, int vertex_index, int uv_index)
