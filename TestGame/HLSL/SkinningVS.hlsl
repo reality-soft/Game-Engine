@@ -55,7 +55,7 @@ VS_OUT VS(VS_IN input)
 	output.c = input.c;
 	output.t = input.t;
 
-	output.vLight = float3(0, -1, 0);
+	output.vLight = float3(0, 0, -1);
 
 	return output;
 }

@@ -96,7 +96,7 @@ project "TestGame"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/Shader/**.hlsl"
+		"%{prj.name}/HLSL/**.hlsl"
 	} 
 
 	includedirs
