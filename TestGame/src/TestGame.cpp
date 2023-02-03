@@ -46,12 +46,13 @@ void TestGame::CreateSound()
 	auto& transform_comp = reg_scene.emplace<Transform>(ent_sound);
 	auto& generator_comp = reg_scene.emplace<SoundGenerator>(ent_sound);
 
-	transform_comp.world_matrix.r[3].m128_f32[0] = 0;
+	transform_comp.world_matrix.r[3].m128_f32[0] = -200;
 	transform_comp.world_matrix.r[3].m128_f32[1] = 0;
-	transform_comp.world_matrix.r[3].m128_f32[2] = 2000.0f;
+	transform_comp.world_matrix.r[3].m128_f32[2] = 0;
 
 	SoundQueue que;
-	que.is_looping = false;
+	que.sound_type = SFX;
+	que.is_looping = true;
 	que.sound_filename = L"D:/Sound/getitem.mp3";
 	que.sound_volume = 100.0f;
 	generator_comp.sound_queue_list.push(que);
