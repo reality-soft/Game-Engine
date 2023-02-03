@@ -1,15 +1,19 @@
 #include "ResourceMgr.h"
+#include "FmodMgr.h"
 
 using namespace KGCA41B;
 
 bool ResourceMgr::Init(LPCWSTR packagefile)
 {
-	return true;
+   return true;
 }
 
 void ResourceMgr::Release()
 {
-
+    for (auto& pair : resdic_sound)
+    {
+        pair.second->release();
+    }
 }
 
 bool ResourceMgr::ImportFbx(string filename)
@@ -142,5 +146,18 @@ bool ResourceMgr::ImportPsDefault(string filename)
         return false;
 
     resdic_ps_default.insert(make_pair(current_id, ps_default));
+    return true;
+}
+
+bool ResourceMgr::ImportSound(string filename)
+{
+    FMOD::Sound* newSound;
+
+    FMOD_RESULT hr = FMOD_MGR->fmod_system()->createSound(filename.c_str(), (FMOD_MODE)(FMOD_3D), nullptr, &newSound);
+    if (hr != FMOD_OK)
+    {
+        return false;
+    }
+    resdic_sound.insert(make_pair(current_id, newSound));
     return true;
 }

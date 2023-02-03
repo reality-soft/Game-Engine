@@ -4,6 +4,9 @@
 #include "FbxLoader.h"
 #include "Texture.h"
 
+
+
+
 namespace KGCA41B
 {
 	class DLL_API ResourceMgr
@@ -35,6 +38,9 @@ namespace KGCA41B
 		map<string, PsDefault> resdic_ps_default;
 		map<string, Texture> resdic_texture;
 
+		map<string, FMOD::Sound*>	resdic_sound;
+
+	private:
 		bool ImportFbx(string filename);
 
 		bool CreateVertexBuffers(SingleMesh<Vertex>& mesh);
@@ -43,6 +49,9 @@ namespace KGCA41B
 		bool ImportVsDefault(string filename);
 		bool ImportVsSkinned(string filename);
 		bool ImportPsDefault(string filename);
+
+		bool ImportSound(string filename);
+	
 	};
 
 
@@ -69,6 +78,10 @@ namespace KGCA41B
 		else if (typeid(T) == typeid(PsDefault)) 
 		{
 			result = ImportPsDefault(filename);
+		}
+		else if (typeid(T) == typeid(FMOD::Sound))
+		{
+			result = ImportSound(filename);
 		}
 
 		return result;
@@ -139,6 +152,22 @@ namespace KGCA41B
 			if (iter != resdic_texture.end())
 			{
 				return (T*)(&iter->second);
+			}
+		}
+		else if (typeid(T) == typeid(Texture))
+		{
+			auto iter = resdic_texture.find(id);
+			if (iter != resdic_texture.end())
+			{
+				return (T*)(&iter->second);
+			}
+		}
+		else if (typeid(T) == typeid(FMOD::Sound))
+		{
+			auto iter = resdic_sound.find(id);
+			if (iter != resdic_sound.end())
+			{
+				return (T*)iter->second;
 			}
 		}
 		return nullptr;

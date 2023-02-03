@@ -1,22 +1,15 @@
 #include "SoundSystem.h"
+#include "ResourceMgr.h"
+#include "FmodMgr.h"
 #include <io.h>
 
 using namespace KGCA41B;
 
 
+
 void SoundSystem::OnCreate(entt::registry& reg)
 {
-    sound_directory_address_ = SOUND_PATH;
-    if (sound_directory_address_.empty())
-        return;
 
-    // FMOD 시스템 생성
-    CreateFmodSystem();
-    
-    // FMOD 채널 그룹 생성
-    CreateFmodChannelGroup();
-
-    LoadDir(sound_directory_address_);
 }
 
 void SoundSystem::OnUpdate(entt::registry& reg)
@@ -24,21 +17,6 @@ void SoundSystem::OnUpdate(entt::registry& reg)
     CheckGenerators(reg);
 
     CheckPlayingPool();
-
-    fmod_system_->update();
-}
-
-void SoundSystem::OnRelease()
-{
-    for (auto& pair : sound_resource_list_)
-    {
-        pair.second->release();
-    }
-
-    sfx_channel_group_->release();
-    music_channel_group_->release();
-
-    fmod_system_->release();
 }
 
 void SoundSystem::CheckGenerators(entt::registry& reg)
@@ -86,7 +64,7 @@ void SoundSystem::CheckPlayingPool()
         {
             sound->channel->stop();
             sound->channel = nullptr;
-            sound->sound_filename = L"";
+            sound->sound_filename = "";
             sound->total_time = 0;
             sound->current_time = 0;
 
@@ -101,11 +79,8 @@ void SoundSystem::CheckPlayingPool()
     }
 }
 
-void SoundSystem::Play(wstring sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos)
+void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos)
 {
-    if (sound_resource_list_.find(sound_name) == sound_resource_list_.end())
-        return;
-
     // TODO : 3DAttrubutes 인자 Velocity 값 조정 필요, 3DLevel 값 조정 필요
     FMOD_VECTOR pos = { generate_pos.m128_f32[0], generate_pos.m128_f32[1], generate_pos.m128_f32[2] };
 
@@ -117,15 +92,18 @@ void SoundSystem::Play(wstring sound_name, SoundType sound_type, bool looping, f
     // TODO : 사운드 풀을 이용해 사운드 데이터 가져오기
     Sound* sound_data = LoadSoundFromPool();
     sound_data->sound_filename = sound_name;
-    sound_data->sound = sound_resource_list_[sound_name];
+    sound_data->sound = RESOURCE->UseResource<FMOD::Sound>(sound_name);
+     sound_data->sound->getLength(&sound_data->total_time, FMOD_TIMEUNIT_MS);
 
     //sound_data->sound->set3DMinMaxDistance(0, 10);
     sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 
+    FMOD_RESULT hr;
+
     if(sound_type == MUSIC)
-        fmod_system_->playSound(sound_data->sound, music_channel_group_, false, &sound_data->channel);
+        hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->music_channel_group(), false, &sound_data->channel);
     else    
-        fmod_system_->playSound(sound_data->sound, sfx_channel_group_, false, &sound_data->channel);
+        hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->sfx_channel_group(), false, &sound_data->channel);
         
     sound_data->channel->setVolume(volume);
     sound_data->channel->set3DAttributes(&pos, &vel);
@@ -134,56 +112,30 @@ void SoundSystem::Play(wstring sound_name, SoundType sound_type, bool looping, f
     sound_play_list.push_back(sound_data);
 }
 
-void KGCA41B::SoundSystem::CreateFmodSystem()
-{
-    FMOD_RESULT hr;
 
-    // FMOD 시스템 생성
-    hr = FMOD::System_Create(&fmod_system_);
-    hr = fmod_system_->init(CHANNEL_MAX_COUNT, FMOD_INIT_NORMAL, nullptr);
-}
 
-void KGCA41B::SoundSystem::CreateFmodChannelGroup()
-{
-    FMOD_RESULT hr;
-    hr = fmod_system_->createChannelGroup("sfxChannelGroup", &sfx_channel_group_);
-    hr = fmod_system_->createChannelGroup("musicChannelGroup", &music_channel_group_);
-}
-
-void SoundSystem::LoadDir(wstring directory_address)
-{
-    std::wstring wholeAddr = directory_address + L"*.*";
-    intptr_t handle;
-    struct _wfinddata_t fd;
-    handle = _wfindfirst(wholeAddr.c_str(), &fd);
-
-    // 못찾으면 리턴
-    if (handle == -1L) return;
-
-    do {
-        if ((fd.attrib & _A_SUBDIR) && (fd.name[0] != '.'))
-        {
-            LoadDir(directory_address + fd.name + L"/");
-        }
-        else if (fd.name[0] != '.')
-        {
-            LoadFile(directory_address + fd.name);
-            
-        }
-    } while (_wfindnext(handle, &fd) == 0);
-}
-
-void SoundSystem::LoadFile(wstring file_address)
-{
-    FMOD::Sound* newSound;
-
-    FMOD_RESULT hr = fmod_system_->createSound(to_wm(file_address).c_str(), (FMOD_MODE)(FMOD_3D), nullptr, &newSound);
-    if (hr != FMOD_OK)
-    {
-        return;
-    }
-    sound_resource_list_.insert({ file_address, newSound});
-}
+//void SoundSystem::LoadDir(wstring directory_address)
+//{
+//    std::wstring wholeAddr = directory_address + L"*.*";
+//    intptr_t handle;
+//    struct _wfinddata_t fd;
+//    handle = _wfindfirst(wholeAddr.c_str(), &fd);
+//
+//    // 못찾으면 리턴
+//    if (handle == -1L) return;
+//
+//    do {
+//        if ((fd.attrib & _A_SUBDIR) && (fd.name[0] != '.'))
+//        {
+//            LoadDir(directory_address + fd.name + L"/");
+//        }
+//        else if (fd.name[0] != '.')
+//        {
+//            LoadFile(directory_address + fd.name);
+//            
+//        }
+//    } while (_wfindnext(handle, &fd) == 0);
+//}
 
 void KGCA41B::SoundSystem::CreateSoundPool()
 {
