@@ -19,12 +19,18 @@ private:
 
 
 	entt::entity ent_player;
-	entt::entity ent_object;
+	entt::entity ent_sound;
+
+
+
 
 	KGCA41B::RenderSystem sys_render;
 	KGCA41B::CameraSystem sys_camera;
 	KGCA41B::InputSystem sys_input;
 	KGCA41B::AnimationSystem sys_animation;
-
+	KGCA41B::SoundSystem sys_sound;
+public:
+	void CreatePlayer();
+	void CreateSound();
 };
 

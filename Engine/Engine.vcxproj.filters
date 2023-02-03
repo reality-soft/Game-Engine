@@ -30,6 +30,9 @@
     <ClInclude Include="src\ECS\RenderSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\SoundSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="src\ECS\System.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
@@ -96,6 +99,9 @@
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\RenderSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\SoundSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\System.cpp">

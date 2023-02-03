@@ -51,6 +51,21 @@ namespace KGCA41B
 		XMMATRIX  mat_skeleton[255];
 	};
 
+	// Sound
+	struct SoundQueue
+	{
+		wstring		sound_filename;
+		SoundType	sound_type;
+		float		sound_volume;
+		bool		is_looping;
+	};
+
+	enum SoundType
+	{
+		SFX,
+		MUSIC,
+	};	
+
 	enum class AxisType
 	{
 		FROWARD,
