@@ -10,7 +10,7 @@ namespace KGCA41B
 		~RenderSystem();
 
 	public:
-		virtual void OnCreate(entt::registry& reg);
+		virtual void OnCreate(entt::registry& reg) {};
 		virtual void OnUpdate(entt::registry& reg);
 
 		void SetCbTransform(Transform& transform);

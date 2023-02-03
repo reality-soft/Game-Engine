@@ -1,4 +1,5 @@
 #include "TestGame.h"
+#include "ComponentSystem.h"
 
 using namespace KGCA41B;
 
@@ -6,6 +7,8 @@ void TestGame::OnInit()
 {
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 	LoadResource();
+
+	ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
 	ent_object = reg_scene.create();
