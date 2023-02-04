@@ -9,11 +9,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\SampleWidget.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\TestGame.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\SampleWidget.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="src\TestGame.cpp">
       <Filter>src</Filter>
     </ClCompile>
