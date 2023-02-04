@@ -14,55 +14,6 @@ RenderSystem::~RenderSystem()
 	device_context = nullptr;
 }
 
-void RenderSystem::OnCreate(entt::registry& reg)
-{
-	HRESULT hr;
-	auto view_trs = reg.view<Transform>();
-	auto view_skt = reg.view<Skeleton>();
-
-	for (auto ent : view_trs)
-	{
-		auto& transform = reg.get<Transform>(ent);
-		transform.world_matrix = transform.cb_transform.world_matrix = XMMatrixIdentity();
-		transform.view_matrix = transform.cb_transform.world_matrix = XMMatrixIdentity();
-		transform.projection_matrix = transform.cb_transform.world_matrix = XMMatrixIdentity();
-
-		D3D11_BUFFER_DESC desc;
-		D3D11_SUBRESOURCE_DATA subdata;
-
-		ZeroMemory(&desc, sizeof(desc));
-		ZeroMemory(&subdata, sizeof(subdata));
-
-		desc.ByteWidth = sizeof(CbTransform);
-
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-		subdata.pSysMem = &transform.cb_transform;
-		hr = device->CreateBuffer(&desc, &subdata, &transform.cb_buffer);
-	}
-
-	for (auto ent : view_skt)
-	{
-		auto& skeleton = view_skt.get<Skeleton>(ent);
-		for (int i = 0; i < 255; ++i)
-			skeleton.cb_skeleton.mat_skeleton[i] = XMMatrixIdentity();
-
-		D3D11_BUFFER_DESC desc;
-		D3D11_SUBRESOURCE_DATA subdata;
-
-		ZeroMemory(&desc, sizeof(desc));
-		ZeroMemory(&subdata, sizeof(subdata));
-
-		desc.ByteWidth = sizeof(CbSkeleton);
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		subdata.pSysMem = skeleton.cb_buffer.GetAddressOf();
-
-		hr = device->CreateBuffer(&desc, &subdata, skeleton.cb_buffer.GetAddressOf());
-	}
-}
-
 void RenderSystem::OnUpdate(entt::registry& reg)
 {
 	auto view_trs = reg.view<Transform>();
