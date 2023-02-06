@@ -53,9 +53,17 @@ namespace KGCA41B
 
 	// Sound
 
+	enum SoundType
+	{
+		SFX,
+		MUSIC,
+	};
+
 	struct Sound
 	{
 		string sound_filename;
+		SoundType type;
+		bool looping;
 		FMOD::Channel* channel;
 		FMOD::Sound* sound;
 		UINT total_time;
@@ -65,12 +73,6 @@ namespace KGCA41B
 		Sound(Sound& sound) = default;
 	};
 
-	enum SoundType
-	{
-		SFX,
-		MUSIC,
-	};
-
 	struct SoundQueue
 	{
 		string		sound_filename;
@@ -78,8 +80,6 @@ namespace KGCA41B
 		float		sound_volume;
 		bool		is_looping;
 	};
-
-	
 
 	enum class AxisType
 	{
