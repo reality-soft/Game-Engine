@@ -154,7 +154,7 @@ IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\ECS\ComponentSystem.h" />
+    <ClInclude Include="src\Engine\Actor.h" />
     <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\ComponentSystem.h" />
@@ -180,9 +180,10 @@ IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y
     <ClInclude Include="src\Engine\Texture.h" />
     <ClInclude Include="src\Engine\common.h" />
     <ClInclude Include="src\Engine_include.h" />
+    <ClInclude Include="src\ECS\TransformSystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ECS\ComponentSystem.cpp" />
+    <ClCompile Include="src\Engine\Actor.cpp" />
     <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\ComponentSystem.cpp" />
@@ -201,6 +202,7 @@ IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y
     <ClCompile Include="src\Engine\SingletonClass\ResourceMgr.cpp" />
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp" />
     <ClCompile Include="src\Engine\Texture.cpp" />
+    <ClCompile Include="src\ECS\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />

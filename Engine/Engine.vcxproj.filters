@@ -90,8 +90,8 @@
     <ClInclude Include="src\Engine_include.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine\Texture.h" />
-    <ClInclude Include="src\ECS\ComponentSystem.h" />
+    <ClInclude Include="src\Engine\Actor.h" />
+    <ClInclude Include="src\ECS\TransformSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ECS\AnimationSystem.cpp">
@@ -145,10 +145,11 @@
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
-    <ClCompile Include="src\ECS\ComponentSystem.cpp" />
     <ClCompile Include="src\Engine\Texture.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\Actor.cpp" />
+    <ClCompile Include="src\ECS\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />

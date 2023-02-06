@@ -7,8 +7,8 @@ CameraSystem::CameraSystem()
 {
 	camera = nullptr;
 	viewport = DX11APP->GetViewPortAddress();
-	view_matrix = XMMatrixIdentity();
-	projection_matrix = XMMatrixIdentity();
+	cb_viewproj.data.view_matrix = XMMatrixIdentity();
+	cb_viewproj.data.projection_matrix = XMMatrixIdentity();
 }
 
 CameraSystem::~CameraSystem()
@@ -32,7 +32,21 @@ void KGCA41B::CameraSystem::TargetTag(entt::registry& reg, string tag)
 void CameraSystem::OnCreate(entt::registry& reg)
 {
 	if (camera != nullptr)
-		view_matrix = XMMatrixLookAtLH(camera->position, camera->target, camera->up);
+		cb_viewproj.data.view_matrix = XMMatrixLookAtLH(camera->position, camera->target, camera->up);
+
+	D3D11_BUFFER_DESC desc;
+	D3D11_SUBRESOURCE_DATA subdata;
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbViewProj::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	subdata.pSysMem = cb_viewproj.buffer.GetAddressOf();
+
+	HRESULT hr;
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_viewproj.buffer.GetAddressOf());
 }
 
 void CameraSystem::OnUpdate(entt::registry& reg)
@@ -49,12 +63,11 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 
 	CreateMatrix();
 
-	for (auto ent : view_trans)
-	{
-		auto& trans = view_trans.get<Transform>(ent);
-		trans.view_matrix = view_matrix;
-		trans.projection_matrix = projection_matrix;
-	}
+	cb_viewproj.data.view_matrix = XMMatrixTranspose(cb_viewproj.data.view_matrix);
+	cb_viewproj.data.projection_matrix = XMMatrixTranspose(cb_viewproj.data.projection_matrix);
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_viewproj.buffer.GetAddressOf());
 }
 
 void CameraSystem::CameraMovement(InputMapping& input_mapping)
@@ -97,7 +110,7 @@ void CameraSystem::CameraMovement(InputMapping& input_mapping)
 void CameraSystem::CreateMatrix()
 {
 	camera->aspect = viewport->Width / viewport->Height;
-	projection_matrix = XMMatrixPerspectiveFovLH(camera->fov, camera->aspect, camera->near_z, camera->far_z);
+	cb_viewproj.data.projection_matrix = XMMatrixPerspectiveFovLH(camera->fov, camera->aspect, camera->near_z, camera->far_z);
 
 	XMMATRIX world, view;
 	XMVECTOR s, o, q, t;
@@ -115,5 +128,5 @@ void CameraSystem::CreateMatrix()
 	camera->up = XMVector3Normalize(XMMatrixTranspose(view).r[1]);
 
 
-	view_matrix = view;
+	cb_viewproj.data.view_matrix = view;
 }
