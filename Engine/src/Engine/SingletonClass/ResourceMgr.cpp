@@ -161,7 +161,7 @@ bool ResourceMgr::CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh)
 //bool ResourceMgr::ImportVsDefault(string filename)
 //{
 //    VsDefault vs_default;
-//    if (!vs_default.LoadCompiled(str_to_w(filename)))
+//    if (!vs_default.LoadCompiled(to_mw(filename)))
 //        return false;
 //
 //    resdic_vs_default.insert(make_pair(current_id, vs_default));
@@ -171,7 +171,7 @@ bool ResourceMgr::CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh)
 //bool ResourceMgr::ImportVsSkinned(string filename)
 //{
 //    VsSkinned vs_skinned;
-//    if (!vs_skinned.LoadCompiled(str_to_w(filename)))
+//    if (!vs_skinned.LoadCompiled(to_mw(filename)))
 //        return false;
 //
 //    resdic_vs_skinned.insert(make_pair(current_id, vs_skinned));
@@ -181,7 +181,7 @@ bool ResourceMgr::CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh)
 //bool ResourceMgr::ImportPsDefault(string filename)
 //{
 //    PsDefault ps_default;
-//    if (!ps_default.LoadCompiled(str_to_w(filename)))
+//    if (!ps_default.LoadCompiled(to_mw(filename)))
 //        return false;
 //
 //    resdic_ps_default.insert(make_pair(current_id, ps_default));
@@ -271,7 +271,7 @@ bool ResourceMgr::ImportFbx(string filename)
 bool ResourceMgr::ImportVsDefault(string filename)
 {
     VsDefault vs_default;
-    if (!vs_default.LoadCompiled(str_to_w(filename)))
+    if (!vs_default.LoadCompiled(to_mw(filename)))
         return false;
 
     auto strs = split(filename, '/');
@@ -284,7 +284,7 @@ bool ResourceMgr::ImportVsDefault(string filename)
 bool ResourceMgr::ImportVsSkinned(string filename)
 {
     VsSkinned vs_skinned;
-    if (!vs_skinned.LoadCompiled(str_to_w(filename)))
+    if (!vs_skinned.LoadCompiled(to_mw(filename)))
         return false;
 
     auto strs = split(filename, '/');
@@ -297,7 +297,7 @@ bool ResourceMgr::ImportVsSkinned(string filename)
 bool ResourceMgr::ImportPsDefault(string filename)
 {
     PsDefault ps_default;
-    if (!ps_default.LoadCompiled(str_to_w(filename)))
+    if (!ps_default.LoadCompiled(to_mw(filename)))
         return false;
 
     auto strs = split(filename, '/');

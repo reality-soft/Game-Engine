@@ -30,10 +30,10 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
                 auto& generator_transform = reg.get<Transform>(entity);
                 auto& listener_transform = reg.get<Transform>(entity2);
                 // TODO : Transform 수정 후 고칠 예정
-                XMVECTOR genertor_position = XMVectorSet(generator_transform.world_matrix.r[3].m128_f32[0], generator_transform.world_matrix.r[3].m128_f32[1],
-                    generator_transform.world_matrix.r[3].m128_f32[2], 0);
-                XMVECTOR listener_position = XMVectorSet(listener_transform.world_matrix.r[3].m128_f32[0], listener_transform.world_matrix.r[3].m128_f32[1],
-                    listener_transform.world_matrix.r[3].m128_f32[2], 0);
+                XMVECTOR genertor_position = XMVectorSet(generator_transform.world.r[3].m128_f32[0], generator_transform.world.r[3].m128_f32[1],
+                    generator_transform.world.r[3].m128_f32[2], 0);
+                XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
+                    listener_transform.world.r[3].m128_f32[2], 0);
                 XMVECTOR pos = genertor_position - listener_position;
                 Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
             }

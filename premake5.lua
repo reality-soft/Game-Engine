@@ -78,7 +78,6 @@ project "Engine"
 		postbuildcommands
 		{
 			("{COPY} %{cfg.buildtarget.relpath} ../../output/bin/" .. outputdir .. "/TestGame"),
-			("{COPY} %{cfg.buildtarget.relpath} ../../output/bin/" .. outputdir .. "/CharacterTool")
 		}
 
 	filter "configurations:Debug"
