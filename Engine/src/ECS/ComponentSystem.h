@@ -20,11 +20,18 @@ namespace KGCA41B {
 			registry.on_construct<Animation>().connect<&ComponentSystem::OnConstruct<Animation>>(this);
 			registry.on_construct<InputMapping>().connect<&ComponentSystem::OnConstruct<InputMapping>>(this);
 
+			registry.on_update<Transform>().connect<&ComponentSystem::OnUpdate<Transform>>(this);
+
 			return true;
 		}
 		template<typename ComponentType>
 		void OnConstruct(entt::registry& registry, entt::entity entity) {
 			registry.get<ComponentType>(entity).OnConstruct();
+		}
+
+		template <typename ComponentType>
+		void OnUpdate(entt::registry& registry, entt::entity entity) {
+			registry.get<ComponentType>(entity).OnUpdate();
 		}
 	};
 }

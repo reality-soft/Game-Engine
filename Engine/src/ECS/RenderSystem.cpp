@@ -98,7 +98,7 @@ void RenderSystem::SetMaterial(Material& material)
 
 void RenderSystem::SetCbTransform(Transform& transform)
 {
-	cb_transform.data.world_matrix = XMMatrixTranspose(transform.local * transform.world);
+	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world);
 
 	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
 	device_context->VSSetConstantBuffers(0, 1, cb_transform.buffer.GetAddressOf());

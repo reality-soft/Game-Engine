@@ -25,6 +25,11 @@ namespace KGCA41B
 			local = XMMatrixIdentity();
 			world = XMMatrixIdentity();
 		}
+
+		virtual void OnUpdate() override
+		{
+			parent.get() ? world = parent.get()->world * local : world = local;
+		}
 	};
 
 	struct StaticMesh : public Transform
