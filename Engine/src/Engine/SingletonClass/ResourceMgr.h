@@ -51,8 +51,8 @@ namespace KGCA41B
 	private:
 		bool ImportFbx(string filename);
 
-		bool CreateBuffers(SingleMesh<Vertex>& mesh);
-		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
+		bool CreateVertexBuffers(SingleMesh<Vertex>& mesh);
+		bool CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh);
 
 		bool ImportVsDefault(string filename);
 		bool ImportVsSkinned(string filename);

@@ -4,7 +4,7 @@
 
 using namespace KGCA41B;
 
-bool ResourceMgr::Init(string packagefile)
+bool ResourceMgr::Init(LPCWSTR packagefile)
 {
     return true;
 }
@@ -242,11 +242,11 @@ bool ResourceMgr::ImportFbx(string filename)
 
     for (auto& single_mesh : res_static_mesh)
     {
-        CreateBuffers(single_mesh);
+        CreateVertexBuffers(single_mesh);
     }
     for (auto& single_mesh : res_skeletal_mesh)
     {
-        CreateBuffers(single_mesh);
+        CreateVertexBuffers(single_mesh);
     }
 
     auto strs = split(filename, '/');
@@ -265,80 +265,6 @@ bool ResourceMgr::ImportFbx(string filename)
         resdic_animation.insert(make_pair(id, res_anim_list));
 
     fbx_loader.Destroy();
-    return true;
-}
-
-bool ResourceMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
-{
-    D3D11_BUFFER_DESC desc;
-    D3D11_SUBRESOURCE_DATA subdata;
-    HRESULT hr;
-
-    // CreateVertexBuffer
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(Vertex) * mesh.vertices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    subdata.pSysMem = mesh.vertices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    // CreateIndexBuffer
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    subdata.pSysMem = mesh.indices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    return true;
-}
-
-bool ResourceMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh)
-{
-    D3D11_BUFFER_DESC desc;
-    D3D11_SUBRESOURCE_DATA subdata;
-    HRESULT hr;
-
-    // CreateVertexBuffer
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(SkinnedVertex) * mesh.vertices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    subdata.pSysMem = mesh.vertices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    // CreateIndexBuffer
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    subdata.pSysMem = mesh.indices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
     return true;
 }
 
