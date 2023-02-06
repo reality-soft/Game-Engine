@@ -21,6 +21,9 @@
     <ClInclude Include="src\ECS\CameraSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\ComponentSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="src\ECS\Components.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
@@ -95,6 +98,9 @@
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\CameraSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\ComponentSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\InputSystem.cpp">

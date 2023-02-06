@@ -93,7 +93,8 @@
       <ImportLibrary>..\..\output\bin\Debug-windows-x86_64\Engine\Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul)</Command>
+      <Command>IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul)
+IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\CharacterTool &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\CharacterTool &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,7 +121,8 @@
       <ImportLibrary>..\..\output\bin\Release-windows-x86_64\Engine\Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul)</Command>
+      <Command>IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul)
+IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\CharacterTool &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\CharacterTool &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -147,13 +149,15 @@
       <ImportLibrary>..\..\output\bin\Dist-windows-x86_64\Engine\Engine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul)</Command>
+      <Command>IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul)
+IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\CharacterTool &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\CharacterTool &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\ECS\ComponentSystem.h" />
     <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
+    <ClInclude Include="src\ECS\ComponentSystem.h" />
     <ClInclude Include="src\ECS\Components.h" />
     <ClInclude Include="src\ECS\InputSystem.h" />
     <ClInclude Include="src\ECS\RenderSystem.h" />
@@ -181,6 +185,7 @@
     <ClCompile Include="src\ECS\ComponentSystem.cpp" />
     <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
+    <ClCompile Include="src\ECS\ComponentSystem.cpp" />
     <ClCompile Include="src\ECS\InputSystem.cpp" />
     <ClCompile Include="src\ECS\RenderSystem.cpp" />
     <ClCompile Include="src\ECS\System.cpp" />

@@ -42,10 +42,20 @@ void GUIMgr::RenderWidgets()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	for (auto widget : widgets)
+	for (auto& widget : widgets)
 	{
-		widget.second->Update();
-		widget.second->Render();
+		if (widget.second->open_ == false)
+		{
+			delete widget.second;
+			widget.second = nullptr;
+			auto ret = widgets.erase(widget.first);
+			break;
+		}
+		else
+		{
+			widget.second->Update();
+			widget.second->Render();
+		}
 	}
 
 	ImGui::Render();
@@ -60,6 +70,9 @@ void GUIMgr::RenderWidgets()
 
 void GUIMgr::AddWidget(string widget_name, GuiWidget* widget)
 {
+	if (FindWidget(widget_name) != nullptr)
+		return;
+
 	widgets.insert(make_pair(widget_name, widget));
 }
 
@@ -75,13 +88,4 @@ GuiWidget* GUIMgr::FindWidget(string widget_name)
 ImGuiContext* KGCA41B::GUIMgr::GetContext()
 {
 	return context;
-}
-
-void GuiWidget::PreRender()
-{
-
-}
-
-void GuiWidget::PostRender()
-{
 }

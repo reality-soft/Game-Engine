@@ -10,11 +10,6 @@
 
 namespace KGCA41B
 {
-	enum class GUIEVENT
-	{
-		
-	};
-
 	class DLL_API GuiWidget
 	{
 	public:
@@ -22,12 +17,9 @@ namespace KGCA41B
 		~GuiWidget() = default;
 
 	public:
+		bool open_ = true;
 		virtual void Update() = 0;
 		virtual void Render() = 0;
-
-	protected:
-		void PreRender();
-		void PostRender();
 	};
 
 	class DLL_API GUIMgr
@@ -41,6 +33,7 @@ namespace KGCA41B
 
 		void AddWidget(string widget_name, GuiWidget* widget);
 		GuiWidget* FindWidget(string widget_name);
+
 		ImGuiContext* GetContext();
 		ImFont* imfont;
 	private:
