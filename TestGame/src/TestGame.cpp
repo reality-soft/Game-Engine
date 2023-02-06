@@ -9,9 +9,6 @@ void TestGame::OnInit()
 	FMOD_MGR->Init();
 	RESOURCE->Init("D:/Contents");
 
-
-	//RESOURCE->PushResource<FMOD::Sound>("sample", "D:/Sound/getitem.mp3");
-
 	sys_sound.OnCreate(reg_scene); 
 	sys_input.OnCreate(reg_scene);
 
@@ -80,7 +77,7 @@ void TestGame::CreateSound()
 	SoundQueue que;
 	que.sound_type = MUSIC;
 	que.is_looping = true;
-	que.sound_filename = "D:/Contents/Sound/getitem.mp3";
+	que.sound_filename = "getitem.mp3";
 	que.sound_volume = 100.0f;
 	generator_comp.sound_queue_list.push(que);
 }
