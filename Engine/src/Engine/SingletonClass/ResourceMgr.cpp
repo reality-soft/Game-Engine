@@ -247,19 +247,20 @@ bool ResourceMgr::ImportFbx(string filename)
         CreateVertexBuffers(single_mesh);
     }
 
-
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
 
     if (res_static_mesh.size() > 0)
-        resdic_static_mesh.insert(make_pair(filename, res_static_mesh));
+        resdic_static_mesh.insert(make_pair(id, res_static_mesh));
 
     if (res_skeletal_mesh.size() > 0)
-        resdic_skeletal_mesh.insert(make_pair(filename, res_skeletal_mesh));
+        resdic_skeletal_mesh.insert(make_pair(id, res_skeletal_mesh));
 
     if (res_skeleton.size() > 0)
-        resdic_skeleton.insert(make_pair(filename, res_skeleton));
+        resdic_skeleton.insert(make_pair(id, res_skeleton));
 
     if (res_anim_list.size() > 0)
-        resdic_animation.insert(make_pair(filename, res_anim_list));
+        resdic_animation.insert(make_pair(id, res_anim_list));
 
     fbx_loader.Destroy();
     return true;
@@ -271,7 +272,10 @@ bool ResourceMgr::ImportVsDefault(string filename)
     if (!vs_default.LoadCompiled(str_to_w(filename)))
         return false;
 
-    resdic_vs_default.insert(make_pair(filename, vs_default));
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+    
+    resdic_vs_default.insert(make_pair(id, vs_default));
     return true;
 }
 
@@ -281,7 +285,10 @@ bool ResourceMgr::ImportVsSkinned(string filename)
     if (!vs_skinned.LoadCompiled(str_to_w(filename)))
         return false;
 
-    resdic_vs_skinned.insert(make_pair(filename, vs_skinned));
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+
+    resdic_vs_skinned.insert(make_pair(id, vs_skinned));
     return true;
 }
 
@@ -291,7 +298,10 @@ bool ResourceMgr::ImportPsDefault(string filename)
     if (!ps_default.LoadCompiled(str_to_w(filename)))
         return false;
 
-    resdic_ps_default.insert(make_pair(filename, ps_default));
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+
+    resdic_ps_default.insert(make_pair(id, ps_default));
     return true;
 }
 
@@ -304,6 +314,10 @@ bool ResourceMgr::ImportSound(string filename)
     {
         return false;
     }
-    resdic_sound.insert(make_pair(filename, newSound));
+
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+
+    resdic_sound.insert(make_pair(id, newSound));
     return true;
 }
