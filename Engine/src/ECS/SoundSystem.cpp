@@ -5,13 +5,6 @@
 
 using namespace KGCA41B;
 
-
-
-void SoundSystem::OnCreate(entt::registry& reg)
-{
-
-}
-
 void SoundSystem::OnUpdate(entt::registry& reg)
 {
     CheckGenerators(reg);
@@ -60,7 +53,7 @@ void SoundSystem::CheckPlayingPool()
         sound->channel->getPosition(&sound->current_time, FMOD_TIMEUNIT_MS);
 
         // 갱신된 사운드가 끝났다면 초기화 하고 Sound만 풀에 넣기
-        if (sound->current_time >= sound->total_time)
+        if (!sound->looping && sound->current_time >= sound->total_time)
         {
             sound->channel->stop();
             sound->channel = nullptr;
@@ -81,7 +74,6 @@ void SoundSystem::CheckPlayingPool()
 
 void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos)
 {
-    // TODO : 3DAttrubutes 인자 Velocity 값 조정 필요, 3DLevel 값 조정 필요
     FMOD_VECTOR pos = { generate_pos.m128_f32[0], generate_pos.m128_f32[1], generate_pos.m128_f32[2] };
 
     FMOD_VECTOR vel;
@@ -89,13 +81,14 @@ void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, fl
     vel.y = -pos.y;
     vel.z = -pos.z;
 
-    // TODO : 사운드 풀을 이용해 사운드 데이터 가져오기
     Sound* sound_data = LoadSoundFromPool();
     sound_data->sound_filename = sound_name;
+    sound_data->type = sound_type;
     sound_data->sound = RESOURCE->UseResource<FMOD::Sound>(sound_name);
      sound_data->sound->getLength(&sound_data->total_time, FMOD_TIMEUNIT_MS);
 
     //sound_data->sound->set3DMinMaxDistance(0, 10);
+    sound_data->looping = looping;
     sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 
     FMOD_RESULT hr;
@@ -111,31 +104,6 @@ void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, fl
 
     sound_play_list.push_back(sound_data);
 }
-
-
-
-//void SoundSystem::LoadDir(wstring directory_address)
-//{
-//    std::wstring wholeAddr = directory_address + L"*.*";
-//    intptr_t handle;
-//    struct _wfinddata_t fd;
-//    handle = _wfindfirst(wholeAddr.c_str(), &fd);
-//
-//    // 못찾으면 리턴
-//    if (handle == -1L) return;
-//
-//    do {
-//        if ((fd.attrib & _A_SUBDIR) && (fd.name[0] != '.'))
-//        {
-//            LoadDir(directory_address + fd.name + L"/");
-//        }
-//        else if (fd.name[0] != '.')
-//        {
-//            LoadFile(directory_address + fd.name);
-//            
-//        }
-//    } while (_wfindnext(handle, &fd) == 0);
-//}
 
 void KGCA41B::SoundSystem::CreateSoundPool()
 {
