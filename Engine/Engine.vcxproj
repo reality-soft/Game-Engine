@@ -154,6 +154,7 @@ IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\ECS\ComponentSystem.h" />
     <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\ComponentSystem.h" />
@@ -181,6 +182,7 @@ IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y
     <ClInclude Include="src\Engine_include.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ECS\ComponentSystem.cpp" />
     <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\ComponentSystem.cpp" />
