@@ -97,10 +97,4 @@ namespace KGCA41B
 
 		IDLE
 	};
-
-	static wstring str_to_w(string& str)
-	{
-		wstring_convert<codecvt_utf8<wchar_t>> converter;
-		return converter.from_bytes(str);
-	}
 }
