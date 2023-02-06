@@ -10,11 +10,11 @@ namespace KGCA41B
 		~RenderSystem();
 
 	public:
-		virtual void OnCreate(entt::registry& reg) {};
+		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
 		void SetCbTransform(Transform& transform);
-		void SetCbSkeleton(Skeleton& skeleton);
+		void PlayAnimation(Skeleton& skeleton, Animation& animation);
 		void SetMaterial(Material& material);
 		void RenderStaticMesh(StaticMesh& static_mesh);
 		void RenderSkeletalMesh(SkeletalMesh& skeletal_mesh);
@@ -22,5 +22,9 @@ namespace KGCA41B
 	private:
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* device_context = nullptr;
+
+	private:
+		CbTransform cb_transform;
+		CbSkeleton cb_skeleton;
 	};
 }

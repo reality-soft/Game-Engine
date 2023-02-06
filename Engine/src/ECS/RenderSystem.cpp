@@ -1,5 +1,6 @@
 #include "RenderSystem.h"
 #include "ResourceMgr.h"
+#include "TimeMgr.h"
 using namespace KGCA41B;
 
 RenderSystem::RenderSystem()
@@ -14,29 +15,53 @@ RenderSystem::~RenderSystem()
 	device_context = nullptr;
 }
 
+void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
+{
+	HRESULT hr;
+
+	// Init Transform Buffer
+	cb_transform.data.world_matrix = XMMatrixIdentity();
+	
+	D3D11_BUFFER_DESC desc;
+	D3D11_SUBRESOURCE_DATA subdata;
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbTransform::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &cb_transform.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_transform.buffer.GetAddressOf());
+
+	// Init SkeletonBuffer
+	for (int i = 0; i < 255; ++i)
+		cb_skeleton.data.mat_skeleton[i] = XMMatrixIdentity();
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbSkeleton::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	subdata.pSysMem = &cb_skeleton.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeleton.buffer.GetAddressOf());
+}
+
 void RenderSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_trs = reg.view<Transform>();
-	auto view_skt = reg.view<Skeleton>();
-	auto view_stm = reg.view<Material, StaticMesh>();
-	auto view_skm = reg.view<Material, SkeletalMesh>();
-
-	for (auto ent : view_trs)
-	{
-		auto& transform = reg.get<Transform>(ent);
-		transform.world_matrix = XMMatrixRotationX(-90) * XMMatrixScaling(10, 10, 10);
-
-		SetCbTransform(transform);
-	}
-
-	for (auto ent : view_skt)
-	{
-		auto& skeleton = reg.get<Skeleton>(ent);
-		SetCbSkeleton(skeleton);
-	}
+	auto view_stm = reg.view<Material, StaticMesh, Transform>();
+	auto view_skm = reg.view<Material, SkeletalMesh, Transform>();
 
 	for (auto ent : view_stm)
 	{
+		auto& transform = reg.get<Transform>(ent);
+		SetCbTransform(transform);
+
 		auto& material = reg.get<Material>(ent);
 		SetMaterial(material);
 
@@ -46,6 +71,12 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 	for (auto ent : view_skm)
 	{
+		auto [skeleton, animation] = reg.get<Skeleton, Animation>(ent);
+		PlayAnimation(skeleton, animation);
+
+		auto& transform = reg.get<Transform>(ent);
+		SetCbTransform(transform);
+
 		auto& material = reg.get<Material>(ent);
 		SetMaterial(material);
 
@@ -67,18 +98,32 @@ void RenderSystem::SetMaterial(Material& material)
 
 void RenderSystem::SetCbTransform(Transform& transform)
 {
-	transform.cb_transform.world_matrix = XMMatrixTranspose(transform.world_matrix);
-	transform.cb_transform.view_matrix = XMMatrixTranspose(transform.view_matrix);
-	transform.cb_transform.projection_matrix = XMMatrixTranspose(transform.projection_matrix);
+	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world);
 
-	device_context->UpdateSubresource(transform.cb_buffer.Get(), 0, nullptr, &transform.cb_transform, 0, 0);
-	device_context->VSSetConstantBuffers(0, 1, transform.cb_buffer.GetAddressOf());
+	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
+	device_context->VSSetConstantBuffers(0, 1, cb_transform.buffer.GetAddressOf());
 }
 
-void RenderSystem::SetCbSkeleton(Skeleton& skeleton)
+void RenderSystem::PlayAnimation(Skeleton& skeleton, Animation& animation)
 {
-	device_context->UpdateSubresource(skeleton.cb_buffer.Get(), 0, nullptr, &skeleton.cb_skeleton, 0, 0);
-	device_context->VSSetConstantBuffers(1, 1, skeleton.cb_buffer.GetAddressOf());
+	map<UINT, XMMATRIX>* res_skeleton = RESOURCE->UseResource<map<UINT, XMMATRIX>>(skeleton.skeleton_id);
+	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation.anim_id);
+
+	static float keyframe = res_animation->begin()->start_frame;
+
+	if (keyframe >= res_animation->begin()->end_frame)
+		keyframe = res_animation->begin()->start_frame;
+
+	for (auto bp : *res_skeleton)
+	{
+		XMMATRIX anim_matrix = bp.second * res_animation->begin()->animations.find(bp.first)->second[keyframe];
+		cb_skeleton.data.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
+	}
+
+	keyframe += 60.f / TM_FPS;
+
+	device_context->UpdateSubresource(cb_skeleton.buffer.Get(), 0, nullptr, &cb_skeleton.data, 0, 0);
+	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
 }
 
 void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)

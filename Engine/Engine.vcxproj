@@ -129,7 +129,6 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-
     <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\ComponentSystem.h" />
@@ -156,9 +155,9 @@
     <ClInclude Include="src\Engine\Texture.h" />
     <ClInclude Include="src\Engine\common.h" />
     <ClInclude Include="src\Engine_include.h" />
+    <ClInclude Include="src\ECS\TransformSystem.h" />
   </ItemGroup>
   <ItemGroup>
-
     <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\ComponentSystem.cpp" />
@@ -178,6 +177,7 @@
     <ClCompile Include="src\Engine\SingletonClass\ResourceMgr.cpp" />
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp" />
     <ClCompile Include="src\Engine\Texture.cpp" />
+    <ClCompile Include="src\ECS\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />

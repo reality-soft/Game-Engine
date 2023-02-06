@@ -164,6 +164,8 @@
     <ClCompile Include="src\Engine\Texture.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\Actor.cpp" />
+    <ClCompile Include="src\ECS\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\premake5.lua" />
