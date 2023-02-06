@@ -120,4 +120,17 @@ namespace KGCA41B
 
 		virtual void OnConstruct() override {};
 	};
+
+	struct SoundListener : public Component
+	{
+
+	};
+	
+	
+
+	struct SoundGenerator : public Component
+	{
+		queue<SoundQueue> sound_queue_list;
+	};
+
 }

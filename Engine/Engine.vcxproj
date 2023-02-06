@@ -55,22 +55,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\output\bin\Debug-windows-x86_64\Engine\</OutDir>
-    <IntDir>..\..\output\bin-int\Debug-windows-x86_64\Engine\</IntDir>
+    <OutDir>D:\output\bin\Debug-windows-x86_64\Engine\</OutDir>
+    <IntDir>D:\output\bin-int\Debug-windows-x86_64\Engine\</IntDir>
     <TargetName>Engine</TargetName>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\output\bin\Release-windows-x86_64\Engine\</OutDir>
-    <IntDir>..\..\output\bin-int\Release-windows-x86_64\Engine\</IntDir>
+    <OutDir>D:\output\bin\Release-windows-x86_64\Engine\</OutDir>
+    <IntDir>D:\output\bin-int\Release-windows-x86_64\Engine\</IntDir>
     <TargetName>Engine</TargetName>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\output\bin\Dist-windows-x86_64\Engine\</OutDir>
-    <IntDir>..\..\output\bin-int\Dist-windows-x86_64\Engine\</IntDir>
+    <OutDir>D:\output\bin\Dist-windows-x86_64\Engine\</OutDir>
+    <IntDir>D:\output\bin-int\Dist-windows-x86_64\Engine\</IntDir>
     <TargetName>Engine</TargetName>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
@@ -79,7 +79,6 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src\Engine;src\ECS;src\GUI;src\Engine\SingletonClass;vendor\spdlog\include;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -88,13 +87,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dinput8.lib;dxguid.lib;DirectXTK_D.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ImportLibrary>..\..\output\bin\Debug-windows-x86_64\Engine\Engine.lib</ImportLibrary>
-    </Link>
-    <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\TestGame &gt; nul)
-IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\CharacterTool &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Debug-windows-x86_64\CharacterTool &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -103,7 +95,6 @@ IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /
       <WarningLevel>Level3</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src\Engine;src\ECS;src\GUI;src\Engine\SingletonClass;vendor\spdlog\include;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -116,13 +107,7 @@ IF EXIST ..\..\output\bin\Debug-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dinput8.lib;dxguid.lib;DirectXTK_D.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ImportLibrary>..\..\output\bin\Release-windows-x86_64\Engine\Engine.lib</ImportLibrary>
-    </Link>
-    <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\TestGame &gt; nul)
-IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\CharacterTool &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Release-windows-x86_64\CharacterTool &gt; nul)</Command>
+
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -131,7 +116,7 @@ IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E
       <WarningLevel>Level3</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;BUILD_DLL;_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src\Engine;src\ECS;src\GUI;src\Engine\SingletonClass;vendor\spdlog\include;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -144,23 +129,14 @@ IF EXIST ..\..\output\bin\Release-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dinput8.lib;dxguid.lib;DirectXTK_D.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ImportLibrary>..\..\output\bin\Dist-windows-x86_64\Engine\Engine.lib</ImportLibrary>
-    </Link>
-    <PostBuildEvent>
-      <Command>IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\TestGame &gt; nul)
-IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\CharacterTool &gt; nul) ELSE (xcopy /Q /Y /I ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll ..\..\output\bin\Dist-windows-x86_64\CharacterTool &gt; nul)</Command>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="src\ECS\ComponentSystem.h" />
+
     <ClInclude Include="src\ECS\AnimationSystem.h" />
     <ClInclude Include="src\ECS\CameraSystem.h" />
     <ClInclude Include="src\ECS\ComponentSystem.h" />
     <ClInclude Include="src\ECS\Components.h" />
     <ClInclude Include="src\ECS\InputSystem.h" />
     <ClInclude Include="src\ECS\RenderSystem.h" />
+    <ClInclude Include="src\ECS\SoundSystem.h" />
     <ClInclude Include="src\ECS\System.h" />
     <ClInclude Include="src\ECS\entt.hpp" />
     <ClInclude Include="src\Engine\DataTypes.h" />
@@ -182,12 +158,13 @@ IF EXIST ..\..\output\bin\Dist-windows-x86_64\Engine\Engine.dll\ (xcopy /Q /E /Y
     <ClInclude Include="src\Engine_include.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ECS\ComponentSystem.cpp" />
+
     <ClCompile Include="src\ECS\AnimationSystem.cpp" />
     <ClCompile Include="src\ECS\CameraSystem.cpp" />
     <ClCompile Include="src\ECS\ComponentSystem.cpp" />
     <ClCompile Include="src\ECS\InputSystem.cpp" />
     <ClCompile Include="src\ECS\RenderSystem.cpp" />
+    <ClCompile Include="src\ECS\SoundSystem.cpp" />
     <ClCompile Include="src\ECS\System.cpp" />
     <ClCompile Include="src\Engine\FbxLoader.cpp" />
     <ClCompile Include="src\Engine\FbxOutData.cpp" />

@@ -3,6 +3,10 @@
 #include "Components.h"
 #include "FbxLoader.h"
 #include "Texture.h"
+#include <functional>
+
+
+
 
 namespace KGCA41B
 {
@@ -10,12 +14,19 @@ namespace KGCA41B
 	{
 		SINGLETON(ResourceMgr)
 #define RESOURCE ResourceMgr::GetInst()
+	private:
+		string directory_;
 	public:
-		string directory;
-
+		string directory() { return directory_; }
+		void set_directory(string dir) { directory_ = dir; }
 	public:
-		bool Init(string packagefile); // ÅëÇÕ ÆĞÅ°Áö ÆÄÀÏÀ» ºÒ·¯¿À°í ¾øÀ¸¸é ºó °ª
+		bool Init(LPCWSTR packagefile); // í†µí•© íŒ¨í‚¤ì§€ íŒŒì¼ì„ ë¶ˆëŸ¬ì˜¤ê³  ì—†ìœ¼ë©´ ë¹ˆ ê°’
+		bool Init(string directory); 
 		void Release();
+
+		using Load_Func = bool(ResourceMgr::*)(string);
+		void LoadAllResource();
+		void LoadDir(string path, Load_Func load_func);
 
 		template<typename T>
 		bool PushResource(string id, string filename);
@@ -35,6 +46,9 @@ namespace KGCA41B
 		map<string, PsDefault> resdic_ps_default;
 		map<string, Texture> resdic_texture;
 
+		map<string, FMOD::Sound*>	resdic_sound;
+
+	private:
 		bool ImportFbx(string filename);
 
 		bool CreateBuffers(SingleMesh<Vertex>& mesh);
@@ -43,6 +57,9 @@ namespace KGCA41B
 		bool ImportVsDefault(string filename);
 		bool ImportVsSkinned(string filename);
 		bool ImportPsDefault(string filename);
+
+		bool ImportSound(string filename);
+	
 		bool ImportTexture(string filename);
 	};
 
@@ -74,6 +91,10 @@ namespace KGCA41B
 		else if (typeid(T) == typeid(Texture))
 		{
 			result = ImportTexture(directory + filename);
+		}
+		else if (typeid(T) == typeid(FMOD::Sound))
+		{
+			result = ImportSound(filename);
 		}
 
 		return result;
@@ -144,6 +165,22 @@ namespace KGCA41B
 			if (iter != resdic_texture.end())
 			{
 				return (T*)(&iter->second);
+			}
+		}
+		else if (typeid(T) == typeid(Texture))
+		{
+			auto iter = resdic_texture.find(id);
+			if (iter != resdic_texture.end())
+			{
+				return (T*)(&iter->second);
+			}
+		}
+		else if (typeid(T) == typeid(FMOD::Sound))
+		{
+			auto iter = resdic_sound.find(id);
+			if (iter != resdic_sound.end())
+			{
+				return (T*)iter->second;
 			}
 		}
 		return nullptr;

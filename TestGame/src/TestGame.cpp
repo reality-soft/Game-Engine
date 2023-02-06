@@ -8,12 +8,18 @@ void TestGame::OnInit()
 {
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 
+	FMOD_MGR->Init();
+	RESOURCE->Init("D:/Contents");
+
+	sys_sound.OnCreate(reg_scene); 
+	sys_input.OnCreate(reg_scene);
+  
 	LoadResource();
   
 	ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
-	ent_object = reg_scene.create();
+	ent_sound = reg_scene.create();
 
 
 	//CreatePlayer();
@@ -32,12 +38,24 @@ void TestGame::OnInit()
 
 void TestGame::OnUpdate()
 {
-	//sys_input.OnUpdate(reg_scene);
-	//sys_camera.OnUpdate(reg_scene);
+	FMOD_MGR->Update();
+	int result = DINPUT->Update();
+
+	static float time = 0;
+	time += TIMER->GetDeltaTime();
+	if (DINPUT->IsKeyPressed(DIK_SPACE) && time >= 2.0f)
+	{
+		CreateSound();
+		time = 0;
+	}
+		
+
+	sys_sound.OnUpdate(reg_scene);
+	sys_input.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRender()
-{   
+{
 	//sys_animation.OnUpdate(reg_scene);
 	//sys_render.OnUpdate(reg_scene);
 
@@ -48,6 +66,7 @@ void TestGame::OnRender()
 void TestGame::OnRelease()
 {
 	RESOURCE->Release();
+	FMOD_MGR->Release();
 }
 
 void TestGame::LoadResource()
@@ -60,49 +79,34 @@ void TestGame::LoadResource()
 
 void TestGame::CreatePlayer()
 {
-	Camera comp_camera;
-	comp_camera.position = { 0, 0, -50, 0 };
-	comp_camera.look = { -50, 0, 0, 0 };
-	comp_camera.target = { -50, 0, 0, 0 };
-	comp_camera.up = { 0, 1, 0, 0 };
-	comp_camera.near_z = 1.f;
-	comp_camera.far_z = 10000.f;
-	comp_camera.fov = XMConvertToRadians(45);
-	comp_camera.yaw = 0;
-	comp_camera.pitch = 0;
-	comp_camera.roll = 0;
-	comp_camera.speed = 50;
-	comp_camera.tag = "Player";
+	auto& transform_comp = reg_scene.emplace<Transform>(ent_player);
+	reg_scene.emplace<SoundListener>(ent_player);
 
+	transform_comp.world_matrix.r[3].m128_f32[0] = 0;
+	transform_comp.world_matrix.r[3].m128_f32[1] = 0;
+	transform_comp.world_matrix.r[3].m128_f32[2] = 0;
 
-
-	InputMapping comp_inputmapping;
-	comp_inputmapping.tag = "Player";
-
-	reg_scene.emplace<Camera>(ent_player, comp_camera);
-	reg_scene.emplace<InputMapping>(ent_player, comp_inputmapping);
+	reg_scene.emplace<Transform>(ent_sound);
+	reg_scene.emplace<SoundGenerator>(ent_sound);
 }
 
-void TestGame::CreateCharacter()
+void TestGame::CreateSound()
 {
-	SkeletalMesh comp_skm;
-	Skeleton comp_skeleton;
-	Animation comp_animation;
-	Material comp_material;
-	Transform comp_transform;
+	auto& transform_comp = reg_scene.get<Transform>(ent_sound);
+	auto& generator_comp = reg_scene.get<SoundGenerator>(ent_sound);
 
-	comp_skm.mesh_id = "player";
-	comp_skm.shader_id = "player";
+	static float dir = 100;
+	dir *= -1.0f;
 
-	comp_skeleton.skeleton_id = "player";
-	comp_animation.anim_id = "player";
+	transform_comp.world_matrix.r[3].m128_f32[0] = dir;
+	transform_comp.world_matrix.r[3].m128_f32[1] = 0;
+	transform_comp.world_matrix.r[3].m128_f32[2] = 0;
 
-	comp_material.shader_id = "player";
-	comp_material.texture_id = "null";
-
-	reg_scene.emplace<SkeletalMesh>(ent_object, comp_skm);
-	reg_scene.emplace<Skeleton>(ent_object, comp_skeleton);
-	reg_scene.emplace<Animation>(ent_object, comp_animation);
-	reg_scene.emplace<Material>(ent_object, comp_material);
-	reg_scene.emplace<Transform>(ent_object, comp_transform);
+	SoundQueue que;
+	que.sound_type = MUSIC;
+	que.is_looping = true;
+	que.sound_filename = "getitem.mp3";
+	que.sound_volume = 100.0f;
+	generator_comp.sound_queue_list.push(que);
 }
+

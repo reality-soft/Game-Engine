@@ -35,6 +35,7 @@ project "Engine"
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
+		"../SDK/FMOD/include".
 		"../SDK/IMGUI/include"
 	}
 
@@ -42,6 +43,7 @@ project "Engine"
 	{
 		"../SDK/DirectXTK/lib",
 		"../SDK/FBXSDK/lib/debug",
+		"../SDK/FMOD/lib/debug",
 		"../SDK/IMGUI/lib"
 	}
 
@@ -56,6 +58,8 @@ project "Engine"
 		"libfbxsdk-md",
 		"libxml2-md",
 		"zlib-md",
+		"fmod_vc",
+		"fmodL_vc",
 		"ImGui_Win32_Dx11_D"
 	}
 
@@ -113,14 +117,15 @@ project "TestGame"
 		"Engine/src/Engine/SingletonClass",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
+		"../SDK/FMOD/include",
 		"../SDK/IMGUI/include"
 	}
 
 	libdirs
 	{
-		"../output/bin/Debug-windows-x86_64/Engine/",
 		"../SDK/DirectXTK/lib",
 		"../SDK/FBXSDK/lib/debug",
+		"../SDK/FMOD/lib/debug",
 		"../SDK/IMGUI/lib"
 	}
 
@@ -130,6 +135,8 @@ project "TestGame"
 		"libfbxsdk-md",
 		"libxml2-md",
 		"zlib-md",
+		"fmod_vc",
+		"fmodL_vc",
 		"ImGui_Win32_Dx11_D"
 	}
 
