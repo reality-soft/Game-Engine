@@ -22,6 +22,7 @@ SamplerState g_SampleWrap		: register(s0);
 float4 PS(PS_OUT input) : SV_Target
 {
 	//float4 vColor = g_txTex.Sample(g_SampleWrap , input.t);
+
 	float fDot = max(0.3f, dot(input.n, -input.vLight) * 100);
 	return float4(fDot, fDot, fDot, 1) * input.c;// *vColor;
 }

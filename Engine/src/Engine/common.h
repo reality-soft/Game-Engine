@@ -5,6 +5,8 @@
 #include <string>
 #include <map>
 #include <queue>
+#include <set>
+#include <algorithm>
 #include <windows.h>
 #include <tchar.h>
 #include <atlconv.h>

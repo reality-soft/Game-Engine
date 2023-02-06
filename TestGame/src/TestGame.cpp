@@ -1,4 +1,6 @@
 #include "TestGame.h"
+#include "SampleWidget.h"
+#include "ComponentSystem.h"
 
 using namespace KGCA41B;
 
@@ -11,12 +13,27 @@ void TestGame::OnInit()
 
 	sys_sound.OnCreate(reg_scene); 
 	sys_input.OnCreate(reg_scene);
+  
+	LoadResource();
+  
+	ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
 	ent_sound = reg_scene.create();
 
-	CreatePlayer();
-	CreateSound();
+
+	//CreatePlayer();
+	//CreateCharacter();
+
+	//sys_render.OnCreate(reg_scene);
+	//sys_animation.OnCreate(reg_scene);
+	//sys_camera.TargetTag(reg_scene, "Player");
+	//sys_camera.OnCreate(reg_scene);
+	//sys_input.OnCreate(reg_scene);
+
+	//GUI
+	SampleWidget* sample_widget = new SampleWidget;
+	GUI->AddWidget("sample", sample_widget);
 }
 
 void TestGame::OnUpdate()
@@ -41,12 +58,23 @@ void TestGame::OnRender()
 {
 	//sys_animation.OnUpdate(reg_scene);
 	//sys_render.OnUpdate(reg_scene);
+
+	// GUI
+	GUI->RenderWidgets();
 }
 
 void TestGame::OnRelease()
 {
 	RESOURCE->Release();
 	FMOD_MGR->Release();
+}
+
+void TestGame::LoadResource()
+{
+	RESOURCE->Init("../../Contents/");
+	RESOURCE->PushResource<FbxLoader>("player", "FBX/RumbaDancing.fbx");
+	RESOURCE->PushResource<VsSkinned>("player", "Shader/SkinningVS.cso");
+	RESOURCE->PushResource<PsDefault>("player", "Shader/SkinningPS.cso");
 }
 
 void TestGame::CreatePlayer()

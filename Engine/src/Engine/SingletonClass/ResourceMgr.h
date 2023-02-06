@@ -20,8 +20,8 @@ namespace KGCA41B
 		string directory() { return directory_; }
 		void set_directory(string dir) { directory_ = dir; }
 	public:
-		bool Init(LPCWSTR packagefile); // ÅëÇÕ ÆĞÅ°Áö ÆÄÀÏÀ» ºÒ·¯¿À°í ¾øÀ¸¸é ºó °ª
-		bool Init(string directory); // ÅëÇÕ ÆĞÅ°Áö ÆÄÀÏÀ» ºÒ·¯¿À°í ¾øÀ¸¸é ºó °ª
+		bool Init(LPCWSTR packagefile); // í†µí•© íŒ¨í‚¤ì§€ íŒŒì¼ì„ ë¶ˆëŸ¬ì˜¤ê³  ì—†ìœ¼ë©´ ë¹ˆ ê°’
+		bool Init(string directory); 
 		void Release();
 
 		using Load_Func = bool(ResourceMgr::*)(string);
@@ -51,8 +51,8 @@ namespace KGCA41B
 	private:
 		bool ImportFbx(string filename);
 
-		bool CreateVertexBuffers(SingleMesh<Vertex>& mesh);
-		bool CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh);
+		bool CreateBuffers(SingleMesh<Vertex>& mesh);
+		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
 
 		bool ImportVsDefault(string filename);
 		bool ImportVsSkinned(string filename);
@@ -60,6 +60,7 @@ namespace KGCA41B
 
 		bool ImportSound(string filename);
 	
+		bool ImportTexture(string filename);
 	};
 
 
@@ -73,19 +74,23 @@ namespace KGCA41B
 
 		if (typeid(T) == typeid(FbxLoader))
 		{
-			result = ImportFbx(filename);
+			result = ImportFbx(directory + filename);
 		}
 		else if (typeid(T) == typeid(VsDefault))
 		{
-			result = ImportVsDefault(filename);
+			result = ImportVsDefault(directory + filename);
 		}
 		else if (typeid(T) == typeid(VsSkinned))
 		{
-			result = ImportVsSkinned(filename);
+			result = ImportVsSkinned(directory + filename);
 		}
 		else if (typeid(T) == typeid(PsDefault)) 
 		{
-			result = ImportPsDefault(filename);
+			result = ImportPsDefault(directory + filename);
+		}
+		else if (typeid(T) == typeid(Texture))
+		{
+			result = ImportTexture(directory + filename);
 		}
 		else if (typeid(T) == typeid(FMOD::Sound))
 		{

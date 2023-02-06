@@ -37,6 +37,8 @@ namespace KGCA41B
 	{
 		vector<VertexType> vertices;
 		ComPtr<ID3D11Buffer> vertex_buffer;
+		vector<UINT> indices;
+		ComPtr<ID3D11Buffer> index_buffer;
 	};
 
 	struct CbTransform
