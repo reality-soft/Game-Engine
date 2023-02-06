@@ -7,10 +7,10 @@ void TestGame::OnInit()
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 
 	FMOD_MGR->Init();
-	RESOURCE->Init(nullptr);
+	RESOURCE->Init("D:/Contents");
 
 
-	RESOURCE->PushResource<FMOD::Sound>("sample", "D:/Sound/getitem.mp3");
+	//RESOURCE->PushResource<FMOD::Sound>("sample", "D:/Sound/getitem.mp3");
 
 	sys_sound.OnCreate(reg_scene); 
 	sys_input.OnCreate(reg_scene);
@@ -78,9 +78,9 @@ void TestGame::CreateSound()
 	transform_comp.world_matrix.r[3].m128_f32[2] = 0;
 
 	SoundQueue que;
-	que.sound_type = SFX;
-	que.is_looping = false;
-	que.sound_filename = "sample";
+	que.sound_type = MUSIC;
+	que.is_looping = true;
+	que.sound_filename = "D:/Contents/Sound/getitem.mp3";
 	que.sound_volume = 100.0f;
 	generator_comp.sound_queue_list.push(que);
 }
