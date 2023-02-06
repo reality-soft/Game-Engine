@@ -35,7 +35,7 @@ project "Engine"
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
-		"../SDK/FMOD/include".
+		"../SDK/FMOD/include",
 		"../SDK/IMGUI/include"
 	}
 

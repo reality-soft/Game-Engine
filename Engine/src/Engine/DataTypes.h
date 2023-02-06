@@ -43,14 +43,31 @@ namespace KGCA41B
 
 	struct CbTransform
 	{
-		XMMATRIX world_matrix;
-		XMMATRIX view_matrix;
-		XMMATRIX projection_matrix;
+		struct Data
+		{
+			XMMATRIX world_matrix;
+		} data;
+
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
+	struct CbViewProj
+	{
+		struct Data
+		{
+			XMMATRIX view_matrix;
+			XMMATRIX projection_matrix;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
 	};
 
 	struct CbSkeleton
 	{
-		XMMATRIX  mat_skeleton[255];
+		struct Data
+		{
+			XMMATRIX  mat_skeleton[255];
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
 	};
 
 	// Sound
@@ -110,10 +127,4 @@ namespace KGCA41B
 
 		IDLE
 	};
-
-	static wstring str_to_w(string& str)
-	{
-		wstring_convert<codecvt_utf8<wchar_t>> converter;
-		return converter.from_bytes(str);
-	}
 }
