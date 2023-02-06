@@ -3,6 +3,7 @@
 #include "Components.h"
 #include "FbxLoader.h"
 #include "Texture.h"
+#include <functional>
 
 
 
@@ -13,12 +14,19 @@ namespace KGCA41B
 	{
 		SINGLETON(ResourceMgr)
 #define RESOURCE ResourceMgr::GetInst()
+	private:
+		string directory_;
 	public:
-		string directory;
-
+		string directory() { return directory_; }
+		void set_directory(string dir) { directory_ = dir; }
 	public:
 		bool Init(LPCWSTR packagefile); // 통합 패키지 파일을 불러오고 없으면 빈 값
+		bool Init(string directory); // 통합 패키지 파일을 불러오고 없으면 빈 값
 		void Release();
+
+		using Load_Func = bool(ResourceMgr::*)(string);
+		void LoadAllResource();
+		void LoadDir(string path, Load_Func load_func);
 
 		template<typename T>
 		bool PushResource(string id, string filename);
