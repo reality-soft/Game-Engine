@@ -251,5 +251,5 @@ ModelManifest.xml
 /Engine/src/dev.txt
 /TestGame/imgui.ini
 /CharacterTool
-.vcxproj
-.vcxproj.filters
+*.vcxproj
+*.filters
