@@ -55,22 +55,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>D:\output\bin\Debug-windows-x86_64\TestGame\</OutDir>
-    <IntDir>D:\output\bin-int\Debug-windows-x86_64\TestGame\</IntDir>
+    <OutDir>..\..\output\bin\Debug-windows-x86_64\TestGame\</OutDir>
+    <IntDir>..\..\output\bin-int\Debug-windows-x86_64\TestGame\</IntDir>
     <TargetName>TestGame</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>D:\output\bin\Release-windows-x86_64\TestGame\</OutDir>
-    <IntDir>D:\output\bin-int\Release-windows-x86_64\TestGame\</IntDir>
+    <OutDir>..\..\output\bin\Release-windows-x86_64\TestGame\</OutDir>
+    <IntDir>..\..\output\bin-int\Release-windows-x86_64\TestGame\</IntDir>
     <TargetName>TestGame</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>D:\output\bin\Dist-windows-x86_64\TestGame\</OutDir>
-    <IntDir>D:\output\bin-int\Dist-windows-x86_64\TestGame\</IntDir>
+    <OutDir>..\..\output\bin\Dist-windows-x86_64\TestGame\</OutDir>
+    <IntDir>..\..\output\bin-int\Dist-windows-x86_64\TestGame\</IntDir>
     <TargetName>TestGame</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Engine\vendor\spdlog\include;..\Engine\src;..\Engine\src\Engine;..\Engine\src\ECS;..\Engine\src\Engine\SingletonClass;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Engine\vendor\spdlog\include;..\Engine\src;..\Engine\src\Engine;..\Engine\src\ECS;..\Engine\src\Engine\SingletonClass;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\FMOD\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -88,8 +88,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;ImGui_Win32_Dx11_D.lib;fmod_vc.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\output\bin\Debug-windows-x86_64\Engine;..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\IMGUI\lib;..\..\SDK\FMOD\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmod_vc.lib;fmodL_vc.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\FMOD\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "..\..\Contents\Shader\*.cso"</Command>
@@ -101,7 +101,7 @@
       <WarningLevel>Level3</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Engine\vendor\spdlog\include;..\Engine\src;..\Engine\src\Engine;..\Engine\src\ECS;..\Engine\src\Engine\SingletonClass;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Engine\vendor\spdlog\include;..\Engine\src;..\Engine\src\Engine;..\Engine\src\ECS;..\Engine\src\Engine\SingletonClass;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\FMOD\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -114,8 +114,8 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\output\bin\Debug-windows-x86_64\Engine;..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmod_vc.lib;fmodL_vc.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\FMOD\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "..\..\Contents\Shader\*.cso"</Command>
@@ -127,8 +127,7 @@
       <WarningLevel>Level3</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-
-      <AdditionalIncludeDirectories>..\Engine\vendor\spdlog\include;..\Engine\src;..\Engine\src\Engine;..\Engine\src\ECS;..\Engine\src\Engine\SingletonClass;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Engine\vendor\spdlog\include;..\Engine\src;..\Engine\src\Engine;..\Engine\src\ECS;..\Engine\src\Engine\SingletonClass;..\..\SDK\DirectXTK\include;..\..\SDK\FBXSDK\include;..\..\SDK\FMOD\include;..\..\SDK\IMGUI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -141,9 +140,8 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-
-      <AdditionalDependencies>libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\output\bin\Debug-windows-x86_64\Engine;..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmod_vc.lib;fmodL_vc.lib;ImGui_Win32_Dx11_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\SDK\DirectXTK\lib;..\..\SDK\FBXSDK\lib\debug;..\..\SDK\FMOD\lib\debug;..\..\SDK\IMGUI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy "..\..\output\bin\Debug-windows-x86_64\TestGame\*.cso" "..\..\Contents\Shader\*.cso"</Command>
