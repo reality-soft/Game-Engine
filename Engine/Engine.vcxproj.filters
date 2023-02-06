@@ -33,6 +33,9 @@
     <ClInclude Include="src\ECS\RenderSystem.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
+    <ClInclude Include="src\ECS\SoundSystem.h">
+      <Filter>src\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="src\ECS\System.h">
       <Filter>src\ECS</Filter>
     </ClInclude>
@@ -90,8 +93,13 @@
     <ClInclude Include="src\Engine_include.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine\Actor.h" />
-    <ClInclude Include="src\ECS\TransformSystem.h" />
+    <ClInclude Include="src\Engine\Texture.h" />
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\SingletonClass\FmodMgr.h">
+      <Filter>src\Engine\SingletonClass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\ComponentSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ECS\AnimationSystem.cpp">
@@ -107,6 +115,9 @@
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\RenderSystem.cpp">
+      <Filter>src\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\SoundSystem.cpp">
       <Filter>src\ECS</Filter>
     </ClCompile>
     <ClCompile Include="src\ECS\System.cpp">
@@ -145,6 +156,11 @@
     <ClCompile Include="src\Engine\SingletonClass\TimeMgr.cpp">
       <Filter>src\Engine\SingletonClass</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\SingletonClass\ResourceMgr.cpp" />
+    <ClCompile Include="src\Engine\Texture.cpp" />
+    <ClCompile Include="src\Engine\SingletonClass\FmodMgr.cpp">
+      <Filter>src\Engine\SingletonClass</Filter>
+    <ClCompile Include="src\ECS\ComponentSystem.cpp" />
     <ClCompile Include="src\Engine\Texture.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
