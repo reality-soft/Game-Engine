@@ -33,6 +33,10 @@ namespace KGCA41B
 		template<typename T>
 		T* UseResource(string id);
 
+		map<string, string> GetTotalResID();
+
+
+
 	private:
 		string current_id;
 
