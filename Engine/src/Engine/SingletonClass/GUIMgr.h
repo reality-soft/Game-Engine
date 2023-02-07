@@ -35,7 +35,9 @@ namespace KGCA41B
 		GuiWidget* FindWidget(string widget_name);
 
 		ImGuiContext* GetContext();
-		ImFont* imfont;
+		LPCSTR base_font_file;
+		map<string, ImFont*> font_map;
+		ImFont* AddFont(string font_name, LPCSTR ttf_file, float font_size);
 	private:
 		ImGuiContext* context;
 		map<string, GuiWidget*> widgets;

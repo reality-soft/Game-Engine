@@ -30,6 +30,7 @@ void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
 	fontConfig.SizePixels = 1.f;
 
 	// Add a font to the font manager
+	base_font_file = "../../Contents/Fonts/Garet_Book.ttf";
 	imfont = ImGui::GetIO().Fonts->AddFontFromFileTTF("../../Contents/Fonts/Garet_Book.ttf", 24.0f, &fontConfig);
 
 	// store context instance
@@ -88,4 +89,22 @@ GuiWidget* GUIMgr::FindWidget(string widget_name)
 ImGuiContext* KGCA41B::GUIMgr::GetContext()
 {
 	return context;
+}
+
+ImFont* KGCA41B::GUIMgr::AddFont(string font_name, LPCSTR ttf_file, float font_size)
+{
+	ImFont* new_font;
+
+	if (ttf_file == nullptr)
+	{
+		new_font = ImGui::GetIO().Fonts->AddFontFromFileTTF(base_font_file, font_size, nullptr);
+	}
+	else
+	{
+		new_font = ImGui::GetIO().Fonts->AddFontFromFileTTF(ttf_file, font_size, nullptr);
+	}
+
+	font_map.insert(make_pair(font_name, new_font));
+
+	return new_font;
 }
