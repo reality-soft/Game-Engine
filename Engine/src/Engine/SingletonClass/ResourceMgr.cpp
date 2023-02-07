@@ -96,7 +96,7 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
         res_id_map.insert(make_pair(res.first, "SOUND"));
     }
 
-    return map<string, string>();
+    return res_id_map;
 }
 
 //bool ResourceMgr::ImportFbx(string filename)
