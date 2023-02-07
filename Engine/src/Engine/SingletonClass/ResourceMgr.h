@@ -33,8 +33,6 @@ namespace KGCA41B
 		template<typename T>
 		T* UseResource(string id);
 
-		map<string, string> GetTotalResID();
-
 	private:
 		string current_id;
 
@@ -76,27 +74,27 @@ namespace KGCA41B
 
 		if (typeid(T) == typeid(FbxLoader))
 		{
-			result = ImportFbx(directory_ + filename);
+			result = ImportFbx(directory + filename);
 		}
 		else if (typeid(T) == typeid(VsDefault))
 		{
-			result = ImportVsDefault(directory_ + filename);
+			result = ImportVsDefault(directory + filename);
 		}
 		else if (typeid(T) == typeid(VsSkinned))
 		{
-			result = ImportVsSkinned(directory_ + filename);
+			result = ImportVsSkinned(directory + filename);
 		}
 		else if (typeid(T) == typeid(PsDefault)) 
 		{
-			result = ImportPsDefault(directory_ + filename);
+			result = ImportPsDefault(directory + filename);
 		}
 		else if (typeid(T) == typeid(Texture))
 		{
-			result = ImportTexture(directory_ + filename);
+			result = ImportTexture(directory + filename);
 		}
 		else if (typeid(T) == typeid(FMOD::Sound))
 		{
-			result = ImportSound(directory_ + filename);
+			result = ImportSound(filename);
 		}
 
 		return result;

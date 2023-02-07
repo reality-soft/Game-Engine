@@ -40,6 +40,7 @@ void ResourceMgr::LoadDir(string path, Load_Func load_func)
     struct _finddata_t fd;
     handle = _findfirst(tempAdd.c_str(), &fd);
 
+    // ��ã��� ����
     if (handle == -1L) return;
 
     do {
@@ -52,50 +53,6 @@ void ResourceMgr::LoadDir(string path, Load_Func load_func)
             (this->*load_func)(path + fd.name);
         }
     } while (_findnext(handle, &fd) == 0);
-}
-
-map<string, string> ResourceMgr::GetTotalResID()
-{
-    map<string, string> res_id_map;
-
-    for (auto res : resdic_static_mesh)
-    {
-        res_id_map.insert(make_pair(res.first, "STM"));
-    }
-    for (auto res : resdic_skeletal_mesh)
-    {
-        res_id_map.insert(make_pair(res.first, "SKM"));
-    }
-    for (auto res : resdic_skeleton)
-    {
-        res_id_map.insert(make_pair(res.first, "SKT"));
-    }
-    for (auto res : resdic_animation)
-    {
-        res_id_map.insert(make_pair(res.first, "ANM"));
-    }
-    for (auto res : resdic_vs_default)
-    {
-        res_id_map.insert(make_pair(res.first, "VS"));
-    }
-    for (auto res : resdic_vs_skinned)
-    {
-        res_id_map.insert(make_pair(res.first, "VS"));
-    }
-    for (auto res : resdic_ps_default)
-    {
-        res_id_map.insert(make_pair(res.first, "PS"));
-    }
-    for (auto res : resdic_texture)
-    {
-        res_id_map.insert(make_pair(res.first, "TEX"));
-    }
-    for (auto res : resdic_sound)
-    {
-        res_id_map.insert(make_pair(res.first, "SOUND"));
-    }
-
-    return res_id_map;
 }
 
 //bool ResourceMgr::ImportFbx(string filename)
