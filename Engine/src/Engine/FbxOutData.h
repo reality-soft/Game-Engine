@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(disable: 4099)
 #include "DataTypes.h"
 #include <fbxsdk.h>
 
