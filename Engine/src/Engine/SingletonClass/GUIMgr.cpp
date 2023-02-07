@@ -31,7 +31,7 @@ void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
 
 	// Add a font to the font manager
 	base_font_file = "../../Contents/Fonts/Garet_Book.ttf";
-	imfont = ImGui::GetIO().Fonts->AddFontFromFileTTF("../../Contents/Fonts/Garet_Book.ttf", 24.0f, &fontConfig);
+	AddFont("base_font", base_font_file, 18.0f);
 
 	// store context instance
 	this->context = ImGui::GetCurrentContext();
