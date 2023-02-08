@@ -3,7 +3,6 @@
 #include "Components.h"
 #include "FbxLoader.h"
 #include "Texture.h"
-#include <functional>
 
 
 
