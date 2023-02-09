@@ -34,7 +34,7 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct SkeletalMesh : public Component
+	struct SkeletalMesh : public Transform
 	{
 
 		string mesh_id;
@@ -51,7 +51,7 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct Camera : public Component
+	struct Camera : public Transform
 	{
 		XMVECTOR position, look, up, right, target;
 		float yaw, pitch, roll, distance, speed;
@@ -60,7 +60,7 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct Skeleton : public Component
+	struct Skeleton : public Transform
 	{
 		string skeleton_id;
 
@@ -83,12 +83,12 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct SoundListener : public Component
+	struct SoundListener : public Transform
 	{
 
 	};
 
-	struct SoundGenerator : public Component
+	struct SoundGenerator : public Transform
 	{
 		queue<SoundQueue> sound_queue_list;
 	};
