@@ -18,17 +18,11 @@ namespace KGCA41B
 	{
 		XMMATRIX local;
 		XMMATRIX world;
-		weak_ptr<Transform> parent;
-		vector<weak_ptr<Transform>> children;
 
 		virtual void OnConstruct() override
 		{
 			local = XMMatrixIdentity();
 			world = XMMatrixIdentity();
-		}
-
-		virtual void OnUpdate() override
-		{
 		}
 	};
 
@@ -101,10 +95,22 @@ namespace KGCA41B
 
 	struct TransformTreeNode
 	{
+		entt::id_type type;
+		weak_ptr<TransformTreeNode> parent;
+		vector<shared_ptr<TransformTreeNode>> children;
+
+		void OnUpdate(entt::registry &registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+			Transform* cur_transform = static_cast<Transform*>(registry.storage(type)->get(entity));
+			cur_transform->world = world;
+
+			for (auto child : children) {
+				child->OnUpdate(registry, entity, world * cur_transform->local);
+			}
+		}
 	};
 
 	class TransformTree
 	{
-		TransformTreeNode root;
+		shared_ptr<TransformTreeNode> root_node;
 	};
 }
