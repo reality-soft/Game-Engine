@@ -99,6 +99,9 @@ namespace KGCA41B
 		weak_ptr<TransformTreeNode> parent;
 		vector<shared_ptr<TransformTreeNode>> children;
 
+		TransformTreeNode() {};
+		TransformTreeNode(entt::id_type type) : type(type) {};
+
 		void OnUpdate(entt::registry &registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
 			Transform* cur_transform = static_cast<Transform*>(registry.storage(type)->get(entity));
 			cur_transform->world = world;
@@ -109,7 +112,7 @@ namespace KGCA41B
 		}
 	};
 
-	class TransformTree
+	struct TransformTree
 	{
 		shared_ptr<TransformTreeNode> root_node;
 	};
