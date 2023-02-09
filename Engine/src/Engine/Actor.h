@@ -11,7 +11,6 @@ namespace KGCA41B
 		entt::entity entity_id_;
 		TransformTree transform_tree_;
 	public:
-		Actor(entt::registry& registry);
 		void OnInit(entt::registry& registry);
 	};
 }
