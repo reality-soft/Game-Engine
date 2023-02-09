@@ -1,14 +1,15 @@
 #include "Actor.h"
 
-using namespace KGCA41B;
 
-void Actor::Regist(entt::registry& reg)
+KGCA41B::Actor::Actor(entt::registry& registry)
 {
-	ent = reg.create();
+	OnInit(registry);
 }
 
-void Actor::InheritTransform()
-{	
-	if (parent_.get() != nullptr)
-		comp_transform_.parent = make_shared<Transform>(parent_.get()->comp_transform_);	
+void KGCA41B::Actor::OnInit(entt::registry& registry)
+{
+	entity_id_ = registry.create();
+	
+	entt::meta_type meta;
+	decltype(meta);
 }

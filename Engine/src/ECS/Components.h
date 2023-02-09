@@ -18,7 +18,8 @@ namespace KGCA41B
 	{
 		XMMATRIX local;
 		XMMATRIX world;
-		shared_ptr<Transform> parent;
+		weak_ptr<Transform> parent;
+		vector<weak_ptr<Transform>> children;
 
 		virtual void OnConstruct() override
 		{
@@ -28,7 +29,6 @@ namespace KGCA41B
 
 		virtual void OnUpdate() override
 		{
-			parent.get() ? world = parent.get()->world * local : world = local;
 		}
 	};
 
@@ -93,12 +93,18 @@ namespace KGCA41B
 	{
 
 	};
-	
-	
 
 	struct SoundGenerator : public Component
 	{
 		queue<SoundQueue> sound_queue_list;
 	};
 
+	struct TransformTreeNode
+	{
+	};
+
+	class TransformTree
+	{
+		TransformTreeNode root;
+	};
 }
