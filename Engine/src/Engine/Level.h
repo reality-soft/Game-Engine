@@ -27,12 +27,13 @@ namespace KGCA41B
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
 
-	private:
-		SingleMesh<Vertex> level_mesh_;
-
+	public:
 		string vs_id_;
 		string ps_id_;
 		vector<string> texture_id;
+
+	private:
+		SingleMesh<Vertex> level_mesh_;
 
 		CbTransform level_transform_;
 		CbLight level_light_;

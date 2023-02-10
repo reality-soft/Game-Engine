@@ -95,9 +95,11 @@ void Level::Render()
 	VertexShader* vs = RESOURCE->UseResource<VertexShader>(vs_id_);
 	PixelShader* ps = RESOURCE->UseResource<PixelShader>(ps_id_);
 
-
 	// Set Shader : PS
 	device_context_->PSSetShader(ps->Get(), 0, 0);
+
+	ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->LinearWrap();
+	device_context_->PSSetSamplers(0, 1, &sampler);
 
 	UINT slot = 0;
 	for (auto id : texture_id)
@@ -109,6 +111,7 @@ void Level::Render()
 		}
 	}
 
+	// Set Shader : VS
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
