@@ -52,7 +52,7 @@ namespace KGCA41B
 	struct Material : public Component
 	{
 		string shader_id;
-		string texture_id;
+		vector<string> texture_id;
 
 		virtual void OnConstruct() override {};
 	};
