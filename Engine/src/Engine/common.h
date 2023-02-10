@@ -1,14 +1,17 @@
 #pragma once
 #include <list>
 #include <vector>
-#include <wrl.h>
-#include <string>
 #include <map>
 #include <queue>
 #include <set>
+#include <string>
 #include <algorithm>
+
+#include <wrl.h>
+
 #include <windows.h>
 #include <tchar.h>
+#include <typeinfo>
 #include <atlconv.h>
 #include <DirectXMath.h>
 #include <iostream>
@@ -16,6 +19,8 @@
 #include <codecvt>
 #include <functional>
 #include <sstream>
+#include <variant>
+
 #include "fmod.hpp"
 
 using namespace std;
@@ -34,7 +39,6 @@ static type* GetInst()\
 private:\
 type() {}\
 ~type() {}
-
 
 static std::wstring to_mw(const std::string& _src)
 {

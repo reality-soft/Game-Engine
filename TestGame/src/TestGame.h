@@ -10,6 +10,8 @@ public:
 	virtual void OnRelease();
 
 private:
+	KGCA41B::Actor actor;
+
 	entt::registry reg_scene;
 
 	entt::entity ent_player;

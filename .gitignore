@@ -253,3 +253,4 @@ ModelManifest.xml
 /CharacterTool
 *.vcxproj
 *.filters
+*.sln

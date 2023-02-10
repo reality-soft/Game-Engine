@@ -33,6 +33,10 @@ namespace KGCA41B
 		template<typename T>
 		T* UseResource(string id);
 
+		map<string, string> GetTotalResID();
+
+
+
 	private:
 		string current_id;
 
@@ -41,26 +45,21 @@ namespace KGCA41B
 		map<string, map<UINT, XMMATRIX>> resdic_skeleton;
 		map<string, vector<OutAnimData>> resdic_animation;
 
-		map<string, VsDefault> resdic_vs_default;
-		map<string, VsSkinned> resdic_vs_skinned;
-		map<string, PsDefault> resdic_ps_default;
+		map<string, VertexShader> resdic_vs;
+		map<string, PixelShader>  resdic_ps;
 		map<string, Texture> resdic_texture;
 
 		map<string, FMOD::Sound*>	resdic_sound;
 
 	private:
 		bool ImportFbx(string filename);
-
-		bool CreateVertexBuffers(SingleMesh<Vertex>& mesh);
-		bool CreateVertexBuffers(SingleMesh<SkinnedVertex>& mesh);
-
-		bool ImportVsDefault(string filename);
-		bool ImportVsSkinned(string filename);
-		bool ImportPsDefault(string filename);
-
-		bool ImportSound(string filename);
-	
+		bool ImportShaders(string filename);
+		bool ImportSound(string filename);	
 		bool ImportTexture(string filename);
+
+		bool CreateBuffers(SingleMesh<Vertex>& mesh);
+		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
+
 	};
 
 
@@ -76,7 +75,7 @@ namespace KGCA41B
 		{
 			result = ImportFbx(directory + filename);
 		}
-		else if (typeid(T) == typeid(VsDefault))
+		else if (typeid(T) == typeid(VertexShader))
 		{
 			result = ImportVsDefault(directory + filename);
 		}
@@ -84,7 +83,7 @@ namespace KGCA41B
 		{
 			result = ImportVsSkinned(directory + filename);
 		}
-		else if (typeid(T) == typeid(PsDefault)) 
+		else if (typeid(T) == typeid(PixelShader)) 
 		{
 			result = ImportPsDefault(directory + filename);
 		}
@@ -135,34 +134,18 @@ namespace KGCA41B
 				return (T*)(&iter->second);
 			}
 		}
-		else if (typeid(T) == typeid(VsDefault))
+		else if (typeid(T) == typeid(VertexShader))
 		{
-			auto iter = resdic_vs_default.find(id);
-			if (iter != resdic_vs_default.end())
+			auto iter = resdic_vs.find(id);
+			if (iter != resdic_vs.end())
 			{
 				return (T*)(&iter->second);
 			}
 		}
-		else if (typeid(T) == typeid(VsSkinned))
+		else if (typeid(T) == typeid(PixelShader))
 		{
-			auto iter = resdic_vs_skinned.find(id);
-			if (iter != resdic_vs_skinned.end())
-			{
-				return (T*)(&iter->second);
-			}
-		}
-		else if (typeid(T) == typeid(PsDefault))
-		{
-			auto iter = resdic_ps_default.find(id);
-			if (iter != resdic_ps_default.end())
-			{
-				return (T*)(&iter->second);
-			}
-		}
-		else if (typeid(T) == typeid(Texture))
-		{
-			auto iter = resdic_texture.find(id);
-			if (iter != resdic_texture.end())
+			auto iter = resdic_ps.find(id);
+			if (iter != resdic_ps.end())
 			{
 				return (T*)(&iter->second);
 			}

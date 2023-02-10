@@ -15,8 +15,6 @@ namespace KGCA41B
 
 	public:
 		bool LoadTextureWIC(wstring filepath);
-
-		vector<ID3D11Resource*> res_list;
-		vector<ID3D11ShaderResourceView*> srv_list;
+		ComPtr<ID3D11ShaderResourceView> srv;
 	};
 }

@@ -5,6 +5,8 @@ using namespace KGCA41B;
 
 void TestGame::OnInit()
 {
+	actor.OnInit(reg_scene);
+
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 
 	FMOD_MGR->Init();
