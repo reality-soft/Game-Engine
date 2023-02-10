@@ -3,7 +3,9 @@
 
 namespace KGCA41B
 {
-	class DLL_API VsDefault
+
+
+	class DLL_API VertexShader
 	{
 	public:
 		virtual bool LoadCompiled(wstring cso_file);
@@ -14,13 +16,7 @@ namespace KGCA41B
 		ComPtr<ID3D11InputLayout> input_layout;
 	};
 
-	class DLL_API VsSkinned : public VsDefault
-	{
-	public:
-		bool LoadCompiled(wstring cso_file) override;
-	};
-
-	class DLL_API PsDefault
+	class DLL_API PixelShader
 	{
 	public:
 		bool LoadCompiled(wstring _csoFile);

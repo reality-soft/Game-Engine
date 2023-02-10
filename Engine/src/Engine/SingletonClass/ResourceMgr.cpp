@@ -27,9 +27,7 @@ void ResourceMgr::Release()
 void ResourceMgr::LoadAllResource()
 {
     LoadDir(directory_ + "/FBX/", &ResourceMgr::ImportFbx);
-    LoadDir(directory_ + "/Shader/VsDefault/", &ResourceMgr::ImportVsDefault);
-    LoadDir(directory_ + "/Shader/VsSkinned/", &ResourceMgr::ImportVsSkinned);
-    LoadDir(directory_ + "/Shader/PsDefault/", &ResourceMgr::ImportPsDefault);
+    LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
     LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
 }
 
@@ -38,7 +36,7 @@ void ResourceMgr::LoadDir(string path, Load_Func load_func)
     string tempAdd = path + "*.*";
     intptr_t handle;
     struct _finddata_t fd;
-    handle = _findfirst(tempAdd.c_str(), &fd);
+     handle = _findfirst(tempAdd.c_str(), &fd);
 
     // ��ã��� ����
     if (handle == -1L) return;
@@ -61,39 +59,35 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     
     for (auto res : resdic_static_mesh)
     {
-        res_id_map.insert(make_pair(res.first, "STM"));
+        res_id_map.insert(make_pair("[STM]" + res.first, "STM"));
     }
     for (auto res : resdic_skeletal_mesh)
     {
-        res_id_map.insert(make_pair(res.first, "SKM"));
+        res_id_map.insert(make_pair("[SKM]" + res.first, "SKM"));
     }
     for (auto res : resdic_skeleton)
     {
-        res_id_map.insert(make_pair(res.first, "SKT"));
+        res_id_map.insert(make_pair("[SKT]" + res.first, "SKT"));
     }
     for (auto res : resdic_animation)
     {
-        res_id_map.insert(make_pair(res.first, "ANM"));
+        res_id_map.insert(make_pair("[ANM]" + res.first, "ANM"));
     }
-    for (auto res : resdic_vs_default)
+    for (auto res : resdic_vs)
     {
-        res_id_map.insert(make_pair(res.first, "VS"));
+        res_id_map.insert(make_pair("[VS]" + res.first, "VS"));
     }
-    for (auto res : resdic_vs_skinned)
+    for (auto res : resdic_ps)
     {
-        res_id_map.insert(make_pair(res.first, "VS"));
-    }
-    for (auto res : resdic_ps_default)
-    {
-        res_id_map.insert(make_pair(res.first, "PS"));
+        res_id_map.insert(make_pair("[PS]" + res.first, "PS"));
     }
     for (auto res : resdic_texture)
     {
-        res_id_map.insert(make_pair(res.first, "TEX"));
+        res_id_map.insert(make_pair("[TEX]" + res.first, "TEX"));
     }
     for (auto res : resdic_sound)
     {
-        res_id_map.insert(make_pair(res.first, "SOUND"));
+        res_id_map.insert(make_pair("[SND]" + res.first, "SND"));
     }
 
     return res_id_map;
@@ -241,42 +235,35 @@ bool ResourceMgr::ImportFbx(string filename)
     return true;
 }
 
-bool ResourceMgr::ImportVsDefault(string filename)
+bool KGCA41B::ResourceMgr::ImportShaders(string filename)
 {
-    VsDefault vs_default;
-    if (!vs_default.LoadCompiled(to_mw(filename)))
-        return false;
 
-    auto strs = split(filename, '/');
-    string id = strs[strs.size() - 1];
-    
-    resdic_vs_default.insert(make_pair(id, vs_default));
-    return true;
-}
+    if (filename.find("VS") != string::npos)
+    {
+        VertexShader new_vs;
+        if (new_vs.LoadCompiled(to_mw(filename)) == false)
+            return false;
 
-bool ResourceMgr::ImportVsSkinned(string filename)
-{
-    VsSkinned vs_skinned;
-    if (!vs_skinned.LoadCompiled(to_mw(filename)))
-        return false;
+        auto strs = split(filename, '/');
+        string id = strs[strs.size() - 1];
 
-    auto strs = split(filename, '/');
-    string id = strs[strs.size() - 1];
+        resdic_vs.insert(make_pair(id, new_vs));
+        return true;
+    }
+    if (filename.find("PS") != string::npos)
+    {
+        PixelShader ps_default;
+        if (!ps_default.LoadCompiled(to_mw(filename)))
+            return false;
 
-    resdic_vs_skinned.insert(make_pair(id, vs_skinned));
-    return true;
-}
+        auto strs = split(filename, '/');
+        string id = strs[strs.size() - 1];
 
-bool ResourceMgr::ImportPsDefault(string filename)
-{
-    PsDefault ps_default;
-    if (!ps_default.LoadCompiled(to_mw(filename)))
-        return false;
+        resdic_ps.insert(make_pair(id, ps_default));
+        return true;
+    }
 
-    auto strs = split(filename, '/');
-    string id = strs[strs.size() - 1];
 
-    resdic_ps_default.insert(make_pair(id, ps_default));
     return true;
 }
 
