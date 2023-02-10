@@ -70,6 +70,16 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	struct CbLight
+	{
+		struct Data
+		{
+			XMVECTOR light_direction;
+			float light_bright;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 	// Sound
 
 	enum SoundType
