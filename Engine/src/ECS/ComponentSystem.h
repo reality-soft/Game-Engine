@@ -1,8 +1,8 @@
 #pragma once
 #include "entt.hpp"
-#include "../Engine/common.h"
-#include "../Engine/DLLMacro.h"
 #include "Components.h"
+#include "../Engine/stdafx.h"
+#include "../Engine/DLLMacro.h"
 
 namespace KGCA41B {
 	class DLL_API ComponentSystem

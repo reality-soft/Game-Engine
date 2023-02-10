@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+#include "stdafx.h"
 #include <d3d11.h>
 
 namespace KGCA41B

@@ -1,6 +1,6 @@
 #pragma once
 #include "DllMacro.h"
-#include "common.h"
+#include "stdafx.h"
 
 #define CHANNEL_MAX_COUNT 1000
 
