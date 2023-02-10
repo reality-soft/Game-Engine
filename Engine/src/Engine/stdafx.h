@@ -38,7 +38,9 @@ static type* GetInst()\
 }\
 private:\
 type() {}\
-~type() {}
+~type() {}\
+type(const type&) = delete;\
+type& operator=(const type&) = delete;
 
 static std::wstring to_mw(const std::string& _src)
 {
