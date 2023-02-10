@@ -21,7 +21,7 @@ KGCA41B::Level::Level()
 	device_context_ = DX11APP->GetDeviceContext();
 }
 
-bool Level::CreateLevel(UINT num_row, UINT num_col, float cell_distance, float uv_scale, string vs_id)
+bool Level::CreateLevel(UINT num_row, UINT num_col, float cell_distance, float uv_scale)
 {
     num_row_vertex_ = num_row;
     num_col_vertex_ = num_col;
@@ -74,18 +74,7 @@ bool Level::CreateLevel(UINT num_row, UINT num_col, float cell_distance, float u
 	if (CreateBuffers() == false)
 		return false;
 
-
-	level_vs_ = RESOURCE->UseResource<VertexShader>(vs_id);
-
     return true;
-}
-
-bool Level::DesignLevel(string texture_id, string ps_id)
-{
-	level_tex_ = RESOURCE->UseResource<Texture>(texture_id);
-	level_ps_ = RESOURCE->UseResource<PixelShader>(ps_id);
-
-	return true;
 }
 
 void KGCA41B::Level::Update()
@@ -103,21 +92,34 @@ void KGCA41B::Level::Update()
 
 void Level::Render()
 {
+	VertexShader* vs = RESOURCE->UseResource<VertexShader>(vs_id_);
+	PixelShader* ps = RESOURCE->UseResource<PixelShader>(ps_id_);
+
 	// Set Shader : PS
-	device_context_->PSSetShader(level_ps_->Get(), 0, 0);
+	device_context_->PSSetShader(ps->Get(), 0, 0);
 
-	if (level_tex_ != nullptr && level_tex_->srv_list.size() > 0)
-		device_context_->PSSetShaderResources(0, level_tex_->srv_list.size(), level_tex_->srv_list.data());
+	ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->LinearWrap();
+	device_context_->PSSetSamplers(0, 1, &sampler);
 
+	UINT slot = 0;
+	for (auto id : texture_id)
+	{
+		Texture* texture = RESOURCE->UseResource<Texture>(id);
+		if (texture != nullptr)
+		{
+			device_context_->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
+		}
+	}
 
+	// Set Shader : VS
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
 	device_context_->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
 	device_context_->IASetIndexBuffer(level_mesh_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	device_context_->IASetInputLayout(level_vs_->InputLayoyt());
-	device_context_->VSSetShader(level_vs_->Get(), 0, 0);
+	device_context_->IASetInputLayout(vs->InputLayoyt());
+	device_context_->VSSetShader(vs->Get(), 0, 0);
 
 	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
 }

@@ -27,7 +27,7 @@ public:
 
     D3D11_VIEWPORT          GetViewPort() { return view_port; }
     D3D11_VIEWPORT* GetViewPortAddress() { return &view_port; }
-
+    DirectX::CommonStates* GetCommonStates() { return dx_states; }
 public:
     bool OnInit(POINT buffer_size, HWND hwnd);
 

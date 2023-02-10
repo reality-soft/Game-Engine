@@ -17,8 +17,7 @@ namespace KGCA41B
 		~Level() {}
 
 	public:
-		bool CreateLevel(UINT num_row, UINT num_col, float cell_distance, float uv_scale, string vs_id);
-		bool DesignLevel(string texture_id, string ps_id);
+		bool CreateLevel(UINT num_row, UINT num_col, float cell_distance, float uv_scale);
 
 		void Update();
 		void Render();
@@ -28,11 +27,13 @@ namespace KGCA41B
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
 
+	public:
+		string vs_id_;
+		string ps_id_;
+		vector<string> texture_id;
+
 	private:
 		SingleMesh<Vertex> level_mesh_;
-		VertexShader* level_vs_;
-		PixelShader* level_ps_;
-		Texture* level_tex_;
 
 		CbTransform level_transform_;
 		CbLight level_light_;
