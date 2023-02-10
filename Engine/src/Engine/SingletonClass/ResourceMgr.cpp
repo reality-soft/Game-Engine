@@ -29,6 +29,7 @@ void ResourceMgr::LoadAllResource()
     LoadDir(directory_ + "/FBX/", &ResourceMgr::ImportFbx);
     LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
     LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
+    LoadDir(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
 }
 
 void ResourceMgr::LoadDir(string path, Load_Func load_func)
@@ -286,5 +287,13 @@ bool ResourceMgr::ImportSound(string filename)
 
 bool ResourceMgr::ImportTexture(string filename)
 {
+    Texture new_tex;
+    new_tex.LoadTextureWIC(to_mw(filename));
+
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+
+    resdic_texture.insert(make_pair(id, new_tex));
+
     return false;
 }

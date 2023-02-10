@@ -87,13 +87,19 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 void RenderSystem::SetMaterial(Material& material)
 {
-	PsDefault* shader = RESOURCE->UseResource<PsDefault>(material.shader_id);
-	Texture* texture = RESOURCE->UseResource<Texture>(material.texture_id);
+	PixelShader* shader = RESOURCE->UseResource<PixelShader>(material.shader_id);
 
-	device_context->PSSetShader(shader->Get(), 0, 0);
+	UINT slot = 0;
+	for (auto tex_id : material.texture_id)
+	{
+		Texture* texture = RESOURCE->UseResource<Texture>(tex_id);
+		if (texture != nullptr)
+		{
+			device_context->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
+		}
+	}	
 
-	if (texture != nullptr && texture->srv_list.size() > 0)
-		device_context->PSSetShaderResources(0, texture->srv_list.size(), texture->srv_list.data());
+	device_context->PSSetShader(shader->Get(), 0, 0);		
 }
 
 void RenderSystem::SetCbTransform(Transform& transform)
@@ -129,7 +135,7 @@ void RenderSystem::PlayAnimation(Skeleton& skeleton, Animation& animation)
 void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)
 {
 	vector<SingleMesh<Vertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<Vertex>>>(static_mesh.mesh_id);
-	VsDefault* shader = RESOURCE->UseResource<VsDefault>(static_mesh.shader_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh.shader_id);
 
 	for (auto single_mesh : *mesh_list)
 	{
@@ -149,7 +155,7 @@ void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)
 void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
 {
 	vector<SingleMesh<SkinnedVertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<SkinnedVertex>>>(skeletal_mesh.mesh_id);
-	VsSkinned* shader = RESOURCE->UseResource<VsSkinned>(skeletal_mesh.shader_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh.shader_id);
 
 	for (auto single_mesh : *mesh_list)
 	{
