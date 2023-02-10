@@ -8,15 +8,10 @@ namespace KGCA41B
 	class DLL_API Actor
 	{
 	protected:
-		entt::entity ent;
-		shared_ptr<Actor> parent_;
-
+		entt::entity entity_id_;
+		TransformTree transform_tree_;
 	public:
-		void Regist(entt::registry& reg);
-
-	public:
-		Transform comp_transform_;
-		void InheritTransform();
+		void OnInit(entt::registry& registry);
 	};
 }
 

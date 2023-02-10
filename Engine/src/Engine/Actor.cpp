@@ -1,14 +1,42 @@
 #include "Actor.h"
 
-using namespace KGCA41B;
-
-void Actor::Regist(entt::registry& reg)
+void KGCA41B::Actor::OnInit(entt::registry& registry)
 {
-	ent = reg.create();
-}
+	entity_id_ = registry.create();
+	
+	entt::type_hash<Transform> type_hash_transform;
+	Transform transform;
+	transform.local = XMMATRIX(
+		1, 1, 1, 1,
+		1, 1, 1, 1,
+		1, 1, 1, 1,
+		1, 1, 1, 1
+	);
+	registry.emplace<Transform>(entity_id_, transform);
 
-void Actor::InheritTransform()
-{	
-	if (parent_.get() != nullptr)
-		comp_transform_.parent = make_shared<Transform>(parent_.get()->comp_transform_);	
+	entt::type_hash<StaticMesh> type_hash_static_mesh;
+	StaticMesh static_mesh;
+	static_mesh.local = XMMATRIX(
+		2, 2, 2, 2,
+		2, 2, 2, 2,
+		2, 2, 2, 2,
+		2, 2, 2, 2
+	);
+	registry.emplace<StaticMesh>(entity_id_, static_mesh);
+
+	entt::type_hash<SkeletalMesh> type_hash_skeletal_mesh;
+	SkeletalMesh skeletal_mesh;
+	skeletal_mesh.local = XMMATRIX(
+		3, 3, 3, 3,
+		3, 3, 3, 3,
+		3, 3, 3, 3,
+		3, 3, 3, 3
+	);
+	registry.emplace<SkeletalMesh>(entity_id_, skeletal_mesh);
+
+	transform_tree_.root_node = make_shared<TransformTreeNode>(type_hash_transform.value());
+	transform_tree_.root_node->children.push_back(make_shared<TransformTreeNode>(type_hash_static_mesh.value()));
+	transform_tree_.root_node->children.push_back(make_shared<TransformTreeNode>(type_hash_skeletal_mesh.value()));
+
+	transform_tree_.root_node->OnUpdate(registry, entity_id_);
 }

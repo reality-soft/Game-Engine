@@ -18,17 +18,11 @@ namespace KGCA41B
 	{
 		XMMATRIX local;
 		XMMATRIX world;
-		shared_ptr<Transform> parent;
 
 		virtual void OnConstruct() override
 		{
 			local = XMMatrixIdentity();
 			world = XMMatrixIdentity();
-		}
-
-		virtual void OnUpdate() override
-		{
-			parent.get() ? world = parent.get()->world * local : world = local;
 		}
 	};
 
@@ -40,7 +34,7 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct SkeletalMesh : public Component
+	struct SkeletalMesh : public Transform
 	{
 
 		string mesh_id;
@@ -57,7 +51,7 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct Camera : public Component
+	struct Camera : public Transform
 	{
 		XMVECTOR position, look, up, right, target;
 		float yaw, pitch, roll, distance, speed;
@@ -66,7 +60,7 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct Skeleton : public Component
+	struct Skeleton : public Transform
 	{
 		string skeleton_id;
 
@@ -89,16 +83,37 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct SoundListener : public Component
+	struct SoundListener : public Transform
 	{
 
 	};
-	
-	
 
-	struct SoundGenerator : public Component
+	struct SoundGenerator : public Transform
 	{
 		queue<SoundQueue> sound_queue_list;
 	};
 
+	struct TransformTreeNode
+	{
+		entt::id_type type;
+		weak_ptr<TransformTreeNode> parent;
+		vector<shared_ptr<TransformTreeNode>> children;
+
+		TransformTreeNode() {};
+		TransformTreeNode(entt::id_type type) : type(type) {};
+
+		void OnUpdate(entt::registry &registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+			Transform* cur_transform = static_cast<Transform*>(registry.storage(type)->get(entity));
+			cur_transform->world = world;
+
+			for (auto child : children) {
+				child->OnUpdate(registry, entity, world * cur_transform->local);
+			}
+		}
+	};
+
+	struct TransformTree
+	{
+		shared_ptr<TransformTreeNode> root_node;
+	};
 }
