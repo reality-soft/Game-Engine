@@ -17,7 +17,6 @@
 #include <functional>
 #include <sstream>
 #include "fmod.hpp"
-#include "OpenXLSX.hpp"
 
 using namespace std;
 using namespace Microsoft::WRL;

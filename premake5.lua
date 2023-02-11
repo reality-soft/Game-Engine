@@ -36,8 +36,7 @@ project "Engine"
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
-		"../SDK/IMGUI/include",
-		"../SDK/OpenXLSX/include"
+		"../SDK/IMGUI/include"
 	}
 
 	libdirs
@@ -45,8 +44,7 @@ project "Engine"
 		"../SDK/DirectXTK/lib",
 		"../SDK/FBXSDK/lib/debug",
 		"../SDK/FMOD/lib/debug",
-		"../SDK/IMGUI/lib",
-		"../SDK/OpenXLSX/lib/debug"
+		"../SDK/IMGUI/lib"
 	}
 
 	links
@@ -62,8 +60,7 @@ project "Engine"
 		"zlib-md",
 		"fmod_vc",
 		"fmodL_vc",
-		"ImGui_Win32_Dx11_D",
-		"OpenXLSXd"
+		"ImGui_Win32_Dx11_D"
 	}
 
 	filter "system:windows"
@@ -120,8 +117,7 @@ project "TestGame"
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
-		"../SDK/IMGUI/include",
-		"../SDK/OpenXLSX/include"
+		"../SDK/IMGUI/include"
 	}
 
 	libdirs
@@ -129,8 +125,7 @@ project "TestGame"
 		"../SDK/DirectXTK/lib",
 		"../SDK/FBXSDK/lib/debug",
 		"../SDK/FMOD/lib/debug",
-		"../SDK/IMGUI/lib",
-		"../SDK/OpenXLSX/lib/debug"
+		"../SDK/IMGUI/lib"
 	}
 
 	links
@@ -141,8 +136,7 @@ project "TestGame"
 		"zlib-md",
 		"fmod_vc",
 		"fmodL_vc",
-		"ImGui_Win32_Dx11_D",
-		"OpenXLSXd"
+		"ImGui_Win32_Dx11_D"
 	}
 
 	filter "files:**VS.hlsl"
