@@ -1,5 +1,7 @@
 #include "CameraSystem.h"
 #include "TimeMgr.h"
+#include "InputMgr.h"
+#include "Engine.h"
 
 using namespace KGCA41B;
 
@@ -59,6 +61,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 		auto& input = view_input.get<InputMapping>(ent);
 		
 		CameraMovement(input);
+		CameraAction(input);
 	}
 
 	CreateMatrix();
@@ -103,6 +106,35 @@ void CameraSystem::CameraMovement(InputMapping& input_mapping)
 
 		case AxisType::ROLL:
 			camera->roll += input_mapping.axis_value[(int)AxisType::ROLL] * TM_DELTATIME;
+		}
+	}
+}
+
+void CameraSystem::CameraAction(InputMapping& input_mapping)
+{
+	for (auto actions : input_mapping.actions)
+	{
+		switch (actions)
+		{
+		case ActionType::ATTACK:
+		{
+			// Convert the mouse position to a direction in world space
+			float mouse_x = static_cast<float>(DINPUT->GetMousePosition().x);
+			float mouse_y = static_cast<float>(DINPUT->GetMousePosition().y);
+			XMMATRIX matrix_inv = DirectX::XMMatrixInverse(nullptr, cb_viewproj.data.view_matrix * cb_viewproj.data.projection_matrix);
+
+			XMVECTOR mouse_coord = DirectX::XMVectorSet(
+				(2.0f * mouse_x / (float)ENGINE->GetWindowSize().x - 1.0f) / matrix_inv.r[0].m128_f32[0],
+				(-2.0f * mouse_y / (float)ENGINE->GetWindowSize().y + 1.0f) / matrix_inv.r[1].m128_f32[1],
+				0.0f,
+				0.0f
+			);
+			XMVECTOR ray_direction = (mouse_coord + (camera->look * 1000.0f));
+			mouse_ray = new MouseRay;
+
+			XMtoRP(mouse_coord, mouse_ray->start_point);
+			XMtoRP(ray_direction, mouse_ray->end_point);
+		} break;
 		}
 	}
 }

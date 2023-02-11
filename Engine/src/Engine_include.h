@@ -5,7 +5,9 @@
 #include "Engine/SingletonClass/ResourceMgr.h"
 #include "Engine/SingletonClass/FmodMgr.h"
 #include "Engine/SingletonClass/GUIMgr.h"
+#include "Engine/SingletonClass/PhysicsMgr.h"
 #include "Engine/SingletonClass/DataMgr.h"
+
 
 #include "ECS/RenderSystem.h"
 #include "ECS/CameraSystem.h"
