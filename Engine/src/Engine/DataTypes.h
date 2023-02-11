@@ -81,6 +81,13 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	// Physics
+	struct MouseRay
+	{
+		reactphysics3d::Vector3 start_point;
+		reactphysics3d::Vector3 end_point;
+	};
+
 	// Sound
 
 	enum SoundType
@@ -138,4 +145,18 @@ namespace KGCA41B
 
 		IDLE
 	};
+}
+
+
+static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector3& rpv)
+{
+	rpv.x = xmv.m128_f32[0];
+	rpv.y = xmv.m128_f32[1];
+	rpv.z = xmv.m128_f32[2];
+}
+
+static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
+{
+	rpv.x = xmv.m128_f32[0];
+	rpv.y = xmv.m128_f32[1];
 }
