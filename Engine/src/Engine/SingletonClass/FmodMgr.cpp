@@ -1,5 +1,7 @@
 #include "FmodMgr.h"
 
+using namespace KGCA41B;
+
 bool FmodMgr::Init()
 {
     // FMOD 시스템 생성
