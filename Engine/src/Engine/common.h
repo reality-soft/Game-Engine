@@ -19,7 +19,6 @@
 #include <codecvt>
 #include <functional>
 #include <sstream>
-#include <variant>
 
 #include "fmod.hpp"
 
