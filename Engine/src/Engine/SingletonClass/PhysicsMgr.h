@@ -1,12 +1,22 @@
 #pragma once
-#include <reactphysics3d/reactphysics3d.h>
-#include "common.h"
+#include "DataTypes.h"
 #include "DllMacro.h"
 
 using namespace reactphysics3d;
 
 namespace KGCA41B
 {
+    class MouseRayCallback : public RaycastCallback
+    {
+    public:
+
+        virtual decimal notifyRaycastHit(const RaycastInfo& info)
+        {
+            // Return a fraction of 1.0 to gather all hits 
+            return decimal(1.0);
+        }
+    };
+
     class DLL_API PhysicsMgr
     {
         SINGLETON(PhysicsMgr);
@@ -15,6 +25,9 @@ namespace KGCA41B
         bool Init();
         void Update();
         void Release();
+
+    public:
+        Vector3 RaycastMouse(MouseRay* mouse_ray);
 
 
     private:
