@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include "ResourceMgr.h"
 #include "GUIMgr.h"
+#include "../Engine/../SpacePartition/SpacePartition.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -48,6 +49,8 @@ namespace KGCA41B {
 			return false;
 
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
+
+		SpacePartition::GetInst()->Init({ 300, 300 });
 
 		return true;
 	}
