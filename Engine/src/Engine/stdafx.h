@@ -20,13 +20,12 @@
 #include <functional>
 #include <sstream>
 
+#include "SpacePartition/Collision.h"
 #include "fmod.hpp"
 
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;
-
-
 
 #define SINGLETON(type)\
 public:\
@@ -37,7 +36,9 @@ static type* GetInst()\
 }\
 private:\
 type() {}\
-~type() {}
+~type() {}\
+type(const type&) = delete;\
+type& operator=(const type&) = delete;
 
 static std::wstring to_mw(const std::string& _src)
 {

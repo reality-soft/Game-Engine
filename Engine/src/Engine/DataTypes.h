@@ -1,6 +1,6 @@
 #pragma once
+#include "stdafx.h"
 #include <reactphysics3d/reactphysics3d.h>
-#include "common.h"
 #include <d3d11.h>
 
 namespace KGCA41B
