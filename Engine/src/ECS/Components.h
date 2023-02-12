@@ -1,8 +1,8 @@
 #pragma once
 #include "entt.hpp"
-#include "../Engine/DataTypes.h"
-#include "../Engine/Shader.h"
-#include "../Engine/Texture.h"
+#include "DataTypes.h"
+#include "Shader.h"
+#include "Texture.h"
 
 namespace KGCA41B
 {

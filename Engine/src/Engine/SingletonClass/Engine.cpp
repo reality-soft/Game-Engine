@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include "ResourceMgr.h"
 #include "GUIMgr.h"
+#include "PhysicsMgr.h"
 #include "../Engine/../SpacePartition/SpacePartition.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -49,6 +50,8 @@ namespace KGCA41B {
 			return false;
 
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
+		PHYSICS->Init();
+		TIMER->Init();
 
 		SpacePartition::GetInst()->Init({ 300, 300 });
 
@@ -57,7 +60,6 @@ namespace KGCA41B {
 
 	void Engine::Run(Scene* scene)
 	{
-		TIMER->Init();
 		scene->OnInit();
 
 		bool done = false;
@@ -76,11 +78,14 @@ namespace KGCA41B {
 
 			// Updates
 			TIMER->Update();
+			PHYSICS->Update();
+
 			scene->OnUpdate();
 
-			DX11APP->PreRender(true, true, true);
 
 			// Render Here
+			DX11APP->PreRender(true, true, true);
+
 			scene->OnRender();
 
 			DX11APP->PostRender(false);
