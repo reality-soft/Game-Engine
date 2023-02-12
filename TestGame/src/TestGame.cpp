@@ -1,11 +1,18 @@
 #include "TestGame.h"
+#include "Engine/SpacePartition/Vector.h"
 #include "ComponentSystem.h"
 
 using namespace KGCA41B;
 
 void TestGame::OnInit()
 {
-	actor.OnInit(reg_scene);
+	for (int i = 0;i < 100;i++) {
+		Actor actor;
+		actor.OnInit(reg_scene, AABB<3>(Vector<3>::GetRandomVector(0, 300), Vector<3>::GetRandomVector(20, 30)));
+
+		actor_list.push_back(actor);
+	}
+	
 
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 
@@ -36,7 +43,10 @@ void TestGame::OnUpdate()
 {
 	FMOD_MGR->Update();
 	int result = DINPUT->Update();
-		
+
+	for (Actor actor : actor_list) {
+		actor.OnUpdate(reg_scene);
+	}
 
 	sys_sound.OnUpdate(reg_scene);
 	sys_input.OnUpdate(reg_scene);
