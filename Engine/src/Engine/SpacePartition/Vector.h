@@ -16,10 +16,22 @@ namespace KGCA41B {
     private:
         float elements[n];
     public:
+        Vector<n>& operator =(Vector<n> const& rhs)
+        {
+            for (size_t i = 0; i < n; ++i)
+                elements[i] = rhs[i];
+            return *this;
+        }
+        Vector(Vector<n> const& rhs)
+        {
+            for (size_t i = 0; i < n; ++i)
+                elements[i] = rhs[i];
+        }
+
         template<typename... type>
         Vector(type const &... elements) : elements{ static_cast<float const>(elements)... }
         {
-            static_assert(not (n == 1), "A vector of size 1 cannot be created.");
+            static_assert(n != 1, "A vector of size 1 cannot be created.");
         }
 
         Vector<n> operator *(float rhs) const
@@ -27,18 +39,18 @@ namespace KGCA41B {
             Vector<n> product = *this;
 
             for (size_t i = 0; i < n; ++i)
-                product.elements[i] *= c;
+                product.elements[i] *= rhs;
 
             return product;
         }
-        Vector<n>& operator *=(float c) {
-            return *this = *this * c;
+        Vector<n>& operator *=(float rhs) {
+            return *this = *this * rhs;
         }
-        Vector<n> operator /(float c) {
-            return *this * (1 / c);
+        Vector<n> operator /(float rhs) {
+            return *this * (1 / rhs);
         }
-        Vector<n>& operator /=(float c) {
-            return *this = *this / c;
+        Vector<n>& operator /=(float rhs) {
+            return *this = *this / rhs;
         }
 
         Vector<n> operator +(void) const
@@ -86,7 +98,7 @@ namespace KGCA41B {
 
         inline float Length() const
         {
-            return sqrt(dot(*this, *this));
+            return sqrt(Dot(*this, *this));
         }
 
         Vector<n>& Normalize()
@@ -105,12 +117,12 @@ namespace KGCA41B {
     };
 
     template<size_t n>
-    inline float dot(Vector<n> const& u, Vector<n> const& v)
+    inline float Dot(Vector<n> const& lhs, Vector<n> const& rhs)
     {
         float dotProduct = 0;
 
         for (int i = 0; i < n; i++)
-            dotProduct += u[i] * v[i];
+            dotProduct += lhs[i] * rhs[i];
 
         return dotProduct;
     }
