@@ -48,11 +48,8 @@ Vector3 PhysicsMgr::RaycastMouse(MouseRay* mouse_ray)
 	Ray new_ray(mouse_ray->start_point, mouse_ray->end_point);
 
 	MouseRayCallback ray_callback;
-	RaycastInfo raycast_info;
 
 	physics_world_->raycast(new_ray, &ray_callback);
 
-	decimal result = ray_callback.notifyRaycastHit(raycast_info);
-
-	return raycast_info.worldPoint;
+	return ray_callback.hitpoint;
 }

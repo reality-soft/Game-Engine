@@ -1,10 +1,11 @@
 #include "Level.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"
+#include "PhysicsMgr.h"
 
 using namespace KGCA41B;
 
-KGCA41B::Level::Level()
+Level::Level()
 	: num_row_vertex_(0)
 	, num_col_vertex_(0)
 	, cell_distance_(0)
@@ -70,6 +71,8 @@ bool Level::CreateLevel(UINT num_row, UINT num_col, float cell_distance, float u
 			index += 6;
 		}
 	}
+	
+	GenVertexNormal();
 
 	if (CreateBuffers() == false)
 		return false;
@@ -77,7 +80,31 @@ bool Level::CreateLevel(UINT num_row, UINT num_col, float cell_distance, float u
     return true;
 }
 
-void KGCA41B::Level::Update()
+bool Level::CreateHeightField(float min_height, float max_height)
+{
+	GetHeightList();
+
+	height_field_shape_ = PHYSICS->physics_common_.createHeightFieldShape(
+		num_col_vertex_,
+		num_row_vertex_,
+		min_height, 
+		max_height, 
+		height_list_.data(), 
+		reactphysics3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE,
+		1, 1.0f,
+		Vector3(1, 1, cell_distance_));
+
+	if (height_field_shape_ == nullptr)
+		return false;
+
+	reactphysics3d::Transform transform = reactphysics3d::Transform::identity();
+	height_field_body_ = PHYSICS->GetPhysicsWorld()->createCollisionBody(transform);
+	height_field_collider_ = height_field_body_->addCollider(height_field_shape_, transform);
+
+	return true;
+}
+
+void Level::Update()
 {
 	// Set Cb : Transform
 	level_transform_.data.world_matrix = XMMatrixTranspose(level_transform_.data.world_matrix);
@@ -124,6 +151,20 @@ void Level::Render()
 	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
 }
 
+XMVECTOR Level::LevelPicking(MouseRay* mouse_ray)
+{
+	RaycastInfo raycast_info;
+	Ray ray(mouse_ray->start_point, mouse_ray->end_point);
+	XMVECTOR hitpoint = {0, 0, 0, 0};
+
+	if (height_field_body_->raycast(ray, raycast_info))
+	{
+		RPtoXM(raycast_info.worldPoint, hitpoint);
+	}
+
+	return hitpoint;
+}
+
 void Level::GenVertexNormal()
 {
 	vector<XMFLOAT3> face_normals;
@@ -136,17 +177,19 @@ void Level::GenVertexNormal()
 		UINT i1 = level_mesh_.indices[i + 1];
 		UINT i2 = level_mesh_.indices[i + 2];
 
-		face_normals[face++] = GetNormal(i0, i1, i2);
+		XMFLOAT3 normal = GetNormal(i0, i1, i2);
+		level_mesh_.vertices[i0].n = normal;
+		level_mesh_.vertices[i1].n = normal;
+		level_mesh_.vertices[i2].n = normal;
 	}
-	for (UINT f = 0; f < face_normals.size(); ++f)
-	{
-		for (UINT i = 0; i < 3; ++i)
-		{
-			UINT index = level_mesh_.indices[f * 3 + i];
-			level_mesh_.vertices[index].n = face_normals[f];
-		}
-	}
+}
 
+void Level::GetHeightList()
+{
+	for (auto vertex : level_mesh_.vertices)
+	{
+		height_list_.push_back(vertex.p.y);
+	}
 }
 
 XMFLOAT3 Level::GetNormal(UINT i0, UINT i1, UINT i2)

@@ -12,9 +12,12 @@ namespace KGCA41B
 
         virtual decimal notifyRaycastHit(const RaycastInfo& info)
         {
-            // Return a fraction of 1.0 to gather all hits 
-            return decimal(1.0);
+            hitpoint = info.worldPoint;
+
+            return decimal(0.0);
         }
+
+        Vector3 hitpoint;
     };
 
     class DLL_API PhysicsMgr
@@ -28,10 +31,12 @@ namespace KGCA41B
 
     public:
         Vector3 RaycastMouse(MouseRay* mouse_ray);
+        PhysicsWorld* GetPhysicsWorld() { return physics_world_; }
 
+    public:
+        PhysicsCommon physics_common_;
 
     private:
-        PhysicsCommon physics_common_;
         PhysicsWorld* physics_world_;
         float accmulator = 0.0f;
     };
