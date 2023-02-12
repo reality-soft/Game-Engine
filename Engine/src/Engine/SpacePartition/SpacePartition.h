@@ -2,13 +2,15 @@
 #include "../ECS/entt.hpp"
 
 namespace KGCA41B {
-#define Dimension 2
-#define MaxDepth 4
+#define OCT_TREE 3
+#define QUAD_TREE 2
+#define DIMENSION QUAD_TREE
+#define MAX_DEPTH 4
 
 	struct SpaceNode {
 	public:
 		int									depth;
-		AABB<Dimension>						area;
+		AABB<DIMENSION>						area;
 		std::unordered_set<entt::entity>	object_list;
 	};
 
@@ -16,8 +18,8 @@ namespace KGCA41B {
 	{
 		SINGLETON(SpacePartition)
 	private:
-		Vector<Dimension>		world_size_;
-		constexpr static int	array_size_ = ((1 << ((MaxDepth)*Dimension)) - 1) / ((1 << Dimension) - 1);
+		Vector<DIMENSION>		world_size_;
+		constexpr static int	array_size_ = ((1 << ((MAX_DEPTH)*DIMENSION)) - 1) / ((1 << DIMENSION) - 1);
 		SpaceNode				node_list_[array_size_];
 	private:
 		int	GetLeftMostChildOfNode(int depth, int node_num) 
@@ -25,29 +27,29 @@ namespace KGCA41B {
 			if (node_num == 0) return 1;
 			int left_most_node = GetLeftMostChildAtDepth(depth);
 			int next_layer_left_most_node = GetLeftMostChildAtDepth(depth + 1);
-			int children_per_node = 1 << Dimension;
+			int children_per_node = 1 << DIMENSION;
 			return next_layer_left_most_node + (node_num - left_most_node) * children_per_node;
 		}
 		int	GetLeftMostChildAtDepth(int depth) 
 		{
-			int children_per_node = 1 << Dimension;
-			return ((1 << ((depth - 1) * Dimension)) - 1) / (children_per_node - 1);
+			int children_per_node = 1 << DIMENSION;
+			return ((1 << ((depth - 1) * DIMENSION)) - 1) / (children_per_node - 1);
 		}
 		int	GetRightMostChildAtDepth(int depth) 
 		{
-			int children_per_node = 1 << Dimension;
-			return ((1 << (depth * Dimension)) - 1) / (children_per_node - 1) - 1;
+			int children_per_node = 1 << DIMENSION;
+			return ((1 << (depth * DIMENSION)) - 1) / (children_per_node - 1) - 1;
 		}
 	private:
 		void BuildTree(int depth, int node_num) 
 		{
-			if (depth >= MaxDepth) return;
+			if (depth >= MAX_DEPTH) return;
 			int left_most_child = GetLeftMostChildOfNode(depth, node_num);
-			Vector<Dimension> node_position;
-			Vector<Dimension> node_size = node_list_[node_num].area.Size() / 2;
-			int children_per_node = 1 << Dimension;
+			Vector<DIMENSION> node_position;
+			Vector<DIMENSION> node_size = node_list_[node_num].area.Size() / 2;
+			int children_per_node = 1 << DIMENSION;
 			for (int cur_child_node = left_most_child; cur_child_node < left_most_child + children_per_node; cur_child_node++) {
-				for (int j = 0; j < Dimension; j++) {
+				for (int j = 0; j < DIMENSION; j++) {
 					node_position[j] = node_list_[node_num].area.MinCoord()[j] + delta[j][cur_child_node - left_most_child] * node_size[j];
 				}
 				node_list_[cur_child_node].area.Set(node_position, node_size);
@@ -60,12 +62,12 @@ namespace KGCA41B {
 		{
 			std::queue<int> bfs_queue;
 			int cur_node = node_num;
-			int children_per_node = 1 << Dimension;
+			int children_per_node = 1 << DIMENSION;
 
-			AABB<Dimension> object_area_d;
-#if (Dimension == 3)
+			AABB<DIMENSION> object_area_d;
+#if (DIMENSION == OCT_TREE)
 			object_area_d = object_area;
-#elif (Dimension == 2)
+#elif (DIMENSION == QUAD_TREE)
 			Vector<3> center_coord = object_area.CenterCoord();
 			Vector<3> size = object_area.Size();
 			object_area_d.Set({ center_coord[0], center_coord[1] }, { size[0], size[1] });
@@ -75,9 +77,9 @@ namespace KGCA41B {
 				for (int cur_child_node = left_most_child; cur_child_node < left_most_child + children_per_node; cur_child_node++) {
 					if (left_most_child >= array_size_) continue;
 
-					AABB<Dimension> cur_node_area = node_list_[cur_child_node].area;
+					AABB<DIMENSION> cur_node_area = node_list_[cur_child_node].area;
 					
-					if (Collision<Dimension>::CubeToCube(object_area_d, cur_node_area) == CollisionType::C_R_IN_L) {
+					if (Collision<DIMENSION>::CubeToCube(object_area_d, cur_node_area) == CollisionType::C_R_IN_L) {
 						bfs_queue.push(cur_child_node);
 						break;
 					}
@@ -93,25 +95,25 @@ namespace KGCA41B {
 			std::queue<int> bfs_queue;
 			std::vector<int> node_to_search;
 
-			AABB<Dimension> object_area_d;
-#if (Dimension == 3)
+			AABB<DIMENSION> object_area_d;
+#if (DIMENSION == OCT_TREE)
 			object_area_d = object_area;
-#elif (Dimension == 2)
+#elif (DIMENSION == QUAD_TREE)
 			Vector<3> center_coord = object_area.CenterCoord();
 			Vector<3> size = object_area.Size();
 			object_area_d.Set({ center_coord[0], center_coord[1] }, { size[0], size[1] });
 #endif
 
 			int cur_node = node_num;
-			int children_per_node = 1 << Dimension;
+			int children_per_node = 1 << DIMENSION;
 			do {
 				int left_most_child = GetLeftMostChildOfNode(node_list_[cur_node].depth, cur_node);
 				for (int cur_child = left_most_child; cur_child < left_most_child + children_per_node; cur_child++) {
 					if (left_most_child >= array_size_) continue;
 
-					AABB<Dimension> cur_child_node_area = node_list_[cur_child].area;
+					AABB<DIMENSION> cur_child_node_area = node_list_[cur_child].area;
 
-					if (Collision<Dimension>::CubeToCube(object_area_d, cur_child_node_area) != CollisionType::C_OUT) {
+					if (Collision<DIMENSION>::CubeToCube(object_area_d, cur_child_node_area) != CollisionType::C_OUT) {
 						bfs_queue.push(cur_child);
 						node_to_search.push_back(cur_child);
 					}
@@ -126,7 +128,7 @@ namespace KGCA41B {
 			return node_list_[array_size_].object_list;
 		}
 	public:
-		void Init(const Vector<Dimension> world_size) {
+		void Init(const Vector<DIMENSION> world_size) {
 			world_size_ = world_size;
 
 			node_list_[0].area.Set( world_size_ * 0, world_size_ );
