@@ -21,13 +21,12 @@
 #include <sstream>
 #include <variant>
 
+#include "SpacePartition/Collision.h"
 #include "fmod.hpp"
 
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;
-
-
 
 #define SINGLETON(type)\
 public:\
