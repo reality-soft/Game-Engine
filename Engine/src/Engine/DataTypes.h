@@ -160,3 +160,16 @@ static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
 	rpv.x = xmv.m128_f32[0];
 	rpv.y = xmv.m128_f32[1];
 }
+
+static void RPtoXM(reactphysics3d::Vector3& rpv, XMVECTOR& xmv)
+{
+	xmv.m128_f32[0] = rpv.x;
+	xmv.m128_f32[1] = rpv.y;
+	xmv.m128_f32[2] = rpv.z;
+}
+
+static void RPtoXM(reactphysics3d::Vector2& rpv, XMVECTOR& xmv)
+{
+	xmv.m128_f32[0] = rpv.x;
+	xmv.m128_f32[1] = rpv.y;
+}

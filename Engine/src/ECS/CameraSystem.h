@@ -21,6 +21,10 @@ namespace KGCA41B
 	private:
 		Camera* camera;
 		D3D11_VIEWPORT* viewport;
+
+		XMMATRIX view_matrix;
+		XMMATRIX projection_matrix;
+
 		CbViewProj cb_viewproj;
 
 	public:

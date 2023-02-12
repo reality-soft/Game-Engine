@@ -2,7 +2,7 @@
 #include "common.h"
 #include "DllMacro.h"
 #include <dinput.h>
-
+  
 namespace KGCA41B
 {
 	enum

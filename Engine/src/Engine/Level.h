@@ -1,10 +1,6 @@
 #pragma once
 #include "DataTypes.h"
 #include "DllMacro.h"
-#include "Shader.h"
-#include "Texture.h"
-
-#include <variant>
 #include "Components.h"
 
 
@@ -18,15 +14,19 @@ namespace KGCA41B
 
 	public:
 		bool CreateLevel(UINT num_row, UINT num_col, float cell_distance, float uv_scale);
+		bool CreateHeightField(float min_height, float max_height);
 
 		void Update();
 		void Render();
+		XMVECTOR LevelPicking(MouseRay* mouse_ray);
 
 	private:
 		void GenVertexNormal();
+		void GetHeightList();
+
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
-
+		
 	public:
 		string vs_id_;
 		string ps_id_;
@@ -45,6 +45,11 @@ namespace KGCA41B
 		float uv_scale_;
 		float max_height_;
 		vector<float> height_list_;
+
+	private:
+		reactphysics3d::HeightFieldShape* height_field_shape_;
+		reactphysics3d::Collider* height_field_collider_;
+		reactphysics3d::CollisionBody* height_field_body_;
 
 	private:
 		ID3D11Device* device_;
