@@ -38,37 +38,42 @@ void KGCA41B::SpacePartition::BuildTree(int depth, int node_num)
 	}
 }
 
-int KGCA41B::SpacePartition::FindNodeObjectBelongs(int node_num, const AABB<3>& object_area)
+int KGCA41B::SpacePartition::UpdateNodeObjectBelongs(int cur_node_num, const AABB<3>& object_area, entt::entity object_id)
 {
 	std::queue<int> bfs_queue;
-	int cur_node = node_num;
+	int new_node = cur_node_num;
+	bfs_queue.push(new_node);
 	int children_per_node = 1 << DIMENSION;
 
 	AABB<DIMENSION> object_area_d;
 #if (DIMENSION == OCT_TREE)
 	object_area_d = object_area;
 #elif (DIMENSION == QUAD_TREE)
-	Vector<3> center_coord = object_area.CenterCoord();
+	Vector<3> min_coord = object_area.MinCoord();
 	Vector<3> size = object_area.Size();
-	object_area_d.Set({ center_coord[0], center_coord[1] }, { size[0], size[1] });
+	object_area_d.Set({ min_coord[0], min_coord[1] }, { size[0], size[1] });
 #endif
-	do {
-		int left_most_child = GetLeftMostChildOfNode(node_list_[cur_node].depth, cur_node);
+	while (true) {
+		if (bfs_queue.empty()) break;
+		new_node = bfs_queue.front();
+		bfs_queue.pop();
+
+		int left_most_child = GetLeftMostChildOfNode(node_list_[new_node].depth, new_node);
 		for (int cur_child_node = left_most_child; cur_child_node < left_most_child + children_per_node; cur_child_node++) {
 			if (left_most_child >= array_size_) continue;
 
 			AABB<DIMENSION> cur_node_area = node_list_[cur_child_node].area;
 
-			if (Collision<DIMENSION>::CubeToCube(object_area_d, cur_node_area) == CollisionType::C_R_IN_L) {
+			if (Collision<DIMENSION>::CubeToCube(object_area_d, cur_node_area) == CollisionType::C_L_IN_R) {
 				bfs_queue.push(cur_child_node);
 				break;
 			}
 		}
-		if (bfs_queue.empty()) break;
-		cur_node = bfs_queue.front();
-		bfs_queue.pop();
-	} while (cur_node);
-	return cur_node;
+	} 
+
+	node_list_[cur_node_num].object_list.erase(object_id);
+	node_list_[new_node].object_list.insert(object_id);
+	return new_node;
 }
 
 std::vector<int> KGCA41B::SpacePartition::FindCollisionSearchNode(int node_num, AABB<3>& object_area)
@@ -80,9 +85,9 @@ std::vector<int> KGCA41B::SpacePartition::FindCollisionSearchNode(int node_num, 
 #if (DIMENSION == OCT_TREE)
 	object_area_d = object_area;
 #elif (DIMENSION == QUAD_TREE)
-	Vector<3> center_coord = object_area.CenterCoord();
+	Vector<3> min_coord = object_area.MinCoord();
 	Vector<3> size = object_area.Size();
-	object_area_d.Set({ center_coord[0], center_coord[1] }, { size[0], size[1] });
+	object_area_d.Set({ min_coord[0], min_coord[1] }, { size[0], size[1] });
 #endif
 
 	int cur_node = node_num;
@@ -108,7 +113,7 @@ std::vector<int> KGCA41B::SpacePartition::FindCollisionSearchNode(int node_num, 
 
 std::unordered_set<entt::entity> KGCA41B::SpacePartition::GetObjectListInNode(int node_num)
 {
-	return node_list_[array_size_].object_list;
+	return node_list_[node_num].object_list;
 }
 
 void KGCA41B::SpacePartition::Init(const Vector<DIMENSION> world_size)

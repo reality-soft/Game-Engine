@@ -28,7 +28,7 @@ namespace KGCA41B {
 		int		GetRightMostChildAtDepth(int depth);
 		void	BuildTree(int depth, int node_num);
 	public:
-		int									FindNodeObjectBelongs(int node_num, const AABB<3>& object_area);
+		int									UpdateNodeObjectBelongs(int node_num, const AABB<3>& object_area, entt::entity object_id);
 		std::vector<int>					FindCollisionSearchNode(int node_num, AABB<3>& object_area);
 		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
 	public:
