@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "FmodMgr.h"
 
 using namespace KGCA41B;

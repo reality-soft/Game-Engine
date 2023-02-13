@@ -15,11 +15,19 @@ namespace KGCA41B
 
 	private:
 		void CameraMovement(InputMapping& input_mapping);
+		void CameraAction(InputMapping& input_mapping);
 		void CreateMatrix();
 
 	private:
 		Camera* camera;
 		D3D11_VIEWPORT* viewport;
+
+		XMMATRIX view_matrix;
+		XMMATRIX projection_matrix;
+
 		CbViewProj cb_viewproj;
+
+	public:
+		MouseRay* mouse_ray = nullptr;
 	};
 }

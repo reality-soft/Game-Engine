@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "InputSystem.h"
 
 using namespace KGCA41B;
@@ -27,6 +28,10 @@ void InputSystem::OnUpdate(entt::registry& reg)
 
 				input_mapping.axis_types.push_back(AxisType::PITCH);
 				input_mapping.axis_value[(int)AxisType::PITCH] = mouse_velocity.y;				
+			}
+			if (DINPUT->GetMouseButton().x)
+			{
+				input_mapping.actions.push_back(ActionType::ATTACK);
 			}
 		}
 

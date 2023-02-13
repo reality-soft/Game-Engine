@@ -18,6 +18,9 @@ project "Engine"
 	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
 	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "stdafx.h"
+    pchsource "stdafx.cpp"
+
 	files
 	{
 		"%{prj.name}/src/**.h",
@@ -36,7 +39,8 @@ project "Engine"
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
-		"../SDK/IMGUI/include"
+		"../SDK/IMGUI/include",
+		"../SDK/RP3D/include"
 	}
 
 	libdirs
@@ -44,7 +48,8 @@ project "Engine"
 		"../SDK/DirectXTK/lib",
 		"../SDK/FBXSDK/lib/debug",
 		"../SDK/FMOD/lib/debug",
-		"../SDK/IMGUI/lib"
+		"../SDK/IMGUI/lib",
+		"../SDK/RP3D/lib/debug"
 	}
 
 	links
@@ -60,7 +65,8 @@ project "Engine"
 		"zlib-md",
 		"fmod_vc",
 		"fmodL_vc",
-		"ImGui_Win32_Dx11_D"
+		"ImGui_Win32_Dx11_D",
+		"reactphysics3d"
 	}
 
 	filter "system:windows"
@@ -117,7 +123,8 @@ project "TestGame"
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
-		"../SDK/IMGUI/include"
+		"../SDK/IMGUI/include",
+		"../SDK/RP3D/include"
 	}
 
 	libdirs
@@ -125,7 +132,8 @@ project "TestGame"
 		"../SDK/DirectXTK/lib",
 		"../SDK/FBXSDK/lib/debug",
 		"../SDK/FMOD/lib/debug",
-		"../SDK/IMGUI/lib"
+		"../SDK/IMGUI/lib",
+		"../SDK/RP3D/lib/debug"
 	}
 
 	links
@@ -136,7 +144,8 @@ project "TestGame"
 		"zlib-md",
 		"fmod_vc",
 		"fmodL_vc",
-		"ImGui_Win32_Dx11_D"
+		"ImGui_Win32_Dx11_D",
+		"reactphysics3d"
 	}
 
 	filter "files:**VS.hlsl"

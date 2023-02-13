@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GUIMgr.h"
 
 using namespace KGCA41B;

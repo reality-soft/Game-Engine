@@ -1,9 +1,11 @@
 #pragma once
-#include "common.h"
-#include <d3d11.h>
-#include <d3dcompiler.h>
+#include "stdafx.h"
 #include "CommonStates.h"
 #include "DllMacro.h"
+
+#include <d3d11.h>
+#include <d3dcompiler.h>
+
 
 class DLL_API DX11App
 {
