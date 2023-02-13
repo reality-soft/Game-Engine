@@ -14,8 +14,8 @@ void TestGame::OnInit()
 
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 
-	FMOD_MGR->Init();
-	RESOURCE->Init("../Contents");
+	KGCA41B::FMOD_MGR->Init();
+	KGCA41B::RESOURCE->Init("../Contents");
 
 	sys_sound.OnCreate(reg_scene); 
 	sys_input.OnCreate(reg_scene);
