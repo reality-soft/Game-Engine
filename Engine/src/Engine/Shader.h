@@ -24,5 +24,14 @@ namespace KGCA41B
 	private:
 		ComPtr<ID3D11PixelShader> ps;
 	};
+
+	class DLL_API GeometryShader
+	{
+	public:
+		bool LoadCompiled(wstring _csoFIle);
+		ID3D11GeometryShader* Get();
+	private:
+		ComPtr<ID3D11GeometryShader> gs;
+	};
 }
 

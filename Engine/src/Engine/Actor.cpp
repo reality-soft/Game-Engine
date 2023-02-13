@@ -53,7 +53,7 @@ void KGCA41B::Actor::OnUpdate(entt::registry& registry)
 
 	std::unordered_set<entt::entity> object_to_collision_check;
 	for (int node : node_to_search) {
-		std::unordered_set<entt::entity> new_objects = SpacePartition::GetInst()->GetObjectListInNode(node_num_);
+		std::unordered_set<entt::entity> new_objects = SpacePartition::GetInst()->GetObjectListInNode(node);
 		object_to_collision_check.insert(new_objects.begin(), new_objects.end());
 	}
 }
