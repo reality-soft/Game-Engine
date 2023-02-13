@@ -95,4 +95,22 @@ ID3D11PixelShader* PixelShader::Get()
 	return ps.Get();
 }
 
+bool KGCA41B::GeometryShader::LoadCompiled(wstring _csoFIle)
+{
+    HRESULT hr = S_OK;
 
+    ID3DBlob* blob = nullptr;
+    hr = D3DReadFileToBlob(_csoFIle.c_str(), &blob);
+
+    hr = DX11APP->GetDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, gs.GetAddressOf());
+
+    blob->Release();
+    blob = nullptr;
+
+    return true;
+}
+
+ID3D11GeometryShader* GeometryShader::Get()
+{
+    return gs.Get();
+}
