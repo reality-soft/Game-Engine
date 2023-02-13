@@ -41,4 +41,3 @@ namespace KGCA41B
         float accmulator = 0.0f;
     };
 }
-

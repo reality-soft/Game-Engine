@@ -1,6 +1,11 @@
+#include "stdafx.h"
 #include "DataMgr.h"
 #include <fstream>
+
 using namespace KGCA41B;
+using std::fstream;
+using std::stringstream;
+using std::ios;
 
 bool KGCA41B::DataMgr::Init(string directory)
 {
@@ -19,7 +24,7 @@ shared_ptr<DataSheet> KGCA41B::DataMgr::AddNewSheet(string sheet_name)
 	if (resdic_sheet.find(sheet_name) != resdic_sheet.end())
 		return resdic_sheet[sheet_name];
 
-	shared_ptr<DataSheet> newSheet = make_shared<DataSheet>();
+	shared_ptr<DataSheet> newSheet = std::make_shared<DataSheet>();
 	newSheet->sheet_name = sheet_name;
 
 	newSheet->AddCategory("Name");
@@ -44,7 +49,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string fileName)
 	if (fs.fail())
 		return;
 
-	shared_ptr<DataSheet> newSheet = make_shared<DataSheet>();
+	shared_ptr<DataSheet> newSheet = std::make_shared<DataSheet>();
 	newSheet->sheet_name = fileName;
 
 	string line;
@@ -53,7 +58,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string fileName)
 	// 카테고리 먼저 입력받기
 	getline(fs, line);
 	stringstream firstLine(line);
-	while (getline(firstLine, value, ','))
+	while (std::getline(firstLine, value, ','))
 	{
 		newSheet->categories.push_back(value);
 	}
@@ -63,7 +68,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string fileName)
 	{
 		if (!getline(fs, line))
 			break;
-		auto data = make_shared<DataItem>();
+		auto data = std::make_shared<DataItem>();
 		stringstream lineStream(line);
 		int i = 0;
 		while (getline(lineStream, value, ','))

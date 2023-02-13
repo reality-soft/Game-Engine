@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ResourceMgr.h"
 #include "FmodMgr.h"
 #include <io.h>

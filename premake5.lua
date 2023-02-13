@@ -18,6 +18,9 @@ project "Engine"
 	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
 	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "stdafx.h"
+    pchsource "stdafx.cpp"
+
 	files
 	{
 		"%{prj.name}/src/**.h",

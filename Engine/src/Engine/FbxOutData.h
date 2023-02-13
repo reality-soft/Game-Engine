@@ -3,8 +3,6 @@
 #include "DataTypes.h"
 #include <fbxsdk.h>
 
-using namespace std;
-
 namespace KGCA41B
 {
 	struct AnimTrack
@@ -34,18 +32,18 @@ namespace KGCA41B
 	{
 		bool is_skinned = false;
 
-		string mesh_name;
-		string material_name;
-		vector<Vertex> vertices;
-		vector<SkinnedVertex> skinned_vertices;
-		vector<UINT>   indices;
-		vector<IndexWeight> index_weight;
-		map<UINT, XMMATRIX> bind_poses;
+		std::string mesh_name;
+		std::string material_name;
+		std::vector<Vertex> vertices;
+		std::vector<SkinnedVertex> skinned_vertices;
+		std::vector<UINT>   indices;
+		std::vector<IndexWeight> index_weight;
+		std::map<UINT, XMMATRIX> bind_poses;
 	};
 
 	struct OutAnimData
 	{
-		map<UINT, vector<XMMATRIX>> animations;
+		std::map<UINT, std::vector<XMMATRIX>> animations;
 		UINT start_frame = 0;
 		UINT end_frame = 0;
 	};

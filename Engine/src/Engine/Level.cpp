@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Level.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"

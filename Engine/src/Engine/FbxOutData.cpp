@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "FbxOutData.h"
 
 namespace KGCA41B

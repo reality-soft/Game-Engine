@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "PhysicsMgr.h"
 #include "TimeMgr.h"
 
