@@ -6,9 +6,9 @@ using namespace KGCA41B;
 
 void TestGame::OnInit()
 {
-	for (int i = 0;i < 100;i++) {
+	for (int i = 0;i < 1000;i++) {
 		Actor actor;
-		actor.OnInit(reg_scene, AABB<3>(Vector<3>::GetRandomVector(0, 300), Vector<3>::GetRandomVector(20, 30)));
+		actor.OnInit(reg_scene, KGCA41B::AABB<3>(Vector<3>::GetRandomVector(0, 300), Vector<3>::GetRandomVector(10, 20)));
 
 		actor_list.push_back(actor);
 	}
