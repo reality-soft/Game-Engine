@@ -23,7 +23,7 @@ Level::Level()
 	device_context_ = DX11APP->GetDeviceContext();
 }
 
-bool Level::CreateLevel(UINT num_row, UINT num_col, float cell_distance, float uv_scale)
+bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_scale)
 {
     num_row_vertex_ = num_row;
     num_col_vertex_ = num_col;
@@ -86,14 +86,12 @@ bool Level::CreateHeightField(float min_height, float max_height)
 	GetHeightList();
 
 	height_field_shape_ = PHYSICS->physics_common_.createHeightFieldShape(
-		num_col_vertex_,
-		num_row_vertex_,
-		min_height, 
-		max_height, 
-		height_list_.data(), 
-		reactphysics3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE,
-		1, 1.0f,
-		Vector3(1, 1, cell_distance_));
+		num_col_vertex_ * cell_distance_,
+		num_row_vertex_ * cell_distance_,
+		min_height,
+		max_height,
+		height_list_.data(),
+		reactphysics3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
 
 	if (height_field_shape_ == nullptr)
 		return false;
@@ -107,13 +105,17 @@ bool Level::CreateHeightField(float min_height, float max_height)
 
 void Level::Update()
 {
-	// Set Cb : Transform
+	// Set VS Cb : Transform
 	level_transform_.data.world_matrix = XMMatrixTranspose(level_transform_.data.world_matrix);
 
 	device_context_->UpdateSubresource(level_transform_.buffer.Get(), 0, nullptr, &level_transform_.data, 0, 0);
 	device_context_->VSSetConstantBuffers(0, 1, level_transform_.buffer.GetAddressOf());
 
-	// Set Cb : Light
+	// Set VS Cb : HitCircle
+	device_context_->UpdateSubresource(hit_circle_.buffer.Get(), 0, nullptr, &hit_circle_.data, 0, 0);
+	device_context_->VSSetConstantBuffers(2, 1, hit_circle_.buffer.GetAddressOf());
+
+	// Set PS Cb : Light
 	device_context_->UpdateSubresource(level_light_.buffer.Get(), 0, nullptr, &level_light_.data, 0, 0);
 	device_context_->PSSetConstantBuffers(0, 1, level_light_.buffer.GetAddressOf());
 }
@@ -152,18 +154,24 @@ void Level::Render()
 	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
 }
 
-XMVECTOR Level::LevelPicking(MouseRay* mouse_ray)
+void Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
 {
-	RaycastInfo raycast_info;
-	Ray ray(mouse_ray->start_point, mouse_ray->end_point);
-	XMVECTOR hitpoint = {0, 0, 0, 0};
+	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
+	MouseRayCallback ray_callback;
 
-	if (height_field_body_->raycast(ray, raycast_info))
+	PHYSICS->GetPhysicsWorld()->raycast(ray, &ray_callback);
+	if (ray_callback.body == height_field_body_)
 	{
-		RPtoXM(raycast_info.worldPoint, hitpoint);
+		hit_circle_.data.is_hit = true;
+		RPtoXM(ray_callback.hitpoint, hit_circle_.data.hitpoint);
+		hit_circle_.data.circle_radius = circle_radius;
+		hit_circle_.data.circle_color = circle_color;
 	}
-
-	return hitpoint;
+	else
+	{
+		hit_circle_.data.is_hit = false;
+		hit_circle_.data.circle_color = {1, 1, 1, 1};
+	}
 }
 
 void Level::GenVertexNormal()
@@ -185,11 +193,59 @@ void Level::GenVertexNormal()
 	}
 }
 
+float Level::GetHeightAt(float x, float z)
+{
+	float cell_x = (float)((num_row_vertex_ - 1) * cell_distance_ / 2.0f + x);
+	float cell_z = (float)((num_col_vertex_ - 1) * cell_distance_ / 2.0f - z);
+
+	cell_x /= (float)cell_distance_;
+	cell_z /= (float)cell_distance_;
+
+	float vertex_x = floorf(cell_x);
+	float vertex_z = floorf(cell_z);
+
+	if (vertex_x < 0.f)  vertex_x = 0.f;
+	if (vertex_z < 0.f)  vertex_z = 0.f;
+	if ((float)(num_row_vertex_ - 2) < vertex_x)	vertex_x = (float)(num_row_vertex_ - 2);
+	if ((float)(num_col_vertex_ - 2) < vertex_z)	vertex_z = (float)(num_col_vertex_ - 2);
+
+	float A = level_mesh_.vertices[(int)vertex_x *     num_row_vertex_ + (int)vertex_z    ].p.y;
+	float B = level_mesh_.vertices[(int)vertex_x *     num_row_vertex_ + (int)vertex_z + 1].p.y;
+	float C = level_mesh_.vertices[(int)vertex_x + 1 * num_row_vertex_ + (int)vertex_z    ].p.y;
+	float D = level_mesh_.vertices[(int)vertex_x + 1 * num_row_vertex_ + (int)vertex_z + 1].p.y;
+
+	float delta_x = cell_x - vertex_x;
+	float delta_z = cell_z - vertex_z;
+	float height = 0.0f;
+
+	if (delta_z < (1.0f - delta_x))
+	{
+		float uy = B - A;
+		float vy = C - A;	
+		
+		height = A - LerpByTan(0.0f, uy, delta_x) + LerpByTan(0.0f, vy, delta_z);
+	}
+	else
+	{
+		float uy = C - D;
+		float vy = B - D;
+		height = A - LerpByTan(0.0f, uy, 1.0f - delta_x) + LerpByTan(0.0f, vy, 1.0f - delta_z);
+	}
+	
+	return height;
+}
+
 void Level::GetHeightList()
 {
-	for (auto vertex : level_mesh_.vertices)
+	int num_row = static_cast<int>(num_row_vertex_) * cell_distance_;
+	int num_col = static_cast<int>(num_col_vertex_) * cell_distance_;
+
+	for (int r = -(num_row / 2); r < num_row / 2; ++r)
 	{
-		height_list_.push_back(vertex.p.y);
+		for (int c = -(num_col / 2); c < num_col / 2; ++c)
+		{
+			height_list_.push_back(GetHeightAt(r, c));
+		}
 	}
 }
 
@@ -265,6 +321,19 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = &level_light_.data;
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_light_.buffer.GetAddressOf());
+
+	// ConstantBuffer : HitCircle
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbHitCircle::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &hit_circle_.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, hit_circle_.buffer.GetAddressOf());
 
 	return true;
 }
