@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Engine.h"
 #include "ResourceMgr.h"
 #include "GUIMgr.h"

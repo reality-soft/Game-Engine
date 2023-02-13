@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "Actor.h"
-#include "SpacePartition/SpacePartition.h"
 
 void KGCA41B::Actor::OnInit(entt::registry& registry, AABB<3> collision_box)
 {
@@ -51,9 +51,9 @@ void KGCA41B::Actor::OnUpdate(entt::registry& registry)
 	vector<int> node_to_search = SpacePartition::GetInst()->FindCollisionSearchNode(0, collision_box_);
 	transform_tree_.root_node->OnUpdate(registry, entity_id_);
 
-	unordered_set<entt::entity> object_to_collision_check;
+	std::unordered_set<entt::entity> object_to_collision_check;
 	for (int node : node_to_search) {
-		unordered_set<entt::entity> new_objects = SpacePartition::GetInst()->GetObjectListInNode(node_num_);
+		std::unordered_set<entt::entity> new_objects = SpacePartition::GetInst()->GetObjectListInNode(node_num_);
 		object_to_collision_check.insert(new_objects.begin(), new_objects.end());
 	}
 }

@@ -1,7 +1,9 @@
+#include "stdafx.h"
 #include "CameraSystem.h"
 #include "TimeMgr.h"
 #include "InputMgr.h"
 #include "Engine.h"
+#include "PhysicsMgr.h"
 
 using namespace KGCA41B;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../stdafx.h"
+#include "Collision.h"
 #include "../ECS/entt.hpp"
 
 namespace KGCA41B {

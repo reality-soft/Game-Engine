@@ -1,7 +1,7 @@
 #pragma once
-#include "stdafx.h"
 #include "DllMacro.h"
 #include "ComponentSystem.h"
+#include "SpacePartition/SpacePartition.h"
 
 namespace KGCA41B
 {

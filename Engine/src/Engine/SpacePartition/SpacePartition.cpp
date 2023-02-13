@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SpacePartition.h"
 
 int KGCA41B::SpacePartition::GetLeftMostChildOfNode(int depth, int node_num)

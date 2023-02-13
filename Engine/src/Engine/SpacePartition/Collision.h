@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 #include "Shape.h"
 
 namespace KGCA41B {

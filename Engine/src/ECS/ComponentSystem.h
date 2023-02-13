@@ -1,7 +1,6 @@
 #pragma once
 #include "entt.hpp"
 #include "Components.h"
-#include "../Engine/stdafx.h"
 #include "../Engine/DLLMacro.h"
 
 namespace KGCA41B {

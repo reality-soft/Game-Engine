@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Shader.h"
 
 using namespace KGCA41B;

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "InputSystem.h"
 
 using namespace KGCA41B;

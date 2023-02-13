@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "TransformSystem.h"
 
 using namespace KGCA41B;
