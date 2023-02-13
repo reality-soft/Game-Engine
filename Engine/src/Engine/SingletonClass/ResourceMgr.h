@@ -46,6 +46,7 @@ namespace KGCA41B
 
 		map<string, VertexShader> resdic_vs;
 		map<string, PixelShader>  resdic_ps;
+		map<string, GeometryShader> resdic_gs;
 		map<string, Texture> resdic_texture;
 
 		map<string, FMOD::Sound*>	resdic_sound;
@@ -73,26 +74,6 @@ namespace KGCA41B
 		if (typeid(T) == typeid(FbxLoader))
 		{
 			result = ImportFbx(directory + filename);
-		}
-		else if (typeid(T) == typeid(VertexShader))
-		{
-			result = ImportVsDefault(directory + filename);
-		}
-		else if (typeid(T) == typeid(VsSkinned))
-		{
-			result = ImportVsSkinned(directory + filename);
-		}
-		else if (typeid(T) == typeid(PixelShader)) 
-		{
-			result = ImportPsDefault(directory + filename);
-		}
-		else if (typeid(T) == typeid(Texture))
-		{
-			result = ImportTexture(directory + filename);
-		}
-		else if (typeid(T) == typeid(FMOD::Sound))
-		{
-			result = ImportSound(filename);
 		}
 
 		return result;

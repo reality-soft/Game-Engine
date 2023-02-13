@@ -263,7 +263,18 @@ bool KGCA41B::ResourceMgr::ImportShaders(string filename)
         resdic_ps.insert(make_pair(id, ps_default));
         return true;
     }
+    if (filename.find("GS") != string::npos)
+    {
+        GeometryShader gs_default;
+        if (!gs_default.LoadCompiled(to_mw(filename)))
+            return false;
 
+        auto strs = split(filename, '/');
+        string id = strs[strs.size() - 1];
+
+        resdic_gs.insert(make_pair(id, gs_default));
+        return true;
+    }
 
     return true;
 }
