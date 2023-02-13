@@ -1,8 +1,8 @@
 #pragma once
-#include "common.h"
+#include "stdafx.h"
 #include "DllMacro.h"
 #include <dinput.h>
-
+  
 namespace KGCA41B
 {
 	enum

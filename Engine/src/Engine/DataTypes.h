@@ -1,6 +1,5 @@
 #pragma once
-#include "common.h"
-#include <d3d11.h>
+#include "stdafx.h"
 
 namespace KGCA41B
 {
@@ -80,6 +79,13 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	// Physics
+	struct MouseRay
+	{
+		reactphysics3d::Vector3 start_point;
+		reactphysics3d::Vector3 end_point;
+	};
+
 	// Sound
 
 	enum SoundType
@@ -137,4 +143,55 @@ namespace KGCA41B
 
 		IDLE
 	};
+}
+
+static std::wstring to_mw(const std::string& _src)
+{
+	USES_CONVERSION;
+	return std::wstring(A2W(_src.c_str()));
+}
+
+static std::string to_wm(const std::wstring& _src)
+{
+	USES_CONVERSION;
+	return std::string(W2A(_src.c_str()));
+}
+
+static std::vector<std::string> split(std::string input, char delimiter) {
+	std::vector<std::string> answer;
+	std::stringstream ss(input);
+	std::string temp;
+
+	while (getline(ss, temp, delimiter)) {
+		answer.push_back(temp);
+	}
+
+	return answer;
+}
+
+
+static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector3& rpv)
+{
+	rpv.x = xmv.m128_f32[0];
+	rpv.y = xmv.m128_f32[1];
+	rpv.z = xmv.m128_f32[2];
+}
+
+static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
+{
+	rpv.x = xmv.m128_f32[0];
+	rpv.y = xmv.m128_f32[1];
+}
+
+static void RPtoXM(reactphysics3d::Vector3& rpv, XMVECTOR& xmv)
+{
+	xmv.m128_f32[0] = rpv.x;
+	xmv.m128_f32[1] = rpv.y;
+	xmv.m128_f32[2] = rpv.z;
+}
+
+static void RPtoXM(reactphysics3d::Vector2& rpv, XMVECTOR& xmv)
+{
+	xmv.m128_f32[0] = rpv.x;
+	xmv.m128_f32[1] = rpv.y;
 }

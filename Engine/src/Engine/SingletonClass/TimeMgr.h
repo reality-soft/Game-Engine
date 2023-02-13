@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+#include "stdafx.h"
 #include "DllMacro.h"
 
 namespace KGCA41B

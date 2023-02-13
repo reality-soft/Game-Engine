@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "InputMgr.h"
+#include "Engine.h"
 
 using namespace KGCA41B;
 

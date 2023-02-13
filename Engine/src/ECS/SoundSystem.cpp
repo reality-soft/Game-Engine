@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SoundSystem.h"
 #include "ResourceMgr.h"
 #include "FmodMgr.h"

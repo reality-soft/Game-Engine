@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "AnimationSystem.h"
 #include "TimeMgr.h"
 #include "ResourceMgr.h"

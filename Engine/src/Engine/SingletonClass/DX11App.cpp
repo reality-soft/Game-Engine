@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "DX11App.h"
 
 bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
