@@ -117,7 +117,7 @@ namespace KGCA41B {
 		RECT rc = { 0, 0, screen_size.x, screen_size.y };
 		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
 		this->wnd_size.x = rc.right - rc.left;
-		this->wnd_size.x = rc.bottom - rc.top;
+		this->wnd_size.y = rc.bottom - rc.top;
 
 		WNDCLASS window_class;
 		ZeroMemory(&window_class, sizeof(window_class));
