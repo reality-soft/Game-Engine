@@ -7,6 +7,7 @@
 #include "Engine/SingletonClass/GUIMgr.h"
 #include "Engine/SingletonClass/PhysicsMgr.h"
 #include "Engine/SingletonClass/DataMgr.h"
+#include "Engine/SingletonClass/RenderTargetMgr.h"
 
 
 #include "ECS/RenderSystem.h"
