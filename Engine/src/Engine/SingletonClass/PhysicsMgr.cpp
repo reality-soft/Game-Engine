@@ -22,7 +22,7 @@ bool PhysicsMgr::Init()
 
 	// Change the number of iterations of the position solver 
 	physics_world_->setNbIterationsPositionSolver(5);
-	
+
 
 	return true;
 }
