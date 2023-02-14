@@ -130,14 +130,6 @@ namespace KGCA41B
 				return (T*)(&iter->second);
 			}
 		}
-		else if (typeid(T) == typeid(GeometryShader))
-		{
-			auto iter = resdic_gs.find(id);
-			if (iter != resdic_gs.end())
-			{
-				return (T*)(&iter->second);
-			}
-		}
 		else if (typeid(T) == typeid(Texture))
 		{
 			auto iter = resdic_texture.find(id);
