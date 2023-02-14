@@ -40,14 +40,14 @@ LRESULT CALLBACK WindowProc(
 }
 
 namespace KGCA41B {
-	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT wnd_size)
+	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
 	{
 		// 윈도우 초기화
-		if (InitWindow(hinstance, title, wnd_size) == false)
+		if (InitWindow(hinstance, title, screen_size) == false)
 			return false;
 
 		// DX 초기화
-		if (DX11APP->OnInit(wnd_size, hwnd) == false)
+		if (DX11APP->OnInit(screen_size, hwnd) == false)
 			return false;
 
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
@@ -109,11 +109,16 @@ namespace KGCA41B {
 		DX11APP->OnRelease();
 	}
 
-	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT wnd_size)
+	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
 	{
 		this->hinstance = hinstance;
 		this->title = title;
-		this->wnd_size = wnd_size;
+
+
+		RECT rc = { 0, 0, screen_size.x, screen_size.y };
+		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
+		this->wnd_size.x = rc.right - rc.left;
+		this->wnd_size.y = rc.bottom - rc.top;
 
 		WNDCLASS window_class;
 		ZeroMemory(&window_class, sizeof(window_class));
@@ -145,10 +150,7 @@ namespace KGCA41B {
 		ShowWindow(hwnd, SW_SHOW);
 		UpdateWindow(hwnd);
 
-		RECT rc;
-		GetClientRect(hwnd, &rc);
-		wnd_size.x = rc.right - rc.left;
-		wnd_size.y = rc.bottom - rc.top;
+
 
 		return true;
 	}
