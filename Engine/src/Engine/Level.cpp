@@ -86,8 +86,8 @@ bool Level::CreateHeightField(float min_height, float max_height)
 	GetHeightList();
 
 	height_field_shape_ = PHYSICS->physics_common_.createHeightFieldShape(
-		num_col_vertex_ * cell_distance_,
-		num_row_vertex_ * cell_distance_,
+		num_col_vertex_,// * cell_distance_,
+		num_row_vertex_,// * cell_distance_,
 		min_height,
 		max_height,
 		height_list_.data(),
@@ -95,6 +95,8 @@ bool Level::CreateHeightField(float min_height, float max_height)
 
 	if (height_field_shape_ == nullptr)
 		return false;
+
+	height_field_shape_->setScale(Vector3(10, 1, 10));
 
 	reactphysics3d::Transform transform = reactphysics3d::Transform::identity();
 	height_field_body_ = PHYSICS->GetPhysicsWorld()->createCollisionBody(transform);
@@ -154,7 +156,7 @@ void Level::Render()
 	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
 }
 
-void Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
+XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
 {
 	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
 	MouseRayCallback ray_callback;
@@ -172,6 +174,8 @@ void Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT
 		hit_circle_.data.is_hit = false;
 		hit_circle_.data.circle_color = {1, 1, 1, 1};
 	}
+
+	return hit_circle_.data.hitpoint;
 }
 
 void Level::GenVertexNormal()
@@ -237,15 +241,20 @@ float Level::GetHeightAt(float x, float z)
 
 void Level::GetHeightList()
 {
-	int num_row = static_cast<int>(num_row_vertex_) * cell_distance_;
-	int num_col = static_cast<int>(num_col_vertex_) * cell_distance_;
+	//int num_row = static_cast<int>(num_row_vertex_) * cell_distance_;
+	//int num_col = static_cast<int>(num_col_vertex_) * cell_distance_;
 
-	for (int r = -(num_row / 2); r < num_row / 2; ++r)
+	//for (int r = -(num_row / 2); r < num_row / 2; ++r)
+	//{
+	//	for (int c = -(num_col / 2); c < num_col / 2; ++c)
+	//	{
+	//		height_list_.push_back(GetHeightAt(r, c));
+	//	}
+	//}
+
+	for (auto vertex : level_mesh_.vertices)
 	{
-		for (int c = -(num_col / 2); c < num_col / 2; ++c)
-		{
-			height_list_.push_back(GetHeightAt(r, c));
-		}
+		height_list_.push_back(vertex.p.y);
 	}
 }
 

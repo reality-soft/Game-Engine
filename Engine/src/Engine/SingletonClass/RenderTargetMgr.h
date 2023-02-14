@@ -10,8 +10,8 @@ namespace KGCA41B
 		float								width_;
 		float								height_;
 	public:
-		ComPtr<ID3D11RenderTargetView>		render_target_view_;
-		ComPtr<ID3D11DepthStencilView>		depth_stencil_view_;
+		ID3D11RenderTargetView*				render_target_view_;
+		ID3D11DepthStencilView*				depth_stencil_view_;
 	public:
 		ComPtr<ID3D11Texture2D>				render_target_view_texture_;
 		ComPtr<ID3D11Texture2D>				depth_stencil_view_texture_;

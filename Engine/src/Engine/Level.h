@@ -33,7 +33,7 @@ namespace KGCA41B
 
 		void Update();
 		void Render();
-		void LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
+		XMVECTOR LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
 
 	private:
 		void GenVertexNormal();
