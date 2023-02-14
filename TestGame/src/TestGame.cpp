@@ -2,27 +2,24 @@
 #include "Engine/SpacePartition/Vector.h"
 #include "ComponentSystem.h"
 
-using namespace KGCA41B;
-
 void TestGame::OnInit()
 {
 	for (int i = 0;i < 1000;i++) {
-		Actor actor;
-		actor.OnInit(reg_scene, KGCA41B::AABB<3>(Vector<3>::GetRandomVector(0, 300), Vector<3>::GetRandomVector(10, 20)));
-
+		KGCA41B::Actor actor;
+		actor.OnInit(reg_scene, KGCA41B::AABB<3>(KGCA41B::Vector<3>::GetRandomVector(0, 300), KGCA41B::Vector<3>::GetRandomVector(5, 10)));
 		actor_list.push_back(actor);
 	}
 	
 
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 
-	FMOD_MGR->Init();
-	RESOURCE->Init("D:/Contents");
+	KGCA41B::FMOD_MGR->Init();
+	KGCA41B::RESOURCE->Init("../Contents");
 
 	sys_sound.OnCreate(reg_scene); 
 	sys_input.OnCreate(reg_scene);
   
-	ComponentSystem::GetInst()->OnInit(reg_scene);
+	KGCA41B::ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
 	ent_sound = reg_scene.create();
@@ -41,10 +38,10 @@ void TestGame::OnInit()
 
 void TestGame::OnUpdate()
 {
-	FMOD_MGR->Update();
+	KGCA41B::FMOD_MGR->Update();
 	int result = DINPUT->Update();
 
-	for (Actor actor : actor_list) {
+	for (KGCA41B::Actor actor : actor_list) {
 		actor.OnUpdate(reg_scene);
 	}
 
@@ -58,7 +55,7 @@ void TestGame::OnRender()
 
 void TestGame::OnRelease()
 {
-	RESOURCE->Release();
-	FMOD_MGR->Release();
+	KGCA41B::RESOURCE->Release();
+	KGCA41B::FMOD_MGR->Release();
 }
 
