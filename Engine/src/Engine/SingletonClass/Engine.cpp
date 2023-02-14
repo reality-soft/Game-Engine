@@ -42,11 +42,11 @@ LRESULT CALLBACK WindowProc(
 namespace KGCA41B {
 	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
 	{
-		// ������ �ʱ�ȭ
+		// À©µµ¿ì ÃÊ±âÈ­
 		if (InitWindow(hinstance, title, screen_size) == false)
 			return false;
 
-		// DX �ʱ�ȭ
+		// DX ÃÊ±âÈ­
 		if (DX11APP->OnInit(screen_size, hwnd) == false)
 			return false;
 
@@ -114,7 +114,6 @@ namespace KGCA41B {
 		this->hinstance = hinstance;
 		this->title = title;
 
-
 		RECT rc = { 0, 0, screen_size.x, screen_size.y };
 		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
 		this->wnd_size.x = rc.right - rc.left;
@@ -149,8 +148,6 @@ namespace KGCA41B {
 
 		ShowWindow(hwnd, SW_SHOW);
 		UpdateWindow(hwnd);
-
-
 
 		return true;
 	}
