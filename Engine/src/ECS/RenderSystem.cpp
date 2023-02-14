@@ -2,6 +2,7 @@
 #include "RenderSystem.h"
 #include "ResourceMgr.h"
 #include "TimeMgr.h"
+#include "DataMgr.h"
 using namespace KGCA41B;
 
 RenderSystem::RenderSystem()
@@ -84,6 +85,9 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		auto& skeletal_mesh = reg.get<SkeletalMesh>(ent);
 		RenderSkeletalMesh(skeletal_mesh);
 	}
+
+	RenderEffects(reg);
+
 }
 
 void RenderSystem::SetMaterial(Material& material)
@@ -171,3 +175,115 @@ void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
 	}
 }
+
+void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
+{
+	auto view_uv_sprite = reg.view<UVSprite, Transform>();
+	auto view_tex_sprite = reg.view<TextureSprite, Transform>();
+	auto view_particles = reg.view<Particles, Transform>();
+
+	for (auto ent : view_uv_sprite)
+	{
+		auto& transform = reg.get<Transform>(ent);
+		SetCbTransform(transform);
+
+		auto& uv_sprite = reg.get<UVSprite>(ent);
+
+		VertexShader* vs =		RESOURCE->UseResource<VertexShader>(uv_sprite.vs_id);
+		PixelShader* ps =		RESOURCE->UseResource<PixelShader>(uv_sprite.ps_id);
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+		if (uv_sprite.vertex_buffer != nullptr)
+			device_context->IASetVertexBuffers(0, 1, uv_sprite.vertex_buffer.GetAddressOf(), &stride, &offset);
+
+		if (uv_sprite.index_buffer != nullptr)
+			device_context->IASetIndexBuffer(uv_sprite.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+
+		if (vs != nullptr)
+			device_context->IASetInputLayout(vs->InputLayoyt());
+
+		if (vs != nullptr)
+			device_context->VSSetShader(vs->Get(), 0, 0);
+		if (ps != nullptr)
+			device_context->PSSetShader(ps->Get(), 0, 0);
+
+		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite.tex_id);
+
+		if (texture != nullptr)
+			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+
+		device_context->DrawIndexed(uv_sprite.index_list.size(), 0, 0);
+	}
+
+	for (auto ent : view_tex_sprite)
+	{
+		auto& transform = reg.get<Transform>(ent);
+		SetCbTransform(transform);
+
+		auto& tex_sprite = reg.get<TextureSprite>(ent);
+
+		VertexShader* vs = RESOURCE->UseResource<VertexShader>(tex_sprite.vs_id);
+		PixelShader* ps = RESOURCE->UseResource<PixelShader>(tex_sprite.ps_id);
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+		if (tex_sprite.vertex_buffer != nullptr)
+			device_context->IASetVertexBuffers(0, 1, tex_sprite.vertex_buffer.GetAddressOf(), &stride, &offset);
+
+		if (tex_sprite.index_buffer != nullptr)
+			device_context->IASetIndexBuffer(tex_sprite.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+
+		if (vs != nullptr)
+			device_context->IASetInputLayout(vs->InputLayoyt());
+
+		if (vs != nullptr)
+			device_context->VSSetShader(vs->Get(), 0, 0);
+		if (ps != nullptr)
+			device_context->PSSetShader(ps->Get(), 0, 0);
+
+		Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite.tex_id_list[tex_sprite.cur_frame]);
+
+		if (texture != nullptr)
+			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+
+		device_context->DrawIndexed(tex_sprite.index_list.size(), 0, 0);
+	}
+
+	for (auto ent : view_particles)
+	{
+		auto& transform = reg.get<Transform>(ent);
+		SetCbTransform(transform);
+
+		auto& particles = reg.get<Particles>(ent);
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+		VertexShader* vs = RESOURCE->UseResource<VertexShader>(particles.vs_id);
+		GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(particles.geo_id);
+		PixelShader* ps = RESOURCE->UseResource<PixelShader>(particles.ps_id);
+
+		device_context->IASetVertexBuffers(0, 1, particles.vertex_buffer.GetAddressOf(), &stride, &offset);
+
+		if (vs != nullptr)
+			device_context->IASetInputLayout(vs->InputLayoyt());
+
+		if (vs != nullptr)
+			device_context->VSSetShader(vs->Get(), 0, 0);
+		if (gs != nullptr)
+			device_context->GSSetShader(gs->Get(), 0, 0);
+		if (ps != nullptr)
+			device_context->PSSetShader(ps->Get(), 0, 0);
+
+		Texture* texture = RESOURCE->UseResource<Texture>(particles.tex_id_list[0]);
+
+		if (texture != nullptr)
+			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+
+		device_context->Draw(particles.vertex_list.size(), 0);
+	}
+}
+

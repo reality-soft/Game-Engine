@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Texture.h"
 
+
 namespace KGCA41B
 {
 	struct Component
@@ -115,5 +116,62 @@ namespace KGCA41B
 	struct TransformTree
 	{
 		shared_ptr<TransformTreeNode> root_node;
+	};
+
+	struct Particle
+	{
+		bool		enable;
+		string		tex_id;
+		XMFLOAT3	position;
+		XMFLOAT3	velocity;
+		float		duration;
+		float		timer;
+		XMFLOAT4	color;
+		Particle()
+		{
+			enable = true;
+			position = {0, 0, 0};
+			velocity = { 0, 0, 0 };
+			duration = 3.0f;
+			timer = 0.0f;
+			color = {0.0f, 0.0f, 0.0f, 0.0f};
+		}
+	};
+
+
+	struct BaseEffect : public Transform
+	{
+		string					vs_id;
+		string					ps_id;
+		vector<Vertex>			vertex_list;
+		ComPtr<ID3D11Buffer>	vertex_buffer;
+	};
+
+	struct UVSprite : public BaseEffect
+	{
+		string						tex_id;
+		UINT						cur_frame;
+		UINT						max_frame;
+		vector<UINT>				index_list;
+		ComPtr<ID3D11Buffer>		index_buffer;
+		vector<pair<float, float>>	uv_list;
+	};
+
+	struct TextureSprite : public BaseEffect
+	{
+		UINT						cur_frame;
+		UINT						max_frame;
+		vector<UINT>				index_list;
+		ComPtr<ID3D11Buffer>		index_buffer;
+		vector<pair<float, float>>	uv_list;
+		vector<string>				tex_id_list;
+	};
+
+	struct Particles : public BaseEffect
+	{
+		string				geo_id;
+		vector<string>		tex_id_list;
+		UINT				particle_count;
+		vector<Particle>	particle_list;
 	};
 }
