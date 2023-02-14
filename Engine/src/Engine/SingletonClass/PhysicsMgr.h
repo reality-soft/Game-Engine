@@ -13,11 +13,12 @@ namespace KGCA41B
         virtual decimal notifyRaycastHit(const RaycastInfo& info)
         {
             hitpoint = info.worldPoint;
-
+            body = info.body;
             return decimal(0.0);
         }
 
         Vector3 hitpoint;
+        CollisionBody* body;
     };
 
     class DLL_API PhysicsMgr
