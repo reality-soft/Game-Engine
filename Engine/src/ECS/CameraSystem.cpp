@@ -72,6 +72,40 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_viewproj.buffer.GetAddressOf());
 }
 
+MouseRay CameraSystem::CreateMouseRay()
+{
+	MouseRay mouse_ray;
+	POINT cursor_pos;
+	GetCursorPos(&cursor_pos);
+	ScreenToClient(ENGINE->GetWindowHandle(), &cursor_pos);
+
+	// Convert the mouse position to a direction in world space
+	float mouse_x = static_cast<float>(cursor_pos.x);
+	float mouse_y = static_cast<float>(cursor_pos.y);
+	float ndc_x =  2.0f * mouse_x / (float)ENGINE->GetWindowSize().x - 1.0f;
+	float ndc_y = (2.0f * mouse_y / (float)ENGINE->GetWindowSize().y - 1.0f) * -1.0f;
+
+	ndc_x /= projection_matrix.r[0].m128_f32[0];
+	ndc_y /= projection_matrix.r[1].m128_f32[1];
+
+	XMMATRIX inv_view = XMMatrixInverse(nullptr, view_matrix);
+	XMVECTOR ray_dir;
+
+	ray_dir.m128_f32[0] = (ndc_x * inv_view.r[0].m128_f32[0]) + (ndc_y * inv_view.r[1].m128_f32[0]) + inv_view.r[2].m128_f32[0];
+	ray_dir.m128_f32[1] = (ndc_x * inv_view.r[0].m128_f32[1]) + (ndc_y * inv_view.r[1].m128_f32[1]) + inv_view.r[2].m128_f32[1];
+	ray_dir.m128_f32[2] = (ndc_x * inv_view.r[0].m128_f32[2]) + (ndc_y * inv_view.r[1].m128_f32[2]) + inv_view.r[2].m128_f32[2];
+
+	XMtoRP(camera->position, mouse_ray.start_point);
+	XMtoRP(ray_dir * 1000.f, mouse_ray.end_point);
+
+	return mouse_ray;
+}
+
+Camera* CameraSystem::GetCamera()
+{
+	return camera;
+}
+
 void CameraSystem::CameraMovement(InputMapping& input_mapping)
 {
 	XMVECTOR front_dir = camera->look * camera->speed * TM_DELTATIME;
@@ -117,30 +151,7 @@ void CameraSystem::CameraAction(InputMapping& input_mapping)
 		{
 		case ActionType::ATTACK:
 		{
-			// Convert the mouse position to a direction in world space
-			float mouse_x = static_cast<float>(DINPUT->GetMousePosition().x);
-			float mouse_y = static_cast<float>(DINPUT->GetMousePosition().y);
-			float ndc_x = 2.0f * mouse_x / (float)ENGINE->GetWindowSize().x - 1.0f;
-			float ndc_y = -2.0f * mouse_y / (float)ENGINE->GetWindowSize().y + 1.0f;
 
-			XMVECTOR view_pos = XMVector4Transform(XMVectorSet(ndc_x, ndc_y, 1.0f, 0), XMMatrixInverse(nullptr, projection_matrix));
-			XMVECTOR world_pos = XMVector4Transform(view_pos, XMMatrixInverse(nullptr, view_matrix));
-			XMVECTOR ray_dir = XMVector4Normalize(world_pos + camera->look);
-
-
-			//XMMATRIX matrix_inv = DirectX::XMMatrixInverse(nullptr, cb_viewproj.data.view_matrix * cb_viewproj.data.projection_matrix);
-
-			//XMVECTOR mouse_coord = DirectX::XMVectorSet(
-			//	(2.0f * mouse_x / (float)ENGINE->GetWindowSize().x - 1.0f) / matrix_inv.r[0].m128_f32[0],
-			//	(-2.0f * mouse_y / (float)ENGINE->GetWindowSize().y + 1.0f) / matrix_inv.r[1].m128_f32[1],
-			//	0.0f,
-			//	0.0f
-			//);
-			//XMVECTOR ray_direction = (mouse_coord + (camera->look * 1000.0f));
-			mouse_ray = new MouseRay;
-
-			XMtoRP(-world_pos, mouse_ray->start_point);
-			XMtoRP(ray_dir * 1000, mouse_ray->end_point);
 		} break;
 		}
 	}

@@ -7,7 +7,6 @@ void TestGame::OnInit()
 	for (int i = 0;i < 1000;i++) {
 		KGCA41B::Actor actor;
 		actor.OnInit(reg_scene, KGCA41B::AABB<3>(KGCA41B::Vector<3>::GetRandomVector(0, 300), KGCA41B::Vector<3>::GetRandomVector(5, 10)));
-
 		actor_list.push_back(actor);
 	}
 	
