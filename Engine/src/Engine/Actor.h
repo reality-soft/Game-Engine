@@ -13,8 +13,8 @@ namespace KGCA41B
 		AABB<3>			collision_box_;
 		int				node_num_;
 	public:
-		void OnInit(entt::registry& registry, AABB<3> collision_box);
-		void OnUpdate(entt::registry& registry);
+		virtual void OnInit(entt::registry& registry, AABB<3> collision_box);
+		virtual void OnUpdate(entt::registry& registry);
 	};
 }
 
