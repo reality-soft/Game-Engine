@@ -53,7 +53,7 @@ HRESULT KGCA41B::RenderTarget::CreateRenderTargetView()
 		return hr;
 	if (FAILED(hr = DX11APP->GetDevice()->CreateShaderResourceView(render_target_view_texture_.Get(), NULL, render_target_view_srv_.GetAddressOf())))
 		return hr;
-	if (FAILED(hr = DX11APP->GetDevice()->CreateRenderTargetView(render_target_view_texture_.Get(), NULL, render_target_view_.GetAddressOf())))
+	if (FAILED(hr = DX11APP->GetDevice()->CreateRenderTargetView(render_target_view_texture_.Get(), NULL, &render_target_view_)))
 		return hr;
 
 	return hr;
@@ -74,7 +74,7 @@ HRESULT KGCA41B::RenderTarget::CreateDepthStencilView()
 
 	dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsv_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	if (FAILED(hr = DX11APP->GetDevice()->CreateDepthStencilView(depth_stencil_view_texture_.Get(), &dsv_desc, depth_stencil_view_.GetAddressOf())))
+	if (FAILED(hr = DX11APP->GetDevice()->CreateDepthStencilView(depth_stencil_view_texture_.Get(), &dsv_desc, &depth_stencil_view_)))
 		return hr;
 
 	ZeroMemory(&srv_desc_, sizeof(srv_desc_));
@@ -95,10 +95,10 @@ bool KGCA41B::RenderTarget::SetRenderTarget()
 	ID3D11RenderTargetView* pNullRTV = NULL;
 	ID3D11DepthStencilView* pNullDSV = NULL;
 	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &pNullRTV, pNullDSV);
-	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, render_target_view_.GetAddressOf(), depth_stencil_view_.Get());
+	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &render_target_view_, depth_stencil_view_);
 	const FLOAT color[] = { 0, 0, 0, 1 };
-	DX11APP->GetDeviceContext()->ClearRenderTargetView(render_target_view_.Get(), color);
-	DX11APP->GetDeviceContext()->ClearDepthStencilView(depth_stencil_view_.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	DX11APP->GetDeviceContext()->ClearRenderTargetView(render_target_view_, color);
+	DX11APP->GetDeviceContext()->ClearDepthStencilView(depth_stencil_view_, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	DX11APP->GetDeviceContext()->RSSetViewports(1, &view_port_);
 
 	return false;
@@ -110,8 +110,9 @@ void KGCA41B::RenderTargetMgr::Init(string back_buffer_name)
 	shared_ptr<RenderTarget> back_buffer = make_shared<RenderTarget>();
 
 	UINT numViewPorts = 1;
-	DX11APP->GetDeviceContext()->RSGetViewports(&numViewPorts, &back_buffer->view_port_);
-	DX11APP->GetDeviceContext()->OMGetRenderTargets(1, back_buffer->render_target_view_.GetAddressOf(), back_buffer->depth_stencil_view_.GetAddressOf());
+	back_buffer->view_port_ = DX11APP->GetViewPort();
+	back_buffer->render_target_view_ = DX11APP->GetRenderTargetView();
+	back_buffer->depth_stencil_view_ = DX11APP->GetDepthStencilView();
 
 	resdic_render_target_.insert({ back_buffer_name, back_buffer });
 }
