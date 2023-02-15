@@ -27,6 +27,9 @@ namespace KGCA41B
 			Update();
 			Render();
 		}
+		void InvertOpen() {
+			open_ = !open_;
+		}
 	};
 
 	class DLL_API GUIMgr
