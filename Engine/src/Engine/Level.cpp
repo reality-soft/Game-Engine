@@ -126,6 +126,10 @@ void Level::Render()
 {
 	VertexShader* vs = RESOURCE->UseResource<VertexShader>(vs_id_);
 	PixelShader* ps = RESOURCE->UseResource<PixelShader>(ps_id_);
+	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(gs_id_);
+	// Set Shader : GS
+	if (gs != nullptr)
+		device_context_->GSSetShader(gs->Get(), 0, 0);
 
 	// Set Shader : PS
 	device_context_->PSSetShader(ps->Get(), 0, 0);
@@ -154,6 +158,23 @@ void Level::Render()
 	device_context_->VSSetShader(vs->Get(), 0, 0);
 
 	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
+
+	if (edit_mode)
+	{
+		D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
+		device_context_->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_READ, 0, &mapped_resource);
+
+		const Vertex* mapped_vertices = reinterpret_cast<const Vertex *>(mapped_resource.pData);
+		size_t mapped_size = mapped_resource.RowPitch / sizeof(Vertex);
+
+		for (int i = 0; i < mapped_size; ++i)
+		{
+			level_mesh_.vertices[i] = mapped_vertices[i];
+		}
+
+		device_context_->Unmap(level_mesh_.vertex_buffer.Get(), 0);
+		device_context_->UpdateSubresource(level_mesh_.vertex_buffer.Get(), 0, nullptr, level_mesh_.vertices.data(), 0, 0);
+	}
 }
 
 XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
@@ -281,13 +302,15 @@ bool Level::CreateBuffers()
 	ZeroMemory(&subdata, sizeof(subdata));
 
 	desc.ByteWidth = sizeof(Vertex) * level_mesh_.vertices.size();
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.Usage = D3D11_USAGE_STAGING;
+	desc.BindFlags = 0;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	subdata.pSysMem = level_mesh_.vertices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.vertex_buffer.GetAddressOf());
 	if (FAILED(hr))
 		return false;
+
 
 	// IndexBuffer
 
