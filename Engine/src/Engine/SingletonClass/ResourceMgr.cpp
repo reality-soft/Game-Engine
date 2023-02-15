@@ -95,6 +95,46 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     return res_id_map;
 }
 
+set<string> KGCA41B::ResourceMgr::GetTotalTexID()
+{
+    set<string> tex_id_set;
+    for (auto pair : resdic_texture)
+    {
+        tex_id_set.insert(pair.first);
+    }
+    return tex_id_set;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalVSID()
+{
+    set<string> vs_id_set;
+    for (auto pair : resdic_vs)
+    {
+        vs_id_set.insert(pair.first);
+    }
+    return vs_id_set;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalPSID()
+{
+    set<string> ps_id_set;
+    for (auto pair : resdic_ps)
+    {
+        ps_id_set.insert(pair.first);
+    }
+    return ps_id_set;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalGSID()
+{
+    set<string> gs_id_set;
+    for (auto pair : resdic_gs)
+    {
+        gs_id_set.insert(pair.first);
+    }
+    return gs_id_set;
+}
+
 bool ResourceMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
 {
     HRESULT hr;
