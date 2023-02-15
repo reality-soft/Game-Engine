@@ -41,6 +41,13 @@ shared_ptr<DataSheet> KGCA41B::DataMgr::LoadSheet(string sheet_name)
 		return NULL;
 }
 
+vector<string> KGCA41B::DataMgr::GetAllDataSheetID()
+{
+	vector<string> id_set;
+	for (auto pair : resdic_sheet)
+		id_set.push_back(pair.first);
+	return id_set;
+}
 
 void KGCA41B::DataMgr::LoadSheetFile(string fileName)
 {
