@@ -110,8 +110,9 @@ void KGCA41B::RenderTargetMgr::Init(string back_buffer_name)
 	shared_ptr<RenderTarget> back_buffer = make_shared<RenderTarget>();
 
 	UINT numViewPorts = 1;
-	DX11APP->GetDeviceContext()->RSGetViewports(&numViewPorts, &back_buffer->view_port_);
-	DX11APP->GetDeviceContext()->OMGetRenderTargets(1, &back_buffer->render_target_view_, &back_buffer->depth_stencil_view_);
+	back_buffer->view_port_ = DX11APP->GetViewPort();
+	back_buffer->render_target_view_ = DX11APP->GetRenderTargetView();
+	back_buffer->depth_stencil_view_ = DX11APP->GetDepthStencilView();
 
 	resdic_render_target_.insert({ back_buffer_name, back_buffer });
 }
