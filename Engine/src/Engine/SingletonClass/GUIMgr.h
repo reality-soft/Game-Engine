@@ -18,6 +18,7 @@ namespace KGCA41B
 
 	public:
 		bool open_ = true;
+		virtual void Init() {};
 		virtual void Update() = 0;
 		virtual void Render() = 0;
 		void WidgetRender() {

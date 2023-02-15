@@ -64,6 +64,7 @@ void GUIMgr::AddWidget(string widget_name, GuiWidget* widget)
 	if (FindWidget(widget_name) != nullptr)
 		return;
 
+	widget->Init();
 	widgets.insert(make_pair(widget_name, widget));
 }
 
