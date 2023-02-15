@@ -20,6 +20,13 @@ namespace KGCA41B
 		bool open_ = true;
 		virtual void Update() = 0;
 		virtual void Render() = 0;
+		void WidgetRender() {
+			if (open_ == false) {
+				return;
+			}
+			Update();
+			Render();
+		}
 	};
 
 	class DLL_API GUIMgr
