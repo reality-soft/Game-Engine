@@ -154,7 +154,7 @@ namespace KGCA41B
 		UINT						max_frame;
 		vector<UINT>				index_list;
 		ComPtr<ID3D11Buffer>		index_buffer;
-		vector<pair<float, float>>	uv_list;
+		vector<pair<POINT, POINT>>	uv_list;
 	};
 
 	struct TextureSprite : public BaseEffect
@@ -163,7 +163,6 @@ namespace KGCA41B
 		UINT						max_frame;
 		vector<UINT>				index_list;
 		ComPtr<ID3D11Buffer>		index_buffer;
-		vector<pair<float, float>>	uv_list;
 		vector<string>				tex_id_list;
 	};
 
