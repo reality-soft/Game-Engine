@@ -162,18 +162,17 @@ void Level::Render()
 	if (edit_mode)
 	{
 		D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
-		device_context_->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_READ, 0, &mapped_resource);
+		HRESULT hr = device_context_->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_resource);
 
-		const Vertex* mapped_vertices = reinterpret_cast<const Vertex *>(mapped_resource.pData);
-		size_t mapped_size = mapped_resource.RowPitch / sizeof(Vertex);
+		XMFLOAT3* mapped_vertices = reinterpret_cast<XMFLOAT3*>(mapped_resource.pData);
+		size_t mapped_size = mapped_resource.RowPitch / sizeof(XMFLOAT3);
 
 		for (int i = 0; i < mapped_size; ++i)
 		{
-			level_mesh_.vertices[i] = mapped_vertices[i];
-		}
+			mapped_vertices[i];
 
+		}
 		device_context_->Unmap(level_mesh_.vertex_buffer.Get(), 0);
-		device_context_->UpdateSubresource(level_mesh_.vertex_buffer.Get(), 0, nullptr, level_mesh_.vertices.data(), 0, 0);
 	}
 }
 
@@ -302,8 +301,8 @@ bool Level::CreateBuffers()
 	ZeroMemory(&subdata, sizeof(subdata));
 
 	desc.ByteWidth = sizeof(Vertex) * level_mesh_.vertices.size();
-	desc.Usage = D3D11_USAGE_STAGING;
-	desc.BindFlags = 0;
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	subdata.pSysMem = level_mesh_.vertices.data();
 
