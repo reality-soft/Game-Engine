@@ -51,7 +51,7 @@ namespace KGCA41B
 		ImFont* AddFont(string font_name, LPCSTR ttf_file, float font_size);
 	private:
 		ImGuiContext* context;
-		map<string, GuiWidget*> widgets;
+		unordered_map<string, GuiWidget*> widgets;
 	};
 }
 
