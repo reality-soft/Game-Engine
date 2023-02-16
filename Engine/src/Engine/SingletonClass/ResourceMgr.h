@@ -34,7 +34,13 @@ namespace KGCA41B
 
 		map<string, string> GetTotalResID();
 
-
+		set<string> GetTotalTexID();
+		set<string> GetTotalVSID();
+		set<string> GetTotalPSID();
+		set<string> GetTotalSKMID();
+		set<string> GetTotalSKID();
+		set<string> GetTotalSTMID();
+		set<string> GetTotalANIMID();
 
 	private:
 		string current_id;

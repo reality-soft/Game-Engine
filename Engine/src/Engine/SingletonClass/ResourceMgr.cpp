@@ -95,6 +95,77 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     return res_id_map;
 }
 
+set<string> KGCA41B::ResourceMgr::GetTotalTexID()
+{
+    set<string> tex_id_set;
+    for (auto pair : resdic_texture)
+    {
+        tex_id_set.insert(pair.first);
+    }
+    return tex_id_set;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalVSID()
+{
+    set<string> vs_id_set;
+    for (auto pair : resdic_vs)
+    {
+        vs_id_set.insert(pair.first);
+    }
+    return vs_id_set;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalPSID()
+{
+    set<string> ps_id_set;
+    for (auto pair : resdic_ps)
+    {
+        ps_id_set.insert(pair.first);
+    }
+    return ps_id_set;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
+{
+    set<string> skm;
+    for (auto pair : resdic_skeletal_mesh)
+    {
+        skm.insert(pair.first);
+    }
+    return skm;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalSKID()
+{
+    set<string> sk;
+    for (auto pair : resdic_skeleton)
+    {
+        sk.insert(pair.first);
+    }
+    return sk;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalSTMID()
+{
+    set<string> stm;
+    for (auto pair : resdic_static_mesh)
+    {
+        stm.insert(pair.first);
+    }
+    return stm;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
+{
+    set<string> anim;
+    for (auto pair : resdic_animation)
+    {
+        anim.insert(pair.first);
+    }
+    return anim;
+}
+
+
 bool ResourceMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
 {
     HRESULT hr;
