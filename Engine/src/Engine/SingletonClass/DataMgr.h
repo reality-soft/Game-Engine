@@ -106,6 +106,8 @@ namespace KGCA41B
 	public:
 		std::vector<string> GetAllDataSheetID();
 	public:
+		void LoadAllData();
+		void LoadDir(string path);
 		void LoadSheetFile(string fileName);
 		void SaveSheetFile(string sheetName);
 		void SaveSheetFileAs(string sheetName, string fileName);
