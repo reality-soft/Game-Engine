@@ -3,6 +3,7 @@
 #include "DX11App.h"
 #include "ResourceMgr.h"
 #include "PhysicsMgr.h"
+#include "InputMgr.h"
 
 using namespace KGCA41B;
 
@@ -120,6 +121,14 @@ void Level::Update()
 	// Set PS Cb : Light
 	device_context_->UpdateSubresource(level_light_.buffer.Get(), 0, nullptr, &level_light_.data, 0, 0);
 	device_context_->PSSetConstantBuffers(0, 1, level_light_.buffer.GetAddressOf());
+
+
+	if (edit_mode)
+	{
+		// Set GS Cb : EditOption
+		device_context_->UpdateSubresource(edit_option_.buffer.Get(), 0, nullptr, &edit_option_.data, 0, 0);
+		device_context_->GSSetConstantBuffers(0, 1, edit_option_.buffer.GetAddressOf());
+	}
 }
 
 void Level::Render()
@@ -127,12 +136,6 @@ void Level::Render()
 	VertexShader* vs = RESOURCE->UseResource<VertexShader>(vs_id_);
 	PixelShader* ps = RESOURCE->UseResource<PixelShader>(ps_id_);
 	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(gs_id_);
-	// Set Shader : GS
-	if (gs != nullptr)
-		device_context_->GSSetShader(gs->Get(), 0, 0);
-
-	// Set Shader : PS
-	device_context_->PSSetShader(ps->Get(), 0, 0);
 
 	ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->LinearWrap();
 	device_context_->PSSetSamplers(0, 1, &sampler);
@@ -150,30 +153,23 @@ void Level::Render()
 	// Set Shader : VS
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-
+	UINT so_offset = 0;
 	device_context_->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
 	device_context_->IASetIndexBuffer(level_mesh_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	device_context_->IASetInputLayout(vs->InputLayoyt());
+	device_context_->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
 	device_context_->VSSetShader(vs->Get(), 0, 0);
+	device_context_->IASetInputLayout(vs->InputLayoyt());
+
+	// Set Shader : GS
+	if (gs != nullptr)
+		device_context_->GSSetShader(gs->Get(), 0, 0);
+
+	// Set Shader : PS
+	device_context_->PSSetShader(ps->Get(), 0, 0);
 
 	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
 
-	if (edit_mode)
-	{
-		D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
-		HRESULT hr = device_context_->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_resource);
-
-		XMFLOAT3* mapped_vertices = reinterpret_cast<XMFLOAT3*>(mapped_resource.pData);
-		size_t mapped_size = mapped_resource.RowPitch / sizeof(XMFLOAT3);
-
-		for (int i = 0; i < mapped_size; ++i)
-		{
-			mapped_vertices[i];
-
-		}
-		device_context_->Unmap(level_mesh_.vertex_buffer.Get(), 0);
-	}
+	device_context_->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
 }
 
 XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
@@ -196,6 +192,55 @@ XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMF
 	}
 
 	return hit_circle_.data.hitpoint;
+}
+
+void Level::LevelEdit(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
+{
+	XMVECTOR hitpoint = LevelPicking(mouse_ray, circle_radius, circle_color);
+	if (edit_mode)
+	{
+		int result = DINPUT->Update();
+		if (result != MOUSE_NO_STATE)
+		{
+			if (DINPUT->GetMouseWheel())
+				edit_option_.data.altitude.x += DINPUT->GetMouseWheel();
+
+			if (DINPUT->GetMouseButton().x)
+			{
+				ID3D11Buffer* temp_buffer = nullptr;
+				CreateEditBuffer(&temp_buffer);
+				device_context_->CopyResource(temp_buffer, so_buffer_.Get());
+
+				D3D11_MAPPED_SUBRESOURCE so_mapped_res;
+				device_context_->Map(temp_buffer, 0, D3D11_MAP_READ, 0, &so_mapped_res);
+				StreamVertex* vertices = reinterpret_cast<StreamVertex*>(so_mapped_res.pData);
+				for (int i = 0; i < so_mapped_res.RowPitch / sizeof(StreamVertex); ++i)
+				{
+					if (i < level_mesh_.indices.size())
+					{
+						level_mesh_.vertices[level_mesh_.indices[i]].p = vertices[i].o;
+						level_mesh_.vertices[level_mesh_.indices[i]].n = vertices[i].n;
+					}
+				}
+				device_context_->Unmap(temp_buffer, 0);
+
+				
+				// bind to original
+				D3D11_MAPPED_SUBRESOURCE orign_mapped_res;
+				device_context_->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &orign_mapped_res);
+				
+				Vertex* level_vertices = reinterpret_cast<Vertex*>(orign_mapped_res.pData);
+
+				for (int i = 0; i < orign_mapped_res.RowPitch / sizeof(Vertex); ++i)
+				{
+					level_vertices[i].p = level_mesh_.vertices[i].p;
+					level_vertices[i].n = level_mesh_.vertices[i].n;
+				}
+				
+				device_context_->Unmap(level_mesh_.vertex_buffer.Get(), 0);
+			}
+		}
+	}
 }
 
 void Level::GenVertexNormal()
@@ -309,7 +354,18 @@ bool Level::CreateBuffers()
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.vertex_buffer.GetAddressOf());
 	if (FAILED(hr))
 		return false;
+	
+	// SO Buffer
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
 
+	desc.ByteWidth = sizeof(StreamVertex) * level_mesh_.indices.size();
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_STREAM_OUTPUT;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, nullptr, so_buffer_.GetAddressOf());
+	if (FAILED(hr))
+		return false;
 
 	// IndexBuffer
 
@@ -365,6 +421,36 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = &hit_circle_.data;
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, hit_circle_.buffer.GetAddressOf());
+
+	// ConstantBuffer : EditOption
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbEditOption::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &edit_option_.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, edit_option_.buffer.GetAddressOf());
+
+	return true;
+}
+
+bool Level::CreateEditBuffer(ID3D11Buffer** _buffer)
+{
+	// EditBuffer
+	ID3D11Buffer* edit_buffer = nullptr;
+	D3D11_BUFFER_DESC desc;
+	so_buffer_.Get()->GetDesc(&desc);
+
+	desc.Usage = D3D11_USAGE_STAGING;
+	desc.BindFlags = 0;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+	if (FAILED(DX11APP->GetDevice()->CreateBuffer(&desc, nullptr, _buffer)))
+		return false;
 
 	return true;
 }

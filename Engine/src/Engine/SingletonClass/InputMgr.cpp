@@ -36,6 +36,14 @@ bool InputMgr::Init(HWND hwnd, HINSTANCE hinstacne)
 
 int InputMgr::Update()
 {
+	mouse_state.lX = 0;
+	mouse_state.lY = 0;
+	mouse_state.lZ = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		mouse_state.rgbButtons[i] = 0;
+	}
+
 	HRESULT hr;
 
 	hr = di_keyboard.Get()->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);

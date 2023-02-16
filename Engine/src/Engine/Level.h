@@ -25,10 +25,18 @@ namespace KGCA41B
 	{
 		struct Data
 		{
-			float height_option;
+			XMINT4 altitude = {0, 0, 0, 0};
 
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
+	};
+	struct StreamVertex
+	{
+		XMFLOAT4 p;
+		XMFLOAT3 o;
+		XMFLOAT3 n;
+		XMFLOAT4 c;
+		XMFLOAT2 t;
 	};
 
 	class DLL_API Level
@@ -46,7 +54,7 @@ namespace KGCA41B
 
 	public: // Editings
 		XMVECTOR LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
-
+		void LevelEdit(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
 
 	private:
 		void GenVertexNormal();
@@ -55,6 +63,7 @@ namespace KGCA41B
 
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
+		bool CreateEditBuffer(ID3D11Buffer** _buffer);
 
 	public:
 		bool edit_mode = false;
@@ -66,10 +75,12 @@ namespace KGCA41B
 
 	private:
 		SingleMesh<Vertex> level_mesh_;
+		ComPtr<ID3D11Buffer> so_buffer_;
 
 		CbTransform level_transform_;
 		CbLight level_light_;
 		CbHitCircle hit_circle_;
+		CbEditOption edit_option_;
 
 		UINT num_row_vertex_;
 		UINT num_col_vertex_;
