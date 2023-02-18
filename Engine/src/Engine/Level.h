@@ -15,7 +15,6 @@ namespace KGCA41B
 			bool is_hit = false;
 			float circle_radius = 0.0f;
 			XMVECTOR hitpoint = { 0, 0, 0, 0 };
-			XMFLOAT4 circle_color = { 0, 0, 0, 0 };
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -42,7 +41,7 @@ namespace KGCA41B
 	class DLL_API Level
 	{
 	public:
-		Level();
+		Level() {};
 		~Level() {}
 
 	public:
@@ -52,9 +51,17 @@ namespace KGCA41B
 		void Update();
 		void Render();
 
+		XMINT2 GetWorldSize();
+
 	public: // Editings
-		XMVECTOR LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
-		void LevelEdit(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
+		XMVECTOR LevelPicking(const MouseRay& mouse_ray, float circle_radius);
+		void LevelEdit(const MouseRay& mouse_ray, float circle_radius);
+		void Regenerate(UINT num_row, UINT num_col, int cell_distance, int uv_scale);
+		void ResetHeightField();
+		float sculpting_brush_ = 100.0f;
+
+		vector<Vertex> GetLevelVertex() { return level_mesh_.vertices; }
+		vector<UINT> GetLevelIndex() { return level_mesh_.indices; }
 
 	private:
 		void GenVertexNormal();
@@ -64,6 +71,7 @@ namespace KGCA41B
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
 		bool CreateEditBuffer(ID3D11Buffer** _buffer);
+
 
 	public:
 		bool edit_mode = false;
@@ -87,16 +95,11 @@ namespace KGCA41B
 
 		int cell_distance_;
 		int uv_scale_;
-		float max_height_;
 		vector<float> height_list_;
 
 	private:
 		reactphysics3d::HeightFieldShape* height_field_shape_;
 		reactphysics3d::Collider* height_field_collider_;
 		reactphysics3d::CollisionBody* height_field_body_;
-
-	private:
-		ID3D11Device* device_;
-		ID3D11DeviceContext* device_context_;
 	};
 }

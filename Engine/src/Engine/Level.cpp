@@ -7,25 +7,13 @@
 
 using namespace KGCA41B;
 
-Level::Level()
-	: num_row_vertex_(0)
-	, num_col_vertex_(0)
-	, cell_distance_(0)
-	, uv_scale_(0)
-	, max_height_(0)
-	, device_(nullptr)
-	, device_context_(nullptr)
-{
-	level_transform_.data.world_matrix = XMMatrixIdentity();
-	level_light_.data.light_direction = XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f);
-	level_light_.data.light_bright = 1.0f;
-
-	device_ = DX11APP->GetDevice();
-	device_context_ = DX11APP->GetDeviceContext();
-}
 
 bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_scale)
 {
+	level_transform_.data.world_matrix = XMMatrixIdentity();
+	level_light_.data.light_direction = XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f);
+	level_light_.data.light_bright = 1.5f;
+
     num_row_vertex_ = num_row;
     num_col_vertex_ = num_col;
     UINT num_row_cell = num_row_vertex_ - 1;
@@ -97,7 +85,7 @@ bool Level::CreateHeightField(float min_height, float max_height)
 	if (height_field_shape_ == nullptr)
 		return false;
 
-	height_field_shape_->setScale(Vector3(10, 1, 10));
+	height_field_shape_->setScale(Vector3(cell_distance_, 1, cell_distance_));
 
 	reactphysics3d::Transform transform = reactphysics3d::Transform::identity();
 	height_field_body_ = PHYSICS->GetPhysicsWorld()->createCollisionBody(transform);
@@ -111,23 +99,23 @@ void Level::Update()
 	// Set VS Cb : Transform
 	level_transform_.data.world_matrix = XMMatrixTranspose(level_transform_.data.world_matrix);
 
-	device_context_->UpdateSubresource(level_transform_.buffer.Get(), 0, nullptr, &level_transform_.data, 0, 0);
-	device_context_->VSSetConstantBuffers(0, 1, level_transform_.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->UpdateSubresource(level_transform_.buffer.Get(), 0, nullptr, &level_transform_.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, level_transform_.buffer.GetAddressOf());
 
 	// Set VS Cb : HitCircle
-	device_context_->UpdateSubresource(hit_circle_.buffer.Get(), 0, nullptr, &hit_circle_.data, 0, 0);
-	device_context_->VSSetConstantBuffers(2, 1, hit_circle_.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->UpdateSubresource(hit_circle_.buffer.Get(), 0, nullptr, &hit_circle_.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(2, 1, hit_circle_.buffer.GetAddressOf());
 
 	// Set PS Cb : Light
-	device_context_->UpdateSubresource(level_light_.buffer.Get(), 0, nullptr, &level_light_.data, 0, 0);
-	device_context_->PSSetConstantBuffers(0, 1, level_light_.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->UpdateSubresource(level_light_.buffer.Get(), 0, nullptr, &level_light_.data, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(0, 1, level_light_.buffer.GetAddressOf());
 
 
 	if (edit_mode)
 	{
 		// Set GS Cb : EditOption
-		device_context_->UpdateSubresource(edit_option_.buffer.Get(), 0, nullptr, &edit_option_.data, 0, 0);
-		device_context_->GSSetConstantBuffers(0, 1, edit_option_.buffer.GetAddressOf());
+		DX11APP->GetDeviceContext()->UpdateSubresource(edit_option_.buffer.Get(), 0, nullptr, &edit_option_.data, 0, 0);
+		DX11APP->GetDeviceContext()->GSSetConstantBuffers(0, 1, edit_option_.buffer.GetAddressOf());
 	}
 }
 
@@ -138,7 +126,7 @@ void Level::Render()
 	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(gs_id_);
 
 	ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->LinearWrap();
-	device_context_->PSSetSamplers(0, 1, &sampler);
+	DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 
 	UINT slot = 0;
 	for (auto id : texture_id)
@@ -146,7 +134,7 @@ void Level::Render()
 		Texture* texture = RESOURCE->UseResource<Texture>(id);
 		if (texture != nullptr)
 		{
-			device_context_->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
+			DX11APP->GetDeviceContext()->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
 		}
 	}
 
@@ -154,25 +142,30 @@ void Level::Render()
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	UINT so_offset = 0;
-	device_context_->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
-	device_context_->IASetIndexBuffer(level_mesh_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	device_context_->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
-	device_context_->VSSetShader(vs->Get(), 0, 0);
-	device_context_->IASetInputLayout(vs->InputLayoyt());
+	DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
+	DX11APP->GetDeviceContext()->IASetIndexBuffer(level_mesh_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	DX11APP->GetDeviceContext()->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
+	DX11APP->GetDeviceContext()->VSSetShader(vs->Get(), 0, 0);
+	DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayoyt());
 
 	// Set Shader : GS
 	if (gs != nullptr)
-		device_context_->GSSetShader(gs->Get(), 0, 0);
+		DX11APP->GetDeviceContext()->GSSetShader(gs->Get(), 0, 0);
 
 	// Set Shader : PS
-	device_context_->PSSetShader(ps->Get(), 0, 0);
+	DX11APP->GetDeviceContext()->PSSetShader(ps->Get(), 0, 0);
 
-	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
+	DX11APP->GetDeviceContext()->DrawIndexed(level_mesh_.indices.size(), 0, 0);
 
-	device_context_->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
+	DX11APP->GetDeviceContext()->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
 }
 
-XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
+XMINT2 KGCA41B::Level::GetWorldSize()
+{
+	return XMINT2(num_row_vertex_ - 1, num_col_vertex_ - 1);
+}
+
+XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius)
 {
 	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
 	MouseRayCallback ray_callback;
@@ -183,20 +176,18 @@ XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMF
 		hit_circle_.data.is_hit = true;
 		RPtoXM(ray_callback.hitpoint, hit_circle_.data.hitpoint);
 		hit_circle_.data.circle_radius = circle_radius;
-		hit_circle_.data.circle_color = circle_color;
 	}
 	else
 	{
 		hit_circle_.data.is_hit = false;
-		hit_circle_.data.circle_color = {1, 1, 1, 1};
 	}
 
 	return hit_circle_.data.hitpoint;
 }
 
-void Level::LevelEdit(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
+void Level::LevelEdit(const MouseRay& mouse_ray, float circle_radius)
 {
-	XMVECTOR hitpoint = LevelPicking(mouse_ray, circle_radius, circle_color);
+	XMVECTOR hitpoint = LevelPicking(mouse_ray, circle_radius);
 	if (edit_mode)
 	{
 		int result = DINPUT->Update();
@@ -209,10 +200,10 @@ void Level::LevelEdit(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 c
 			{
 				ID3D11Buffer* temp_buffer = nullptr;
 				CreateEditBuffer(&temp_buffer);
-				device_context_->CopyResource(temp_buffer, so_buffer_.Get());
+				DX11APP->GetDeviceContext()->CopyResource(temp_buffer, so_buffer_.Get());
 
 				D3D11_MAPPED_SUBRESOURCE so_mapped_res;
-				device_context_->Map(temp_buffer, 0, D3D11_MAP_READ, 0, &so_mapped_res);
+				DX11APP->GetDeviceContext()->Map(temp_buffer, 0, D3D11_MAP_READ, 0, &so_mapped_res);
 				StreamVertex* vertices = reinterpret_cast<StreamVertex*>(so_mapped_res.pData);
 				for (int i = 0; i < so_mapped_res.RowPitch / sizeof(StreamVertex); ++i)
 				{
@@ -222,25 +213,94 @@ void Level::LevelEdit(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 c
 						level_mesh_.vertices[level_mesh_.indices[i]].n = vertices[i].n;
 					}
 				}
-				device_context_->Unmap(temp_buffer, 0);
-
+				DX11APP->GetDeviceContext()->Unmap(temp_buffer, 0);
+				temp_buffer->Release();
+				temp_buffer = nullptr;
 				
 				// bind to original
 				D3D11_MAPPED_SUBRESOURCE orign_mapped_res;
-				device_context_->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &orign_mapped_res);
+				DX11APP->GetDeviceContext()->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &orign_mapped_res);
 				
 				Vertex* level_vertices = reinterpret_cast<Vertex*>(orign_mapped_res.pData);
 
 				for (int i = 0; i < orign_mapped_res.RowPitch / sizeof(Vertex); ++i)
 				{
-					level_vertices[i].p = level_mesh_.vertices[i].p;
-					level_vertices[i].n = level_mesh_.vertices[i].n;
+					if (i < level_mesh_.vertices.size())
+					{
+						level_vertices[i].p = level_mesh_.vertices[i].p;
+						level_vertices[i].n = level_mesh_.vertices[i].n;
+					}
 				}
 				
-				device_context_->Unmap(level_mesh_.vertex_buffer.Get(), 0);
+				DX11APP->GetDeviceContext()->Unmap(level_mesh_.vertex_buffer.Get(), 0);
+				
 			}
 		}
 	}
+}
+
+void Level::Regenerate(UINT num_row, UINT num_col, int cell_distance, int uv_scale)
+{
+	level_mesh_.vertices.clear();
+	level_mesh_.vertex_buffer.Get()->Release();
+	level_mesh_.vertex_buffer.ReleaseAndGetAddressOf();
+
+	level_mesh_.indices.clear();
+	level_mesh_.index_buffer.Get()->Release();
+	level_mesh_.index_buffer.ReleaseAndGetAddressOf();
+
+	so_buffer_.Get()->Release();
+	so_buffer_.ReleaseAndGetAddressOf();
+
+	level_transform_.buffer.Get()->Release();
+	level_transform_.buffer.ReleaseAndGetAddressOf();
+
+	level_light_.buffer.Get()->Release();
+	level_light_.buffer.ReleaseAndGetAddressOf();
+
+	hit_circle_.buffer.Get()->Release();
+	hit_circle_.buffer.ReleaseAndGetAddressOf();
+
+	edit_option_.buffer.Get()->Release();
+	edit_option_.buffer.ReleaseAndGetAddressOf();
+
+	height_list_.clear();
+	
+	height_field_body_->removeCollider(height_field_collider_);
+	PHYSICS->GetPhysicsWorld()->destroyCollisionBody(height_field_body_);
+
+	height_field_shape_ = nullptr;
+	height_field_collider_ = nullptr;
+	height_field_body_ = nullptr;
+
+	CreateLevel(num_row, num_row, cell_distance, uv_scale);
+	CreateHeightField(-(int)num_row, num_row);
+}
+
+void Level::ResetHeightField()
+{
+	height_list_.clear();
+	GetHeightList();
+
+	height_field_body_->removeCollider(height_field_collider_);
+	PHYSICS->GetPhysicsWorld()->destroyCollisionBody(height_field_body_);
+
+	height_field_shape_ = nullptr;
+	height_field_collider_ = nullptr;
+	height_field_body_ = nullptr;
+
+	float heightest = 0;
+	float lowest = 0;
+	for (int i = 0; i < height_list_.size(); ++i)
+	{
+		if (heightest < height_list_[i])
+			heightest = height_list_[i];
+
+		else if (lowest > height_list_[i])
+			lowest = height_list_[i];
+	}
+
+	CreateHeightField(lowest, heightest);
 }
 
 void Level::GenVertexNormal()
