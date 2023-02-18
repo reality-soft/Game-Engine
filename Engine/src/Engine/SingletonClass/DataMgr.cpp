@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "DataMgr.h"
 #include <fstream>
+#include <io.h>
+#include "DataTypes.h"
 
 using namespace KGCA41B;
 using std::fstream;
@@ -39,6 +41,40 @@ shared_ptr<DataSheet> KGCA41B::DataMgr::LoadSheet(string sheet_name)
 		return resdic_sheet[sheet_name];
 	else
 		return NULL;
+}
+
+std::vector<string> KGCA41B::DataMgr::GetAllDataSheetID()
+{
+	vector<string> id_set;
+	for (auto pair : resdic_sheet)
+		id_set.push_back(pair.first);
+	return id_set;
+}
+
+void KGCA41B::DataMgr::LoadAllData()
+{
+	LoadDir(directory_);
+}
+
+void KGCA41B::DataMgr::LoadDir(string path)
+{
+	string tempAdd = path + "/" + "*.*";
+	intptr_t handle;
+	struct _finddata_t fd;
+	handle = _findfirst(tempAdd.c_str(), &fd);
+
+	if (handle == -1L) return;
+
+	do {
+		if ((fd.attrib & _A_SUBDIR) && (fd.name[0] != '.'))
+		{
+			LoadDir(path + fd.name + "/");
+		}
+		else if (fd.name[0] != '.')
+		{
+			LoadSheetFile(path + +"/" + fd.name);
+		}
+	} while (_findnext(handle, &fd) == 0);
 }
 
 
