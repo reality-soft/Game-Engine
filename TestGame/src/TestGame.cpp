@@ -1,18 +1,17 @@
 #include "TestGame.h"
-#include "Engine/SpacePartition/Vector.h"
 #include "ComponentSystem.h"
 
 void TestGame::OnInit()
 {
-	for (int i = 0;i < 1000;i++) {
-		KGCA41B::Actor actor;
-		actor.OnInit(reg_scene, KGCA41B::AABB<3>(KGCA41B::Vector<3>::GetRandomVector(0, 300), KGCA41B::Vector<3>::GetRandomVector(5, 10)));
-		actor_list.push_back(actor);
-	}
+	//for (int i = 0;i < 1000;i++) {
+	//	KGCA41B::Actor actor;
+	//	actor.OnInit(reg_scene, KGCA41B::AABB<3>(KGCA41B::Vector<3>::GetRandomVector(0, 300), KGCA41B::Vector<3>::GetRandomVector(5, 10)));
+	//	actor_list.push_back(actor);
+	//}
 	
 
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
-
+	KGCA41B::QUADTREE->Init(nullptr, nullptr, 4);
 	KGCA41B::FMOD_MGR->Init();
 	KGCA41B::RESOURCE->Init("../Contents");
 
