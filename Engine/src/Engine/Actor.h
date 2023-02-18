@@ -1,7 +1,7 @@
 #pragma once
 #include "DllMacro.h"
 #include "ComponentSystem.h"
-#include "SpacePartition/SpacePartition.h"
+#include "QuadTreeMgr.h"
 
 namespace KGCA41B
 {
@@ -10,10 +10,9 @@ namespace KGCA41B
 	protected:
 		entt::entity	entity_id_;
 		TransformTree	transform_tree_;
-		AABB<3>			collision_box_;
 		int				node_num_;
 	public:
-		virtual void OnInit(entt::registry& registry, AABB<3> collision_box);
+		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate(entt::registry& registry);
 	};
 }

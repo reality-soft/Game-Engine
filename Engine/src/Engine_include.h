@@ -8,7 +8,7 @@
 #include "Engine/SingletonClass/PhysicsMgr.h"
 #include "Engine/SingletonClass/DataMgr.h"
 #include "Engine/SingletonClass/RenderTargetMgr.h"
-
+#include "Engine/SingletonClass/QuadTreeMgr.h"
 
 #include "ECS/RenderSystem.h"
 #include "ECS/CameraSystem.h"
