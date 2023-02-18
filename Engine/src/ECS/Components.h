@@ -3,6 +3,7 @@
 #include "DataTypes.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Shape.h"
 
 namespace KGCA41B
 {
@@ -91,6 +92,18 @@ namespace KGCA41B
 	struct SoundGenerator : public Transform
 	{
 		queue<SoundQueue> sound_queue_list;
+	};
+
+	struct BoundingBox : public Transform
+	{
+		AABBShape aabb;
+		virtual void OnUpdate() override
+		{
+			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
+
+			aabb.min = XMVector3TransformCoord(aabb.min, translation);
+			aabb.max = XMVector3TransformCoord(aabb.max, translation);
+		}
 	};
 
 	struct TransformTreeNode

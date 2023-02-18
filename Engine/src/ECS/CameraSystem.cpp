@@ -139,13 +139,13 @@ void CameraSystem::CameraMovement(InputMapping& input_mapping)
 			camera->look += up_dir * input_mapping.axis_value[(int)AxisType::UP];
 
 		case AxisType::YAW:
-			camera->yaw += input_mapping.axis_value[(int)AxisType::YAW] * TM_DELTATIME * 10;
+			camera->yaw += input_mapping.axis_value[(int)AxisType::YAW] * TM_DELTATIME * 5;
 
 		case AxisType::PITCH:
-			camera->pitch += input_mapping.axis_value[(int)AxisType::PITCH] * TM_DELTATIME * 10;
+			camera->pitch += input_mapping.axis_value[(int)AxisType::PITCH] * TM_DELTATIME * 5;
 
 		case AxisType::ROLL:
-			camera->roll += input_mapping.axis_value[(int)AxisType::ROLL] * TM_DELTATIME * 10;
+			camera->roll += input_mapping.axis_value[(int)AxisType::ROLL] * TM_DELTATIME * 5;
 		}
 	}
 }

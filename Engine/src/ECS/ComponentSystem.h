@@ -20,6 +20,7 @@ namespace KGCA41B {
 			registry.on_construct<InputMapping>().connect<&ComponentSystem::OnConstruct<InputMapping>>(this);
 
 			registry.on_update<Transform>().connect<&ComponentSystem::OnUpdate<Transform>>(this);
+			registry.on_update<BoundingBox>().connect<&ComponentSystem::OnUpdate<BoundingBox>>(this);
 
 			return true;
 		}
