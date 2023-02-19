@@ -189,6 +189,30 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 
 		auto& uv_sprite = reg.get<UVSprite>(ent);
 
+		if (!uv_sprite.enabled_)
+			continue;
+
+
+		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite.tex_id);
+
+		// uv °ª ¼³Á¤
+		auto uv_value = uv_sprite.uv_list[min((int)uv_sprite.cur_frame - 1, (int)uv_sprite.uv_list.size() - 1)];
+
+		float tex_width = (float)texture->texture_desc.Width;
+		float tex_height = (float)texture->texture_desc.Height;
+
+		uv_sprite.vertex_list[0].t.x = uv_value.first.x / tex_width;
+		uv_sprite.vertex_list[0].t.y = uv_value.first.y / tex_height;
+
+		uv_sprite.vertex_list[1].t.x = uv_value.second.x / tex_width;
+		uv_sprite.vertex_list[1].t.y = uv_value.first.y / tex_height;
+
+		uv_sprite.vertex_list[2].t.x = uv_value.first.x / tex_width;
+		uv_sprite.vertex_list[2].t.y = uv_value.second.y / tex_height;
+
+		uv_sprite.vertex_list[3].t.x = uv_value.second.x / tex_width;
+		uv_sprite.vertex_list[3].t.y = uv_value.second.y / tex_height;
+
 		VertexShader* vs =		RESOURCE->UseResource<VertexShader>(uv_sprite.vs_id);
 		PixelShader* ps =		RESOURCE->UseResource<PixelShader>(uv_sprite.ps_id);
 
@@ -196,7 +220,10 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 		UINT offset = 0;
 
 		if (uv_sprite.vertex_buffer != nullptr)
+		{
+			device_context->UpdateSubresource(uv_sprite.vertex_buffer.Get(), 0, nullptr, &uv_sprite.vertex_list.at(0), 0, 0);
 			device_context->IASetVertexBuffers(0, 1, uv_sprite.vertex_buffer.GetAddressOf(), &stride, &offset);
+		}
 
 		if (uv_sprite.index_buffer != nullptr)
 			device_context->IASetIndexBuffer(uv_sprite.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
@@ -208,8 +235,6 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 			device_context->VSSetShader(vs->Get(), 0, 0);
 		if (ps != nullptr)
 			device_context->PSSetShader(ps->Get(), 0, 0);
-
-		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite.tex_id);
 
 		if (texture != nullptr)
 			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
@@ -223,6 +248,9 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 		SetCbTransform(transform);
 
 		auto& tex_sprite = reg.get<TextureSprite>(ent);
+
+		if (!tex_sprite.enabled_)
+			continue;
 
 		VertexShader* vs = RESOURCE->UseResource<VertexShader>(tex_sprite.vs_id);
 		PixelShader* ps = RESOURCE->UseResource<PixelShader>(tex_sprite.ps_id);
@@ -243,8 +271,8 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 			device_context->VSSetShader(vs->Get(), 0, 0);
 		if (ps != nullptr)
 			device_context->PSSetShader(ps->Get(), 0, 0);
-
-		Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite.tex_id_list[tex_sprite.cur_frame]);
+		
+		Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite.tex_id_list[min((int)tex_sprite.cur_frame - 1, (int)tex_sprite.tex_id_list.size() - 1)]);
 
 		if (texture != nullptr)
 			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
@@ -258,6 +286,9 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 		SetCbTransform(transform);
 
 		auto& particles = reg.get<Particles>(ent);
+
+		if (!particles.enabled_)
+			return;
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
