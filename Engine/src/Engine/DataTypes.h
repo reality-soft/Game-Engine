@@ -143,6 +143,38 @@ namespace KGCA41B
 
 		IDLE
 	};
+
+	// Effect
+	enum E_Effect
+	{
+		NONE = 0,
+		UV_SPRITE = 1,
+		TEX_SPRITE = 2,
+		PARTICLES = 3,
+	};
+
+	struct UVSpriteData
+	{
+		int max_frame = 10;
+		int cur_frame = 1;
+		string texture_id = "";
+		vector<pair<POINT, POINT>> uv_list;
+		string vs_id = "";
+		string ps_id = "";
+		char effect_name[255] = "";
+	};
+
+	struct TexSpriteData
+	{
+		int max_frame = 10;
+		int cur_frame = 1;
+		string texture_id = "";
+		vector<string> tex_id_list;
+		string vs_id = "";
+		string ps_id = "";
+		char effect_name[255] = "";
+	};
+
 }
 
 static std::wstring to_mw(const std::string& _src)
