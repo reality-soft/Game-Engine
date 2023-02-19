@@ -141,6 +141,7 @@ namespace KGCA41B
 
 	struct BaseEffect : public Transform
 	{
+		bool					enabled_ = false;
 		string					vs_id;
 		string					ps_id;
 		vector<Vertex>			vertex_list;
@@ -150,7 +151,7 @@ namespace KGCA41B
 	struct UVSprite : public BaseEffect
 	{
 		string						tex_id;
-		UINT						cur_frame;
+		UINT						cur_frame = 1;
 		UINT						max_frame;
 		vector<UINT>				index_list;
 		ComPtr<ID3D11Buffer>		index_buffer;
@@ -159,7 +160,7 @@ namespace KGCA41B
 
 	struct TextureSprite : public BaseEffect
 	{
-		UINT						cur_frame;
+		UINT						cur_frame = 1;
 		UINT						max_frame;
 		vector<UINT>				index_list;
 		ComPtr<ID3D11Buffer>		index_buffer;
