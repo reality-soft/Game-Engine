@@ -125,6 +125,16 @@ set<string> KGCA41B::ResourceMgr::GetTotalPSID()
     return ps_id_set;
 }
 
+set<string> KGCA41B::ResourceMgr::GetTotalGSID()
+{
+    set<string> gs_id_set;
+    for (auto pair : resdic_gs)
+    {
+        gs_id_set.insert(pair.first);
+    }
+    return gs_id_set;
+}
+
 set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
 {
     set<string> skm;
@@ -164,7 +174,6 @@ set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
     }
     return anim;
 }
-
 
 bool ResourceMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
 {

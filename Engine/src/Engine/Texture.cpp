@@ -10,7 +10,12 @@ bool KGCA41B::Texture::LoadTextureWIC(wstring filepath)
 	if (FAILED(hr))
 		return false;
 
-	resource->Release();
+	ID3D11Texture2D* texture;
+	resource->QueryInterface<ID3D11Texture2D>(&texture);
+	if (texture)
+		texture->GetDesc(&texture_desc);
+
+	texture->Release();
 
 	return true;
 }

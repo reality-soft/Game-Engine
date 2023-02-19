@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Engine.h"
 #include "ResourceMgr.h"
 #include "GUIMgr.h"
@@ -98,7 +98,7 @@ namespace KGCA41B {
 	{
 		RECT new_rc;
 		GetClientRect(hwnd, &new_rc);
-		wnd_size.x = new_rc.right  - new_rc.left;
+		wnd_size.x = new_rc.right - new_rc.left;
 		wnd_size.y = new_rc.bottom - new_rc.top;
 
 		DX11APP->Resize(wnd_size.x, wnd_size.y);

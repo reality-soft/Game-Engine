@@ -37,6 +37,7 @@ namespace KGCA41B
 		set<string> GetTotalTexID();
 		set<string> GetTotalVSID();
 		set<string> GetTotalPSID();
+		set<string> GetTotalGSID();
 		set<string> GetTotalSKMID();
 		set<string> GetTotalSKID();
 		set<string> GetTotalSTMID();
