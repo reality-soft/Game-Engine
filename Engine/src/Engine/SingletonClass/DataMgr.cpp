@@ -44,7 +44,8 @@ shared_ptr<DataSheet> KGCA41B::DataMgr::LoadSheet(string sheet_name)
 		return NULL;
 }
 
-vector<string> KGCA41B::DataMgr::GetAllDataSheetID()
+
+std::vector<string> KGCA41B::DataMgr::GetAllDataSheetID()
 {
 	vector<string> id_set;
 	for (auto pair : resdic_sheet)
@@ -73,7 +74,7 @@ void KGCA41B::DataMgr::LoadDir(string path)
 		}
 		else if (fd.name[0] != '.')
 		{
-			LoadSheetFile(path + + "/" +fd.name);
+			LoadSheetFile(path + "/" + fd.name);
 		}
 	} while (_findnext(handle, &fd) == 0);
 }
@@ -92,7 +93,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string path)
 	string line;
 	string value;
 
-	// Ä«Å×°í¸® ¸ÕÀú ÀÔ·Â¹Þ±â
+	// ì¹´í…Œê³ ë¦¬ ë¨¼ì € ìž…ë ¥ë°›ê¸°
 	getline(fs, line);
 	stringstream firstLine(line);
 	while (std::getline(firstLine, value, ','))
@@ -100,7 +101,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string path)
 		newSheet->categories.push_back(value);
 	}
 
-	// ÀÔ·Â¹ÞÀº Ä«Å×°í¸® º°·Î µ¥ÀÌÅÍ ÀÔ·Â¹Þ±â
+	// ìž…ë ¥ë°›ì€ ì¹´í…Œê³ ë¦¬ ë³„ë¡œ ë°ì´í„° ìž…ë ¥ë°›ê¸°
 	while (!fs.eof())
 	{
 		if (!getline(fs, line))
@@ -131,7 +132,7 @@ void KGCA41B::DataMgr::SaveSheetFile(string sheetName)
 
 	auto sheet = resdic_sheet[sheetName];
 
-	// Ä«Å×°í¸® ¸ÕÀú Ãâ·ÂÇÏ±â
+	// ì¹´í…Œê³ ë¦¬ ë¨¼ì € ì¶œë ¥í•˜ê¸°
 	for (auto& category : sheet->categories)
 	{
 		if (fs.is_open())
@@ -183,7 +184,7 @@ void KGCA41B::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 
 	auto sheet = resdic_sheet[sheetName];
 
-	// Ä«Å×°í¸® ¸ÕÀú Ãâ·ÂÇÏ±â
+	// ì¹´í…Œê³ ë¦¬ ë¨¼ì € ì¶œë ¥í•˜ê¸°
 	for (auto& category : sheet->categories)
 	{
 		if (fs.is_open())

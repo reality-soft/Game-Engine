@@ -8,7 +8,7 @@ namespace KGCA41B {
 #define ENGINE KGCA41B::Engine::GetInst()
 
 	public:
-		bool OnInit(HINSTANCE hinstance, LPCWSTR title, POINT wnd_size);
+		bool OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size);
 		void Run(Scene* scene);
 		void OnResized();
 		void OnRelease();
@@ -19,7 +19,7 @@ namespace KGCA41B {
 		HWND      GetWindowHandle() { return hwnd; }
 
 	private:
-		bool InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT wnd_size);
+		bool InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size);
 
 	private:
 		HINSTANCE hinstance;

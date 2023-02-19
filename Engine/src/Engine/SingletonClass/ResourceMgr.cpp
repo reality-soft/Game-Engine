@@ -135,6 +135,46 @@ set<string> KGCA41B::ResourceMgr::GetTotalGSID()
     return gs_id_set;
 }
 
+set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
+{
+    set<string> skm;
+    for (auto pair : resdic_skeletal_mesh)
+    {
+        skm.insert(pair.first);
+    }
+    return skm;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalSKID()
+{
+    set<string> sk;
+    for (auto pair : resdic_skeleton)
+    {
+        sk.insert(pair.first);
+    }
+    return sk;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalSTMID()
+{
+    set<string> stm;
+    for (auto pair : resdic_static_mesh)
+    {
+        stm.insert(pair.first);
+    }
+    return stm;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
+{
+    set<string> anim;
+    for (auto pair : resdic_animation)
+    {
+        anim.insert(pair.first);
+    }
+    return anim;
+}
+
 bool ResourceMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
 {
     HRESULT hr;

@@ -42,9 +42,11 @@ LRESULT CALLBACK WindowProc(
 namespace KGCA41B {
 	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
 	{
+		// À©µµ¿ì ÃÊ±âÈ­
 		if (InitWindow(hinstance, title, screen_size) == false)
 			return false;
 
+		// DX ÃÊ±âÈ­
 		if (DX11APP->OnInit(screen_size, hwnd) == false)
 			return false;
 

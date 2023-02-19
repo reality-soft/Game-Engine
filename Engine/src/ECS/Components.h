@@ -7,6 +7,8 @@
 
 namespace KGCA41B
 {
+#define TYPE_ID(type) entt::type_hash<type>().value()
+
 	struct Component
 	{
 		string tag;

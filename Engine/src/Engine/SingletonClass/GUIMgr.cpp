@@ -45,19 +45,8 @@ void GUIMgr::RenderWidgets()
 	ImGui::NewFrame();
 
 	for (auto& widget : widgets)
-	{
-		if (widget.second->open_ == false)
-		{
-			delete widget.second;
-			widget.second = nullptr;
-			auto ret = widgets.erase(widget.first);
-			break;
-		}
-		else
-		{
-			widget.second->Update();
-			widget.second->Render();
-		}
+	{		
+		widget.second->WidgetRender();
 	}
 
 	ImGui::Render();
@@ -75,6 +64,7 @@ void GUIMgr::AddWidget(string widget_name, GuiWidget* widget)
 	if (FindWidget(widget_name) != nullptr)
 		return;
 
+	widget->Init();
 	widgets.insert(make_pair(widget_name, widget));
 }
 

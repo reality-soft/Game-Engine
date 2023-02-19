@@ -21,6 +21,16 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	struct CbEditOption
+	{
+		struct Data
+		{
+			float height_option;
+
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 	class DLL_API Level
 	{
 	public:
@@ -33,7 +43,10 @@ namespace KGCA41B
 
 		void Update();
 		void Render();
-		void LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
+
+	public: // Editings
+		XMVECTOR LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color);
+
 
 	private:
 		void GenVertexNormal();
@@ -42,10 +55,13 @@ namespace KGCA41B
 
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
-		
+
 	public:
+		bool edit_mode = false;
+
 		string vs_id_;
 		string ps_id_;
+		string gs_id_;
 		vector<string> texture_id;
 
 	private:
@@ -73,4 +89,3 @@ namespace KGCA41B
 		ID3D11DeviceContext* device_context_;
 	};
 }
-

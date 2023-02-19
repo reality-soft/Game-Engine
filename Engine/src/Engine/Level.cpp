@@ -86,8 +86,8 @@ bool Level::CreateHeightField(float min_height, float max_height)
 	GetHeightList();
 
 	height_field_shape_ = PHYSICS->physics_common_.createHeightFieldShape(
-		num_col_vertex_ * cell_distance_,
-		num_row_vertex_ * cell_distance_,
+		num_col_vertex_,// * cell_distance_,
+		num_row_vertex_,// * cell_distance_,
 		min_height,
 		max_height,
 		height_list_.data(),
@@ -95,6 +95,8 @@ bool Level::CreateHeightField(float min_height, float max_height)
 
 	if (height_field_shape_ == nullptr)
 		return false;
+
+	height_field_shape_->setScale(Vector3(10, 1, 10));
 
 	reactphysics3d::Transform transform = reactphysics3d::Transform::identity();
 	height_field_body_ = PHYSICS->GetPhysicsWorld()->createCollisionBody(transform);
@@ -124,6 +126,10 @@ void Level::Render()
 {
 	VertexShader* vs = RESOURCE->UseResource<VertexShader>(vs_id_);
 	PixelShader* ps = RESOURCE->UseResource<PixelShader>(ps_id_);
+	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(gs_id_);
+	// Set Shader : GS
+	if (gs != nullptr)
+		device_context_->GSSetShader(gs->Get(), 0, 0);
 
 	// Set Shader : PS
 	device_context_->PSSetShader(ps->Get(), 0, 0);
@@ -152,9 +158,25 @@ void Level::Render()
 	device_context_->VSSetShader(vs->Get(), 0, 0);
 
 	device_context_->DrawIndexed(level_mesh_.indices.size(), 0, 0);
+
+	if (edit_mode)
+	{
+		D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
+		HRESULT hr = device_context_->Map(level_mesh_.vertex_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_resource);
+
+		XMFLOAT3* mapped_vertices = reinterpret_cast<XMFLOAT3*>(mapped_resource.pData);
+		size_t mapped_size = mapped_resource.RowPitch / sizeof(XMFLOAT3);
+
+		for (int i = 0; i < mapped_size; ++i)
+		{
+			mapped_vertices[i];
+
+		}
+		device_context_->Unmap(level_mesh_.vertex_buffer.Get(), 0);
+	}
 }
 
-void Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
+XMVECTOR Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT4 circle_color)
 {
 	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
 	MouseRayCallback ray_callback;
@@ -172,6 +194,8 @@ void Level::LevelPicking(const MouseRay& mouse_ray, float circle_radius, XMFLOAT
 		hit_circle_.data.is_hit = false;
 		hit_circle_.data.circle_color = {1, 1, 1, 1};
 	}
+
+	return hit_circle_.data.hitpoint;
 }
 
 void Level::GenVertexNormal()
@@ -237,15 +261,20 @@ float Level::GetHeightAt(float x, float z)
 
 void Level::GetHeightList()
 {
-	int num_row = static_cast<int>(num_row_vertex_) * cell_distance_;
-	int num_col = static_cast<int>(num_col_vertex_) * cell_distance_;
+	//int num_row = static_cast<int>(num_row_vertex_) * cell_distance_;
+	//int num_col = static_cast<int>(num_col_vertex_) * cell_distance_;
 
-	for (int r = -(num_row / 2); r < num_row / 2; ++r)
+	//for (int r = -(num_row / 2); r < num_row / 2; ++r)
+	//{
+	//	for (int c = -(num_col / 2); c < num_col / 2; ++c)
+	//	{
+	//		height_list_.push_back(GetHeightAt(r, c));
+	//	}
+	//}
+
+	for (auto vertex : level_mesh_.vertices)
 	{
-		for (int c = -(num_col / 2); c < num_col / 2; ++c)
-		{
-			height_list_.push_back(GetHeightAt(r, c));
-		}
+		height_list_.push_back(vertex.p.y);
 	}
 }
 
@@ -272,13 +301,15 @@ bool Level::CreateBuffers()
 	ZeroMemory(&subdata, sizeof(subdata));
 
 	desc.ByteWidth = sizeof(Vertex) * level_mesh_.vertices.size();
-	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.Usage = D3D11_USAGE_DYNAMIC;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	subdata.pSysMem = level_mesh_.vertices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.vertex_buffer.GetAddressOf());
 	if (FAILED(hr))
 		return false;
+
 
 	// IndexBuffer
 
