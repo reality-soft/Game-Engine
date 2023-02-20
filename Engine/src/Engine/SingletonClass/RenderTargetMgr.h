@@ -27,11 +27,11 @@ namespace KGCA41B
 		// Old RenderTarget Info
 		D3D11_VIEWPORT						old_view_port_;
 		UINT								view_ports_count_;
-		ID3D11RenderTargetView*				old_rtv_;
-		ID3D11DepthStencilView*				old_dsv_;
+		ID3D11RenderTargetView* old_rtv_;
+		ID3D11DepthStencilView* old_dsv_;
 	public:
-		bool		Init()  { return false; };
-		bool		Frame()  { return false; };
+		bool		Init() { return false; };
+		bool		Frame() { return false; };
 		bool		Render() { return false; };
 		bool		Release() { return false; };
 	public:

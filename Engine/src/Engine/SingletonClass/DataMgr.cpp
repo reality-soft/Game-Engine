@@ -1,8 +1,11 @@
 #include "stdafx.h"
 #include "DataMgr.h"
 #include <fstream>
+#include <io.h>
+#include "DataTypes.h"
 
 using namespace KGCA41B;
+
 using std::fstream;
 using std::stringstream;
 using std::ios;
@@ -10,7 +13,7 @@ using std::ios;
 bool KGCA41B::DataMgr::Init(string directory)
 {
 	set_directory(directory);
-
+	LoadAllData();
 	return true;
 }
 
@@ -42,20 +45,55 @@ shared_ptr<DataSheet> KGCA41B::DataMgr::LoadSheet(string sheet_name)
 }
 
 
-void KGCA41B::DataMgr::LoadSheetFile(string fileName)
+std::vector<string> KGCA41B::DataMgr::GetAllDataSheetID()
+{
+	vector<string> id_set;
+	for (auto pair : resdic_sheet)
+		id_set.push_back(pair.first);
+	return id_set;
+}
+
+void KGCA41B::DataMgr::LoadAllData()
+{
+	LoadDir(directory_);
+}
+
+void KGCA41B::DataMgr::LoadDir(string path)
+{
+	string tempAdd = path + "/" + "*.*";
+	intptr_t handle;
+	struct _finddata_t fd;
+	handle = _findfirst(tempAdd.c_str(), &fd);
+
+	if (handle == -1L) return;
+
+	do {
+		if ((fd.attrib & _A_SUBDIR) && (fd.name[0] != '.'))
+		{
+			LoadDir(path + fd.name + "/");
+		}
+		else if (fd.name[0] != '.')
+		{
+			LoadSheetFile(path + "/" + fd.name);
+		}
+	} while (_findnext(handle, &fd) == 0);
+}
+
+void KGCA41B::DataMgr::LoadSheetFile(string path)
 {
 	fstream fs;
-	fs.open(directory_ + '/' + fileName, ios::in);
+	fs.open(path, ios::in);
 	if (fs.fail())
 		return;
 
 	shared_ptr<DataSheet> newSheet = std::make_shared<DataSheet>();
-	newSheet->sheet_name = fileName;
+	auto splited_str = split(path, '/');
+	newSheet->sheet_name = splited_str[splited_str.size() - 1];
 
 	string line;
 	string value;
 
-	// Ä«Å×°í¸® ¸ÕÀú ÀÔ·Â¹Þ±â
+	// ì¹´í…Œê³ ë¦¬ ë¨¼ì € ìž…ë ¥ë°›ê¸°
 	getline(fs, line);
 	stringstream firstLine(line);
 	while (std::getline(firstLine, value, ','))
@@ -63,7 +101,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string fileName)
 		newSheet->categories.push_back(value);
 	}
 
-	// ÀÔ·Â¹ÞÀº Ä«Å×°í¸® º°·Î µ¥ÀÌÅÍ ÀÔ·Â¹Þ±â
+	// ìž…ë ¥ë°›ì€ ì¹´í…Œê³ ë¦¬ ë³„ë¡œ ë°ì´í„° ìž…ë ¥ë°›ê¸°
 	while (!fs.eof())
 	{
 		if (!getline(fs, line))
@@ -77,7 +115,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string fileName)
 		}
 		newSheet->resdic_item.insert({ data->values["Name"], data });
 	}
-	resdic_sheet.insert({ fileName , newSheet });
+	resdic_sheet.insert({ newSheet->sheet_name , newSheet });
 	fs.close();
 }
 void KGCA41B::DataMgr::SaveSheetFile(string sheetName)
@@ -94,7 +132,7 @@ void KGCA41B::DataMgr::SaveSheetFile(string sheetName)
 
 	auto sheet = resdic_sheet[sheetName];
 
-	// Ä«Å×°í¸® ¸ÕÀú Ãâ·ÂÇÏ±â
+	// ì¹´í…Œê³ ë¦¬ ë¨¼ì € ì¶œë ¥í•˜ê¸°
 	for (auto& category : sheet->categories)
 	{
 		if (fs.is_open())
@@ -146,7 +184,7 @@ void KGCA41B::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 
 	auto sheet = resdic_sheet[sheetName];
 
-	// Ä«Å×°í¸® ¸ÕÀú Ãâ·ÂÇÏ±â
+	// ì¹´í…Œê³ ë¦¬ ë¨¼ì € ì¶œë ¥í•˜ê¸°
 	for (auto& category : sheet->categories)
 	{
 		if (fs.is_open())
