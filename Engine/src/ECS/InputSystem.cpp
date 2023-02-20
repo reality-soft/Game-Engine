@@ -24,10 +24,10 @@ void InputSystem::OnUpdate(entt::registry& reg)
 				XMFLOAT2 mouse_velocity = DINPUT->GetMouseVelocity();
 
 				input_mapping.axis_types.push_back(AxisType::YAW);
-				input_mapping.axis_value[(int)AxisType::YAW] = mouse_velocity.x;
+				input_mapping.axis_value[(int)AxisType::YAW] = mouse_velocity.x * 0.1f;
 
 				input_mapping.axis_types.push_back(AxisType::PITCH);
-				input_mapping.axis_value[(int)AxisType::PITCH] = mouse_velocity.y;				
+				input_mapping.axis_value[(int)AxisType::PITCH] = mouse_velocity.y * 0.1f;				
 			}
 			if (DINPUT->GetMouseButton().x)
 			{

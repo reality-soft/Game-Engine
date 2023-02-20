@@ -4,12 +4,10 @@
 
 bool KGCA41B::Texture::LoadTextureWIC(wstring filepath)
 {
-	ID3D11Resource* resource = nullptr;
-
-	HRESULT hr = CreateWICTextureFromFile(DX11APP->GetDevice(), filepath.c_str(), &resource, srv.GetAddressOf());
+	HRESULT hr = CreateWICTextureFromFile(DX11APP->GetDevice(), filepath.c_str(), texture.GetAddressOf(), srv.GetAddressOf());
 	if (FAILED(hr))
 		return false;
-
+    
 	ID3D11Texture2D* texture;
 	resource->QueryInterface<ID3D11Texture2D>(&texture);
 	if (texture)

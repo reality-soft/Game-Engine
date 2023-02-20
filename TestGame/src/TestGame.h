@@ -22,5 +22,7 @@ private:
 	KGCA41B::InputSystem sys_input;
 	KGCA41B::AnimationSystem sys_animation;
 	KGCA41B::SoundSystem sys_sound;
+
+	KGCA41B::Level level;
 };
 

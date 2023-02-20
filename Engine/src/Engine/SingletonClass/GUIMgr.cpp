@@ -31,7 +31,7 @@ void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
 	fontConfig.SizePixels = 1.f;
 
 	// Add a font to the font manager
-	base_font_file = "../../Contents/Fonts/Garet_Book.ttf";
+	base_font_file = "../../Contents/Fonts/line_font.ttf";
 	AddFont("base_font", base_font_file, 18.0f);
 
 	// store context instance

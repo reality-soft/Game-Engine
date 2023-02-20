@@ -35,6 +35,7 @@ project "Engine"
 		"%{prj.name}/src/ECS",
 		"%{prj.name}/src/GUI",
 		"%{prj.name}/src/Engine/SingletonClass",
+		"%{prj.name}/src/Engine/SpacePartition",
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
@@ -120,6 +121,7 @@ project "TestGame"
 		"Engine/src/Engine",
 		"Engine/src/ECS",
 		"Engine/src/Engine/SingletonClass",
+		"Engine/src/Engine/SpacePartition",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
@@ -156,6 +158,11 @@ project "TestGame"
 	filter "files:**PS.hlsl"
 	    shadertype "Pixel"
 		shaderentry "PS"
+	    shadermodel "5.0"
+		
+	filter "files:**GS.hlsl"
+	    shadertype "Geometry"
+		shaderentry "GS"
 	    shadermodel "5.0"
 
 	filter "system:windows"

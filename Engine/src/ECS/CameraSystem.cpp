@@ -98,14 +98,6 @@ MouseRay CameraSystem::CreateMouseRay()
 	XMVECTOR ray_origin;
 
 
-	//ray_dir.m128_f32[0] = (ndc_x * inv_view.r[0].m128_f32[0]) + (ndc_y * inv_view.r[1].m128_f32[0]) + (ndc_z * inv_view.r[2].m128_f32[0]) + inv_view.r[0].m128_f32[3];
-	//ray_dir.m128_f32[1] = (ndc_x * inv_view.r[0].m128_f32[1]) + (ndc_y * inv_view.r[1].m128_f32[1]) + (ndc_z * inv_view.r[2].m128_f32[1]) + inv_view.r[1].m128_f32[3];
-	//ray_dir.m128_f32[2] = (ndc_x * inv_view.r[0].m128_f32[2]) + (ndc_y * inv_view.r[1].m128_f32[2]) + (ndc_z * inv_view.r[2].m128_f32[2]) + inv_view.r[2].m128_f32[3];
-
-	//ray_origin = XMVector3TransformCoord(camera->position, inv_world);
-	//ray_dir = XMVector3TransformNormal(ray_dir, inv_world);
-	//ray_dir = XMVector3Normalize(ray_dir);
-
 	ray_origin = XMVector3TransformCoord({0, 0, 0, 0}, inv_view);
 	ray_dir = XMVector3TransformNormal({ndc_x, ndc_y, 1.0f, 0}, inv_view);
 	ray_dir = XMVector3Normalize(ray_dir);
@@ -119,6 +111,11 @@ MouseRay CameraSystem::CreateMouseRay()
 Camera* CameraSystem::GetCamera()
 {
 	return camera;
+}
+
+XMMATRIX KGCA41B::CameraSystem::GetViewProj()
+{
+	return view_matrix * projection_matrix;
 }
 
 void CameraSystem::CameraMovement(InputMapping& input_mapping)
@@ -147,13 +144,13 @@ void CameraSystem::CameraMovement(InputMapping& input_mapping)
 			camera->look += up_dir * input_mapping.axis_value[(int)AxisType::UP];
 
 		case AxisType::YAW:
-			camera->yaw += input_mapping.axis_value[(int)AxisType::YAW] * TM_DELTATIME;
+			camera->yaw += input_mapping.axis_value[(int)AxisType::YAW] * TM_DELTATIME * 5;
 
 		case AxisType::PITCH:
-			camera->pitch += input_mapping.axis_value[(int)AxisType::PITCH] * TM_DELTATIME;
+			camera->pitch += input_mapping.axis_value[(int)AxisType::PITCH] * TM_DELTATIME * 5;
 
 		case AxisType::ROLL:
-			camera->roll += input_mapping.axis_value[(int)AxisType::ROLL] * TM_DELTATIME;
+			camera->roll += input_mapping.axis_value[(int)AxisType::ROLL] * TM_DELTATIME * 5;
 		}
 	}
 }
