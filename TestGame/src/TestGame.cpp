@@ -3,11 +3,6 @@
 
 void TestGame::OnInit()
 {
-	//for (int i = 0;i < 1000;i++) {
-	//	KGCA41B::Actor actor;
-	//	actor.OnInit(reg_scene, KGCA41B::AABB<3>(KGCA41B::Vector<3>::GetRandomVector(0, 300), KGCA41B::Vector<3>::GetRandomVector(5, 10)));
-	//	actor_list.push_back(actor);
-	//}
 
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 	KGCA41B::RESOURCE->Init("../../Contents/");
@@ -20,10 +15,19 @@ void TestGame::OnInit()
 	level.edit_mode = true;
 	level.texture_id = { "Ground.png" };
 
-
 	KGCA41B::QUADTREE->Init(&level, 4);
 	KGCA41B::FMOD_MGR->Init();
 	KGCA41B::RESOURCE->Init("../Contents");
+
+	for (int i = 0;i < 1000;i++) {
+	KGCA41B::StaticObject actor;
+	KGCA41B::Transform transform;
+	KGCA41B::AABBShape collision_box;
+
+	actor.OnInit(reg_scene, transform, collision_box, "AAA");
+	actor_list.push_back(actor);
+}
+
 
 	sys_sound.OnCreate(reg_scene); 
 	sys_input.OnCreate(reg_scene);
