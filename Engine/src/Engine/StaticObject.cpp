@@ -21,8 +21,7 @@ void KGCA41B::StaticObject::OnInit(entt::registry& registry, KGCA41B::Transform 
 	// form transform tree
 	transform_tree_.root_node = make_shared<TransformTreeNode>(TYPE_ID(KGCA41B::Transform));
 	transform_tree_.AddNodeToNode(TYPE_ID(KGCA41B::Transform), TYPE_ID(KGCA41B::BoundingBox));
-	transform_tree_.root_node->children.push_back(make_shared<TransformTreeNode>(TYPE_ID(StaticMesh)));
-	transform_tree_.root_node->children.push_back(make_shared<TransformTreeNode>(TYPE_ID(SkeletalMesh)));
+	transform_tree_.AddNodeToNode(TYPE_ID(KGCA41B::BoundingBox), TYPE_ID(KGCA41B::StaticMesh));
 
 	// update transforms of components that belongs to transform tree
 	transform_tree_.root_node->OnUpdate(registry, entity_id_);
