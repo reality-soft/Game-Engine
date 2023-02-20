@@ -119,45 +119,55 @@ void Level::Update()
 	}
 }
 
-void Level::Render()
+void Level::Render(bool culling)
 {
 	VertexShader* vs = RESOURCE->UseResource<VertexShader>(vs_id_);
 	PixelShader* ps = RESOURCE->UseResource<PixelShader>(ps_id_);
 	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(gs_id_);
 
-	ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->LinearWrap();
-	DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 
-	UINT slot = 0;
-	for (auto id : texture_id)
-	{
-		Texture* texture = RESOURCE->UseResource<Texture>(id);
-		if (texture != nullptr)
+	{ // Textures Stage
+		UINT slot = 0;
+		for (auto id : texture_id)
 		{
-			DX11APP->GetDeviceContext()->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
+			Texture* texture = RESOURCE->UseResource<Texture>(id);
+			if (texture != nullptr)
+			{
+				DX11APP->GetDeviceContext()->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
+			}
 		}
 	}
 
-	// Set Shader : VS
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	UINT so_offset = 0;
-	DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
-	DX11APP->GetDeviceContext()->IASetIndexBuffer(level_mesh_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	DX11APP->GetDeviceContext()->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
-	DX11APP->GetDeviceContext()->VSSetShader(vs->Get(), 0, 0);
-	DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayoyt());
+	{ // Samplers Stage
+		ID3D11SamplerState* sampler_linear = DX11APP->GetCommonStates()->LinearWrap();
+		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler_linear);
+	}
 
-	// Set Shader : GS
-	if (gs != nullptr)
-		DX11APP->GetDeviceContext()->GSSetShader(gs->Get(), 0, 0);
+	{ // Stream Output Stage
+		UINT so_offset = 0;
+		DX11APP->GetDeviceContext()->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
+	}
 
-	// Set Shader : PS
-	DX11APP->GetDeviceContext()->PSSetShader(ps->Get(), 0, 0);
+	{ // Input Assembly Stage
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayoyt());
+	}
 
-	DX11APP->GetDeviceContext()->DrawIndexed(level_mesh_.indices.size(), 0, 0);
+	{ // Set Shader Stage
+		DX11APP->GetDeviceContext()->VSSetShader(vs->Get(), 0, 0);
+		DX11APP->GetDeviceContext()->PSSetShader(ps->Get(), 0, 0);
+		if (gs != nullptr)
+			DX11APP->GetDeviceContext()->GSSetShader(gs->Get(), 0, 0);
+	}
 
-	DX11APP->GetDeviceContext()->SOSetTargets(1, so_buffer_.GetAddressOf(), &so_offset);
+	// Draw Call
+	if (culling == false)
+	{
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(level_mesh_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(level_mesh_.indices.size(), 0, 0);
+	}
 }
 
 XMINT2 KGCA41B::Level::GetWorldSize()

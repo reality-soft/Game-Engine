@@ -3,9 +3,10 @@
 #include "Shape.h"
 #include "Level.h"
 #include "../ECS/entt.hpp"
+#include "CameraSystem.h"
 
-#define MAX_HEIGHT  100000
-#define MIN_HEIGHT -100000
+#define MIN_HEIGHT -1000.f
+#define MAX_HEIGHT  1000.f
 
 namespace KGCA41B {
 
@@ -36,38 +37,33 @@ namespace KGCA41B {
 		SINGLETON(QuadTreeMgr)
 #define QUADTREE QuadTreeMgr::GetInst()
 	public:
-		void Init(Level* level_to_devide, Camera* camera_to_apply, int _max_depth);
-		bool Frame();
-		bool Render();
-		bool Release();
+		void Init(Level* level_to_devide, int _max_depth);
+		void Frame(CameraSystem* applied_camera);
+		void Render();
+		void Release();
 
 	public:
-		void UpdateNodes();
-		void MapCulling();
+		void MapCulling(Frustum& frustum, SpaceNode* node);
 		void ObjectCulling();
-
 	private:
 		XMINT2 world_size_;
 		UINT max_depth;
 		UINT node_count = 0;
-		//constexpr static int	array_size_ = ((1 << ((MAX_DEPTH)*DIMENSION)) - 1) / ((1 << DIMENSION) - 1);
-		//SpaceNode				node_list_[array_size_];
+
 		vector<shared_ptr<SpaceNode>> total_nodes_;
 		shared_ptr<SpaceNode> root_node_;
 
 
 	private:
-		//int		GetLeftMostChildOfNode(int depth, int node_num);
-		//int		GetLeftMostChildAtDepth(int depth);
-		//int		GetRightMostChildAtDepth(int depth);
 		SpaceNode* BuildTree(UINT depth, int row1, int row2, int col1, int col2);
+		void RenderNode(SpaceNode* node_to_render);
 
-		//public:
-		//	int									UpdateNodeObjectBelongs(int node_num, const AABB<3>& object_area, entt::entity object_id);
-		//	std::vector<int>					FindCollisionSearchNode(int node_num, AABB<3>& object_area);
-		//	std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
+	public:
+		int									UpdateNodeObjectBelongs(int node_num, const AABBShape& object_area, entt::entity object_id);
+		std::vector<int>					FindCollisionSearchNode(int node_num);
+		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
 
 		shared_ptr<Level> deviding_level_;
-		shared_ptr<Camera> apllied_camera_;
+		Frustum camera_frustum_;
 	};
 }

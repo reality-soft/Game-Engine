@@ -16,29 +16,30 @@ void KGCA41B::SpaceNode::SetNode(Level* level)
 	UINT world_row = level->GetWorldSize().x + 1;
 	UINT world_col = level->GetWorldSize().y + 1;
 
-	area.min = XMVectorSet(vertices[coner_index[2]].p.x, MIN_HEIGHT, vertices[coner_index[2]].p.z, 0);
-	area.max = XMVectorSet(vertices[coner_index[1]].p.x, MAX_HEIGHT, vertices[coner_index[1]].p.z, 0);
-
+	XMVECTOR min = XMVectorSet(vertices[coner_index[2]].p.x, MIN_HEIGHT, vertices[coner_index[2]].p.z, 0);
+	XMVECTOR max = XMVectorSet(vertices[coner_index[1]].p.x, MAX_HEIGHT, vertices[coner_index[1]].p.z, 0);
+	area = AABBShape(min, max);
 
 	UINT row_cells = coner_index[1] - coner_index[0];
 	UINT col_cells = (coner_index[2] - coner_index[0]) / world_col;
 	UINT total_cells = row_cells * col_cells;
-	index_list.resize(total_cells);
+	index_list.resize(total_cells * 6);
 
 	UINT index = 0;
 	for (int col = 0; col < col_cells; ++col)
 	{
 		for (int row = 0; row < row_cells; ++row)
 		{
-			index_list[index + 0] = coner_index[0] + col + (row * world_col);
+			index_list[index + 0] = coner_index[0] + row + (col * world_col);
 			index_list[index + 1] = index_list[index + 0] + 1;
-			index_list[index + 2] = coner_index[0] + col + ((row + 1) * world_col);
+			index_list[index + 2] = coner_index[0] + row + ((col + 1) * world_col);
 
 			index_list[index + 3] = index_list[index + 2];
 			index_list[index + 4] = index_list[index + 1];
 			index_list[index + 5] = index_list[index + 2] + 1;
+
+			index += 6;
 		}
-		index += 6;
 	}
 
 	D3D11_BUFFER_DESC desc;
@@ -54,45 +55,8 @@ void KGCA41B::SpaceNode::SetNode(Level* level)
 	HRESULT hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, index_buffer.GetAddressOf());
 }
 
-//int KGCA41B::SpacePartition::GetLeftMostChildOfNode(int depth, int node_num)
-//{
-//	if (node_num == 0) return 1;
-//	int left_most_node = GetLeftMostChildAtDepth(depth);
-//	int next_layer_left_most_node = GetLeftMostChildAtDepth(depth + 1);
-//	int children_per_node = 1 << DIMENSION;
-//	return next_layer_left_most_node + (node_num - left_most_node) * children_per_node;
-//}
-//
-//int KGCA41B::SpacePartition::GetLeftMostChildAtDepth(int depth)
-//{
-//	int children_per_node = 1 << DIMENSION;
-//	return ((1 << ((depth - 1) * DIMENSION)) - 1) / (children_per_node - 1);
-//}
-//
-//int KGCA41B::SpacePartition::GetRightMostChildAtDepth(int depth)
-//{
-//	int children_per_node = 1 << DIMENSION;
-//	return ((1 << (depth * DIMENSION)) - 1) / (children_per_node - 1) - 1;
-//}
-
 SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int row2, int col2)
 {
-	/*
-	if (depth >= MAX_DEPTH) return;
-	int left_most_child = GetLeftMostChildOfNode(depth, node_num);
-	Vector<DIMENSION> node_position;
-	Vector<DIMENSION> node_size = node_list_[node_num].area.Size() / 2;
-	int children_per_node = 1 << DIMENSION;
-	for (int cur_child_node = left_most_child; cur_child_node < left_most_child + children_per_node; cur_child_node++) {
-		for (int j = 0; j < DIMENSION; j++) {
-			node_position[j] = node_list_[node_num].area.MinCoord()[j] + delta[j][cur_child_node - left_most_child] * node_size[j];
-		}
-		node_list_[cur_child_node].area.Set(node_position, node_size);
-		node_list_[cur_child_node].depth = depth;
-		BuildTree(depth + 1, cur_child_node);
-	}
-	*/
-
 	SpaceNode* new_node = new SpaceNode(node_count++, depth);
 
 	new_node->coner_index[0] = col1 * (world_size_.x + 1) + row1;
@@ -109,102 +73,86 @@ SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int r
 		int row_mid = (row1 + row2) / 2;
 		int col_mid = (col1 + col2) / 2;
 
-		new_node->child_node_[0] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row1,    row_mid, col1,    col_mid));
-		new_node->child_node_[1] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row_mid, row2,    col1,    col_mid));
-		new_node->child_node_[2] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row1,    row_mid, col_mid, col2));
-		new_node->child_node_[3] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row_mid, row2,    col_mid, col2));
+		new_node->child_node_[0] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row1,    col1,	row_mid, col_mid));
+		new_node->child_node_[1] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row_mid, col1,    row2,    col_mid));
+		new_node->child_node_[2] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row1,    col_mid, row_mid, col2));
+		new_node->child_node_[3] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row_mid, col_mid, row2,    col2));
 	}
 
 	return new_node;
 }
 
-//int KGCA41B::SpacePartition::UpdateNodeObjectBelongs(int cur_node_num, const AABB<3>& object_area, entt::entity object_id)
-//{
-//	std::queue<int> bfs_queue;
-//	int new_node = cur_node_num;
-//	bfs_queue.push(new_node);
-//	int children_per_node = 1 << DIMENSION;
-//
-//	AABB<DIMENSION> object_area_d;
-//#if (DIMENSION == OCT_TREE)
-//	object_area_d = object_area;
-//#elif (DIMENSION == QUAD_TREE)
-//	Vector<3> min_coord = object_area.MinCoord();
-//	Vector<3> size = object_area.Size();
-//	object_area_d.Set({ min_coord[0], min_coord[1] }, { size[0], size[1] });
-//#endif
-//	while (true) {
-//		if (bfs_queue.empty()) break;
-//		new_node = bfs_queue.front();
-//		bfs_queue.pop();
-//
-//		int left_most_child = GetLeftMostChildOfNode(node_list_[new_node].depth, new_node);
-//		for (int cur_child_node = left_most_child; cur_child_node < left_most_child + children_per_node; cur_child_node++) {
-//			if (left_most_child >= array_size_) continue;
-//
-//			AABB<DIMENSION> cur_node_area = node_list_[cur_child_node].area;
-//
-//			if (Collision<DIMENSION>::CubeToCube(object_area_d, cur_node_area) == CollisionType::C_L_IN_R) {
-//				bfs_queue.push(cur_child_node);
-//				break;
-//			}
-//		}
-//	} 
-//
-//	node_list_[cur_node_num].object_list.erase(object_id);
-//	node_list_[new_node].object_list.insert(object_id);
-//	return new_node;
-//}
+void KGCA41B::QuadTreeMgr::RenderNode(SpaceNode* node_to_render)
+{
+	DX11APP->GetDeviceContext()->IASetIndexBuffer(node_to_render->index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	DX11APP->GetDeviceContext()->DrawIndexed(node_to_render->index_list.size(), 0, 0);
+}
 
-//std::vector<int> KGCA41B::SpacePartition::FindCollisionSearchNode(int node_num, AABB<3>& object_area)
-//{
-//	std::queue<int> bfs_queue;
-//	std::vector<int> node_to_search;
-//
-//	AABB<DIMENSION> object_area_d;
-//#if (DIMENSION == OCT_TREE)
-//	object_area_d = object_area;
-//#elif (DIMENSION == QUAD_TREE)
-//	Vector<3> min_coord = object_area.MinCoord();
-//	Vector<3> size = object_area.Size();
-//	object_area_d.Set({ min_coord[0], min_coord[1] }, { size[0], size[1] });
-//#endif
-//
-//	int cur_node = node_num;
-//	int children_per_node = 1 << DIMENSION;
-//	do {
-//		int left_most_child = GetLeftMostChildOfNode(node_list_[cur_node].depth, cur_node);
-//		for (int cur_child = left_most_child; cur_child < left_most_child + children_per_node; cur_child++) {
-//			if (left_most_child >= array_size_) continue;
-//
-//			AABB<DIMENSION> cur_child_node_area = node_list_[cur_child].area;
-//
-//			if (Collision<DIMENSION>::CubeToCube(object_area_d, cur_child_node_area) != CollisionType::C_OUT) {
-//				bfs_queue.push(cur_child);
-//				node_to_search.push_back(cur_child);
-//			}
-//		}
-//		if (bfs_queue.empty()) break;
-//		cur_node = bfs_queue.front();
-//		bfs_queue.pop();
-//	} while (cur_node);
-//	return node_to_search;
-//}
+int KGCA41B::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBShape& object_area, entt::entity object_id)
+{
+	SpaceNode* parent_node = root_node_.get();
+	int new_node_num = 0;
 
-//std::unordered_set<entt::entity> KGCA41B::SpacePartition::GetObjectListInNode(int node_num)
-//{
-//	return node_list_[node_num].object_list;
-//}
-//
-void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide, Camera* camera_to_apply, int _max_depth)
+	for (int i = 0; i < 4; ++i)
+	{
+		SpaceNode* child_node = parent_node->child_node_[i].get();
+
+		if (child_node->area.AABBOverlap(object_area) == OverlapType::INSIDE)
+		{
+			if (child_node->node_depth == max_depth)
+			{
+				new_node_num = child_node->node_num;
+				break;
+			}
+
+			i = -1;
+			parent_node = child_node;
+		}
+		else if (child_node->area.AABBOverlap(object_area) == OverlapType::INTERSECT)
+		{
+			new_node_num = parent_node->node_num;
+			break;
+		}
+	}
+	if (new_node_num == cur_node_num)
+	{
+		return cur_node_num;
+	}
+
+	total_nodes_[cur_node_num].get()->object_list.erase(object_id);
+	total_nodes_[new_node_num].get()->object_list.insert(object_id);
+
+	return new_node_num;
+}
+
+std::vector<int> KGCA41B::QuadTreeMgr::FindCollisionSearchNode(int node_num)
+{
+	std::vector<int> node_to_search;
+	SpaceNode* current_node = total_nodes_[node_num].get();
+
+	int last_child_num = 0;
+
+	for (int i = 0; i < max_depth - current_node->node_depth; ++i)
+	{
+		last_child_num += (int)pow(max_depth, i + 1);
+	}
+
+	for (int n = node_num; n <= last_child_num; ++n)
+	{
+		node_to_search.push_back(n);
+	}
+
+	return node_to_search;
+}
+
+std::unordered_set<entt::entity> KGCA41B::QuadTreeMgr::GetObjectListInNode(int node_num)
+{
+	return total_nodes_[node_num].get()->object_list;
+}
+
+void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide, int _max_depth)
 {
 	deviding_level_ = shared_ptr<Level>(level_to_devide);
-	apllied_camera_ = shared_ptr<Camera>(camera_to_apply);
-
-	//world_size_.left   = -deviding_level_.get()->GetWorldSize().x / 2;
-	//world_size_.right  =  deviding_level_.get()->GetWorldSize().x / 2;
-	//world_size_.top    =  deviding_level_.get()->GetWorldSize().y / 2;
-	//world_size_.bottom = -deviding_level_.get()->GetWorldSize().y / 2;
 
 	world_size_ = level_to_devide->GetWorldSize();
 	max_depth = _max_depth;
@@ -212,21 +160,50 @@ void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide, Camera* camera_to_apply,
 	root_node_ = shared_ptr<SpaceNode>(BuildTree(0, 0,0, world_size_.x, world_size_.y));
 
 	root_node_.get()->index_list;
-
-	total_nodes_.size();
 }
 
-bool KGCA41B::QuadTreeMgr::Frame()
+void KGCA41B::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
-	return true;
+	camera_frustum_ = Frustum(applied_camera->GetViewProj());
+	deviding_level_.get()->Update();
+
+}
+void KGCA41B::QuadTreeMgr::Render()
+{
+	MapCulling(camera_frustum_, root_node_.get());
 }
 
-bool KGCA41B::QuadTreeMgr::Render()
+void KGCA41B::QuadTreeMgr::Release()
 {
-	return true;
+
 }
 
-bool KGCA41B::QuadTreeMgr::Release()
+void KGCA41B::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
 {
-	return true;
+	OverlapType result = frustum.AABBOverlap(node->area);
+
+	deviding_level_.get()->Render(true);
+
+	if (result == OverlapType::INSIDE)
+	{
+		RenderNode(node);
+	}
+	else if (result == OverlapType::INTERSECT)
+	{
+		if (node->node_depth == max_depth)
+		{
+			RenderNode(node);
+		}
+		else
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				MapCulling(frustum, node->child_node_[i].get());
+			}
+		}
+	}
+}
+
+void KGCA41B::QuadTreeMgr::ObjectCulling()
+{
 }

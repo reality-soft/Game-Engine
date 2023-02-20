@@ -49,7 +49,7 @@ namespace KGCA41B
 		bool CreateHeightField(float min_height, float max_height);
 
 		void Update();
-		void Render();
+		void Render(bool culling);
 
 		XMINT2 GetWorldSize();
 
@@ -98,8 +98,8 @@ namespace KGCA41B
 		vector<float> height_list_;
 
 	private:
-		reactphysics3d::HeightFieldShape* height_field_shape_;
-		reactphysics3d::Collider* height_field_collider_;
-		reactphysics3d::CollisionBody* height_field_body_;
+		reactphysics3d::HeightFieldShape* height_field_shape_ = nullptr;
+		reactphysics3d::Collider* height_field_collider_ = nullptr;
+		reactphysics3d::CollisionBody* height_field_body_ = nullptr;
 	};
 }
