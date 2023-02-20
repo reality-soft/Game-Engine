@@ -13,7 +13,7 @@ void TestGame::OnInit()
 	KGCA41B::RESOURCE->Init("../../Contents/");
 
 	XMINT2 level_size = { 5, 5 };
-	level.CreateLevel(pow(2, level_size.x) + 1, pow(2, level_size.y) + 1, 10, 100);
+	bool result = level.CreateLevel(pow(2, level_size.x) + 1, pow(2, level_size.y) + 1, 10, 100);
 	level.vs_id_ = "LevelVS.cso";
 	level.ps_id_ = "LevelPS.cso";
 	level.gs_id_ = "LevelGS.cso";
@@ -75,7 +75,7 @@ void TestGame::OnUpdate()
 {
 	KGCA41B::FMOD_MGR->Update();
 
-	for (KGCA41B::Actor actor : actor_list) {
+	for (KGCA41B::StaticObject actor : actor_list) {
 		actor.OnUpdate(reg_scene);
 	}
 
