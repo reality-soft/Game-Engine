@@ -113,6 +113,11 @@ Camera* CameraSystem::GetCamera()
 	return camera;
 }
 
+XMMATRIX KGCA41B::CameraSystem::GetViewProj()
+{
+	return view_matrix * projection_matrix;
+}
+
 void CameraSystem::CameraMovement(InputMapping& input_mapping)
 {
 	XMVECTOR front_dir = camera->look * camera->speed * TM_DELTATIME;

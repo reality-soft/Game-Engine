@@ -15,6 +15,7 @@ namespace KGCA41B
 
 		MouseRay CreateMouseRay();
 		Camera* GetCamera();
+		XMMATRIX GetViewProj();
 		XMFLOAT2 ndc;
 	private:
 		void CameraMovement(InputMapping& input_mapping);

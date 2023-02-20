@@ -103,6 +103,7 @@ namespace KGCA41B
 
 			aabb.min = XMVector3TransformCoord(aabb.min, translation);
 			aabb.max = XMVector3TransformCoord(aabb.max, translation);
+			aabb.center = (aabb.min + aabb.max) / 2;
 		}
 	};
 
