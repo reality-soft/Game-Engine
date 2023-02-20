@@ -6,8 +6,8 @@ namespace KGCA41B {
     enum class OverlapType
     {
         OUTSIDE,
+        INTERSECT,
         INSIDE,
-        PARTLY,
     };
 
     struct AABBShape
@@ -17,9 +17,32 @@ namespace KGCA41B {
         {
             min = _min;
             max = _max;
+            center = (min + max) / 2;
         }
+        AABBShape(const XMVECTOR& _center, const float& scale)
+        {
+            center = _center;
+            min = center - XMVectorSet(scale / 2, scale / 2, scale / 2, 0);
+            max = center + XMVectorSet(scale / 2, scale / 2, scale / 2, 0);
+        }
+        OverlapType AABBOverlap(const AABBShape& other)
+        {
+            for (int i = 0; i < 3; i++) 
+            {
+                bool overlap = max.m128_f32[i] >= other.min.m128_f32[i] && min.m128_f32[i] <= other.max.m128_f32[i];
+                if (!overlap)
+                    return OverlapType::OUTSIDE;
+            }
 
-        XMVECTOR min, max;
+            bool aabb1_inside = DirectX::XMVector3GreaterOrEqual(max, other.max) && DirectX::XMVector3LessOrEqual(min, other.max);
+            bool aabb2_inside = DirectX::XMVector3GreaterOrEqual(other.max, max) && DirectX::XMVector3LessOrEqual(other.max, min);
+
+            if (aabb1_inside || aabb2_inside)
+                return OverlapType::INSIDE;
+
+            return OverlapType::INTERSECT;            
+        }
+        XMVECTOR min, max, center;
     };
 
     struct SphereShape
@@ -45,32 +68,22 @@ namespace KGCA41B {
         PlaneShape() {}
         PlaneShape(XMVECTOR vec0, XMVECTOR vec1, XMVECTOR vec2)
         {
-            XMVECTOR e1 = vec1 - vec0;
-            XMVECTOR e2 = vec2 - vec0;
+            XMVECTOR plane = XMPlaneFromPoints(vec0, vec1, vec2);
 
-            normal = XMVector3Normalize(XMVector3Cross(e1, e2));
-
-            a = normal.m128_f32[0];
-            b = normal.m128_f32[0];
-            c = normal.m128_f32[0];
-            d = -XMVector3Dot(normal, vec0).m128_f32[0];
+            a = plane.m128_f32[0];
+            b = plane.m128_f32[1];
+            c = plane.m128_f32[2];
+            d = plane.m128_f32[3];
         }
-        bool PointOverlap(XMVECTOR point)
+        float DotFromPoint(XMVECTOR point)
         {
-            for (int i = 0; i < 6; ++i)
-            {
-                float distance = 
-                    a * point.m128_f32[0] +
-                    b * point.m128_f32[1] +
-                    c * point.m128_f32[2] +
-                    d;
+            float distance = 
+                a * point.m128_f32[0] +
+                b * point.m128_f32[1] +
+                c * point.m128_f32[2] +
+                d;
 
-                if (distance < 0)
-                {
-                    return false;
-                }
-            }
-            return true;
+            return distance;
         }
         FLOAT a, b, c, d;
         XMVECTOR normal;
@@ -79,9 +92,9 @@ namespace KGCA41B {
     struct Frustum
     {
         Frustum() {}
-        Frustum(const XMMATRIX& mat_view, const XMMATRIX& mat_porj)
+        Frustum(const XMMATRIX& mat_view_proj)
         {
-            XMMATRIX mat_vp = XMMatrixInverse(nullptr, mat_view * mat_porj);
+            XMMATRIX mat_vp = XMMatrixInverse(nullptr, mat_view_proj);
 
             // near plane
             frustum_vertex[0] = XMVectorSet(-1.0f, -1.0f, 0.0f, 0);
@@ -110,10 +123,10 @@ namespace KGCA41B {
 
         OverlapType AABBOverlap(const AABBShape& other) // map culling
         {
-            OverlapType result = OverlapType::PARTLY;
-            int total_in = 0;
+            int in_corner = 0;
+            int out_corner = 0;
 
-            XMVECTOR corners[8];
+            XMVECTOR corners[12];
             corners[0] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.min), 1);
             corners[1] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.max), 1);
             corners[2] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
@@ -123,29 +136,33 @@ namespace KGCA41B {
             corners[6] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
             corners[7] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.max), 1);
 
+            float plane_from_center = 0;
 
-            for (int p = 0; p < 6; ++p)
+            for (int i = 0; i < 6; ++i)
             {
-                int in_corner = 8;
-                int in_plane = 1;
+                plane_from_center += frustum_plane[i].DotFromPoint(other.center);
 
-                for (int b = 0; b < 8; ++b) {
+                float dot = 0;
+                for (int j = 0; j < 8; ++j)
+                {
+                    dot = frustum_plane[i].DotFromPoint(corners[j]);
 
-                    // test this point against the planes
-                    if (frustum_plane[p].PointOverlap(corners[b]) == false) {
-                        in_plane = 0;
-                        --in_corner;
-                    }
+                    if (dot < 0) out_corner++;
+                    else in_corner++;
                 }
-                if(in_corner == 0)
+
+                if (in_corner == 0)
+                {
                     return OverlapType::OUTSIDE;
+                }
+                if (out_corner == 0)
+                {
+                    return OverlapType::INSIDE;
+                }
 
-                total_in += in_plane;
             }
-            if (total_in == 6)
-                return OverlapType::INSIDE;
-
-            return OverlapType::PARTLY;
+            plane_from_center;
+            return OverlapType::INTERSECT;
         }
 
         XMVECTOR frustum_vertex[8];
