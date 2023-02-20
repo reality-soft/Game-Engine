@@ -10,7 +10,7 @@ public:
 	virtual void OnRelease();
 
 private:
-	vector<KGCA41B::Actor> actor_list;
+	vector<KGCA41B::StaticObject> actor_list;
 
 	entt::registry reg_scene;
 
