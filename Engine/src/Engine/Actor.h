@@ -13,7 +13,7 @@ namespace KGCA41B
 		AABBShape		collision_box_;
 		int				node_num_;
 	public:
-		void OnInit(entt::registry& registry, AABBShape collision_box);
-		void OnUpdate(entt::registry& registry);
+		virtual void OnInit(entt::registry& registry, AABBShape collision_box);
+		virtual void OnUpdate(entt::registry& registry);
 	};
 }
