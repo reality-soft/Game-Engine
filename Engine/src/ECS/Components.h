@@ -122,6 +122,7 @@ namespace KGCA41B
 		void OnUpdate(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
 			Transform* cur_transform = static_cast<Transform*>(registry.storage(id_type)->get(entity));
 			cur_transform->world = world;
+			cur_transform->OnUpdate();
 
 			for (auto child : children) {
 				child->OnUpdate(registry, entity, world * cur_transform->local);
