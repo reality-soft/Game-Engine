@@ -112,15 +112,15 @@ namespace KGCA41B
 
 	struct TransformTreeNode
 	{
-		entt::id_type type;
+		entt::id_type id_type;
 		weak_ptr<TransformTreeNode> parent;
 		vector<shared_ptr<TransformTreeNode>> children;
 
 		TransformTreeNode() {};
-		TransformTreeNode(entt::id_type type) : type(type) {};
+		TransformTreeNode(entt::id_type type) : id_type(type) {};
 
-		void OnUpdate(entt::registry &registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
-			Transform* cur_transform = static_cast<Transform*>(registry.storage(type)->get(entity));
+		void OnUpdate(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+			Transform* cur_transform = static_cast<Transform*>(registry.storage(id_type)->get(entity));
 			cur_transform->world = world;
 
 			for (auto child : children) {
@@ -132,6 +132,32 @@ namespace KGCA41B
 	struct TransformTree
 	{
 		shared_ptr<TransformTreeNode> root_node;
+
+		bool AddNodeToNode(entt::id_type parent_id_type, entt::id_type child_id_type) {
+			auto parent_node = FindNode(root_node, parent_id_type);
+			if (parent_node == nullptr) {
+				return false;
+			}
+			else {
+				parent_node->children.push_back(make_shared<TransformTreeNode>(child_id_type));
+				parent_node->children[parent_node->children.size() - 1]->parent = weak_ptr<TransformTreeNode>(parent_node);
+				return true;
+			}
+		}
+
+		shared_ptr<TransformTreeNode> FindNode(shared_ptr<TransformTreeNode> parent_node, entt::id_type id_type) {
+			if (parent_node->id_type == id_type) {
+				return parent_node;
+			}
+			for (auto child : parent_node->children) {
+				auto search_result = FindNode(child, id_type);
+				if (search_result != nullptr) {
+					return search_result;
+				}
+			}
+
+			return nullptr;
+		}
 	};
 
 	struct Particle
