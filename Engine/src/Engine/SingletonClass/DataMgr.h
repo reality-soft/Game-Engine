@@ -104,6 +104,10 @@ namespace KGCA41B
 		shared_ptr<DataSheet> AddNewSheet(string sheet_name);
 		shared_ptr<DataSheet> LoadSheet(string sheet_name);
 	public:
+		std::vector<string> GetAllDataSheetID();
+	public:
+		void LoadAllData();
+		void LoadDir(string path);
 		void LoadSheetFile(string fileName);
 		void SaveSheetFile(string sheetName);
 		void SaveSheetFileAs(string sheetName, string fileName);
