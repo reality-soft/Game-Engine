@@ -161,60 +161,171 @@ namespace KGCA41B
 		}
 	};
 
+
+	struct BoxShape : public Transform
+	{
+		string vs_id;
+
+		vector<Vertex>			vertex_list;
+		ComPtr<ID3D11Buffer>	vertex_buffer;
+
+		vector<DWORD>			index_list;
+		ComPtr<ID3D11Buffer>	index_buffer;
+
+		BoxShape()
+		{
+			// 버텍스 버퍼
+			vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +0.0f} });
+			vertex_list.push_back({ { +1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +0.0f} });
+			vertex_list.push_back({ { -1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +1.0f} });
+			vertex_list.push_back({ { +1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f} });
+
+			D3D11_BUFFER_DESC bufDesc;
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(Vertex) * vertex_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			D3D11_SUBRESOURCE_DATA subResourse;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &vertex_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer);
+
+			// 인덱스 버퍼
+
+			index_list.push_back(0);
+			index_list.push_back(1);
+			index_list.push_back(2);
+			index_list.push_back(2);
+			index_list.push_back(1);
+			index_list.push_back(3);
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(DWORD) * index_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &index_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &index_buffer);
+		}
+	};
+
 	struct Particle
 	{
 		bool		enable;
-		string		tex_id;
+
+		string		sprite_id;
+
 		XMFLOAT3	position;
+		XMFLOAT3	rotation;
+		XMFLOAT3	scale;
+
 		XMFLOAT3	velocity;
-		float		duration;
+
 		float		timer;
+		float		lifetime;
+
 		XMFLOAT4	color;
 		Particle()
 		{
 			enable = true;
-			position = {0, 0, 0};
+
+			sprite_id = "";
+
+			position = { 0, 0, 0 };
+			rotation = { 0, 0, 0 };
+			scale = { 0, 0, 0 };
+
 			velocity = { 0, 0, 0 };
-			duration = 3.0f;
+
 			timer = 0.0f;
-			color = {0.0f, 0.0f, 0.0f, 0.0f};
+			lifetime = 3.0f;
+
+			color = { 0.0f, 0.0f, 0.0f, 1.0f };
 		}
+		virtual void DrawParticle() = 0;
 	};
 
-
-	struct BaseEffect : public Transform
+	struct Sprite
 	{
-		bool					enabled_ = false;
-		string					vs_id;
-		string					ps_id;
-		vector<Vertex>			vertex_list;
-		ComPtr<ID3D11Buffer>	vertex_buffer;
+		int		max_frame;
 	};
 
-	struct UVSprite : public BaseEffect
+	struct UVSprite : public Sprite
 	{
 		string						tex_id;
-		UINT						cur_frame = 1;
-		UINT						max_frame;
-		vector<UINT>				index_list;
-		ComPtr<ID3D11Buffer>		index_buffer;
 		vector<pair<POINT, POINT>>	uv_list;
 	};
 
-	struct TextureSprite : public BaseEffect
+	struct TextureSprite : public Sprite
 	{
-		UINT						cur_frame = 1;
-		UINT						max_frame;
-		vector<UINT>				index_list;
-		ComPtr<ID3D11Buffer>		index_buffer;
-		vector<string>				tex_id_list;
+		vector<string>	tex_id_list;
 	};
 
-	struct Particles : public BaseEffect
+	struct Emitter : public Transform
 	{
-		string				geo_id;
-		vector<string>		tex_id_list;
-		UINT				particle_count;
-		vector<Particle>	particle_list;
+		string		vs_id;
+		string		ps_id;
+		string		geo_id;
+
+		string		sprite_id;
+
+		UINT		particle_count;
+
+		XMFLOAT3	initial_size;
+		XMFLOAT3	initial_velocity;
+		XMFLOAT3	initial_rotation;
+
+		float		life_time;
+
+		vector<Vertex>			vertex_list;
+		ComPtr<ID3D11Buffer>	vertex_buffer;
+
+		void CreateBuffer()
+		{
+			// 버텍스 버퍼
+			for(int i = 0; i < particle_count; i++)
+				vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.5f, +0.5f} });
+
+			D3D11_BUFFER_DESC bufDesc;
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(Vertex) * vertex_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			D3D11_SUBRESOURCE_DATA subResourse;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &vertex_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer);
+		}
 	};
 }

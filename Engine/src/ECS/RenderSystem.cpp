@@ -56,9 +56,8 @@ void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
 
 void RenderSystem::OnUpdate(entt::registry& reg)
 {
+	// StaticMesh Render
 	auto view_stm = reg.view<Material, StaticMesh, Transform>();
-	auto view_skm = reg.view<Material, SkeletalMesh, Transform>();
-
 	for (auto ent : view_stm)
 	{
 		auto& transform = reg.get<Transform>(ent);
@@ -70,7 +69,8 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		auto& static_mesh = reg.get<StaticMesh>(ent);
 		RenderStaticMesh(static_mesh);
 	}
-
+	// SkeletalMesh Render
+	auto view_skm = reg.view<Material, SkeletalMesh, Transform>();
 	for (auto ent : view_skm)
 	{
 		auto [skeleton, animation] = reg.get<Skeleton, Animation>(ent);
@@ -85,14 +85,30 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		auto& skeletal_mesh = reg.get<SkeletalMesh>(ent);
 		RenderSkeletalMesh(skeletal_mesh);
 	}
+	// BoxShape Render
+	auto view_box = reg.view<BoxShape, Material, Transform>();
+	for (auto ent : view_box)
+	{
+		auto& box = reg.get<BoxShape>(ent);
+		auto& transform = reg.get<Transform>(ent);
+		SetCbTransform(box);
 
-	RenderEffects(reg);
+		auto& material = reg.get<Material>(ent);
+		SetMaterial(material);
+
+		RenderBoxShape(box);
+	}
+
+	//RenderEffects(reg);
 
 }
 
 void RenderSystem::SetMaterial(Material& material)
 {
 	PixelShader* shader = RESOURCE->UseResource<PixelShader>(material.shader_id);
+
+	if (shader == nullptr)
+		return;
 
 	UINT slot = 0;
 	for (auto tex_id : material.texture_id)
@@ -176,145 +192,165 @@ void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
 	}
 }
 
-void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
+void KGCA41B::RenderSystem::RenderBoxShape(BoxShape& box_shape)
 {
-	auto view_uv_sprite = reg.view<UVSprite, Transform>();
-	auto view_tex_sprite = reg.view<TextureSprite, Transform>();
-	auto view_particles = reg.view<Particles, Transform>();
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(box_shape.vs_id);
+	if (shader == nullptr)
+		return;
 
-	for (auto ent : view_uv_sprite)
-	{
-		auto& transform = reg.get<Transform>(ent);
-		SetCbTransform(transform);
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
 
-		auto& uv_sprite = reg.get<UVSprite>(ent);
-
-		if (!uv_sprite.enabled_)
-			continue;
+	device_context->IASetVertexBuffers(0, 1, box_shape.vertex_buffer.GetAddressOf(), &stride, &offset);
+	device_context->IASetIndexBuffer(box_shape.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
-		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite.tex_id);
+	device_context->IASetInputLayout(shader->InputLayoyt());
+	device_context->VSSetShader(shader->Get(), 0, 0);
 
-		// uv 값 설정
-		auto uv_value = uv_sprite.uv_list[min((int)uv_sprite.cur_frame - 1, (int)uv_sprite.uv_list.size() - 1)];
 
-		float tex_width = (float)texture->texture_desc.Width;
-		float tex_height = (float)texture->texture_desc.Height;
-
-		uv_sprite.vertex_list[0].t.x = uv_value.first.x / tex_width;
-		uv_sprite.vertex_list[0].t.y = uv_value.first.y / tex_height;
-
-		uv_sprite.vertex_list[1].t.x = uv_value.second.x / tex_width;
-		uv_sprite.vertex_list[1].t.y = uv_value.first.y / tex_height;
-
-		uv_sprite.vertex_list[2].t.x = uv_value.first.x / tex_width;
-		uv_sprite.vertex_list[2].t.y = uv_value.second.y / tex_height;
-
-		uv_sprite.vertex_list[3].t.x = uv_value.second.x / tex_width;
-		uv_sprite.vertex_list[3].t.y = uv_value.second.y / tex_height;
-
-		VertexShader* vs =		RESOURCE->UseResource<VertexShader>(uv_sprite.vs_id);
-		PixelShader* ps =		RESOURCE->UseResource<PixelShader>(uv_sprite.ps_id);
-
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-
-		if (uv_sprite.vertex_buffer != nullptr)
-		{
-			device_context->UpdateSubresource(uv_sprite.vertex_buffer.Get(), 0, nullptr, &uv_sprite.vertex_list.at(0), 0, 0);
-			device_context->IASetVertexBuffers(0, 1, uv_sprite.vertex_buffer.GetAddressOf(), &stride, &offset);
-		}
-
-		if (uv_sprite.index_buffer != nullptr)
-			device_context->IASetIndexBuffer(uv_sprite.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
-
-		if (vs != nullptr)
-			device_context->IASetInputLayout(vs->InputLayoyt());
-
-		if (vs != nullptr)
-			device_context->VSSetShader(vs->Get(), 0, 0);
-		if (ps != nullptr)
-			device_context->PSSetShader(ps->Get(), 0, 0);
-
-		if (texture != nullptr)
-			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-
-		device_context->DrawIndexed(uv_sprite.index_list.size(), 0, 0);
-	}
-
-	for (auto ent : view_tex_sprite)
-	{
-		auto& transform = reg.get<Transform>(ent);
-		SetCbTransform(transform);
-
-		auto& tex_sprite = reg.get<TextureSprite>(ent);
-
-		if (!tex_sprite.enabled_)
-			continue;
-
-		VertexShader* vs = RESOURCE->UseResource<VertexShader>(tex_sprite.vs_id);
-		PixelShader* ps = RESOURCE->UseResource<PixelShader>(tex_sprite.ps_id);
-
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-
-		if (tex_sprite.vertex_buffer != nullptr)
-			device_context->IASetVertexBuffers(0, 1, tex_sprite.vertex_buffer.GetAddressOf(), &stride, &offset);
-
-		if (tex_sprite.index_buffer != nullptr)
-			device_context->IASetIndexBuffer(tex_sprite.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
-
-		if (vs != nullptr)
-			device_context->IASetInputLayout(vs->InputLayoyt());
-
-		if (vs != nullptr)
-			device_context->VSSetShader(vs->Get(), 0, 0);
-		if (ps != nullptr)
-			device_context->PSSetShader(ps->Get(), 0, 0);
-		
-		Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite.tex_id_list[min((int)tex_sprite.cur_frame - 1, (int)tex_sprite.tex_id_list.size() - 1)]);
-
-		if (texture != nullptr)
-			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-
-		device_context->DrawIndexed(tex_sprite.index_list.size(), 0, 0);
-	}
-
-	for (auto ent : view_particles)
-	{
-		auto& transform = reg.get<Transform>(ent);
-		SetCbTransform(transform);
-
-		auto& particles = reg.get<Particles>(ent);
-
-		if (!particles.enabled_)
-			return;
-
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-
-		VertexShader* vs = RESOURCE->UseResource<VertexShader>(particles.vs_id);
-		GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(particles.geo_id);
-		PixelShader* ps = RESOURCE->UseResource<PixelShader>(particles.ps_id);
-
-		device_context->IASetVertexBuffers(0, 1, particles.vertex_buffer.GetAddressOf(), &stride, &offset);
-
-		if (vs != nullptr)
-			device_context->IASetInputLayout(vs->InputLayoyt());
-
-		if (vs != nullptr)
-			device_context->VSSetShader(vs->Get(), 0, 0);
-		if (gs != nullptr)
-			device_context->GSSetShader(gs->Get(), 0, 0);
-		if (ps != nullptr)
-			device_context->PSSetShader(ps->Get(), 0, 0);
-
-		Texture* texture = RESOURCE->UseResource<Texture>(particles.tex_id_list[0]);
-
-		if (texture != nullptr)
-			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-
-		device_context->Draw(particles.vertex_list.size(), 0);
-	}
+	device_context->DrawIndexed(box_shape.index_list.size(), 0, 0);
 }
+
+//void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
+//{
+//	auto view_uv_sprite = reg.view<UVSprite, Transform>();
+//	auto view_tex_sprite = reg.view<TextureSprite, Transform>();
+//	auto view_particles = reg.view<Particles, Transform>();
+//
+//	for (auto ent : view_uv_sprite)
+//	{
+//		auto& transform = reg.get<Transform>(ent);
+//		SetCbTransform(transform);
+//
+//		auto& uv_sprite = reg.get<UVSprite>(ent);
+//
+//		if (!uv_sprite.enabled_)
+//			continue;
+//
+//
+//		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite.tex_id);
+//
+//		// uv 값 설정
+//		auto uv_value = uv_sprite.uv_list[min((int)uv_sprite.cur_frame - 1, (int)uv_sprite.uv_list.size() - 1)];
+//
+//		float tex_width = (float)texture->texture_desc.Width;
+//		float tex_height = (float)texture->texture_desc.Height;
+//
+//		uv_sprite.vertex_list[0].t.x = uv_value.first.x / tex_width;
+//		uv_sprite.vertex_list[0].t.y = uv_value.first.y / tex_height;
+//
+//		uv_sprite.vertex_list[1].t.x = uv_value.second.x / tex_width;
+//		uv_sprite.vertex_list[1].t.y = uv_value.first.y / tex_height;
+//
+//		uv_sprite.vertex_list[2].t.x = uv_value.first.x / tex_width;
+//		uv_sprite.vertex_list[2].t.y = uv_value.second.y / tex_height;
+//
+//		uv_sprite.vertex_list[3].t.x = uv_value.second.x / tex_width;
+//		uv_sprite.vertex_list[3].t.y = uv_value.second.y / tex_height;
+//
+//		VertexShader* vs =		RESOURCE->UseResource<VertexShader>(uv_sprite.vs_id);
+//		PixelShader* ps =		RESOURCE->UseResource<PixelShader>(uv_sprite.ps_id);
+//
+//		UINT stride = sizeof(Vertex);
+//		UINT offset = 0;
+//
+//		if (uv_sprite.vertex_buffer != nullptr)
+//		{
+//			device_context->UpdateSubresource(uv_sprite.vertex_buffer.Get(), 0, nullptr, &uv_sprite.vertex_list.at(0), 0, 0);
+//			device_context->IASetVertexBuffers(0, 1, uv_sprite.vertex_buffer.GetAddressOf(), &stride, &offset);
+//		}
+//
+//		if (uv_sprite.index_buffer != nullptr)
+//			device_context->IASetIndexBuffer(uv_sprite.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+//
+//		if (vs != nullptr)
+//			device_context->IASetInputLayout(vs->InputLayoyt());
+//
+//		if (vs != nullptr)
+//			device_context->VSSetShader(vs->Get(), 0, 0);
+//		if (ps != nullptr)
+//			device_context->PSSetShader(ps->Get(), 0, 0);
+//
+//		if (texture != nullptr)
+//			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+//
+//		device_context->DrawIndexed(uv_sprite.index_list.size(), 0, 0);
+//	}
+//
+//	for (auto ent : view_tex_sprite)
+//	{
+//		auto& transform = reg.get<Transform>(ent);
+//		SetCbTransform(transform);
+//
+//		auto& tex_sprite = reg.get<TextureSprite>(ent);
+//
+//		if (!tex_sprite.enabled_)
+//			continue;
+//
+//		VertexShader* vs = RESOURCE->UseResource<VertexShader>(tex_sprite.vs_id);
+//		PixelShader* ps = RESOURCE->UseResource<PixelShader>(tex_sprite.ps_id);
+//
+//		UINT stride = sizeof(Vertex);
+//		UINT offset = 0;
+//
+//		if (tex_sprite.vertex_buffer != nullptr)
+//			device_context->IASetVertexBuffers(0, 1, tex_sprite.vertex_buffer.GetAddressOf(), &stride, &offset);
+//
+//		if (tex_sprite.index_buffer != nullptr)
+//			device_context->IASetIndexBuffer(tex_sprite.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+//
+//		if (vs != nullptr)
+//			device_context->IASetInputLayout(vs->InputLayoyt());
+//
+//		if (vs != nullptr)
+//			device_context->VSSetShader(vs->Get(), 0, 0);
+//		if (ps != nullptr)
+//			device_context->PSSetShader(ps->Get(), 0, 0);
+//		
+//		Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite.tex_id_list[min((int)tex_sprite.cur_frame - 1, (int)tex_sprite.tex_id_list.size() - 1)]);
+//
+//		if (texture != nullptr)
+//			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+//
+//		device_context->DrawIndexed(tex_sprite.index_list.size(), 0, 0);
+//	}
+//
+//	for (auto ent : view_particles)
+//	{
+//		auto& transform = reg.get<Transform>(ent);
+//		SetCbTransform(transform);
+//
+//		auto& particles = reg.get<Particles>(ent);
+//
+//		if (!particles.enabled_)
+//			return;
+//
+//		UINT stride = sizeof(Vertex);
+//		UINT offset = 0;
+//
+//		VertexShader* vs = RESOURCE->UseResource<VertexShader>(particles.vs_id);
+//		GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(particles.geo_id);
+//		PixelShader* ps = RESOURCE->UseResource<PixelShader>(particles.ps_id);
+//
+//		device_context->IASetVertexBuffers(0, 1, particles.vertex_buffer.GetAddressOf(), &stride, &offset);
+//
+//		if (vs != nullptr)
+//			device_context->IASetInputLayout(vs->InputLayoyt());
+//
+//		if (vs != nullptr)
+//			device_context->VSSetShader(vs->Get(), 0, 0);
+//		if (gs != nullptr)
+//			device_context->GSSetShader(gs->Get(), 0, 0);
+//		if (ps != nullptr)
+//			device_context->PSSetShader(ps->Get(), 0, 0);
+//
+//		Texture* texture = RESOURCE->UseResource<Texture>(particles.tex_id_list[0]);
+//
+//		if (texture != nullptr)
+//			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+//
+//		device_context->Draw(particles.vertex_list.size(), 0);
+//	}
+//}
 

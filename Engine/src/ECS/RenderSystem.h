@@ -18,7 +18,8 @@ namespace KGCA41B
 		void SetMaterial(Material& material);
 		void RenderStaticMesh(StaticMesh& static_mesh);
 		void RenderSkeletalMesh(SkeletalMesh& skeletal_mesh); 
-		void RenderEffects(entt::registry& reg);
+		void RenderBoxShape(BoxShape& box_shape);
+		//void RenderEffects(entt::registry& reg);
 	private:
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* device_context = nullptr;
