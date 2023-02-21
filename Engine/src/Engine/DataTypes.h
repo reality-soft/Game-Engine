@@ -34,6 +34,19 @@ namespace KGCA41B
 	template <typename VertexType>
 	struct SingleMesh
 	{
+		SingleMesh() = default;
+		SingleMesh(const SingleMesh<VertexType>& other)
+		{
+			vertices.resize(other.vertices.size());
+			vertices = other.vertices;
+
+			indices.resize(other.indices.size());
+			indices = other.indices;
+
+			other.vertex_buffer.CopyTo(vertex_buffer.GetAddressOf());
+			other.index_buffer.CopyTo(index_buffer.GetAddressOf());
+		}
+
 		vector<VertexType> vertices;
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
@@ -42,6 +55,12 @@ namespace KGCA41B
 
 	struct CbTransform
 	{
+		CbTransform() = default;
+		CbTransform(const CbTransform& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX world_matrix;
@@ -52,6 +71,12 @@ namespace KGCA41B
 
 	struct CbViewProj
 	{
+		CbViewProj() = default;
+		CbViewProj(const CbViewProj& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX view_matrix;
@@ -62,6 +87,12 @@ namespace KGCA41B
 
 	struct CbSkeleton
 	{
+		CbSkeleton() = default;
+		CbSkeleton(const CbSkeleton& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX  mat_skeleton[255];
@@ -71,6 +102,12 @@ namespace KGCA41B
 
 	struct CbLight
 	{
+		CbLight() = default;
+		CbLight(const CbLight& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMVECTOR light_direction;

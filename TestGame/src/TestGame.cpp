@@ -7,13 +7,7 @@ void TestGame::OnInit()
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 	KGCA41B::RESOURCE->Init("../../Contents/");
 
-	XMINT2 level_size = { 5, 5 };
-	bool result = level.CreateLevel(pow(2, level_size.x) + 1, pow(2, level_size.y) + 1, 10, 100);
-	level.vs_id_ = "LevelVS.cso";
-	level.ps_id_ = "LevelPS.cso";
-	level.gs_id_ = "LevelGS.cso";
-	level.edit_mode = true;
-	level.texture_id = { "Ground.png" };
+	level.ImportFromFile("../../Contents/BinaryPackage/level.lv");
 
 	KGCA41B::QUADTREE->Init(&level, 4);
 	KGCA41B::FMOD_MGR->Init();

@@ -170,6 +170,7 @@ void KGCA41B::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 }
 void KGCA41B::QuadTreeMgr::Render()
 {
+	deviding_level_.get()->Render(true);
 	MapCulling(camera_frustum_, root_node_.get());
 }
 
@@ -181,8 +182,6 @@ void KGCA41B::QuadTreeMgr::Release()
 void KGCA41B::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
 {
 	OverlapType result = frustum.AABBOverlap(node->area);
-
-	deviding_level_.get()->Render(true);
 
 	if (result == OverlapType::INSIDE)
 	{
