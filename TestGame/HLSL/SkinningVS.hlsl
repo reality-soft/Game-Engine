@@ -1,11 +1,11 @@
 struct VS_IN
 {
-	float3 p : POSITION;
-	float3 n : NORMAL;
-	float4 c : COLOR;
-	float2 t : TEXTURE;
-	float4 i : INDEX;
-	float4 w : WEIGHT;
+	float3 p : F3_POSITION;
+	float3 n : F3_NORMAL;
+	float4 c : F4_COLOR;
+	float2 t : F2_TEXTURE;
+	float4 i : F4_INDEX;
+	float4 w : F4_WEIGHT;
 };
 struct VS_OUT
 {

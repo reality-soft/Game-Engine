@@ -30,10 +30,6 @@ void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
 	ImFontConfig fontConfig;
 	fontConfig.SizePixels = 1.f;
 
-	// Add a font to the font manager
-	base_font_file = "../../Contents/Fonts/line_font.ttf";
-	AddFont("base_font", base_font_file, 18.0f);
-
 	// store context instance
 	this->context = ImGui::GetCurrentContext();
 }
