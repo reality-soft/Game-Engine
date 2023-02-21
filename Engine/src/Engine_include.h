@@ -19,6 +19,7 @@
 #include "Engine/Scene.h"
 #include "Engine/FbxLoader.h"
 #include "Engine/StaticObject.h"
+#include "Engine/Actor.h"
 #include "Engine/Level.h"
 #include "Engine/Log.h"
 #include "Engine/EntryPoint.h"
