@@ -27,7 +27,7 @@ void ResourceMgr::Release()
 
 void ResourceMgr::LoadAllResource()
 {
-    LoadDir(directory_ + "/FBX/", &ResourceMgr::ImportFbx);
+    //LoadDir(directory_ + "/FBX/", &ResourceMgr::ImportFbx);
     LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
     LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
     LoadDir(directory_ + "/Texture/", &ResourceMgr::ImportTexture);

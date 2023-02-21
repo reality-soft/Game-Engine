@@ -58,8 +58,10 @@ namespace KGCA41B
 
 		map<string, FMOD::Sound*>	resdic_sound;
 
-	private:
+	public:
 		bool ImportFbx(string filename);
+
+	private:
 		bool ImportShaders(string filename);
 		bool ImportSound(string filename);	
 		bool ImportTexture(string filename);
