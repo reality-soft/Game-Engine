@@ -7,11 +7,17 @@ void TestGame::OnInit()
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 	KGCA41B::RESOURCE->Init("../../Contents/");
 
-	level.ImportFromFile("../../Contents/BinaryPackage/level.lv");
+	level.ImportFromFile("../../Contents/BinaryPackage/Mountains.lv");
+	//level.CreateLevel(129, 129, 10, 100);
+	//level.CreateHeightField(0, 0);
+	//level.vs_id_ = "LevelVS.cso";
+	//level.ps_id_ = "LevelPS.cso";
+	level.vs_id_ = "LevelVS.cso";
+	level.ps_id_ = "LevelPS.cso";
+	level.texture_id = { "Ground.png" };
 
 	KGCA41B::QUADTREE->Init(&level, 4);
 	KGCA41B::FMOD_MGR->Init();
-	KGCA41B::RESOURCE->Init("../Contents");
 
 	for (int i = 0;i < 1000;i++) {
 	KGCA41B::StaticObject actor;

@@ -12,9 +12,24 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 {
 	FileTransfer file_transfer(filepath, READ);
 
-	vector<Vertex> data1 = file_transfer.ReadBinary<Vertex>();
-	vector<UINT> data2 = file_transfer.ReadBinary<UINT>();
-	vector<string> data3 = file_transfer.ReadBinary<string>();
+	//Single Datas;
+	file_transfer.ReadBinary<UINT>(num_row_vertex_);
+	file_transfer.ReadBinary<UINT>(num_col_vertex_);
+	file_transfer.ReadBinary<int>(cell_distance_);
+	file_transfer.ReadBinary<int>(uv_scale_);
+
+	// Arrays
+	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
+	file_transfer.ReadBinary<UINT>(level_mesh_.indices);
+	file_transfer.ReadBinary<string>(texture_id);
+
+	file_transfer.Close();
+
+	if (CreateBuffers() == false)
+		return false;
+
+	XMFLOAT2 minmax_height = GetMinMaxHeight();
+	CreateHeightField(minmax_height.x, minmax_height.y);
 
 	return true;
 }
@@ -137,7 +152,8 @@ void Level::Render(bool culling)
 	}
 
 	{ // Samplers Stage
-		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, mip_map_sample.GetAddressOf());
+		ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->PointWrap();
+		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 	}
 
 	{ // Input Assembly Stage
@@ -248,6 +264,20 @@ void Level::GetHeightList()
 	}
 }
 
+XMFLOAT2 KGCA41B::Level::GetMinMaxHeight()
+{
+	float min = 0;
+	float max = 0;
+
+	for (auto vertex : level_mesh_.vertices)
+	{
+		min = std::min(min, vertex.p.y);
+		max = std::max(min, vertex.p.y);
+	}
+
+	return XMFLOAT2(min, max);
+}
+
 XMFLOAT3 Level::GetNormal(UINT i0, UINT i1, UINT i2)
 {
 	XMFLOAT3 normal;
@@ -310,6 +340,8 @@ bool Level::CreateBuffers()
 		return false;
 
 	// ConstantBuffer : Light
+	level_light_.data.light_direction = { 0, -1, 0, 0 };
+	level_light_.data.light_bright = 1.0f;
 
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
@@ -322,19 +354,6 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = &level_light_.data;
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_light_.buffer.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// sampler
-	D3D11_SAMPLER_DESC sampler_desc = {};
-	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.MinLOD = -3.0f;
-	sampler_desc.MaxLOD =  3.0f;
-
-	hr = DX11APP->GetDevice()->CreateSamplerState(&sampler_desc, mip_map_sample.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 
