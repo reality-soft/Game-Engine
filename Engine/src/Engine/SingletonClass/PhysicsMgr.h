@@ -6,7 +6,7 @@ using namespace reactphysics3d;
 
 namespace KGCA41B
 {
-    class MouseRayCallback : public RaycastCallback
+    class WorldRayCallback : public RaycastCallback
     {
     public:
 
@@ -18,7 +18,7 @@ namespace KGCA41B
         }
 
         Vector3 hitpoint;
-        CollisionBody* body;
+        CollisionBody* body; 
     };
 
     class DLL_API PhysicsMgr
@@ -31,9 +31,9 @@ namespace KGCA41B
         void Release();
 
     public:
-        Vector3 RaycastMouse(MouseRay* mouse_ray);
         PhysicsWorld* GetPhysicsWorld() { return physics_world_; }
-
+        WorldRayCallback WorldPicking(const MouseRay& mouse_ray);
+        bool ObjectPicking(const MouseRay& mouse_ray, CollisionBody* target);
     public:
         PhysicsCommon physics_common_;
 
