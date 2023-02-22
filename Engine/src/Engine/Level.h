@@ -54,31 +54,7 @@ namespace KGCA41B
 	{
 	public:
 		Level() = default;
-		Level(const Level& other)
-		{
-			texture_id.resize(other.texture_id.size());
-			texture_id = other.texture_id;
-
-			height_list_.resize(other.height_list_.size());
-			height_list_ = other.height_list_;
-
-			vs_id_ = other.vs_id_;
-			ps_id_ = other.ps_id_;
-			level_mesh_ = other.level_mesh_;
-			level_transform_ = other.level_transform_;
-			level_light_ = other.level_light_;
-			num_row_vertex_ = other.num_row_vertex_;
-			num_col_vertex_ = other.num_col_vertex_;
-			cell_distance_ = other.cell_distance_;
-			uv_scale_ = other.uv_scale_;
-
-			other.mip_map_sample.CopyTo(mip_map_sample.GetAddressOf());
-
-			height_field_shape_ = other.height_field_shape_;
-			height_field_collider_ = other.height_field_collider_;
-			height_field_body_ = other.height_field_body_;
-		}
-		~Level() {}
+		~Level() = default;
 
 	public:
 		bool ImportFromFile(string filepath);
@@ -99,6 +75,7 @@ namespace KGCA41B
 		float GetHeightAt(float x, float y);
 		void GetHeightList();
 
+		XMFLOAT2 GetMinMaxHeight();
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
 
