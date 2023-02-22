@@ -107,26 +107,6 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbLight
-	{
-		CbLight()
-		{
-			data.light_direction = { 0, -1, 0, 0 };
-			data.light_bright = 1.0f;
-		}
-		CbLight(const CbLight& other)
-		{
-			data = other.data;
-			other.buffer.CopyTo(buffer.GetAddressOf());
-		}
-		struct Data
-		{
-			XMVECTOR light_direction;
-			float light_bright;
-		} data;
-		ComPtr<ID3D11Buffer> buffer;
-	};
-
 	// Physics
 	struct MouseRay
 	{
