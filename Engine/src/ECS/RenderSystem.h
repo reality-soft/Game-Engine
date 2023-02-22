@@ -1,5 +1,6 @@
 #pragma once
 #include "System.h"
+#include "FbxOutData.h"
 
 namespace KGCA41B
 {
@@ -13,11 +14,11 @@ namespace KGCA41B
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
-		void SetCbTransform(C_Transform& transform);
-		void PlayAnimation(Skeleton& skeleton, C_Animation& animation);
+		void SetCbTransform(const C_Transform& transform);
+		void PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation);
 		void SetMaterial(const Material& material);
-		void RenderStaticMesh(C_StaticMesh& static_mesh);
-		void RenderSkeletalMesh(C_SkeletalMesh& skeletal_mesh); 
+		void RenderStaticMesh(const C_StaticMesh& static_mesh);
+		void RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh, const C_Animation& animation_component);
 		void RenderEffects(entt::registry& reg);
 	private:
 		ID3D11Device* device = nullptr;

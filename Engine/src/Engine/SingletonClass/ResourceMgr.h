@@ -89,7 +89,7 @@ namespace KGCA41B
 	template<typename T>
 	inline T* ResourceMgr::UseResource(string id)
 	{
-		if (typeid(T) == typeid(vector<SingleMesh<Vertex>>))
+		if (typeid(T) == typeid(StaticMesh))
 		{
 			auto iter = resdic_static_mesh.find(id);
 			if (iter != resdic_static_mesh.end())
@@ -97,7 +97,7 @@ namespace KGCA41B
 				return (T*)(&iter->second);
 			}
 		}
-		else if (typeid(T) == typeid(vector<SingleMesh<SkinnedVertex>>))
+		else if (typeid(T) == typeid(SkeletalMesh))
 		{
 			auto iter = resdic_skeletal_mesh.find(id);
 			if (iter != resdic_skeletal_mesh.end())

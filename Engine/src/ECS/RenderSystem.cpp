@@ -57,16 +57,13 @@ void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
 
 void RenderSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_stm = reg.view<Material, C_StaticMesh, C_Transform>();
-	auto view_skm = reg.view<Material, C_SkeletalMesh, C_Transform>();
+	auto view_stm = reg.view<C_StaticMesh, C_Transform>();
+	auto view_skm = reg.view<C_SkeletalMesh, C_Transform>();
 
 	for (auto ent : view_stm)
 	{
 		auto& transform = reg.get<C_Transform>(ent);
 		SetCbTransform(transform);
-
-		auto& material = reg.get<Material>(ent);
-		SetMaterial(material);
 
 		auto& static_mesh = reg.get<C_StaticMesh>(ent);
 		RenderStaticMesh(static_mesh);
@@ -74,31 +71,26 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 	for (auto ent : view_skm)
 	{
-		auto [skeleton, animation] = reg.get<Skeleton, C_Animation>(ent);
-		PlayAnimation(skeleton, animation);
-
 		auto& transform = reg.get<C_Transform>(ent);
 		SetCbTransform(transform);
 
-		auto& material = reg.get<Material>(ent);
-		SetMaterial(material);
-
 		auto& skeletal_mesh = reg.get<C_SkeletalMesh>(ent);
-		RenderSkeletalMesh(skeletal_mesh);
+		auto& animation = reg.get<C_Animation>(ent);
+		RenderSkeletalMesh(skeletal_mesh, animation);
 	}
 
 	RenderEffects(reg);
-
 }
 
 void RenderSystem::SetMaterial(const Material& material)
 {
 	PixelShader* shader = RESOURCE->UseResource<PixelShader>(material.shader_id);
 	Texture* texture = RESOURCE->UseResource<Texture>(material.texture_id);
+	device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 	device_context->PSSetShader(shader->Get(), 0, 0);		
 }
 
-void RenderSystem::SetCbTransform(C_Transform& transform)
+void RenderSystem::SetCbTransform(const C_Transform& transform)
 {
 	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world);
 
@@ -106,18 +98,16 @@ void RenderSystem::SetCbTransform(C_Transform& transform)
 	device_context->VSSetConstantBuffers(0, 1, cb_transform.buffer.GetAddressOf());
 }
 
-void RenderSystem::PlayAnimation(Skeleton& skeleton, C_Animation& animation)
+void RenderSystem::PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation)
 {
-	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation.anim_id);
+	static float keyframe = res_animation.begin()->start_frame;
 
-	static float keyframe = res_animation->begin()->start_frame;
-
-	if (keyframe >= res_animation->begin()->end_frame)
-		keyframe = res_animation->begin()->start_frame;
+	if (keyframe >= res_animation.begin()->end_frame)
+		keyframe = res_animation.begin()->start_frame;
 
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
-		XMMATRIX anim_matrix = bp.second * res_animation->begin()->animations.find(bp.first)->second[keyframe];
+		XMMATRIX anim_matrix = bp.second * res_animation.begin()->animations.find(bp.first)->second[keyframe];
 		cb_skeleton.data.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
 	}
 
@@ -127,12 +117,12 @@ void RenderSystem::PlayAnimation(Skeleton& skeleton, C_Animation& animation)
 	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
 }
 
-void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh)
+void RenderSystem::RenderStaticMesh(const C_StaticMesh& static_mesh_component)
 {
-	vector<SingleMesh<Vertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<Vertex>>>(static_mesh.static_mesh_id);
-	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh.vertex_shader_id);
+	StaticMesh* static_mesh = RESOURCE->UseResource<StaticMesh>(static_mesh_component.static_mesh_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh_component.vertex_shader_id);
 
-	for (auto single_mesh : *mesh_list)
+	for (auto single_mesh : static_mesh->meshes)
 	{
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
@@ -144,15 +134,18 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh)
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+
+		SetMaterial(single_mesh.material);
 	}
+
 }
 
-void RenderSystem::RenderSkeletalMesh(C_SkeletalMesh& skeletal_mesh)
+void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_components, const C_Animation& animation_component)
 {
-	vector<SingleMesh<SkinnedVertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<SkinnedVertex>>>(skeletal_mesh.skeletal_mesh_id);
-	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh.vertex_shader_id);
+	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components.skeletal_mesh_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components.vertex_shader_id);
 
-	for (auto single_mesh : *mesh_list)
+	for (auto single_mesh : skeletal_mesh->meshes)
 	{
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
@@ -163,6 +156,12 @@ void RenderSystem::RenderSkeletalMesh(C_SkeletalMesh& skeletal_mesh)
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+	}
+
+	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation_component.anim_id);
+	
+	if (res_animation != nullptr) {
+		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
 	}
 }
 

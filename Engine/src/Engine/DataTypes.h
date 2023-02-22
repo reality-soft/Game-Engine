@@ -62,6 +62,7 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
+		Material material;
 	};
 
 	struct SkeletalMesh
@@ -71,13 +72,9 @@ namespace KGCA41B
 		{
 			meshes.resize(other.meshes.size());
 			meshes = other.meshes;
-
-			materials.resize(other.materials.size());
-			materials = other.materials;
 		}
 
 		vector<SingleMesh<SkinnedVertex>> meshes;
-		vector<Material> materials;
 		Skeleton skeleton;
 	};
 
@@ -88,13 +85,9 @@ namespace KGCA41B
 		{
 			meshes.resize(other.meshes.size());
 			meshes = other.meshes;
-
-			materials.resize(other.materials.size());
-			materials = other.materials;
 		}
 
 		vector<SingleMesh<Vertex>> meshes;
-		vector<Material> materials;
 	};
 
 	struct CbTransform
