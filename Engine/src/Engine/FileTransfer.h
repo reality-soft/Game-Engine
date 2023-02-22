@@ -17,14 +17,22 @@ public:
 	}
 	~FileTransfer()
 	{
-		fclose(file_ptr);
+		Close();
 	}
 public:
 	template<typename T>
 	bool WriteBinary(T* data, size_t size);
 
 	template<typename T>
-	vector<T> ReadBinary();
+	void ReadBinary(vector<T>& buffer);
+
+	template<typename T>
+	void ReadBinary(T& single);
+
+	void Close()
+	{		
+		fclose(file_ptr);	
+	}
 
 private:
 	FILE* file_ptr = nullptr;
@@ -48,16 +56,22 @@ inline bool FileTransfer::WriteBinary(T* data, size_t size)
 }
 
 template<typename T>
-inline vector<T> FileTransfer::ReadBinary()
+inline void FileTransfer::ReadBinary(vector<T>& buffer)
 {
-	vector<T> read_data;
-
 	size_t size = 0;
 	fread(&size, sizeof(size_t), 1, file_ptr);
+	buffer.resize(size);
 
-	read_data.resize(size);
+	size_t read_size = fread(buffer.data(), sizeof(T), size, file_ptr);
+}
 
-	size_t read_size = fread(read_data.data(), sizeof(T), size, file_ptr);
-
-	return read_data;
+template<typename T>
+inline void FileTransfer::ReadBinary(T& single)
+{
+	size_t size = 0;
+	fread(&size, sizeof(size_t), 1, file_ptr);
+	if (size == 1)
+	{
+		size_t read_size = fread(&single, sizeof(T), 1, file_ptr);
+	}
 }
