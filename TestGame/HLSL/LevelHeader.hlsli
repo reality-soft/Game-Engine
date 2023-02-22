@@ -9,20 +9,7 @@ struct VS_IN
 struct VS_OUT
 {
 	float4 p : SV_POSITION;
-	float3 o : POSITION;
 	float3 n : NORMAL;
 	float4 c : COLOR;
 	float2 t : TEXCOORD0;
-
-	float1 strength : TEXCOORD1;
-	float4 circle : TEXCOORD2;
-};
-
-struct GS_IN
-{
-	float4 p : SV_POSITION;
-	float3 o : POSITION;
-	float3 n : NORMAL;
-	float4 c : COLOR;
-	float2 t : TEXCOORD;
 };
