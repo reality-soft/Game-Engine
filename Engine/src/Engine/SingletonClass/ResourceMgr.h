@@ -39,16 +39,14 @@ namespace KGCA41B
 		set<string> GetTotalPSID();
 		set<string> GetTotalGSID();
 		set<string> GetTotalSKMID();
-		set<string> GetTotalSKID();
 		set<string> GetTotalSTMID();
 		set<string> GetTotalANIMID();
 
 	private:
 		string current_id;
 
-		map<string, vector<SingleMesh<Vertex>>> resdic_static_mesh;
-		map<string, vector<SingleMesh<SkinnedVertex>>> resdic_skeletal_mesh;
-		map<string, map<UINT, XMMATRIX>> resdic_skeleton;
+		map<string, StaticMesh> resdic_static_mesh;
+		map<string, SkeletalMesh> resdic_skeletal_mesh;
 		map<string, vector<OutAnimData>> resdic_animation;
 
 		map<string, VertexShader> resdic_vs;
@@ -103,14 +101,6 @@ namespace KGCA41B
 		{
 			auto iter = resdic_skeletal_mesh.find(id);
 			if (iter != resdic_skeletal_mesh.end())
-			{
-				return (T*)(&iter->second);
-			}
-		}
-		else if (typeid(T) == typeid(map<UINT, XMMATRIX>))
-		{
-			auto iter = resdic_skeleton.find(id);
-			if (iter != resdic_skeleton.end())
 			{
 				return (T*)(&iter->second);
 			}

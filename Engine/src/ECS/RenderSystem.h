@@ -13,11 +13,11 @@ namespace KGCA41B
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
-		void SetCbTransform(Transform& transform);
-		void PlayAnimation(Skeleton& skeleton, Animation& animation);
-		void SetMaterial(Material& material);
-		void RenderStaticMesh(StaticMesh& static_mesh);
-		void RenderSkeletalMesh(SkeletalMesh& skeletal_mesh); 
+		void SetCbTransform(C_Transform& transform);
+		void PlayAnimation(Skeleton& skeleton, C_Animation& animation);
+		void SetMaterial(const Material& material);
+		void RenderStaticMesh(C_StaticMesh& static_mesh);
+		void RenderSkeletalMesh(C_SkeletalMesh& skeletal_mesh); 
 		void RenderEffects(entt::registry& reg);
 	private:
 		ID3D11Device* device = nullptr;

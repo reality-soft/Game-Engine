@@ -7,7 +7,7 @@ void TestGame::OnInit()
 	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 	KGCA41B::RESOURCE->Init("../../Contents/");
 
-	level.ImportFromFile("../../Contents/BinaryPackage/level.lv");
+	level.ImportFromFile("../../Contents/BinaryPackage/Mountains.lv");
 
 	KGCA41B::QUADTREE->Init(&level, 4);
 	KGCA41B::FMOD_MGR->Init();
@@ -15,7 +15,7 @@ void TestGame::OnInit()
 
 	for (int i = 0;i < 1000;i++) {
 	KGCA41B::StaticObject actor;
-	KGCA41B::Transform transform;
+	KGCA41B::C_Transform transform;
 	KGCA41B::AABBShape collision_box;
 
 	actor.OnInit(reg_scene, transform, collision_box, "AAA");
@@ -45,7 +45,7 @@ void TestGame::OnInit()
 
 	//sys_render.OnCreate(reg_scene);
 	//sys_animation.OnCreate(reg_scene);
-	KGCA41B::Camera debug_camera;
+	KGCA41B::C_Camera debug_camera;
 	debug_camera.position = { 0, 100, -200, 0 };
 	debug_camera.look = { 0, -1, 0, 0 };
 	debug_camera.up = { 0, 1, 0, 0 };
@@ -57,11 +57,11 @@ void TestGame::OnInit()
 	debug_camera.roll = 0;
 	debug_camera.speed = 100;
 	debug_camera.tag = "Player";
-	reg_scene.emplace<KGCA41B::Camera>(ent_player, debug_camera);
+	reg_scene.emplace<KGCA41B::C_Camera>(ent_player, debug_camera);
 
-	KGCA41B::InputMapping debug_input;
+	KGCA41B::C_InputMapping debug_input;
 	debug_input.tag = "Player";
-	reg_scene.emplace<KGCA41B::InputMapping>(ent_player, debug_input);
+	reg_scene.emplace<KGCA41B::C_InputMapping>(ent_player, debug_input);
 
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Player");

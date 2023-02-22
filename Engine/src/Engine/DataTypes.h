@@ -31,6 +31,17 @@ namespace KGCA41B
 		}
 	};
 
+	struct Material
+	{
+		string shader_id = "BasicShapePS.cso";
+		string texture_id;
+	};
+
+	struct Skeleton
+	{
+		map<UINT, XMMATRIX> bind_pose_matrices;
+	};
+
 	template <typename VertexType>
 	struct SingleMesh
 	{
@@ -51,6 +62,39 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
+	};
+
+	struct SkeletalMesh
+	{
+		SkeletalMesh() = default;
+		SkeletalMesh(const SkeletalMesh& other)
+		{
+			meshes.resize(other.meshes.size());
+			meshes = other.meshes;
+
+			materials.resize(other.materials.size());
+			materials = other.materials;
+		}
+
+		vector<SingleMesh<SkinnedVertex>> meshes;
+		vector<Material> materials;
+		Skeleton skeleton;
+	};
+
+	struct StaticMesh
+	{
+		StaticMesh() = default;
+		StaticMesh(const StaticMesh& other)
+		{
+			meshes.resize(other.meshes.size());
+			meshes = other.meshes;
+
+			materials.resize(other.materials.size());
+			materials = other.materials;
+		}
+
+		vector<SingleMesh<Vertex>> meshes;
+		vector<Material> materials;
 	};
 
 	struct CbTransform

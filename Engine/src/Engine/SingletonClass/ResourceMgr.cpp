@@ -67,10 +67,6 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     {
         res_id_map.insert(make_pair("[SKM]" + res.first, "SKM"));
     }
-    for (auto res : resdic_skeleton)
-    {
-        res_id_map.insert(make_pair("[SKT]" + res.first, "SKT"));
-    }
     for (auto res : resdic_animation)
     {
         res_id_map.insert(make_pair("[ANM]" + res.first, "ANM"));
@@ -143,16 +139,6 @@ set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
         skm.insert(pair.first);
     }
     return skm;
-}
-
-set<string> KGCA41B::ResourceMgr::GetTotalSKID()
-{
-    set<string> sk;
-    for (auto pair : resdic_skeleton)
-    {
-        sk.insert(pair.first);
-    }
-    return sk;
 }
 
 set<string> KGCA41B::ResourceMgr::GetTotalSTMID()
@@ -260,9 +246,8 @@ bool ResourceMgr::ImportFbx(string filename)
         return false;
     }
 
-    vector<SingleMesh<Vertex>> res_static_mesh;
-    vector<SingleMesh<SkinnedVertex>> res_skeletal_mesh;
-    map<UINT, XMMATRIX> res_skeleton;
+    StaticMesh res_static_mesh;
+    SkeletalMesh res_skeletal_mesh;
     for (auto out_mesh : fbx_loader.out_mesh_list)
     {
         if (out_mesh->is_skinned)
@@ -270,15 +255,16 @@ bool ResourceMgr::ImportFbx(string filename)
             SingleMesh<SkinnedVertex> single_mesh;
             single_mesh.vertices = out_mesh->skinned_vertices;
             single_mesh.indices = out_mesh->indices;
-            res_skeletal_mesh.push_back(single_mesh);
-            res_skeleton.merge(out_mesh->bind_poses);
+            res_skeletal_mesh.meshes.push_back(single_mesh);
+            res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
         }
         else
         {
             SingleMesh<Vertex> single_mesh;
             single_mesh.vertices = out_mesh->vertices;
             single_mesh.indices = out_mesh->indices;
-            res_static_mesh.push_back(single_mesh);
+            res_static_mesh.meshes.push_back(single_mesh);
+            res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
         }
     }
 
@@ -289,11 +275,11 @@ bool ResourceMgr::ImportFbx(string filename)
         res_anim_list.push_back(*out_anim);
     }
 
-    for (auto& single_mesh : res_static_mesh)
+    for (auto& single_mesh : res_static_mesh.meshes)
     {
         CreateBuffers(single_mesh);
     }
-    for (auto& single_mesh : res_skeletal_mesh)
+    for (auto& single_mesh : res_skeletal_mesh.meshes)
     {
         CreateBuffers(single_mesh);
     }
@@ -301,14 +287,11 @@ bool ResourceMgr::ImportFbx(string filename)
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
 
-    if (res_static_mesh.size() > 0)
+    if (res_static_mesh.meshes.size() > 0)
         resdic_static_mesh.insert(make_pair(id, res_static_mesh));
 
-    if (res_skeletal_mesh.size() > 0)
+    if (res_skeletal_mesh.meshes.size() > 0)
         resdic_skeletal_mesh.insert(make_pair(id, res_skeletal_mesh));
-
-    if (res_skeleton.size() > 0)
-        resdic_skeleton.insert(make_pair(id, res_skeleton));
 
     if (res_anim_list.size() > 0)
         resdic_animation.insert(make_pair(id, res_anim_list));

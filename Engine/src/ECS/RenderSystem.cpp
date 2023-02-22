@@ -3,6 +3,7 @@
 #include "ResourceMgr.h"
 #include "TimeMgr.h"
 #include "DataMgr.h"
+#include "DataTypes.h"
 using namespace KGCA41B;
 
 RenderSystem::RenderSystem()
@@ -56,33 +57,33 @@ void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
 
 void RenderSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_stm = reg.view<Material, StaticMesh, Transform>();
-	auto view_skm = reg.view<Material, SkeletalMesh, Transform>();
+	auto view_stm = reg.view<Material, C_StaticMesh, C_Transform>();
+	auto view_skm = reg.view<Material, C_SkeletalMesh, C_Transform>();
 
 	for (auto ent : view_stm)
 	{
-		auto& transform = reg.get<Transform>(ent);
+		auto& transform = reg.get<C_Transform>(ent);
 		SetCbTransform(transform);
 
 		auto& material = reg.get<Material>(ent);
 		SetMaterial(material);
 
-		auto& static_mesh = reg.get<StaticMesh>(ent);
+		auto& static_mesh = reg.get<C_StaticMesh>(ent);
 		RenderStaticMesh(static_mesh);
 	}
 
 	for (auto ent : view_skm)
 	{
-		auto [skeleton, animation] = reg.get<Skeleton, Animation>(ent);
+		auto [skeleton, animation] = reg.get<Skeleton, C_Animation>(ent);
 		PlayAnimation(skeleton, animation);
 
-		auto& transform = reg.get<Transform>(ent);
+		auto& transform = reg.get<C_Transform>(ent);
 		SetCbTransform(transform);
 
 		auto& material = reg.get<Material>(ent);
 		SetMaterial(material);
 
-		auto& skeletal_mesh = reg.get<SkeletalMesh>(ent);
+		auto& skeletal_mesh = reg.get<C_SkeletalMesh>(ent);
 		RenderSkeletalMesh(skeletal_mesh);
 	}
 
@@ -90,24 +91,14 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 }
 
-void RenderSystem::SetMaterial(Material& material)
+void RenderSystem::SetMaterial(const Material& material)
 {
 	PixelShader* shader = RESOURCE->UseResource<PixelShader>(material.shader_id);
-
-	UINT slot = 0;
-	for (auto tex_id : material.texture_id)
-	{
-		Texture* texture = RESOURCE->UseResource<Texture>(tex_id);
-		if (texture != nullptr)
-		{
-			device_context->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
-		}
-	}	
-
+	Texture* texture = RESOURCE->UseResource<Texture>(material.texture_id);
 	device_context->PSSetShader(shader->Get(), 0, 0);		
 }
 
-void RenderSystem::SetCbTransform(Transform& transform)
+void RenderSystem::SetCbTransform(C_Transform& transform)
 {
 	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world);
 
@@ -115,9 +106,8 @@ void RenderSystem::SetCbTransform(Transform& transform)
 	device_context->VSSetConstantBuffers(0, 1, cb_transform.buffer.GetAddressOf());
 }
 
-void RenderSystem::PlayAnimation(Skeleton& skeleton, Animation& animation)
+void RenderSystem::PlayAnimation(Skeleton& skeleton, C_Animation& animation)
 {
-	map<UINT, XMMATRIX>* res_skeleton = RESOURCE->UseResource<map<UINT, XMMATRIX>>(skeleton.skeleton_id);
 	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation.anim_id);
 
 	static float keyframe = res_animation->begin()->start_frame;
@@ -125,7 +115,7 @@ void RenderSystem::PlayAnimation(Skeleton& skeleton, Animation& animation)
 	if (keyframe >= res_animation->begin()->end_frame)
 		keyframe = res_animation->begin()->start_frame;
 
-	for (auto bp : *res_skeleton)
+	for (auto bp : skeleton.bind_pose_matrices)
 	{
 		XMMATRIX anim_matrix = bp.second * res_animation->begin()->animations.find(bp.first)->second[keyframe];
 		cb_skeleton.data.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
@@ -137,10 +127,10 @@ void RenderSystem::PlayAnimation(Skeleton& skeleton, Animation& animation)
 	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
 }
 
-void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)
+void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh)
 {
-	vector<SingleMesh<Vertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<Vertex>>>(static_mesh.mesh_id);
-	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh.shader_id);
+	vector<SingleMesh<Vertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<Vertex>>>(static_mesh.static_mesh_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh.vertex_shader_id);
 
 	for (auto single_mesh : *mesh_list)
 	{
@@ -157,10 +147,10 @@ void RenderSystem::RenderStaticMesh(StaticMesh& static_mesh)
 	}
 }
 
-void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
+void RenderSystem::RenderSkeletalMesh(C_SkeletalMesh& skeletal_mesh)
 {
-	vector<SingleMesh<SkinnedVertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<SkinnedVertex>>>(skeletal_mesh.mesh_id);
-	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh.shader_id);
+	vector<SingleMesh<SkinnedVertex>>* mesh_list = RESOURCE->UseResource<vector<SingleMesh<SkinnedVertex>>>(skeletal_mesh.skeletal_mesh_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh.vertex_shader_id);
 
 	for (auto single_mesh : *mesh_list)
 	{
@@ -178,13 +168,13 @@ void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
 
 void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 {
-	auto view_uv_sprite = reg.view<UVSprite, Transform>();
-	auto view_tex_sprite = reg.view<TextureSprite, Transform>();
-	auto view_particles = reg.view<Particles, Transform>();
+	auto view_uv_sprite = reg.view<UVSprite, C_Transform>();
+	auto view_tex_sprite = reg.view<TextureSprite, C_Transform>();
+	auto view_particles = reg.view<Particles, C_Transform>();
 
 	for (auto ent : view_uv_sprite)
 	{
-		auto& transform = reg.get<Transform>(ent);
+		auto& transform = reg.get<C_Transform>(ent);
 		SetCbTransform(transform);
 
 		auto& uv_sprite = reg.get<UVSprite>(ent);
@@ -244,7 +234,7 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 
 	for (auto ent : view_tex_sprite)
 	{
-		auto& transform = reg.get<Transform>(ent);
+		auto& transform = reg.get<C_Transform>(ent);
 		SetCbTransform(transform);
 
 		auto& tex_sprite = reg.get<TextureSprite>(ent);
@@ -282,7 +272,7 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 
 	for (auto ent : view_particles)
 	{
-		auto& transform = reg.get<Transform>(ent);
+		auto& transform = reg.get<C_Transform>(ent);
 		SetCbTransform(transform);
 
 		auto& particles = reg.get<Particles>(ent);
