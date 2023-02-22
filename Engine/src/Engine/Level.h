@@ -89,9 +89,6 @@ namespace KGCA41B
 		vector<float> height_list_;
 		ComPtr<ID3D11SamplerState> mip_map_sample;
 
-		CbTransform level_transform_;
-		CbLight level_light_;
-
 		UINT num_row_vertex_;
 		UINT num_col_vertex_;
 

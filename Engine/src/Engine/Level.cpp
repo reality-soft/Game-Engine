@@ -36,10 +36,6 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 
 bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_scale)
 {
-	level_transform_.data.world_matrix = XMMatrixIdentity();
-	level_light_.data.light_direction = XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f);
-	level_light_.data.light_bright = 1.5f;
-
     num_row_vertex_ = num_row;
     num_col_vertex_ = num_col;
     UINT num_row_cell = num_row_vertex_ - 1;
@@ -123,14 +119,7 @@ bool Level::CreateHeightField(float min_height, float max_height)
 
 void Level::Update()
 {
-	// Set VS Cb : Transform
-	level_transform_.data.world_matrix = XMMatrixTranspose(level_transform_.data.world_matrix);
-	DX11APP->GetDeviceContext()->UpdateSubresource(level_transform_.buffer.Get(), 0, nullptr, &level_transform_.data, 0, 0);
-	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, level_transform_.buffer.GetAddressOf());
 
-	// Set PS Cb : Light
-	DX11APP->GetDeviceContext()->UpdateSubresource(level_light_.buffer.Get(), 0, nullptr, &level_light_.data, 0, 0);
-	DX11APP->GetDeviceContext()->PSSetConstantBuffers(0, 1, level_light_.buffer.GetAddressOf());
 }
 
 void Level::Render(bool culling)
@@ -320,40 +309,6 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = level_mesh_.indices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.index_buffer.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// ConstantBuffer : Transform
-
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-
-	desc.ByteWidth = sizeof(CbTransform::Data);
-
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	subdata.pSysMem = &level_transform_.data;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_transform_.buffer.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// ConstantBuffer : Light
-	level_light_.data.light_direction = { 0, -1, 0, 0 };
-	level_light_.data.light_bright = 1.0f;
-
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-
-	desc.ByteWidth = sizeof(CbLight::Data);
-
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	subdata.pSysMem = &level_light_.data;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_light_.buffer.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 
