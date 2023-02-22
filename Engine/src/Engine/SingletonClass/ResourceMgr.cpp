@@ -286,6 +286,8 @@ bool ResourceMgr::ImportFbx(string filename)
 
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
+    strs = split(filename, '\\');
+    id = strs[strs.size() - 1];
 
     if (res_static_mesh.meshes.size() > 0)
         resdic_static_mesh.insert(make_pair(id, res_static_mesh));
