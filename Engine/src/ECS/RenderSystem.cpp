@@ -69,6 +69,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		auto& static_mesh = reg.get<StaticMesh>(ent);
 		RenderStaticMesh(static_mesh);
 	}
+
 	// SkeletalMesh Render
 	auto view_skm = reg.view<Material, SkeletalMesh, Transform>();
 	for (auto ent : view_skm)
@@ -85,18 +86,68 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		auto& skeletal_mesh = reg.get<SkeletalMesh>(ent);
 		RenderSkeletalMesh(skeletal_mesh);
 	}
+
 	// BoxShape Render
 	auto view_box = reg.view<BoxShape, Material, Transform>();
 	for (auto ent : view_box)
 	{
 		auto& box = reg.get<BoxShape>(ent);
-		auto& transform = reg.get<Transform>(ent);
 		SetCbTransform(box);
 
 		auto& material = reg.get<Material>(ent);
 		SetMaterial(material);
 
 		RenderBoxShape(box);
+	}
+
+	// Emitter Render
+	auto view_emitter = reg.view<Emitter>();
+	for (auto ent : view_emitter)
+	{
+		auto& emitter = reg.get<Emitter>(ent);
+
+		Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
+		if (sprite == nullptr)
+			return;
+
+		SetCbTransform(emitter);
+
+		SetSprite(sprite);
+
+		// 쉐이더 세팅
+		VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter.vs_id);
+		if (vs)
+		{
+			device_context->IASetInputLayout(vs->InputLayoyt());
+			device_context->VSSetShader(vs->Get(), 0, 0);
+		}
+
+		//GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter.geo_id);
+		//if(gs)
+		//	device_context->GSSetShader(gs->Get(), 0, 0);
+		
+		PixelShader* ps = RESOURCE->UseResource<PixelShader>(emitter.ps_id);
+		if (ps)
+			device_context->PSSetShader(ps->Get(), 0, 0);
+		
+		// particle 개수 만큼 파티클 설정
+		for (auto& particle : emitter.particles)
+		{
+			if (!particle.enable)
+				continue;
+
+			if (sprite->type == TEX)
+			{
+				TextureSprite* tex_sprite = (TextureSprite*) sprite;
+				Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
+				if (texture != nullptr)
+					device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+			}
+
+			SetParticle(particle);
+
+			RenderParticle(particle);
+		}
 	}
 
 	//RenderEffects(reg);
@@ -192,7 +243,7 @@ void RenderSystem::RenderSkeletalMesh(SkeletalMesh& skeletal_mesh)
 	}
 }
 
-void KGCA41B::RenderSystem::RenderBoxShape(BoxShape& box_shape)
+void RenderSystem::RenderBoxShape(BoxShape& box_shape)
 {
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(box_shape.vs_id);
 	if (shader == nullptr)
@@ -210,6 +261,68 @@ void KGCA41B::RenderSystem::RenderBoxShape(BoxShape& box_shape)
 
 
 	device_context->DrawIndexed(box_shape.index_list.size(), 0, 0);
+}
+
+void RenderSystem::SetParticle(Particle& particle)
+{
+	cb_particle.data.color		= XMLoadFloat4(&particle.color);
+	cb_particle.data.vel		= XMLoadFloat3(&particle.velocity);
+	cb_particle.data.size		= XMLoadFloat3(&particle.size);
+	cb_particle.data.rotation	= particle.rotation;
+	cb_particle.data.timer		= particle.timer;
+
+	device_context->UpdateSubresource(cb_particle.buffer.Get(), 0, nullptr, &cb_particle.data, 0, 0);
+	device_context->VSSetConstantBuffers(3, 1, cb_particle.buffer.GetAddressOf());
+}
+
+void RenderSystem::SetSprite(Sprite* sprite)
+{
+	cb_sprite.data.max_frame = sprite->max_frame;
+	switch (sprite->type)
+	{
+	// UV
+	case UV:
+	{
+		cb_sprite.data.type = 0;
+
+		UVSprite* uv_sprite = (UVSprite*)sprite;
+
+		// SRV 설정
+		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite->tex_id);
+		if (texture != nullptr)
+			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+
+		cb_sprite.data.uv_list_size = uv_sprite->uv_list.size();
+
+		for (int i = 0; i < uv_sprite->uv_list.size(); i++)
+		{
+			cb_sprite.data.start_u[i] = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
+			cb_sprite.data.start_v[i] = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
+			cb_sprite.data.end_u[i] = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
+			cb_sprite.data.end_v[i] = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
+		}
+	}break;
+	// Tex
+	case TEX:
+	{
+		cb_sprite.data.type = 1;
+
+	}break;
+	}
+
+	device_context->UpdateSubresource(cb_sprite.buffer.Get(), 0, nullptr, &cb_sprite.data, 0, 0);
+	device_context->VSSetConstantBuffers(2, 1, cb_sprite.buffer.GetAddressOf());
+}
+
+void RenderSystem::RenderParticle(Particle& particle)
+{
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	device_context->IASetVertexBuffers(0, 1, particle.vertex_buffer.GetAddressOf(), &stride, &offset);
+	device_context->IASetIndexBuffer(particle.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+	device_context->DrawIndexed(particle.index_list.size(), 0, 0);
 }
 
 //void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)

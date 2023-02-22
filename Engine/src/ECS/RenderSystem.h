@@ -20,6 +20,9 @@ namespace KGCA41B
 		void RenderSkeletalMesh(SkeletalMesh& skeletal_mesh); 
 		void RenderBoxShape(BoxShape& box_shape);
 		//void RenderEffects(entt::registry& reg);
+		void SetParticle(Particle& particle);
+		void SetSprite(Sprite* sprite);
+		void RenderParticle(Particle& particle);
 	private:
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* device_context = nullptr;
@@ -27,5 +30,9 @@ namespace KGCA41B
 	private:
 		CbTransform cb_transform;
 		CbSkeleton cb_skeleton;
+
+		// Effect
+		CbParticle cb_particle;
+		CbSprite cb_sprite;
 	};
 }

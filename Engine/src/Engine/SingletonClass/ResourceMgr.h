@@ -42,6 +42,7 @@ namespace KGCA41B
 		set<string> GetTotalSKID();
 		set<string> GetTotalSTMID();
 		set<string> GetTotalANIMID();
+		set<string> GetTotalSpriteID();
 
 	private:
 		string current_id;
@@ -58,19 +59,21 @@ namespace KGCA41B
 
 		map<string, FMOD::Sound*>	resdic_sound;
 
+		map<string, shared_ptr<Sprite>> resdic_sprite;
+
 	private:
 		bool ImportFbx(string filename);
 		bool ImportShaders(string filename);
 		bool ImportSound(string filename);	
 		bool ImportTexture(string filename);
+	public:
+		bool ImportSprite(string filename);
+		bool SaveSprite(string name, shared_ptr<Sprite> new_sprite);
 
 		bool CreateBuffers(SingleMesh<Vertex>& mesh);
 		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
 
 	};
-
-
-
 
 	template<typename T>
 	inline bool ResourceMgr::PushResource(string id, string filename)
@@ -159,6 +162,14 @@ namespace KGCA41B
 			if (iter != resdic_sound.end())
 			{
 				return (T*)iter->second;
+			}
+		}
+		else if (typeid(T) == typeid(Sprite))
+		{
+			auto iter = resdic_sprite.find(id);
+			if (iter != resdic_sprite.end())
+			{
+				return (T*)iter->second.get();
 			}
 		}
 		return nullptr;
