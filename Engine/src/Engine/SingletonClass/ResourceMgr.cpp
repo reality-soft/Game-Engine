@@ -161,144 +161,19 @@ set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
     return anim;
 }
 
-bool ResourceMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
+void KGCA41B::ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
 {
-    HRESULT hr;
-
-    // VertexBuffer
-
-    D3D11_BUFFER_DESC desc;
-    D3D11_SUBRESOURCE_DATA subdata;
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(Vertex) * mesh.vertices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    subdata.pSysMem = mesh.vertices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    // IndexBuffer
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    subdata.pSysMem = mesh.indices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    return true;
+    resdic_static_mesh.insert({ id, static_mesh });
 }
 
-bool ResourceMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh)
+void KGCA41B::ResourceMgr::PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh)
 {
-    HRESULT hr;
-
-    // VertexBuffer
-
-    D3D11_BUFFER_DESC desc;
-    D3D11_SUBRESOURCE_DATA subdata;
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(SkinnedVertex) * mesh.vertices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    subdata.pSysMem = mesh.vertices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    // IndexBuffer
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    subdata.pSysMem = mesh.indices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    return true;
+    resdic_skeletal_mesh.insert({ id, skeletal_mesh });
 }
 
-bool ResourceMgr::ImportFbx(string filename)
+void KGCA41B::ResourceMgr::PushAnimation(string id, const vector<OutAnimData>& animation)
 {
-    FbxLoader fbx_loader;
-    if (!fbx_loader.LoadFromFbxFile(filename))
-    {
-        fbx_loader.Destroy();
-        return false;
-    }
-
-    StaticMesh res_static_mesh;
-    SkeletalMesh res_skeletal_mesh;
-    for (auto out_mesh : fbx_loader.out_mesh_list)
-    {
-        if (out_mesh->is_skinned)
-        { 
-            SingleMesh<SkinnedVertex> single_mesh;
-            single_mesh.vertices = out_mesh->skinned_vertices;
-            single_mesh.indices = out_mesh->indices;
-            res_skeletal_mesh.meshes.push_back(single_mesh);
-            res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
-        }
-        else
-        {
-            SingleMesh<Vertex> single_mesh;
-            single_mesh.vertices = out_mesh->vertices;
-            single_mesh.indices = out_mesh->indices;
-            res_static_mesh.meshes.push_back(single_mesh);
-        }
-    }
-
-    fbx_loader.LoadAnimation(FbxTime::eFrames60);
-    vector<OutAnimData> res_anim_list;
-    for (auto out_anim : fbx_loader.out_anim_list)
-    {
-        res_anim_list.push_back(*out_anim);
-    }
-
-    for (auto& single_mesh : res_static_mesh.meshes)
-    {
-        CreateBuffers(single_mesh);
-    }
-    for (auto& single_mesh : res_skeletal_mesh.meshes)
-    {
-        CreateBuffers(single_mesh);
-    }
-
-    auto strs = split(filename, '/');
-    string id = strs[strs.size() - 1];
-    strs = split(filename, '\\');
-    id = strs[strs.size() - 1];
-
-    if (res_static_mesh.meshes.size() > 0)
-        resdic_static_mesh.insert(make_pair(id, res_static_mesh));
-
-    if (res_skeletal_mesh.meshes.size() > 0)
-        resdic_skeletal_mesh.insert(make_pair(id, res_skeletal_mesh));
-
-    if (res_anim_list.size() > 0)
-        resdic_animation.insert(make_pair(id, res_anim_list));
-
-    fbx_loader.Destroy();
-    return true;
+    resdic_animation.insert({ id, animation });
 }
 
 bool KGCA41B::ResourceMgr::ImportShaders(string filename)

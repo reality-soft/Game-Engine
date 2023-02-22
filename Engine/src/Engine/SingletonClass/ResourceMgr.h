@@ -32,8 +32,8 @@ namespace KGCA41B
 		template<typename T>
 		T* UseResource(string id);
 
+	public:
 		map<string, string> GetTotalResID();
-
 		set<string> GetTotalTexID();
 		set<string> GetTotalVSID();
 		set<string> GetTotalPSID();
@@ -41,6 +41,11 @@ namespace KGCA41B
 		set<string> GetTotalSKMID();
 		set<string> GetTotalSTMID();
 		set<string> GetTotalANIMID();
+
+	public:
+		void PushStaticMesh(string id, const StaticMesh& static_mesh);
+		void PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh);
+		void PushAnimation(string id, const vector<OutAnimData>& animation);
 
 	private:
 		string current_id;
@@ -55,22 +60,11 @@ namespace KGCA41B
 		map<string, Texture> resdic_texture;
 
 		map<string, FMOD::Sound*>	resdic_sound;
-
-	public:
-		bool ImportFbx(string filename);
-
 	private:
 		bool ImportShaders(string filename);
 		bool ImportSound(string filename);	
 		bool ImportTexture(string filename);
-
-		bool CreateBuffers(SingleMesh<Vertex>& mesh);
-		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
-
 	};
-
-
-
 
 	template<typename T>
 	inline bool ResourceMgr::PushResource(string id, string filename)

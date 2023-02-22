@@ -21,7 +21,7 @@ public:
 	}
 public:
 	template<typename T>
-	bool WriteBinary(T* data, size_t size);
+	bool WriteBinary(const T* data, size_t size);
 
 	template<typename T>
 	vector<T> ReadBinary();
@@ -33,7 +33,7 @@ private:
 };
 
 template<typename T>
-inline bool FileTransfer::WriteBinary(T* data, size_t size)
+inline bool FileTransfer::WriteBinary(const T* data, size_t size)
 {
 	if (file_ptr == nullptr)
 		return false;

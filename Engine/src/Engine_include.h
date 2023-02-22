@@ -3,6 +3,7 @@
 #include "Engine/SingletonClass/Engine.h"
 #include "Engine/SingletonClass/TimeMgr.h"
 #include "Engine/SingletonClass/ResourceMgr.h"
+#include "Engine/SingletonClass/FbxMgr.h"
 #include "Engine/SingletonClass/FmodMgr.h"
 #include "Engine/SingletonClass/GUIMgr.h"
 #include "Engine/SingletonClass/PhysicsMgr.h"
