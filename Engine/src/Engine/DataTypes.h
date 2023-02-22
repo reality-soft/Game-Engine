@@ -55,7 +55,10 @@ namespace KGCA41B
 
 	struct CbTransform
 	{
-		CbTransform() = default;
+		CbTransform()
+		{
+			data.world_matrix = XMMatrixIdentity();
+		}
 		CbTransform(const CbTransform& other)
 		{
 			data = other.data;
@@ -71,7 +74,11 @@ namespace KGCA41B
 
 	struct CbViewProj
 	{
-		CbViewProj() = default;
+		CbViewProj()
+		{
+			data.view_matrix = XMMatrixIdentity();
+			data.projection_matrix = XMMatrixIdentity();
+		}
 		CbViewProj(const CbViewProj& other)
 		{
 			data = other.data;
@@ -102,7 +109,11 @@ namespace KGCA41B
 
 	struct CbLight
 	{
-		CbLight() = default;
+		CbLight()
+		{
+			data.light_direction = { 0, -1, 0, 0 };
+			data.light_bright = 1.0f;
+		}
 		CbLight(const CbLight& other)
 		{
 			data = other.data;
