@@ -39,6 +39,12 @@ namespace KGCA41B
 
 	struct Skeleton
 	{
+		Skeleton() = default;
+		Skeleton(const Skeleton& other)
+		{
+			bind_pose_matrices = other.bind_pose_matrices;
+		}
+
 		map<UINT, XMMATRIX> bind_pose_matrices;
 	};
 
@@ -72,6 +78,8 @@ namespace KGCA41B
 		{
 			meshes.resize(other.meshes.size());
 			meshes = other.meshes;
+
+			skeleton = other.skeleton;
 		}
 
 		vector<SingleMesh<SkinnedVertex>> meshes;

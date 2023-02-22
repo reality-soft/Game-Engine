@@ -86,8 +86,13 @@ void RenderSystem::SetMaterial(const Material& material)
 {
 	PixelShader* shader = RESOURCE->UseResource<PixelShader>(material.shader_id);
 	Texture* texture = RESOURCE->UseResource<Texture>(material.texture_id);
-	device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-	device_context->PSSetShader(shader->Get(), 0, 0);		
+	
+	if (texture != nullptr) {
+		device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+	}
+	if (shader != nullptr) {
+		device_context->PSSetShader(shader->Get(), 0, 0);
+	}
 }
 
 void RenderSystem::SetCbTransform(const C_Transform& transform)
@@ -156,6 +161,8 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+
+		SetMaterial(single_mesh.material);
 	}
 
 	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation_component.anim_id);
