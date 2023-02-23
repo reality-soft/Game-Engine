@@ -15,6 +15,7 @@ void KGCA41B::StaticObject::OnInit(entt::registry& registry, KGCA41B::C_Transfor
 
 	C_StaticMesh static_mesh;
 	static_mesh.static_mesh_id = static_mesh_id;
+
 	static_mesh.local = XMMatrixIdentity();
 	registry.emplace<C_StaticMesh>(entity_id_, static_mesh);
 

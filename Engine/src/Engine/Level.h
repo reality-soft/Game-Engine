@@ -69,7 +69,7 @@ namespace KGCA41B
 		XMINT2 GetWorldSize();
 		vector<Vertex> GetLevelVertex() { return level_mesh_.vertices; }
 		vector<UINT> GetLevelIndex() { return level_mesh_.indices; }
-
+		reactphysics3d::CollisionBody* GetCollisionBody() { return height_field_body_; }
 	protected:
 		void GenVertexNormal();
 		float GetHeightAt(float x, float y);
