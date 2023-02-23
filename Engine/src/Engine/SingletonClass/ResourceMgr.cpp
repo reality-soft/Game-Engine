@@ -61,35 +61,35 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     
     for (auto res : resdic_static_mesh)
     {
-        res_id_map.insert(make_pair("[STM]" + res.first, "STM"));
+        res_id_map.insert(make_pair(res.first, "STM"));
     }
     for (auto res : resdic_skeletal_mesh)
     {
-        res_id_map.insert(make_pair("[SKM]" + res.first, "SKM"));
+        res_id_map.insert(make_pair(res.first, "SKM"));
     }
     for (auto res : resdic_skeleton)
     {
-        res_id_map.insert(make_pair("[SKT]" + res.first, "SKT"));
+        res_id_map.insert(make_pair(res.first, "SKT"));
     }
     for (auto res : resdic_animation)
     {
-        res_id_map.insert(make_pair("[ANM]" + res.first, "ANM"));
+        res_id_map.insert(make_pair(res.first, "ANM"));
     }
     for (auto res : resdic_vs)
     {
-        res_id_map.insert(make_pair("[VS]" + res.first, "VS"));
+        res_id_map.insert(make_pair(res.first, "VS"));
     }
     for (auto res : resdic_ps)
     {
-        res_id_map.insert(make_pair("[PS]" + res.first, "PS"));
+        res_id_map.insert(make_pair(res.first, "PS"));
     }
     for (auto res : resdic_texture)
     {
-        res_id_map.insert(make_pair("[TEX]" + res.first, "TEX"));
+        res_id_map.insert(make_pair(res.first, "TEX"));
     }
     for (auto res : resdic_sound)
     {
-        res_id_map.insert(make_pair("[SND]" + res.first, "SND"));
+        res_id_map.insert(make_pair(res.first, "SND"));
     }
 
     return res_id_map;
