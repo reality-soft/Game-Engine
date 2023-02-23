@@ -36,10 +36,6 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 
 bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_scale)
 {
-	level_transform_.data.world_matrix = XMMatrixIdentity();
-	level_light_.data.light_direction = XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f);
-	level_light_.data.light_bright = 1.5f;
-
     num_row_vertex_ = num_row;
     num_col_vertex_ = num_col;
     UINT num_row_cell = num_row_vertex_ - 1;
@@ -123,14 +119,7 @@ bool Level::CreateHeightField(float min_height, float max_height)
 
 void Level::Update()
 {
-	// Set VS Cb : Transform
-	level_transform_.data.world_matrix = XMMatrixTranspose(level_transform_.data.world_matrix);
-	DX11APP->GetDeviceContext()->UpdateSubresource(level_transform_.buffer.Get(), 0, nullptr, &level_transform_.data, 0, 0);
-	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, level_transform_.buffer.GetAddressOf());
 
-	// Set PS Cb : Light
-	DX11APP->GetDeviceContext()->UpdateSubresource(level_light_.buffer.Get(), 0, nullptr, &level_light_.data, 0, 0);
-	DX11APP->GetDeviceContext()->PSSetConstantBuffers(0, 1, level_light_.buffer.GetAddressOf());
 }
 
 void Level::Render(bool culling)
@@ -152,7 +141,8 @@ void Level::Render(bool culling)
 	}
 
 	{ // Samplers Stage
-		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, mip_map_sample.GetAddressOf());
+		ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->PointWrap();
+		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 	}
 
 	{ // Input Assembly Stage
@@ -263,6 +253,20 @@ void Level::GetHeightList()
 	}
 }
 
+XMFLOAT2 KGCA41B::Level::GetMinMaxHeight()
+{
+	float min = 0;
+	float max = 0;
+
+	for (auto vertex : level_mesh_.vertices)
+	{
+		min = std::min(min, vertex.p.y);
+		max = std::max(min, vertex.p.y);
+	}
+
+	return XMFLOAT2(min, max);
+}
+
 XMFLOAT3 Level::GetNormal(UINT i0, UINT i1, UINT i2)
 {
 	XMFLOAT3 normal;
@@ -305,51 +309,6 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = level_mesh_.indices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.index_buffer.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// ConstantBuffer : Transform
-
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-
-	desc.ByteWidth = sizeof(CbTransform::Data);
-
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	subdata.pSysMem = &level_transform_.data;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_transform_.buffer.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// ConstantBuffer : Light
-
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-
-	desc.ByteWidth = sizeof(CbLight::Data);
-
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	subdata.pSysMem = &level_light_.data;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_light_.buffer.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// sampler
-	D3D11_SAMPLER_DESC sampler_desc = {};
-	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.MinLOD = -3.0f;
-	sampler_desc.MaxLOD =  3.0f;
-
-	hr = DX11APP->GetDevice()->CreateSamplerState(&sampler_desc, mip_map_sample.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 

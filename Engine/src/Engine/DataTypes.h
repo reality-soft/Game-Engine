@@ -100,7 +100,10 @@ namespace KGCA41B
 
 	struct CbTransform
 	{
-		CbTransform() = default;
+		CbTransform()
+		{
+			data.world_matrix = XMMatrixIdentity();
+		}
 		CbTransform(const CbTransform& other)
 		{
 			data = other.data;
@@ -116,7 +119,11 @@ namespace KGCA41B
 
 	struct CbViewProj
 	{
-		CbViewProj() = default;
+		CbViewProj()
+		{
+			data.view_matrix = XMMatrixIdentity();
+			data.projection_matrix = XMMatrixIdentity();
+		}
 		CbViewProj(const CbViewProj& other)
 		{
 			data = other.data;
@@ -141,22 +148,6 @@ namespace KGCA41B
 		struct Data
 		{
 			XMMATRIX  mat_skeleton[255];
-		} data;
-		ComPtr<ID3D11Buffer> buffer;
-	};
-
-	struct CbLight
-	{
-		CbLight() = default;
-		CbLight(const CbLight& other)
-		{
-			data = other.data;
-			other.buffer.CopyTo(buffer.GetAddressOf());
-		}
-		struct Data
-		{
-			XMVECTOR light_direction;
-			float light_bright;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};

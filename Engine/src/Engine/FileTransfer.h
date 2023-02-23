@@ -17,7 +17,7 @@ public:
 	}
 	~FileTransfer()
 	{
-		fclose(file_ptr);
+		Close();
 	}
 public:
 	template<typename T>
@@ -34,6 +34,11 @@ public:
 
 	template<typename T>
 	vector<T> ReadBinaryWithoutSize(size_t size);
+  
+	void Close()
+	{		
+		fclose(file_ptr);	
+	}
 
 private:
 	FILE* file_ptr = nullptr;
@@ -63,8 +68,24 @@ inline vector<T> FileTransfer::ReadBinaryWithoutSize(size_t size)
 	read_data.resize(size);
 
 	size_t read_size = fread(read_data.data(), sizeof(T), size, file_ptr);
+inline void FileTransfer::ReadBinary(vector<T>& buffer)
+{
+	size_t size = 0;
+	fread(&size, sizeof(size_t), 1, file_ptr);
+	buffer.resize(size);
 
-	return read_data;
+	size_t read_size = fread(buffer.data(), sizeof(T), size, file_ptr);
+}
+
+template<typename T>
+inline void FileTransfer::ReadBinary(T& single)
+{
+	size_t size = 0;
+	fread(&size, sizeof(size_t), 1, file_ptr);
+	if (size == 1)
+	{
+		size_t read_size = fread(&single, sizeof(T), 1, file_ptr);
+	}
 }
 
 template<typename T>
