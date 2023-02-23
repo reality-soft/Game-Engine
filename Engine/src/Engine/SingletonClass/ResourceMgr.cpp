@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ResourceMgr.h"
 #include "FmodMgr.h"
+#include "FbxMgr.h"
 #include <io.h>
 
 using namespace KGCA41B;
@@ -27,7 +28,9 @@ void ResourceMgr::Release()
 
 void ResourceMgr::LoadAllResource()
 {
-    //LoadDir(directory_ + "/FBX/", &ResourceMgr::ImportFbx);
+    LoadDir(directory_ + "/SKM/", &ResourceMgr::ImportSKM);
+    LoadDir(directory_ + "/STM/", &ResourceMgr::ImportSTM);
+    LoadDir(directory_ + "/ANIM/", &ResourceMgr::ImportANIM);
     LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
     LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
     LoadDir(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
@@ -234,6 +237,42 @@ bool ResourceMgr::ImportSound(string filename)
 
     resdic_sound.insert(make_pair(id, newSound));
     return true;
+}
+
+bool KGCA41B::ResourceMgr::ImportSKM(string filename)
+{
+    SkeletalMesh skeletal_mesh = FBX->LoadSkeletalMesh(filename);
+
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+
+    resdic_skeletal_mesh.insert(make_pair(id, skeletal_mesh));
+
+    return false;
+}
+
+bool KGCA41B::ResourceMgr::ImportSTM(string filename)
+{
+    StaticMesh static_mesh = FBX->LoadStaticMesh(filename);
+
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+
+    resdic_static_mesh.insert(make_pair(id, static_mesh));
+
+    return false;
+}
+
+bool KGCA41B::ResourceMgr::ImportANIM(string filename)
+{
+    vector<OutAnimData> animation = FBX->LoadAnimation(filename);
+
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+
+    resdic_animation.insert(make_pair(id, animation));
+
+    return false;
 }
 
 bool ResourceMgr::ImportTexture(string filename)

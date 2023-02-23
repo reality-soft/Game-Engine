@@ -62,8 +62,11 @@ namespace KGCA41B
 		map<string, FMOD::Sound*>	resdic_sound;
 	private:
 		bool ImportShaders(string filename);
-		bool ImportSound(string filename);	
+		bool ImportSound(string filename);
 		bool ImportTexture(string filename);
+		bool ImportSKM(string filename);
+		bool ImportSTM(string filename);
+		bool ImportANIM(string filename);
 	};
 
 	template<typename T>

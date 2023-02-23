@@ -17,9 +17,9 @@ namespace KGCA41B {
 		void SaveAnimation(const vector<OutAnimData>& animation, string filename);
 
 	public:
-		void LoadStaticMesh(string filename);
-		void LoadSkeletalMesh(string filename);
-		void LoadAnimation(string filename);
+		StaticMesh LoadStaticMesh(string filename);
+		SkeletalMesh LoadSkeletalMesh(string filename);
+		vector<KGCA41B::OutAnimData> LoadAnimation(string filename);
 
 	private:
 		bool CreateBuffers(SingleMesh<Vertex>& mesh);

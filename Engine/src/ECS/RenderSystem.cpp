@@ -149,8 +149,12 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components.skeletal_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components.vertex_shader_id);
+	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation_component.anim_id);
+	if (res_animation != nullptr) {
+		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
+	}
 
-	for (auto single_mesh : skeletal_mesh->meshes)
+	for (auto& single_mesh : skeletal_mesh->meshes)
 	{
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
@@ -163,12 +167,6 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
 
 		SetMaterial(single_mesh.material);
-	}
-
-	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation_component.anim_id);
-	
-	if (res_animation != nullptr) {
-		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
 	}
 }
 
