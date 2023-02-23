@@ -14,6 +14,7 @@ void KGCA41B::StaticObject::OnInit(entt::registry& registry, KGCA41B::Transform 
 	registry.emplace<KGCA41B::BoundingBox>(entity_id_, bounding_box);
 
 	StaticMesh static_mesh;
+	static_mesh.shader_id = "StaticMeshVS.cso";
 	static_mesh.mesh_id = static_mesh_id;
 	static_mesh.local = XMMatrixIdentity();
 	registry.emplace<StaticMesh>(entity_id_, static_mesh);

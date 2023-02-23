@@ -75,3 +75,4 @@ inline void FileTransfer::ReadBinary(T& single)
 		size_t read_size = fread(&single, sizeof(T), 1, file_ptr);
 	}
 }
+
