@@ -203,7 +203,7 @@ namespace KGCA41B
 		vector<Particle>	particle_list;
 	};
 
-	struct PhysicsCollision : public Transform
+	struct PhysicsCollision : public C_Transform
 	{
 		reactphysics3d::CollisionShape* shape = nullptr;
 		reactphysics3d::Collider* collider = nullptr;
