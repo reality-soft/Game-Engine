@@ -70,10 +70,6 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     {
         res_id_map.insert(make_pair(res.first, "SKM"));
     }
-    for (auto res : resdic_skeleton)
-    {
-        res_id_map.insert(make_pair(res.first, "SKT"));
-    }
     for (auto res : resdic_animation)
     {
         res_id_map.insert(make_pair(res.first, "ANM"));

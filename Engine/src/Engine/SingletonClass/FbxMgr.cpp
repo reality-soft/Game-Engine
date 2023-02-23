@@ -53,7 +53,7 @@ bool KGCA41B::FbxMgr::ImportAndSaveFbx(string filename)
 
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
-    strs = split(filename, '\\');
+    strs = split(id, '\\');
     id = strs[strs.size() - 1];
     strs = split(id, '.');
     string name = strs[0];
