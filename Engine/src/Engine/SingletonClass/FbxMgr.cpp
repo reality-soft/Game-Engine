@@ -93,25 +93,25 @@ void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
 
     int num_of_meshes = skeletal_mesh.meshes.size();
 
-    file_exporter.WriteBinary<int>(&num_of_meshes, 1);
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_meshes, 1);
 
     for (int cur_mesh_index = 0;cur_mesh_index < num_of_meshes;cur_mesh_index++) {
         int num_of_vertices = skeletal_mesh.meshes[cur_mesh_index].vertices.size();
-        file_exporter.WriteBinary<int>(&num_of_vertices, 1);
-        file_exporter.WriteBinary<SkinnedVertex>(const_cast<SkinnedVertex*>(skeletal_mesh.meshes[cur_mesh_index].vertices.data()), num_of_vertices);
+        file_exporter.WriteBinaryWithoutSize<int>(&num_of_vertices, 1);
+        file_exporter.WriteBinaryWithoutSize<SkinnedVertex>(const_cast<SkinnedVertex*>(skeletal_mesh.meshes[cur_mesh_index].vertices.data()), num_of_vertices);
 
         int num_of_indices = skeletal_mesh.meshes[cur_mesh_index].indices.size();
-        file_exporter.WriteBinary<int>(&num_of_indices, 1);
-        file_exporter.WriteBinary<UINT>(const_cast<UINT*>(skeletal_mesh.meshes[cur_mesh_index].indices.data()), num_of_indices);
+        file_exporter.WriteBinaryWithoutSize<int>(&num_of_indices, 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(const_cast<UINT*>(skeletal_mesh.meshes[cur_mesh_index].indices.data()), num_of_indices);
 
         string shader_id = skeletal_mesh.meshes[cur_mesh_index].material.shader_id;
         string texture_id = skeletal_mesh.meshes[cur_mesh_index].material.texture_id;
         int shader_id_size = shader_id.size() + 1;
         int texture_id_size = texture_id.size() + 1;
-        file_exporter.WriteBinary<int>(&shader_id_size, 1);
-        file_exporter.WriteBinary<char>(const_cast<char*>(shader_id.c_str()), shader_id_size);
-        file_exporter.WriteBinary<int>(&texture_id_size, 1);
-        file_exporter.WriteBinary<char>(const_cast<char*>(texture_id.c_str()), texture_id_size);
+        file_exporter.WriteBinaryWithoutSize<int>(&shader_id_size, 1);
+        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(shader_id.c_str()), shader_id_size);
+        file_exporter.WriteBinaryWithoutSize<int>(&texture_id_size, 1);
+        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(texture_id.c_str()), texture_id_size);
     }
 
     vector<UINT> keys;
@@ -123,12 +123,12 @@ void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
     }
 
     int num_of_keys = keys.size();
-    file_exporter.WriteBinary<int>(&num_of_keys, 1);
-    file_exporter.WriteBinary<UINT>(keys.data(), num_of_keys);
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_keys, 1);
+    file_exporter.WriteBinaryWithoutSize<UINT>(keys.data(), num_of_keys);
 
     int num_of_matrices = bind_pose_matrices.size();
-    file_exporter.WriteBinary<int>(&num_of_matrices, 1);
-    file_exporter.WriteBinary<XMMATRIX>(bind_pose_matrices.data(), num_of_matrices); 
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_matrices, 1);
+    file_exporter.WriteBinaryWithoutSize<XMMATRIX>(bind_pose_matrices.data(), num_of_matrices); 
 }
 
 void KGCA41B::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string filename)
@@ -138,7 +138,7 @@ void KGCA41B::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string
 
     int num_of_anim = animation.size();
 
-    file_exporter.WriteBinary<int>(&num_of_anim, 1);
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_anim, 1);
 
     for (int cur_anim_index = 0;cur_anim_index < num_of_anim;cur_anim_index++) {
         vector<UINT> keys;
@@ -150,22 +150,22 @@ void KGCA41B::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string
         }
 
         int num_of_keys = keys.size();
-        file_exporter.WriteBinary<int>(&num_of_keys, 1);
-        file_exporter.WriteBinary<UINT>(keys.data(), num_of_keys);
+        file_exporter.WriteBinaryWithoutSize<int>(&num_of_keys, 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(keys.data(), num_of_keys);
 
         int num_of_animation = animation_matrices.size();
-        file_exporter.WriteBinary<int>(&num_of_animation, 1);
+        file_exporter.WriteBinaryWithoutSize<int>(&num_of_animation, 1);
 
         for (int cur_animation_index = 0;cur_animation_index < num_of_animation;cur_animation_index++) {
             int num_of_matrices = animation_matrices[cur_animation_index].size();
-            file_exporter.WriteBinary<int>(&num_of_matrices, 1);
-            file_exporter.WriteBinary<XMMATRIX>(animation_matrices[cur_animation_index].data(), num_of_matrices);
+            file_exporter.WriteBinaryWithoutSize<int>(&num_of_matrices, 1);
+            file_exporter.WriteBinaryWithoutSize<XMMATRIX>(animation_matrices[cur_animation_index].data(), num_of_matrices);
         }
 
         UINT start_frame = animation[cur_anim_index].start_frame;
-        file_exporter.WriteBinary<UINT>(&start_frame, 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(&start_frame, 1);
         UINT end_frame = animation[cur_anim_index].end_frame;
-        file_exporter.WriteBinary<UINT>(&end_frame, 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(&end_frame, 1);
     }
 }
 
@@ -180,34 +180,34 @@ KGCA41B::SkeletalMesh KGCA41B::FbxMgr::LoadSkeletalMesh(string filename)
 
     SkeletalMesh skeletal_mesh;
 
-    int num_of_meshes = file_exporter.ReadBinary<int>(1)[0];
+    int num_of_meshes = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
 
     skeletal_mesh.meshes.resize(num_of_meshes);
 
     for (int cur_mesh_index = 0;cur_mesh_index < num_of_meshes;cur_mesh_index++) {
-        int num_of_vertices = file_exporter.ReadBinary<int>(1)[0];
-        skeletal_mesh.meshes[cur_mesh_index].vertices = file_exporter.ReadBinary<SkinnedVertex>(num_of_vertices);
+        int num_of_vertices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        skeletal_mesh.meshes[cur_mesh_index].vertices = file_exporter.ReadBinaryWithoutSize<SkinnedVertex>(num_of_vertices);
 
-        int num_of_indices = file_exporter.ReadBinary<int>(1)[0];
-        skeletal_mesh.meshes[cur_mesh_index].indices = file_exporter.ReadBinary<UINT>(num_of_indices);
+        int num_of_indices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        skeletal_mesh.meshes[cur_mesh_index].indices = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_indices);
         
         CreateBuffers(skeletal_mesh.meshes[cur_mesh_index]);
 
-        int shader_id_size = file_exporter.ReadBinary<int>(1)[0];
-        skeletal_mesh.meshes[cur_mesh_index].material.shader_id = file_exporter.ReadBinary<char>(shader_id_size).data();
+        int shader_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        skeletal_mesh.meshes[cur_mesh_index].material.shader_id = file_exporter.ReadBinaryWithoutSize<char>(shader_id_size).data();
 
-        int texture_id_size = file_exporter.ReadBinary<int>(1)[0];
-        skeletal_mesh.meshes[cur_mesh_index].material.texture_id = file_exporter.ReadBinary<char>(texture_id_size).data();
+        int texture_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        skeletal_mesh.meshes[cur_mesh_index].material.texture_id = file_exporter.ReadBinaryWithoutSize<char>(texture_id_size).data();
     }
 
     vector<UINT> keys;
     vector<XMMATRIX> bind_pose_matrices;
 
-    int num_of_keys = file_exporter.ReadBinary<int>(1)[0];
-    keys = file_exporter.ReadBinary<UINT>(num_of_keys);
+    int num_of_keys = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    keys = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_keys);
 
-    int num_of_matrices = file_exporter.ReadBinary<int>(1)[0];
-    bind_pose_matrices = file_exporter.ReadBinary<XMMATRIX>(num_of_keys);
+    int num_of_matrices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    bind_pose_matrices = file_exporter.ReadBinaryWithoutSize<XMMATRIX>(num_of_keys);
 
     for (int i = 0;i < num_of_keys;i++) {
         skeletal_mesh.skeleton.bind_pose_matrices.insert({ keys[i], bind_pose_matrices[i] });
@@ -222,32 +222,32 @@ vector<KGCA41B::OutAnimData> KGCA41B::FbxMgr::LoadAnimation(string filename)
 
     FileTransfer file_exporter(filename, READ);
 
-    int num_of_anim = file_exporter.ReadBinary<int>(1)[0];
+    int num_of_anim = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
     animation_data.resize(num_of_anim);
 
     for (int cur_anim_index = 0;cur_anim_index < num_of_anim;cur_anim_index++) {
         vector<UINT> keys;
         vector<vector<XMMATRIX>> animation_matrices;
 
-        int num_of_keys = file_exporter.ReadBinary<int>(1)[0];
+        int num_of_keys = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
         keys.resize(num_of_keys);
-        keys = file_exporter.ReadBinary<UINT>(num_of_keys);
+        keys = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_keys);
 
-        int num_of_animation = file_exporter.ReadBinary<int>(1)[0];
+        int num_of_animation = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
         animation_matrices.resize(num_of_animation);
 
         for (int cur_animation_index = 0;cur_animation_index < num_of_animation;cur_animation_index++) {
-            int num_of_matrices = file_exporter.ReadBinary<int>(1)[0];
+            int num_of_matrices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
             animation_matrices[cur_animation_index].resize(num_of_matrices);
-            animation_matrices[cur_animation_index] = file_exporter.ReadBinary<XMMATRIX>(num_of_matrices);
+            animation_matrices[cur_animation_index] = file_exporter.ReadBinaryWithoutSize<XMMATRIX>(num_of_matrices);
         }
 
         for (int i = 0;i < num_of_keys;i++) {
             animation_data[cur_anim_index].animations.insert({ keys[i], animation_matrices[i] });
         }
 
-        animation_data[cur_anim_index].start_frame = file_exporter.ReadBinary<UINT>(1)[0];
-        animation_data[cur_anim_index].end_frame = file_exporter.ReadBinary<UINT>(1)[0];
+        animation_data[cur_anim_index].start_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
+        animation_data[cur_anim_index].end_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
     }
 
     return animation_data;

@@ -12,12 +12,24 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 {
 	FileTransfer file_transfer(filepath, READ);
 
-	int data1_size = file_transfer.ReadBinary<int>(1)[0];
-	vector<Vertex> data1 = file_transfer.ReadBinary<Vertex>(data1_size);
-	int data2_size = file_transfer.ReadBinary<int>(1)[0];
-	vector<UINT> data2 = file_transfer.ReadBinary<UINT>(data2_size);
-	int data3_size = file_transfer.ReadBinary<int>(1)[0];
-	vector<string> data3 = file_transfer.ReadBinary<string>(data3_size);
+	//Single Datas;
+	file_transfer.ReadBinary<UINT>(num_row_vertex_);
+	file_transfer.ReadBinary<UINT>(num_col_vertex_);
+	file_transfer.ReadBinary<int>(cell_distance_);
+	file_transfer.ReadBinary<int>(uv_scale_);
+
+	// Arrays
+	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
+	file_transfer.ReadBinary<UINT>(level_mesh_.indices);
+	file_transfer.ReadBinary<string>(texture_id);
+
+	file_transfer.Close();
+
+	if (CreateBuffers() == false)
+		return false;
+
+	XMFLOAT2 minmax_height = GetMinMaxHeight();
+	CreateHeightField(minmax_height.x, minmax_height.y);
 
 	return true;
 }
