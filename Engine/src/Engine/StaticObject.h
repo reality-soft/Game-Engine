@@ -12,7 +12,7 @@ namespace KGCA41B
 		TransformTree	transform_tree_;
 		int				node_num_;
 	public:
-		virtual void OnInit(entt::registry& registry, KGCA41B::Transform transform, AABBShape collision_box, string static_mesh_id);
+		virtual void OnInit(entt::registry& registry, KGCA41B::C_Transform transform, AABBShape collision_box, string static_mesh_id);
 		virtual void OnUpdate(entt::registry& registry);
 	};
 }

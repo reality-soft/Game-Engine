@@ -30,7 +30,7 @@ void AnimationSystem::OnUpdate(entt::registry& reg)
 	//}
 }
 
-void AnimationSystem::PlayAnimation(Skeleton& skeleton, Animation& animation)
+void AnimationSystem::PlayAnimation(Skeleton& skeleton, C_Animation& animation)
 {
 	//map<UINT, XMMATRIX>* res_skeleton = RESOURCE->UseResource<map<UINT, XMMATRIX>>(skeleton.skeleton_id);
 	//vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation.anim_id);

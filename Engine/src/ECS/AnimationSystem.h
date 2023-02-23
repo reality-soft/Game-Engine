@@ -14,7 +14,7 @@ namespace KGCA41B
 		virtual void OnUpdate(entt::registry& reg);
 
 	private:
-		void PlayAnimation(Skeleton& skeleton, Animation& animation);
+		void PlayAnimation(Skeleton& skeleton, C_Animation& animation);
 
 		ID3D11DeviceContext* device_context = nullptr;
 	};

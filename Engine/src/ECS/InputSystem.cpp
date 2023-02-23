@@ -11,10 +11,10 @@ void InputSystem::OnUpdate(entt::registry& reg)
 {
 	int result = DINPUT->Update();
 
-	auto view_inp = reg.view<InputMapping>();
+	auto view_inp = reg.view<C_InputMapping>();
 	for (auto ent : view_inp)
 	{
-		auto& input_mapping = view_inp.get<InputMapping>(ent);
+		auto& input_mapping = view_inp.get<C_InputMapping>(ent);
 		Clear(input_mapping);
 
 		if (result != MOUSE_NO_STATE)
@@ -71,7 +71,7 @@ void InputSystem::OnUpdate(entt::registry& reg)
 	}
 }
 
-void KGCA41B::InputSystem::Clear(InputMapping& input_mapping)
+void KGCA41B::InputSystem::Clear(C_InputMapping& input_mapping)
 {
 	input_mapping.actions.clear();
 	input_mapping.axis_types.clear();

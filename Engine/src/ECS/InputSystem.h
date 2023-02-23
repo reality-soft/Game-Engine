@@ -9,6 +9,6 @@ namespace KGCA41B
 	public:
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
-		void Clear(InputMapping& input_mapping);
+		void Clear(C_InputMapping& input_mapping);
 	};
 }
