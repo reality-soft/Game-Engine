@@ -14,6 +14,7 @@ namespace KGCA41B
 	public:
 		virtual void OnInit(entt::registry& registry, KGCA41B::C_Transform transform, AABBShape collision_box, string static_mesh_id);
 		virtual void OnUpdate(entt::registry& registry);
+		entt::entity GetEntity() { return entity_id_; }
 	};
 }
 
