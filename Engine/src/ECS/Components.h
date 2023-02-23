@@ -18,7 +18,7 @@ namespace KGCA41B
 		virtual void OnUpdate() {};
 	};
 
-	struct Transform : public Component
+	struct C_Transform : public Component
 	{
 		XMMATRIX local;
 		XMMATRIX world;
@@ -30,32 +30,24 @@ namespace KGCA41B
 		}
 	};
 
-	struct StaticMesh : public Transform
+	struct C_StaticMesh : public C_Transform
 	{
-		string mesh_id;
-		string shader_id;
+		string static_mesh_id;
+		string vertex_shader_id = "BasicShapeVS.cso";
 
 		virtual void OnConstruct() override {};
 	};
 
-	struct SkeletalMesh : public Transform
+	struct C_SkeletalMesh : public C_Transform
 	{
 
-		string mesh_id;
-		string shader_id;
+		string skeletal_mesh_id;
+		string vertex_shader_id = "SkinningVS.cso";
 
 		virtual void OnConstruct() override {};
 	};
 
-	struct Material : public Component
-	{
-		string shader_id;
-		vector<string> texture_id;
-
-		virtual void OnConstruct() override {};
-	};
-
-	struct Camera : public Transform
+	struct C_Camera : public C_Transform
 	{
 		XMVECTOR position, look, up, right, target;
 		float yaw, pitch, roll, distance, speed;
@@ -64,21 +56,14 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct Skeleton : public Transform
-	{
-		string skeleton_id;
-
-		virtual void OnConstruct() override {};
-	};
-
-	struct Animation : public Component
+	struct C_Animation : public Component
 	{
 		string anim_id;
 
 		virtual void OnConstruct() override {};
 	};
 
-	struct InputMapping : public Component
+	struct C_InputMapping : public Component
 	{
 		vector<AxisType> axis_types;
 		float axis_value[6] = { 0, };
@@ -87,17 +72,17 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct SoundListener : public Transform
+	struct C_SoundListener : public C_Transform
 	{
 
 	};
 
-	struct SoundGenerator : public Transform
+	struct C_SoundGenerator : public C_Transform
 	{
 		queue<SoundQueue> sound_queue_list;
 	};
 
-	struct BoundingBox : public Transform
+	struct C_BoundingBox : public C_Transform
 	{
 		AABBShape aabb;
 		virtual void OnUpdate() override
@@ -120,7 +105,7 @@ namespace KGCA41B
 		TransformTreeNode(entt::id_type type) : id_type(type) {};
 
 		void OnUpdate(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
-			Transform* cur_transform = static_cast<Transform*>(registry.storage(id_type)->get(entity));
+			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
 			cur_transform->world = world;
 			cur_transform->OnUpdate();
 
@@ -182,7 +167,7 @@ namespace KGCA41B
 	};
 
 
-	struct BaseEffect : public Transform
+	struct BaseEffect : public C_Transform
 	{
 		bool					enabled_ = false;
 		string					vs_id;

@@ -29,6 +29,12 @@ public:
 	template<typename T>
 	void ReadBinary(T& single);
 
+	template<typename T>
+	bool WriteBinaryWithoutSize(T* data, size_t size);
+
+	template<typename T>
+	vector<T> ReadBinaryWithoutSize(size_t size);
+  
 	void Close()
 	{		
 		fclose(file_ptr);	
@@ -41,18 +47,29 @@ private:
 };
 
 template<typename T>
-inline bool FileTransfer::WriteBinary(T* data, size_t size)
+inline bool FileTransfer::WriteBinaryWithoutSize(T* data, size_t size)
 {
 	if (file_ptr == nullptr)
 		return false;
 
-	fwrite(&size, sizeof(size_t), 1, file_ptr);
 	size_t write_size = fwrite(data, sizeof(T), size, file_ptr);
 
 	if (write_size <= 0)
 		return false;
 
 	return true;
+}
+
+template<typename T>
+inline vector<T> FileTransfer::ReadBinaryWithoutSize(size_t size)
+{
+	vector<T> read_data;
+
+	read_data.resize(size);
+
+	size_t read_size = fread(read_data.data(), sizeof(T), size, file_ptr);
+
+	return read_data;
 }
 
 template<typename T>
@@ -76,3 +93,17 @@ inline void FileTransfer::ReadBinary(T& single)
 	}
 }
 
+template<typename T>
+inline bool FileTransfer::WriteBinary(T* data, size_t size)
+{
+	if (file_ptr == nullptr)
+		return false;
+
+	fwrite(&size, sizeof(size_t), 1, file_ptr);
+	size_t write_size = fwrite(data, sizeof(T), size, file_ptr);
+
+	if (write_size <= 0)
+		return false;
+
+	return true;
+}

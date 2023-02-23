@@ -24,10 +24,10 @@ CameraSystem::~CameraSystem()
 
 void KGCA41B::CameraSystem::TargetTag(entt::registry& reg, string tag)
 {
-	auto view = reg.view<Camera>();
+	auto view = reg.view<C_Camera>();
 	for (auto entity : view)
 	{
-		auto& camera = view.get<Camera>(entity);
+		auto& camera = view.get<C_Camera>(entity);
 		if (camera.tag == tag)
 		{
 			this->camera = &camera;
@@ -57,12 +57,12 @@ void CameraSystem::OnCreate(entt::registry& reg)
 
 void CameraSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_input = reg.view<InputMapping>();
-	auto view_trans = reg.view<Transform>();
+	auto view_input = reg.view<C_InputMapping>();
+	auto view_trans = reg.view<C_Transform>();
 
 	for (auto ent : view_input)
 	{
-		auto& input = view_input.get<InputMapping>(ent);
+		auto& input = view_input.get<C_InputMapping>(ent);
 		
 		CameraMovement(input);
 		CameraAction(input);
@@ -108,7 +108,7 @@ MouseRay CameraSystem::CreateMouseRay()
 	return mouse_ray;
 }
 
-Camera* CameraSystem::GetCamera()
+C_Camera* CameraSystem::GetCamera()
 {
 	return camera;
 }
@@ -118,7 +118,7 @@ XMMATRIX KGCA41B::CameraSystem::GetViewProj()
 	return view_matrix * projection_matrix;
 }
 
-void CameraSystem::CameraMovement(InputMapping& input_mapping)
+void CameraSystem::CameraMovement(C_InputMapping& input_mapping)
 {
 	XMVECTOR front_dir = camera->look * camera->speed * TM_DELTATIME;
 	XMVECTOR right_dir = camera->right * camera->speed * TM_DELTATIME * -1.f;
@@ -155,7 +155,7 @@ void CameraSystem::CameraMovement(InputMapping& input_mapping)
 	}
 }
 
-void CameraSystem::CameraAction(InputMapping& input_mapping)
+void CameraSystem::CameraAction(C_InputMapping& input_mapping)
 {
 	for (auto actions : input_mapping.actions)
 	{
