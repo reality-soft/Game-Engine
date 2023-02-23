@@ -217,4 +217,11 @@ namespace KGCA41B
 		UINT				particle_count;
 		vector<Particle>	particle_list;
 	};
+
+	struct PhysicsCollision : public Transform
+	{
+		reactphysics3d::CollisionShape* shape = nullptr;
+		reactphysics3d::Collider* collider = nullptr;
+		reactphysics3d::CollisionBody* body = nullptr;
+	};
 }
