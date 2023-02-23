@@ -28,12 +28,12 @@ VS_OUT VS(VS_IN input)
 {
 	VS_OUT output = (VS_OUT)0;
 
-	matrix veiw_proj = mul(view_matrix, projection_matrix);
+	matrix view_proj = mul(view_matrix, projection_matrix);
 	float4 position = float4(input.p, 1.0f);
-	float4 projection = mul(local, view_proj);
+	float4 projection = mul(position, view_proj);
 
 	output.p = projection;
-	output.n = input.n;
+	output.n = float4(input.n, 0);
 	output.c = input.c;
 	output.t = input.t;
 
