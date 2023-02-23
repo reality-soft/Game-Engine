@@ -12,9 +12,12 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 {
 	FileTransfer file_transfer(filepath, READ);
 
-	vector<Vertex> data1 = file_transfer.ReadBinary<Vertex>();
-	vector<UINT> data2 = file_transfer.ReadBinary<UINT>();
-	vector<string> data3 = file_transfer.ReadBinary<string>();
+	int data1_size = file_transfer.ReadBinary<int>(1)[0];
+	vector<Vertex> data1 = file_transfer.ReadBinary<Vertex>(data1_size);
+	int data2_size = file_transfer.ReadBinary<int>(1)[0];
+	vector<UINT> data2 = file_transfer.ReadBinary<UINT>(data2_size);
+	int data3_size = file_transfer.ReadBinary<int>(1)[0];
+	vector<string> data3 = file_transfer.ReadBinary<string>(data3_size);
 
 	return true;
 }
