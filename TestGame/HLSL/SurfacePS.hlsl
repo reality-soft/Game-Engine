@@ -34,5 +34,5 @@ float4 PS(PS_OUT output) : SV_Target
 	float bright = max(0.2f, dot(output.n, light));
 	float4 normal = { bright , bright , bright , 1 };
 
-	return output.c * tex_color * normal;
+	return output.c * base_color * normal;
 }

@@ -13,3 +13,13 @@ struct VS_OUT
 	float4 c : COLOR;
 	float2 t : TEXCOORD0;
 };
+
+float4x4 IdentityMatrix()
+{
+	return float4x4(
+		1.0, 0.0, 0.0, 0.0,
+		0.0, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0
+		);
+}
