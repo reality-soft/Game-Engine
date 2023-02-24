@@ -416,14 +416,13 @@ bool ResourceMgr::ImportSprite(string filename)
 
     auto strs1 = split(filename, '/');
     auto name = strs1[max((int)strs1.size() - 1, 0)];
+    auto strs2 = split(name, '.');
+    name = strs2[0];
 
     auto sheet = DATA->LoadSheet(name);
 
     if (!sheet)
         return false;
-
-    auto strs2 = split(name, '.');
-    name = strs2[0];
 
     auto item = sheet->LoadItem(name);
     if (item == NULL)

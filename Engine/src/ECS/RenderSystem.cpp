@@ -52,6 +52,50 @@ void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
 	subdata.pSysMem = &cb_skeleton.data;
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeleton.buffer.GetAddressOf());
+
+	// Init Sprite Buffer
+	ZeroMemory(&cb_sprite.data, sizeof(CbSprite::Data));
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	cb_sprite.data.billboard_matrix = XMMatrixIdentity();
+
+	desc.ByteWidth = sizeof(CbSprite::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &cb_sprite.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_sprite.buffer.GetAddressOf());
+
+	// Init Particle Buffer
+	ZeroMemory(&cb_particle.data, sizeof(CbParticle::Data));
+
+	cb_particle.data.values.x = 0.0f;
+	cb_particle.data.values.y = 0.0f;
+	cb_particle.data.values.z = 0.0f;
+	cb_particle.data.values.w = 0.0f;
+
+	cb_particle.data.color.x = 1.0f;
+	cb_particle.data.color.y = 1.0f;
+	cb_particle.data.color.z = 1.0f;
+	cb_particle.data.color.w = 1.0f;
+
+	cb_particle.data.transform = XMMatrixIdentity();
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbParticle::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &cb_particle.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_particle.buffer.GetAddressOf());
 }
 
 void RenderSystem::OnUpdate(entt::registry& reg)
@@ -101,57 +145,87 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	}
 
 	// Emitter Render
-	auto view_emitter = reg.view<Emitter>();
-	for (auto ent : view_emitter)
+	auto view_effect = reg.view<Effect>();
+	for (auto ent : view_effect)
 	{
-		auto& emitter = reg.get<Emitter>(ent);
+		auto& effect = reg.get<Effect>(ent);
 
-		Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
-		if (sprite == nullptr)
-			return;
-
-		SetCbTransform(emitter);
-
-		SetSprite(sprite);
-
-		// 쉐이더 세팅
-		VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter.vs_id);
-		if (vs)
+		for (auto& emitter : effect.emitters)
 		{
-			device_context->IASetInputLayout(vs->InputLayoyt());
-			device_context->VSSetShader(vs->Get(), 0, 0);
-		}
+			Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
+			if (sprite == nullptr)
+				return;
 
-		//GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter.geo_id);
-		//if(gs)
-		//	device_context->GSSetShader(gs->Get(), 0, 0);
-		
-		PixelShader* ps = RESOURCE->UseResource<PixelShader>(emitter.ps_id);
-		if (ps)
-			device_context->PSSetShader(ps->Get(), 0, 0);
-		
-		// particle 개수 만큼 파티클 설정
-		for (auto& particle : emitter.particles)
-		{
-			if (!particle.enable)
-				continue;
+			SetCbTransform(effect);
 
-			if (sprite->type == TEX)
+			// 빌보드 행렬 설정
 			{
-				TextureSprite* tex_sprite = (TextureSprite*) sprite;
-				Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
-				if (texture != nullptr)
-					device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+				auto view_camera = reg.view<Camera>();
+				for (auto entity : view_camera)
+				{
+					auto& camera = view_camera.get<Camera>(entity);
+					if (camera.tag == "Player")
+					{
+						XMVECTOR s, o, q, t;
+						XMFLOAT3 position(camera.position.m128_f32[0], camera.position.m128_f32[1], camera.position.m128_f32[2]);
+
+						s = XMVectorReplicate(1.0f);
+						o = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+						q = XMQuaternionRotationRollPitchYaw(camera.pitch, camera.yaw, camera.roll);
+						t = XMLoadFloat3(&position);
+						auto world_matrix = XMMatrixAffineTransformation(s, o, q, t);
+						auto view_matrix = XMMatrixInverse(0, world_matrix);
+						XMVECTOR determinant;
+						XMMATRIX mat_view_inverse = XMMatrixInverse(&determinant, view_matrix);
+						mat_view_inverse.r[3].m128_f32[0] = 0.0f;
+						mat_view_inverse.r[3].m128_f32[1] = 0.0f;
+						mat_view_inverse.r[3].m128_f32[2] = 0.0f;
+						cb_sprite.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
+					}
+				}
+			}
+			
+
+			SetSprite(sprite);
+
+			// 쉐이더 세팅
+			VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter.vs_id);
+			if (vs)
+			{
+				device_context->IASetInputLayout(vs->InputLayoyt());
+				device_context->VSSetShader(vs->Get(), 0, 0);
 			}
 
-			SetParticle(particle);
+			//GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter.geo_id);
+			//if(gs)
+			//	device_context->GSSetShader(gs->Get(), 0, 0);
 
-			RenderParticle(particle);
+			PixelShader* ps = RESOURCE->UseResource<PixelShader>(emitter.ps_id);
+			if (ps)
+				device_context->PSSetShader(ps->Get(), 0, 0);
+
+			// particle 개수 만큼 파티클 설정
+			for (auto& particle : emitter.particles)
+			{
+				if (!particle.enable)
+					continue;
+
+				if (sprite->type == TEX)
+				{
+					TextureSprite* tex_sprite = (TextureSprite*)sprite;
+					Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
+					if (texture != nullptr)
+						device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+				}
+
+				SetParticle(particle);
+
+				RenderParticle(particle);
+			}
 		}
+
+		
 	}
-
-	//RenderEffects(reg);
-
 }
 
 void RenderSystem::SetMaterial(Material& material)
@@ -265,11 +339,18 @@ void RenderSystem::RenderBoxShape(BoxShape& box_shape)
 
 void RenderSystem::SetParticle(Particle& particle)
 {
-	cb_particle.data.color		= XMLoadFloat4(&particle.color);
-	cb_particle.data.vel		= XMLoadFloat3(&particle.velocity);
-	cb_particle.data.size		= XMLoadFloat3(&particle.size);
-	cb_particle.data.rotation	= particle.rotation;
-	cb_particle.data.timer		= particle.timer;
+	cb_particle.data.color		= particle.color;
+	cb_particle.data.values.x	= particle.timer;
+	cb_particle.data.values.y	= particle.frame_ratio;
+
+	XMMATRIX s = XMMatrixScalingFromVector(XMLoadFloat3(&particle.scale));
+	auto q = XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&particle.rotation));;
+	XMMATRIX r = XMMatrixRotationQuaternion(q);
+	XMMATRIX t = XMMatrixTranslationFromVector(XMLoadFloat3(&particle.position));
+	XMMATRIX sr = XMMatrixMultiply(s, r);
+	XMMATRIX srt = XMMatrixMultiply(sr, t);
+
+	cb_particle.data.transform = XMMatrixTranspose(srt);
 
 	device_context->UpdateSubresource(cb_particle.buffer.Get(), 0, nullptr, &cb_particle.data, 0, 0);
 	device_context->VSSetConstantBuffers(3, 1, cb_particle.buffer.GetAddressOf());
@@ -277,13 +358,15 @@ void RenderSystem::SetParticle(Particle& particle)
 
 void RenderSystem::SetSprite(Sprite* sprite)
 {
-	cb_sprite.data.max_frame = sprite->max_frame;
+	// max_frame 설정
+	cb_sprite.data.value.y = sprite->max_frame;
 	switch (sprite->type)
 	{
 	// UV
 	case UV:
 	{
-		cb_sprite.data.type = 0;
+		// type
+		cb_sprite.data.value.x = 0;
 
 		UVSprite* uv_sprite = (UVSprite*)sprite;
 
@@ -292,20 +375,21 @@ void RenderSystem::SetSprite(Sprite* sprite)
 		if (texture != nullptr)
 			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 
-		cb_sprite.data.uv_list_size = uv_sprite->uv_list.size();
+		cb_sprite.data.value.z = uv_sprite->uv_list.size();
 
 		for (int i = 0; i < uv_sprite->uv_list.size(); i++)
 		{
-			cb_sprite.data.start_u[i] = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
-			cb_sprite.data.start_v[i] = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
-			cb_sprite.data.end_u[i] = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
-			cb_sprite.data.end_v[i] = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
+			cb_sprite.data.value2[i].x = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
+			cb_sprite.data.value2[i].y = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
+			cb_sprite.data.value2[i].z = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
+			cb_sprite.data.value2[i].w = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
 		}
 	}break;
 	// Tex
 	case TEX:
 	{
-		cb_sprite.data.type = 1;
+		// type
+		cb_sprite.data.value.x = 1;
 
 	}break;
 	}

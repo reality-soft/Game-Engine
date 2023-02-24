@@ -88,7 +88,9 @@ void KGCA41B::DataMgr::LoadSheetFile(string path)
 
 	shared_ptr<DataSheet> newSheet = std::make_shared<DataSheet>();
 	auto splited_str = split(path, '/');
-	newSheet->sheet_name = splited_str[splited_str.size() - 1];
+	auto strs2 = split(splited_str[max(splited_str.size() - 1, 0)], '.');
+
+	newSheet->sheet_name = strs2[0];
 
 	string line;
 	string value;
@@ -124,7 +126,7 @@ void KGCA41B::DataMgr::SaveSheetFile(string sheetName)
 		return;
 
 	fstream fs;
-	fs.open(directory_ + '/' + sheetName, ios::out);
+	fs.open(directory_ + '/' + sheetName + ".csv", ios::out);
 	if (fs.fail())
 		return;
 
@@ -174,6 +176,8 @@ void KGCA41B::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
+
+	fileName += ".csv";
 
 	fstream fs;
 	fs.open(directory_ + '/' + fileName, ios::out);
