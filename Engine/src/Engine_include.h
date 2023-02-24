@@ -14,7 +14,6 @@
 #include "ECS/RenderSystem.h"
 #include "ECS/CameraSystem.h"
 #include "ECS/InputSystem.h"
-#include "ECS/AnimationSystem.h"
 #include "ECS/SoundSystem.h"
 #include "ECS/LightingSystem.h"
 

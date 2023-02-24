@@ -42,7 +42,7 @@ void KGCA41B::StaticObject::OnUpdate(entt::registry& registry)
 	transform_tree_.root_node->OnUpdate(registry, entity_id_, transform);
 }
 
-void KGCA41B::StaticObject::SetTransformSRT(const XMVECTOR& t, const XMVECTOR& r, const XMVECTOR& s)
+void KGCA41B::StaticObject::SetTransformTRS(const XMVECTOR& t, const XMVECTOR& r, const XMVECTOR& s)
 {
 	transform = XMMatrixIdentity();
 
