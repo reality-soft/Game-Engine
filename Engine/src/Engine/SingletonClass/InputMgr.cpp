@@ -46,13 +46,34 @@ int InputMgr::Update()
 
 	HRESULT hr;
 
-	hr = di_keyboard.Get()->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);
-	if (FAILED(hr))
+	//hr = di_keyboard.Get()->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);
+	//if (FAILED(hr))
+	//{
+	//	if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
+	//		di_keyboard->Acquire();
+	//	else
+	//		return KEY_NO_STATE;
+	//}
+
+	for (int iKey = 0; iKey < 256; iKey++)
 	{
-		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
-			di_keyboard->Acquire();
+		SHORT sKey = ::GetAsyncKeyState(iKey);
+		if (sKey & 0x8000)
+		{
+			if (keyboard_state[iKey] == KEY_FREE ||
+				keyboard_state[iKey] == KEY_UP)
+				keyboard_state[iKey] = KEY_PUSH;
+			else
+				keyboard_state[iKey] = KEY_HOLD;
+		}
 		else
-			return KEY_NO_STATE;
+		{
+			if (keyboard_state[iKey] == KEY_PUSH ||
+				keyboard_state[iKey] == KEY_HOLD)
+				keyboard_state[iKey] = KEY_UP;
+			else
+				keyboard_state[iKey] = KEY_FREE;
+		}
 	}
 
 	hr = di_mouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&mouse_state);
@@ -102,6 +123,11 @@ int InputMgr::GetKeyEvent(UCHAR dik)
 		return -1;
 	}
 	return 0;
+}
+
+DWORD KGCA41B::InputMgr::GetKey(DWORD input_key)
+{
+	return keyboard_state[input_key];
 }
 
 POINT InputMgr::GetMousePosition()

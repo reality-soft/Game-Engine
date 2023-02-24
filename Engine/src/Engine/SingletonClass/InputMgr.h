@@ -5,6 +5,14 @@
   
 namespace KGCA41B
 {
+	enum KeyState
+	{
+		KEY_FREE = 0,
+		KEY_UP,
+		KEY_PUSH,
+		KEY_HOLD,
+	};
+
 	enum
 	{
 		KEY_NO_STATE,
@@ -21,6 +29,8 @@ namespace KGCA41B
 		bool IsKeyPressed(UCHAR dik);
 		int  GetKeyEvent(UCHAR dik);
 
+		DWORD GetKey(DWORD input_key);
+
 		POINT GetMousePosition();
 		XMFLOAT2 GetMouseVelocity();
 		XMINT3 GetMouseButton();
@@ -31,13 +41,12 @@ namespace KGCA41B
 		ComPtr<IDirectInputDevice8> di_keyboard;
 		ComPtr<IDirectInputDevice8> di_mouse;
 
-		UCHAR keyboard_state[256];
+		DWORD keyboard_state[256];
 		DIMOUSESTATE mouse_state;
 		POINT screen_size;
 
 		POINT last_mousepos;
 		POINT current_mousepos;
-
 	};
 
 }

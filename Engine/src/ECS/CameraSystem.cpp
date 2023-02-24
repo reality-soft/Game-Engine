@@ -64,7 +64,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 	{
 		auto& input = view_input.get<C_InputMapping>(ent);
 		
-		CameraMovement(input);
+		//CameraMovement(input);
 		CameraAction(input);
 	}
 
