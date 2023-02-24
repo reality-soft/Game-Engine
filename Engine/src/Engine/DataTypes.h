@@ -9,6 +9,7 @@ namespace KGCA41B
 		XMFLOAT3   n;
 		XMFLOAT4   c;
 		XMFLOAT2   t;
+		UINT m;
 	};
 
 	struct SkinnedVertex
@@ -19,6 +20,7 @@ namespace KGCA41B
 		XMFLOAT2   t;
 		XMFLOAT4   i;
 		XMFLOAT4   w;
+		UINT m;
 
 		SkinnedVertex operator +=(const Vertex& vertex)
 		{
@@ -26,15 +28,9 @@ namespace KGCA41B
 			this->n = vertex.n;
 			this->c = vertex.c;
 			this->t = vertex.t;
-
+			this->m = vertex.m;
 			return *this;
 		}
-	};
-
-	struct Material
-	{
-		string shader_id = "BasicShapePS.cso";
-		string texture_id;
 	};
 
 	struct Skeleton
@@ -68,7 +64,6 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
-		Material material;
 	};
 
 	struct SkeletalMesh
