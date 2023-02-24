@@ -104,14 +104,14 @@ void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
         file_exporter.WriteBinaryWithoutSize<int>(&num_of_indices, 1);
         file_exporter.WriteBinaryWithoutSize<UINT>(const_cast<UINT*>(skeletal_mesh.meshes[cur_mesh_index].indices.data()), num_of_indices);
 
-        string shader_id = skeletal_mesh.meshes[cur_mesh_index].material.shader_id;
-        string texture_id = skeletal_mesh.meshes[cur_mesh_index].material.texture_id;
-        int shader_id_size = shader_id.size() + 1;
-        int texture_id_size = texture_id.size() + 1;
-        file_exporter.WriteBinaryWithoutSize<int>(&shader_id_size, 1);
-        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(shader_id.c_str()), shader_id_size);
-        file_exporter.WriteBinaryWithoutSize<int>(&texture_id_size, 1);
-        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(texture_id.c_str()), texture_id_size);
+        //string shader_id = skeletal_mesh.meshes[cur_mesh_index].material.shader_id;
+        //string texture_id = skeletal_mesh.meshes[cur_mesh_index].material.texture_id;
+        //int shader_id_size = shader_id.size() + 1;
+        //int texture_id_size = texture_id.size() + 1;
+        //file_exporter.WriteBinaryWithoutSize<int>(&shader_id_size, 1);
+        //file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(shader_id.c_str()), shader_id_size);
+        //file_exporter.WriteBinaryWithoutSize<int>(&texture_id_size, 1);
+        //file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(texture_id.c_str()), texture_id_size);
     }
 
     vector<UINT> keys;
@@ -193,11 +193,11 @@ KGCA41B::SkeletalMesh KGCA41B::FbxMgr::LoadSkeletalMesh(string filename)
         
         CreateBuffers(skeletal_mesh.meshes[cur_mesh_index]);
 
-        int shader_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        skeletal_mesh.meshes[cur_mesh_index].material.shader_id = file_exporter.ReadBinaryWithoutSize<char>(shader_id_size).data();
+        //int shader_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        //skeletal_mesh.meshes[cur_mesh_index].material.shader_id = file_exporter.ReadBinaryWithoutSize<char>(shader_id_size).data();
 
-        int texture_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        skeletal_mesh.meshes[cur_mesh_index].material.texture_id = file_exporter.ReadBinaryWithoutSize<char>(texture_id_size).data();
+        //int texture_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        //skeletal_mesh.meshes[cur_mesh_index].material.texture_id = file_exporter.ReadBinaryWithoutSize<char>(texture_id_size).data();
     }
 
     vector<UINT> keys;
