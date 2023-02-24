@@ -71,7 +71,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 	CreateMatrix();
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
-	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_viewproj.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, cb_viewproj.buffer.GetAddressOf());
 }
 
 MouseRay CameraSystem::CreateMouseRay()
