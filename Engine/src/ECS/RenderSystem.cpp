@@ -82,19 +82,6 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	RenderEffects(reg);
 }
 
-void RenderSystem::SetMaterial(const Material& material)
-{
-	PixelShader* shader = RESOURCE->UseResource<PixelShader>(material.shader_id);
-	Texture* texture = RESOURCE->UseResource<Texture>(material.texture_id);
-	
-	if (texture != nullptr) {
-		device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-	}
-	if (shader != nullptr) {
-		device_context->PSSetShader(shader->Get(), 0, 0);
-	}
-}
-
 void RenderSystem::SetCbTransform(const C_Transform& transform)
 {
 	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world);
@@ -122,10 +109,14 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, const vector<OutAnimD
 	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
 }
 
-void RenderSystem::RenderStaticMesh(const C_StaticMesh& static_mesh_component)
+void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 {
 	StaticMesh* static_mesh = RESOURCE->UseResource<StaticMesh>(static_mesh_component.static_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh_component.vertex_shader_id);
+
+	SetCbTransform(static_mesh_component);
+
+	static_mesh_component.surface.SetSurface();
 
 	for (auto single_mesh : static_mesh->meshes)
 	{
