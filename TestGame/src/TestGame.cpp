@@ -31,9 +31,6 @@ void TestGame::OnInit()
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Player");
 
-	KGCA41B::Material* material = nullptr;
-	material = RESOURCE->UseResource<KGCA41B::Material>("material_01.mat");
-
 }
 
 void TestGame::OnUpdate()

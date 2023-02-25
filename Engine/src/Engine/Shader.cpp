@@ -52,12 +52,6 @@ bool VertexShader::LoadCompiled(wstring cso_file)
                 byte_offset += 16;
             }
 
-            if (string(param_desc.SemanticName).find("I1") != string::npos)
-            {
-                input_desc.Format = DXGI_FORMAT_R32_UINT;
-                byte_offset += 4;
-            }
-
             if (string(param_desc.SemanticName).find("SV_InstanceID") != string::npos)
             {
                 input_desc.Format = DXGI_FORMAT_R32_UINT;

@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 #include <algorithm>
-
 #include <wrl.h>
 
 #include <windows.h>

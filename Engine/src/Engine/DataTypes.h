@@ -9,7 +9,6 @@ namespace KGCA41B
 		XMFLOAT3   n;
 		XMFLOAT4   c;
 		XMFLOAT2   t;
-		UINT m;
 	};
 
 	struct SkinnedVertex
@@ -20,7 +19,6 @@ namespace KGCA41B
 		XMFLOAT2   t;
 		XMFLOAT4   i;
 		XMFLOAT4   w;
-		UINT m;
 
 		SkinnedVertex operator +=(const Vertex& vertex)
 		{
@@ -28,7 +26,6 @@ namespace KGCA41B
 			this->n = vertex.n;
 			this->c = vertex.c;
 			this->t = vertex.t;
-			this->m = vertex.m;
 			return *this;
 		}
 	};
