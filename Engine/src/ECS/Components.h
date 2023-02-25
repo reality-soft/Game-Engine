@@ -63,15 +63,6 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct C_InputMapping : public Component
-	{
-		vector<AxisType> axis_types;
-		float axis_value[6] = { 0, };
-		vector<ActionType> actions;
-
-		virtual void OnConstruct() override {};
-	};
-
 	struct C_SoundListener : public C_Transform
 	{
 

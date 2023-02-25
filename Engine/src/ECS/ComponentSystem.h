@@ -15,7 +15,6 @@ namespace KGCA41B {
 			registry.on_construct<C_SkeletalMesh>().connect<&ComponentSystem::OnConstruct<C_SkeletalMesh>>(this);
 			registry.on_construct<C_Camera>().connect<&ComponentSystem::OnConstruct<C_Camera>>(this);
 			registry.on_construct<C_Animation>().connect<&ComponentSystem::OnConstruct<C_Animation>>(this);
-			registry.on_construct<C_InputMapping>().connect<&ComponentSystem::OnConstruct<C_InputMapping>>(this);
 
 			registry.on_update<C_Transform>().connect<&ComponentSystem::OnUpdate<C_Transform>>(this);
 			registry.on_update<C_BoundingBox>().connect<&ComponentSystem::OnUpdate<C_BoundingBox>>(this);
