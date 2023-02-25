@@ -23,6 +23,7 @@
 #include <functional>
 #include <sstream>
 
+#include "GlobalFunctions.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX;

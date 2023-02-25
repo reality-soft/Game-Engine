@@ -130,8 +130,6 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
-
-		SetMaterial(single_mesh.material);
 	}
 
 }
@@ -156,8 +154,6 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
-
-		SetMaterial(single_mesh.material);
 	}
 }
 
