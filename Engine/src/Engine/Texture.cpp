@@ -8,6 +8,7 @@ bool KGCA41B::Texture::LoadTextureWIC(wstring filepath)
 	if (FAILED(hr))
 		return false;
 
+
 	ID3D11Texture2D* texture;
 	resource.Get()->QueryInterface<ID3D11Texture2D>(&texture);
 	if (texture)

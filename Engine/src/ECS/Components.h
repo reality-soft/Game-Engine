@@ -4,7 +4,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Shape.h"
-#include "Surface.h"
+#include "Material.h"
 
 
 namespace KGCA41B
@@ -35,7 +35,7 @@ namespace KGCA41B
 	{
 		string static_mesh_id;
 		string vertex_shader_id = "StaticMeshVS.cso";
-		Surface surface;
+
 		virtual void OnConstruct() override {};
 	};
 
@@ -44,7 +44,6 @@ namespace KGCA41B
 
 		string skeletal_mesh_id;
 		string vertex_shader_id = "SkinningVS.cso";
-		Surface surface;
 
 		virtual void OnConstruct() override {};
 	};

@@ -117,8 +117,6 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 
 	SetCbTransform(static_mesh_component);
 
-	static_mesh_component.surface.SetSurface();
-
 	for (auto single_mesh : static_mesh->meshes)
 	{
 		SetMaterial(single_mesh.material);

@@ -4,26 +4,7 @@
 void TestGame::OnInit()
 {
 	KGCA41B::RESOURCE->Init("../../Contents/");
-
-	level.ImportFromFile("../../Contents/BinaryPackage/Mountains.lv");
-
-	level.vs_id_ = "LevelVS.cso";
-	level.ps_id_ = "LevelPS.cso";
-	level.texture_id = { "Ground.png" };
-
-
-	KGCA41B::QUADTREE->Init(&level, 4);
 	KGCA41B::FMOD_MGR->Init();
-
-	for (int i = 0;i < 1000;i++) {
-		KGCA41B::StaticObject actor;
-		KGCA41B::C_Transform transform;
-		KGCA41B::AABBShape collision_box;
-
-		actor.OnInit(reg_scene, transform, collision_box, "AAA");
-		actor_list.push_back(actor);
-	}
-
 	sys_sound.OnCreate(reg_scene); 
   
 	KGCA41B::ComponentSystem::GetInst()->OnInit(reg_scene);
@@ -32,7 +13,6 @@ void TestGame::OnInit()
 
 
 	sys_render.OnCreate(reg_scene);
-	ent_sound = reg_scene.create();
 
 	for (int i = 0; i < 100; ++i)
 	{
@@ -64,18 +44,20 @@ void TestGame::OnUpdate()
 {
 	KGCA41B::FMOD_MGR->Update();
 
-	for (KGCA41B::StaticObject actor : actor_list) {
-		actor.OnUpdate(reg_scene);
-	}
+	FbxMgr::GetInst()->ImportAndSaveFbx("../../Contents/STM/LeeEnfieldMKIII.fbx");
 
-	sys_sound.OnUpdate(reg_scene);
-	sys_camera.OnUpdate(reg_scene);
-	test_object.OnUpdate(reg_scene);
+	test_object.transform = XMMatrixIdentity();
+	C_Transform transform;
+	transform.local = XMMatrixIdentity();
+	transform.world = XMMatrixIdentity();
+
+	test_object.OnInit(reg_scene, transform, AABBShape(XMVectorZero(), 10.0f), "LeeEnfieldMKIII.stmesh");
+
+	KGCA41B::Material mat1;
 }
 
 void TestGame::OnRender()
 {
-	surface_definer.test_surface.SetSurface();
 	sys_render.OnUpdate(reg_scene);
 }
 

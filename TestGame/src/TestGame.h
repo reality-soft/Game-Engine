@@ -1,5 +1,7 @@
 #pragma once
-#include "SurfaceDefiner.h"
+#include "Engine_Include.h"
+
+using namespace KGCA41B;
 
 class TestGame : public KGCA41B::Scene
 {

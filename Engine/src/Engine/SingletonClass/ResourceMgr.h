@@ -26,6 +26,9 @@ namespace KGCA41B
 		template<typename T>
 		bool PushResource(string id, string filename);
 		template<typename T>
+		void PushResource(string id, const T& data);
+
+		template<typename T>
 		T* UseResource(string id);
 
 	public:
@@ -54,16 +57,27 @@ namespace KGCA41B
 		map<string, PixelShader>  resdic_ps;
 		map<string, GeometryShader> resdic_gs;
 		map<string, Texture> resdic_texture;
+		map<string, Material> resdic_material;
 
 		map<string, FMOD::Sound*>	resdic_sound;
 	private:
 		bool ImportShaders(string filename);
 		bool ImportSound(string filename);
 		bool ImportTexture(string filename);
+		bool ImportMaterial(string filename);
 		bool ImportSKM(string filename);
 		bool ImportSTM(string filename);
 		bool ImportANIM(string filename);
 	};
+
+	template<typename T>
+	inline void ResourceMgr::PushResource(string id, const T& data)
+	{
+		if (typeid(T) == typeid(Material))
+		{
+			resdic_material.insert(make_pair(id, data));
+		}
+	}
 
 	template<typename T>
 	inline bool ResourceMgr::PushResource(string id, string filename)

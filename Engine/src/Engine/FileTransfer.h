@@ -1,10 +1,31 @@
 #pragma once
+#include "DllMacro.h"
+
 enum
 {
 	READ, WRITE
 } typedef ReadOrWrite;
 
-class FileTransfer
+class DLL_API TextFileTransfer
+{
+public:
+	TextFileTransfer(string dirname, ReadOrWrite mode);
+	~TextFileTransfer();
+
+public:
+	bool WriteText(string tag, string text);
+	string ReadText(string tag);
+
+public:
+	void Close();
+
+private:
+	ofstream out_stream;
+	ifstream in_stream;
+	string file_dirname;
+};
+
+class DLL_API FileTransfer
 {
 public:
 	FileTransfer(string dirname, ReadOrWrite mode)
@@ -34,7 +55,7 @@ public:
 
 	template<typename T>
 	vector<T> ReadBinaryWithoutSize(size_t size);
-  
+
 	void Close()
 	{		
 		fclose(file_ptr);	
