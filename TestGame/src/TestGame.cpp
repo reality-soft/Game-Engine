@@ -29,6 +29,9 @@ void TestGame::OnInit()
 	KGCA41B::ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
+
+
+	sys_render.OnCreate(reg_scene);
 	ent_sound = reg_scene.create();
 
 	for (int i = 0; i < 100; ++i)
@@ -39,11 +42,6 @@ void TestGame::OnInit()
 		int a = 0;
 	}
 
-	//CreatePlayer();
-	//CreateCharacter();
-
-	//sys_render.OnCreate(reg_scene);
-	//sys_animation.OnCreate(reg_scene);
 	KGCA41B::C_Camera debug_camera;
 	debug_camera.position = { 0, 100, -200, 0 };
 	debug_camera.look = { 0, -1, 0, 0 };
@@ -72,18 +70,17 @@ void TestGame::OnUpdate()
 
 	sys_sound.OnUpdate(reg_scene);
 	sys_camera.OnUpdate(reg_scene);
-
-	KGCA41B::QUADTREE->Frame(&sys_camera);
+	test_object.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRender()
 {
-	KGCA41B::QUADTREE->Render();
+	surface_definer.test_surface.SetSurface();
+	sys_render.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRelease()
 {
 	KGCA41B::RESOURCE->Release();
-	KGCA41B::FMOD_MGR->Release();
 }
 

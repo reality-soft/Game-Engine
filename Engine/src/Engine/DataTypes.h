@@ -9,6 +9,7 @@ namespace KGCA41B
 		XMFLOAT3   n;
 		XMFLOAT4   c;
 		XMFLOAT2   t;
+		UINT m;
 	};
 
 	struct SkinnedVertex
@@ -19,6 +20,7 @@ namespace KGCA41B
 		XMFLOAT2   t;
 		XMFLOAT4   i;
 		XMFLOAT4   w;
+		UINT m;
 
 		SkinnedVertex operator +=(const Vertex& vertex)
 		{
@@ -26,15 +28,9 @@ namespace KGCA41B
 			this->n = vertex.n;
 			this->c = vertex.c;
 			this->t = vertex.t;
-
+			this->m = vertex.m;
 			return *this;
 		}
-	};
-
-	struct Material
-	{
-		string shader_id = "BasicShapePS.cso";
-		string texture_id;
 	};
 
 	struct Skeleton
@@ -68,7 +64,6 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
-		Material material;
 	};
 
 	struct SkeletalMesh
@@ -248,55 +243,4 @@ namespace KGCA41B
 		char effect_name[255] = "";
 	};
 
-}
-
-static std::wstring to_mw(const std::string& _src)
-{
-	USES_CONVERSION;
-	return std::wstring(A2W(_src.c_str()));
-}
-
-static std::string to_wm(const std::wstring& _src)
-{
-	USES_CONVERSION;
-	return std::string(W2A(_src.c_str()));
-}
-
-static std::vector<std::string> split(std::string input, char delimiter) {
-	std::vector<std::string> answer;
-	std::stringstream ss(input);
-	std::string temp;
-
-	while (getline(ss, temp, delimiter)) {
-		answer.push_back(temp);
-	}
-
-	return answer;
-}
-
-
-static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector3& rpv)
-{
-	rpv.x = xmv.m128_f32[0];
-	rpv.y = xmv.m128_f32[1];
-	rpv.z = xmv.m128_f32[2];
-}
-
-static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
-{
-	rpv.x = xmv.m128_f32[0];
-	rpv.y = xmv.m128_f32[1];
-}
-
-static void RPtoXM(reactphysics3d::Vector3& rpv, XMVECTOR& xmv)
-{
-	xmv.m128_f32[0] = rpv.x;
-	xmv.m128_f32[1] = rpv.y;
-	xmv.m128_f32[2] = rpv.z;
-}
-
-static void RPtoXM(reactphysics3d::Vector2& rpv, XMVECTOR& xmv)
-{
-	xmv.m128_f32[0] = rpv.x;
-	xmv.m128_f32[1] = rpv.y;
 }

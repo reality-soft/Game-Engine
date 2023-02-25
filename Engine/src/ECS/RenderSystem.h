@@ -16,8 +16,7 @@ namespace KGCA41B
 
 		void SetCbTransform(const C_Transform& transform);
 		void PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation);
-		void SetMaterial(const Material& material);
-		void RenderStaticMesh(const C_StaticMesh& static_mesh);
+		void RenderStaticMesh(C_StaticMesh& static_mesh);
 		void RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh, const C_Animation& animation_component);
 		void RenderEffects(entt::registry& reg);
 	private:

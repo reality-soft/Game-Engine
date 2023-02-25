@@ -19,7 +19,7 @@ namespace KGCA41B
 	public:
 		XMMATRIX transform;
 
-		void SetTransformSRT(const XMVECTOR& t, const XMVECTOR& r, const XMVECTOR& s);
+		void SetTransformTRS(const XMVECTOR& t, const XMVECTOR& r, const XMVECTOR& s);
 	};
 }
 

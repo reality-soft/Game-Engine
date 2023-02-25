@@ -2,10 +2,6 @@
 #include "DllMacro.h"
 #include "Components.h"
 #include "FbxLoader.h"
-#include "Texture.h"
-
-
-
 
 namespace KGCA41B
 {
