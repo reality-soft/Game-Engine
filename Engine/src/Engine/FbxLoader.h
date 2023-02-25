@@ -40,6 +40,8 @@ namespace KGCA41B {
 		FbxVector4 ReadNormal(FbxMesh* fbx_mesh, FbxLayerElementNormal* vertex_normal_set, int pos_index, int color_index);
 
 		XMMATRIX FbxToDxConvert(FbxAMatrix& fbx_matrix);
+		void CreateMaterialFile(string mesh_name);
+		string RefineMeshName(string mesh_name);
 	};
 
 }

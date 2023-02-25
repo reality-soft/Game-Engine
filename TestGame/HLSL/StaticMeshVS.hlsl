@@ -4,7 +4,6 @@ struct VS_IN
 	float3 n : F3_NORMAL;
 	float4 c : F4_COLOR;
 	float2 t : F2_TEXTURE;
-    uint   m : I1_MATERIAL;
 };
 struct VS_OUT
 {
@@ -12,7 +11,6 @@ struct VS_OUT
 	float4 n : NORMAL;
 	float4 c : COLOR;
 	float2 t : TEXCOORD;
-    uint   m : I1_MATERIAL;
 };
 
 cbuffer cb_data : register(b0)
