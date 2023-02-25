@@ -14,14 +14,6 @@ void TestGame::OnInit()
 
 	sys_render.OnCreate(reg_scene);
 
-	for (int i = 0; i < 100; ++i)
-	{
-		XMVECTOR random_loacation = { rand() % 100 - 50, rand() % 100 - 50, rand() % 100 - 50, 0 };
-		KGCA41B::AABBShape random_aabb = KGCA41B::AABBShape(random_loacation, 10.0f);
-		int node = KGCA41B::QUADTREE->UpdateNodeObjectBelongs(0, random_aabb, reg_scene.create());;
-		int a = 0;
-	}
-
 	KGCA41B::C_Camera debug_camera;
 	debug_camera.position = { 0, 100, -200, 0 };
 	debug_camera.look = { 0, -1, 0, 0 };
@@ -38,6 +30,10 @@ void TestGame::OnInit()
 
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Player");
+
+	KGCA41B::Material* material = nullptr;
+	material = RESOURCE->UseResource<KGCA41B::Material>("material_01.mat");
+
 }
 
 void TestGame::OnUpdate()

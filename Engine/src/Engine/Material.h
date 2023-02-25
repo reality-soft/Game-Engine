@@ -5,7 +5,7 @@
 
 namespace KGCA41B
 {
-	class Material
+	class DLL_API Material
 	{
 	public:
 		Material() = default;

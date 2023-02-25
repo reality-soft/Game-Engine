@@ -5,8 +5,8 @@ TextFileTransfer::TextFileTransfer(string dirname, ReadOrWrite mode)
 {
 	switch (mode)
 	{
-	case READ:  in_stream.open(dirname);
-	case WRITE: out_stream.open(dirname);
+	case READ:  in_stream.open(dirname); break;
+	case WRITE: out_stream.open(dirname); break;
 	}
 }
 

@@ -21,6 +21,5 @@ private:
 	KGCA41B::SoundSystem sys_sound;
 
 	StaticObject test_object;
-	SurfaceDefiner surface_definer;
 };
 
