@@ -5,39 +5,50 @@
   
 namespace KGCA41B
 {
-	enum
+	enum KeyState
 	{
-		KEY_NO_STATE,
-		MOUSE_NO_STATE
+		KEY_FREE = 0,
+		KEY_UP,
+		KEY_PUSH,
+		KEY_HOLD,
 	};
+
+	enum MouseButton
+	{
+		L_BUTTON,
+		R_BUTTON,
+		M_BUTTON,
+		EXTRA_BUTTON
+	};
+
 	class DLL_API InputMgr
 	{
 		SINGLETON(InputMgr);
 #define DINPUT KGCA41B::InputMgr::GetInst()
 	public:
-		bool Init(HWND hwnd, HINSTANCE hinstacne);
-		int Update();
+		bool Init();
+		bool Update();
 
-		bool IsKeyPressed(UCHAR dik);
-		int  GetKeyEvent(UCHAR dik);
+		KeyState GetKeyState(DWORD input_key);
+		KeyState GetMouseState(MouseButton input_key);
 
 		POINT GetMousePosition();
 		XMFLOAT2 GetMouseVelocity();
-		XMINT3 GetMouseButton();
 		int GetMouseWheel();
-
+		int GetDeltaX();
+		int GetDeltaY();
 	private:
 		ComPtr<IDirectInput8> dinput;
 		ComPtr<IDirectInputDevice8> di_keyboard;
 		ComPtr<IDirectInputDevice8> di_mouse;
 
-		UCHAR keyboard_state[256];
+		KeyState keyboard_state[256];
+		KeyState prev_keyboard_state[256];
+
 		DIMOUSESTATE mouse_state;
-		POINT screen_size;
+		KeyState  prev_rgb_buttons[4];
 
-		POINT last_mousepos;
 		POINT current_mousepos;
-
 	};
 
 }

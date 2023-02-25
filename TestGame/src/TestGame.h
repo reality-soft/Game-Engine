@@ -16,7 +16,7 @@ private:
 
 	KGCA41B::RenderSystem sys_render;
 	KGCA41B::CameraSystem sys_camera;
-	KGCA41B::InputSystem sys_input;
+	KGCA41B::SoundSystem sys_sound;
 
 	StaticObject test_object;
 	SurfaceDefiner surface_definer;

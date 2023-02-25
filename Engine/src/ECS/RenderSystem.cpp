@@ -66,6 +66,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		SetCbTransform(transform);
 
 		auto& static_mesh = reg.get<C_StaticMesh>(ent);
+		SetCbTransform(transform);
 		RenderStaticMesh(static_mesh);
 	}
 
@@ -84,7 +85,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 void RenderSystem::SetCbTransform(const C_Transform& transform)
 {
-	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world);
+	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world * transform.local);
 
 	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
 	device_context->VSSetConstantBuffers(0, 1, cb_transform.buffer.GetAddressOf());
@@ -120,6 +121,8 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 
 	for (auto single_mesh : static_mesh->meshes)
 	{
+		SetMaterial(single_mesh.material);
+
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 
@@ -143,8 +146,12 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
 	}
 
+	SetCbTransform(skeletal_mesh_components);
+
 	for (auto& single_mesh : skeletal_mesh->meshes)
 	{
+		SetMaterial(single_mesh.material);
+
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
@@ -176,7 +183,7 @@ void KGCA41B::RenderSystem::RenderEffects(entt::registry& reg)
 
 		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite.tex_id);
 
-		// uv °ª ¼³Á¤
+		// uv Â°Âª Â¼Â³ÃÂ¤
 		auto uv_value = uv_sprite.uv_list[min((int)uv_sprite.cur_frame - 1, (int)uv_sprite.uv_list.size() - 1)];
 
 		float tex_width = (float)texture->texture_desc.Width;
