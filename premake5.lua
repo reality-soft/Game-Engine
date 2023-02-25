@@ -18,7 +18,7 @@ project "Engine"
 	targetdir("../output/bin/" .. outputdir .. "/%{prj.name}")
 	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "Engine/src/Engine/stdafx.h"
+	pchheader "stdafx.h"
     pchsource "Engine/src/Engine/stdafx.cpp"
 
 	files
@@ -35,6 +35,7 @@ project "Engine"
 		"%{prj.name}/src/ECS",
 		"%{prj.name}/src/GUI",
 		"%{prj.name}/src/Engine/SingletonClass",
+		"%{prj.name}/src/Engine/SpacePartition",
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
@@ -120,6 +121,7 @@ project "TestGame"
 		"Engine/src/Engine",
 		"Engine/src/ECS",
 		"Engine/src/Engine/SingletonClass",
+		"Engine/src/Engine/SpacePartition",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
@@ -157,6 +159,11 @@ project "TestGame"
 	    shadertype "Pixel"
 		shaderentry "PS"
 	    shadermodel "5.0"
+		
+	filter "files:**GS.hlsl"
+	    shadertype "Geometry"
+		shaderentry "GS"
+	    shadermodel "5.0"
 
 	filter "system:windows"
 		cppdialect "C++17"
@@ -171,7 +178,8 @@ project "TestGame"
 
 		postbuildcommands
 		{
-			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\""
+			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
+			"copy \"..\\..\\output\\bin\\Release-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\""
 		}
 
 	filter "configurations:Debug"

@@ -12,7 +12,6 @@ bool VertexShader::LoadCompiled(wstring cso_file)
 
     hr = DX11APP->GetDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf());
 
-
     ID3D11ShaderReflection* reflection = nullptr;
     hr = D3DReflect(blob->GetBufferPointer(), blob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflection);
 
@@ -51,6 +50,19 @@ bool VertexShader::LoadCompiled(wstring cso_file)
             {
                 input_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
                 byte_offset += 16;
+            }
+
+            if (string(param_desc.SemanticName).find("I1") != string::npos)
+            {
+                input_desc.Format = DXGI_FORMAT_R32_UINT;
+                byte_offset += 4;
+            }
+
+            if (string(param_desc.SemanticName).find("SV_InstanceID") != string::npos)
+            {
+                input_desc.Format = DXGI_FORMAT_R32_UINT;
+                input_desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                byte_offset += 4;
             }
 
             ied.push_back(input_desc);
@@ -95,14 +107,23 @@ ID3D11PixelShader* PixelShader::Get()
 	return ps.Get();
 }
 
-bool KGCA41B::GeometryShader::LoadCompiled(wstring _csoFIle)
+bool GeometryShader::LoadCompiled(wstring _csoFIle)
 {
     HRESULT hr = S_OK;
 
     ID3DBlob* blob = nullptr;
     hr = D3DReadFileToBlob(_csoFIle.c_str(), &blob);
 
-    hr = DX11APP->GetDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, gs.GetAddressOf());
+    D3D11_SO_DECLARATION_ENTRY ied[] =
+    {
+        { 0, "SV_POSITION", 0, 0, 4, 0 },
+        { 0, "POSITION",    0, 0, 3, 0 },
+        { 0, "NORMAL",      0, 0, 3, 0 },
+        { 0, "COLOR",       0, 0, 4, 0 },
+        { 0, "TEXCOORD",    0, 0, 2, 0 }
+    };
+
+    hr = DX11APP->GetDevice()->CreateGeometryShaderWithStreamOutput(blob->GetBufferPointer(), blob->GetBufferSize(), ied, ARRAYSIZE(ied), 0, 0, 0, 0, gs.GetAddressOf());
 
     blob->Release();
     blob = nullptr;

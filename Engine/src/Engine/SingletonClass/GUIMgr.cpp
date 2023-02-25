@@ -30,10 +30,6 @@ void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
 	ImFontConfig fontConfig;
 	fontConfig.SizePixels = 1.f;
 
-	// Add a font to the font manager
-	base_font_file = "../../Contents/Fonts/Garet_Book.ttf";
-	AddFont("base_font", base_font_file, 18.0f);
-
 	// store context instance
 	this->context = ImGui::GetCurrentContext();
 }
@@ -45,19 +41,8 @@ void GUIMgr::RenderWidgets()
 	ImGui::NewFrame();
 
 	for (auto& widget : widgets)
-	{
-		if (widget.second->open_ == false)
-		{
-			delete widget.second;
-			widget.second = nullptr;
-			auto ret = widgets.erase(widget.first);
-			break;
-		}
-		else
-		{
-			widget.second->Update();
-			widget.second->Render();
-		}
+	{		
+		widget.second->WidgetRender();
 	}
 
 	ImGui::Render();
@@ -75,6 +60,7 @@ void GUIMgr::AddWidget(string widget_name, GuiWidget* widget)
 	if (FindWidget(widget_name) != nullptr)
 		return;
 
+	widget->Init();
 	widgets.insert(make_pair(widget_name, widget));
 }
 

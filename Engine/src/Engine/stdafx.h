@@ -2,7 +2,6 @@
 #include <reactphysics3d/reactphysics3d.h>
 #include "fmod.hpp"
 #include <d3d11.h>
-
 #include <list>
 #include <vector>
 #include <map>
@@ -24,6 +23,7 @@
 #include <functional>
 #include <sstream>
 
+#include "GlobalFunctions.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX;

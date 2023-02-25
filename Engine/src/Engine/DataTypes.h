@@ -9,6 +9,7 @@ namespace KGCA41B
 		XMFLOAT3   n;
 		XMFLOAT4   c;
 		XMFLOAT2   t;
+		UINT m;
 	};
 
 	struct SkinnedVertex
@@ -19,6 +20,7 @@ namespace KGCA41B
 		XMFLOAT2   t;
 		XMFLOAT4   i;
 		XMFLOAT4   w;
+		UINT m;
 
 		SkinnedVertex operator +=(const Vertex& vertex)
 		{
@@ -26,22 +28,82 @@ namespace KGCA41B
 			this->n = vertex.n;
 			this->c = vertex.c;
 			this->t = vertex.t;
-
+			this->m = vertex.m;
 			return *this;
 		}
+	};
+
+	struct Skeleton
+	{
+		Skeleton() = default;
+		Skeleton(const Skeleton& other)
+		{
+			bind_pose_matrices = other.bind_pose_matrices;
+		}
+
+		map<UINT, XMMATRIX> bind_pose_matrices;
 	};
 
 	template <typename VertexType>
 	struct SingleMesh
 	{
+		SingleMesh() = default;
+		SingleMesh(const SingleMesh<VertexType>& other)
+		{
+			vertices.resize(other.vertices.size());
+			vertices = other.vertices;
+
+			indices.resize(other.indices.size());
+			indices = other.indices;
+
+			other.vertex_buffer.CopyTo(vertex_buffer.GetAddressOf());
+			other.index_buffer.CopyTo(index_buffer.GetAddressOf());
+		}
+
 		vector<VertexType> vertices;
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
 	};
 
+	struct SkeletalMesh
+	{
+		SkeletalMesh() = default;
+		SkeletalMesh(const SkeletalMesh& other)
+		{
+			meshes.resize(other.meshes.size());
+			meshes = other.meshes;
+
+			skeleton = other.skeleton;
+		}
+
+		vector<SingleMesh<SkinnedVertex>> meshes;
+		Skeleton skeleton;
+	};
+
+	struct StaticMesh
+	{
+		StaticMesh() = default;
+		StaticMesh(const StaticMesh& other)
+		{
+			meshes.resize(other.meshes.size());
+			meshes = other.meshes;
+		}
+
+		vector<SingleMesh<Vertex>> meshes;
+	};
+
 	struct CbTransform
 	{
+		CbTransform()
+		{
+			data.world_matrix = XMMatrixIdentity();
+		}
+		CbTransform(const CbTransform& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX world_matrix;
@@ -52,6 +114,16 @@ namespace KGCA41B
 
 	struct CbViewProj
 	{
+		CbViewProj()
+		{
+			data.view_matrix = XMMatrixIdentity();
+			data.projection_matrix = XMMatrixIdentity();
+		}
+		CbViewProj(const CbViewProj& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX view_matrix;
@@ -62,19 +134,15 @@ namespace KGCA41B
 
 	struct CbSkeleton
 	{
+		CbSkeleton() = default;
+		CbSkeleton(const CbSkeleton& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX  mat_skeleton[255];
-		} data;
-		ComPtr<ID3D11Buffer> buffer;
-	};
-
-	struct CbLight
-	{
-		struct Data
-		{
-			XMVECTOR light_direction;
-			float light_bright;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -143,55 +211,36 @@ namespace KGCA41B
 
 		IDLE
 	};
-}
 
-static std::wstring to_mw(const std::string& _src)
-{
-	USES_CONVERSION;
-	return std::wstring(A2W(_src.c_str()));
-}
+	// Effect
+	enum E_Effect
+	{
+		NONE = 0,
+		UV_SPRITE = 1,
+		TEX_SPRITE = 2,
+		PARTICLES = 3,
+	};
 
-static std::string to_wm(const std::wstring& _src)
-{
-	USES_CONVERSION;
-	return std::string(W2A(_src.c_str()));
-}
+	struct UVSpriteData
+	{
+		int max_frame = 10;
+		int cur_frame = 1;
+		string texture_id = "";
+		vector<pair<POINT, POINT>> uv_list;
+		string vs_id = "";
+		string ps_id = "";
+		char effect_name[255] = "";
+	};
 
-static std::vector<std::string> split(std::string input, char delimiter) {
-	std::vector<std::string> answer;
-	std::stringstream ss(input);
-	std::string temp;
+	struct TexSpriteData
+	{
+		int max_frame = 10;
+		int cur_frame = 1;
+		string texture_id = "";
+		vector<string> tex_id_list;
+		string vs_id = "";
+		string ps_id = "";
+		char effect_name[255] = "";
+	};
 
-	while (getline(ss, temp, delimiter)) {
-		answer.push_back(temp);
-	}
-
-	return answer;
-}
-
-
-static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector3& rpv)
-{
-	rpv.x = xmv.m128_f32[0];
-	rpv.y = xmv.m128_f32[1];
-	rpv.z = xmv.m128_f32[2];
-}
-
-static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
-{
-	rpv.x = xmv.m128_f32[0];
-	rpv.y = xmv.m128_f32[1];
-}
-
-static void RPtoXM(reactphysics3d::Vector3& rpv, XMVECTOR& xmv)
-{
-	xmv.m128_f32[0] = rpv.x;
-	xmv.m128_f32[1] = rpv.y;
-	xmv.m128_f32[2] = rpv.z;
-}
-
-static void RPtoXM(reactphysics3d::Vector2& rpv, XMVECTOR& xmv)
-{
-	xmv.m128_f32[0] = rpv.x;
-	xmv.m128_f32[1] = rpv.y;
 }

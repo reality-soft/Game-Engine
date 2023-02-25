@@ -22,7 +22,7 @@ bool PhysicsMgr::Init()
 
 	// Change the number of iterations of the position solver 
 	physics_world_->setNbIterationsPositionSolver(5);
-	
+
 
 	return true;
 }
@@ -44,13 +44,22 @@ void PhysicsMgr::Release()
 	physics_common_.destroyPhysicsWorld(physics_world_);
 }
 
-Vector3 PhysicsMgr::RaycastMouse(MouseRay* mouse_ray)
+WorldRayCallback KGCA41B::PhysicsMgr::WorldPicking(const MouseRay& mouse_ray)
 {
-	Ray new_ray(mouse_ray->start_point, mouse_ray->end_point);
+	WorldRayCallback raycast_callback;
+	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
+	physics_world_->raycast(ray, &raycast_callback);
 
-	MouseRayCallback ray_callback;
+	return raycast_callback;
+}
 
-	physics_world_->raycast(new_ray, &ray_callback);
+bool KGCA41B::PhysicsMgr::ObjectPicking(const MouseRay& mouse_ray, CollisionBody* target)
+{
+	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
+	RaycastInfo ray_info;
+	target->raycast(ray, ray_info);
+	if (ray_info.body == target)
+		return true;
 
-	return ray_callback.hitpoint;
+	return false;
 }

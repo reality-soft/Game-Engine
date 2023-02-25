@@ -7,6 +7,7 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_internal.h"
+#include "imfilebrowser.h"
 
 namespace KGCA41B
 {
@@ -18,8 +19,19 @@ namespace KGCA41B
 
 	public:
 		bool open_ = true;
+		virtual void Init() {};
 		virtual void Update() = 0;
 		virtual void Render() = 0;
+		void WidgetRender() {
+			if (open_ == false) {
+				return;
+			}
+			Update();
+			Render();
+		}
+		void InvertOpen() {
+			open_ = !open_;
+		}
 	};
 
 	class DLL_API GUIMgr
@@ -40,7 +52,7 @@ namespace KGCA41B
 		ImFont* AddFont(string font_name, LPCSTR ttf_file, float font_size);
 	private:
 		ImGuiContext* context;
-		map<string, GuiWidget*> widgets;
+		unordered_map<string, GuiWidget*> widgets;
 	};
 }
 

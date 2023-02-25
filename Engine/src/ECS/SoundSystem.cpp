@@ -16,20 +16,20 @@ void SoundSystem::OnUpdate(entt::registry& reg)
 void SoundSystem::CheckGenerators(entt::registry& reg)
 {
     // 업데이트에서는 사운드 제너레이터 컴포넌트를 가지고 있는 엔티티들이 사운드 큐를 가지고 있으면 사운드를 재생한다.
-    auto generators = reg.view<SoundGenerator>();
+    auto generators = reg.view<C_SoundGenerator>();
     for (auto entity : generators)
     {
-        auto& generator = generators.get<SoundGenerator>(entity);
+        auto& generator = generators.get<C_SoundGenerator>(entity);
         while (generator.sound_queue_list.size() != 0)
         {
             auto queue = generator.sound_queue_list.front();
 
             // 리스너 컴포넌트를 가지고 있는 엔티티들에 대해 3D 벡터 계산 후 사운드 설정
-            auto listeners = reg.view<SoundListener>();
+            auto listeners = reg.view<C_SoundListener>();
             for (auto entity2 : listeners)
             {
-                auto& generator_transform = reg.get<Transform>(entity);
-                auto& listener_transform = reg.get<Transform>(entity2);
+                auto& generator_transform = reg.get<C_Transform>(entity);
+                auto& listener_transform = reg.get<C_Transform>(entity2);
                 // TODO : Transform 수정 후 고칠 예정
                 XMVECTOR genertor_position = XMVectorSet(generator_transform.world.r[3].m128_f32[0], generator_transform.world.r[3].m128_f32[1],
                     generator_transform.world.r[3].m128_f32[2], 0);

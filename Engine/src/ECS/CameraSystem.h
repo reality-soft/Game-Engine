@@ -13,21 +13,23 @@ namespace KGCA41B
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
+		MouseRay CreateMouseRay();
+		C_Camera* GetCamera();
+		XMMATRIX GetViewProj();
+		XMFLOAT2 ndc;
 	private:
-		void CameraMovement(InputMapping& input_mapping);
-		void CameraAction(InputMapping& input_mapping);
+		void CameraMovement();
+		void CameraAction();
 		void CreateMatrix();
 
 	private:
-		Camera* camera;
+		C_Camera* camera;
 		D3D11_VIEWPORT* viewport;
 
+		XMMATRIX world_matrix;
 		XMMATRIX view_matrix;
 		XMMATRIX projection_matrix;
 
 		CbViewProj cb_viewproj;
-
-	public:
-		MouseRay* mouse_ray = nullptr;
 	};
 }

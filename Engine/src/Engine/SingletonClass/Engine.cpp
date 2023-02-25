@@ -1,9 +1,8 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Engine.h"
 #include "ResourceMgr.h"
 #include "GUIMgr.h"
 #include "PhysicsMgr.h"
-#include "../Engine/../SpacePartition/SpacePartition.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -40,21 +39,20 @@ LRESULT CALLBACK WindowProc(
 }
 
 namespace KGCA41B {
-	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT wnd_size)
+	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
 	{
-		// ������ �ʱ�ȭ
-		if (InitWindow(hinstance, title, wnd_size) == false)
+		// À©µµ¿ì ÃÊ±âÈ­
+		if (InitWindow(hinstance, title, screen_size) == false)
 			return false;
 
-		// DX �ʱ�ȭ
-		if (DX11APP->OnInit(wnd_size, hwnd) == false)
+		// DX ÃÊ±âÈ­
+		if (DX11APP->OnInit(screen_size, hwnd) == false)
 			return false;
 
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
+		DINPUT->Init();
 		PHYSICS->Init();
 		TIMER->Init();
-
-		SpacePartition::GetInst()->Init({ 300, 300 });
 
 		return true;
 	}
@@ -79,6 +77,7 @@ namespace KGCA41B {
 
 			// Updates
 			TIMER->Update();
+			DINPUT->Update();
 			PHYSICS->Update();
 
 			scene->OnUpdate();
@@ -98,7 +97,7 @@ namespace KGCA41B {
 	{
 		RECT new_rc;
 		GetClientRect(hwnd, &new_rc);
-		wnd_size.x = new_rc.right  - new_rc.left;
+		wnd_size.x = new_rc.right - new_rc.left;
 		wnd_size.y = new_rc.bottom - new_rc.top;
 
 		DX11APP->Resize(wnd_size.x, wnd_size.y);
@@ -109,11 +108,15 @@ namespace KGCA41B {
 		DX11APP->OnRelease();
 	}
 
-	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT wnd_size)
+	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
 	{
 		this->hinstance = hinstance;
 		this->title = title;
-		this->wnd_size = wnd_size;
+
+		RECT rc = { 0, 0, screen_size.x, screen_size.y };
+		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
+		this->wnd_size.x = rc.right - rc.left;
+		this->wnd_size.y = rc.bottom - rc.top;
 
 		WNDCLASS window_class;
 		ZeroMemory(&window_class, sizeof(window_class));
@@ -144,11 +147,6 @@ namespace KGCA41B {
 
 		ShowWindow(hwnd, SW_SHOW);
 		UpdateWindow(hwnd);
-
-		RECT rc;
-		GetClientRect(hwnd, &rc);
-		wnd_size.x = rc.right - rc.left;
-		wnd_size.y = rc.bottom - rc.top;
 
 		return true;
 	}

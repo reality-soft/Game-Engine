@@ -118,6 +118,7 @@ namespace KGCA41B {
 
 	void FbxLoader::ParseMesh(FbxMesh* fbx_mesh, OutMeshData* out_mesh)
 	{
+		static UINT material_slot = 0;
 		FbxNode* fbx_node = fbx_mesh->GetNode();
 		out_mesh->mesh_name = fbx_node->GetName();
 
@@ -221,6 +222,7 @@ namespace KGCA41B {
 				}
 
 				vertices[vertex_index].p = control_points[vertex_index].p;
+				vertices[vertex_index].m = material_slot;
 
 				if (out_mesh->is_skinned)
 				{
@@ -242,7 +244,7 @@ namespace KGCA41B {
 				vertex_counter++;
 			}
 		}
-
+		material_slot++;
 		out_mesh->vertices = vertices;
 		out_mesh->skinned_vertices = skinned_vertices;
 	}
