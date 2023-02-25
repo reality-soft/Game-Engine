@@ -3,16 +3,10 @@
 
 void TestGame::OnInit()
 {
-
-	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 	KGCA41B::RESOURCE->Init("../../Contents/");
 
 	level.ImportFromFile("../../Contents/BinaryPackage/Mountains.lv");
 
-	//level.CreateLevel(129, 129, 10, 100);
-	//level.CreateHeightField(0, 0);
-	//level.vs_id_ = "LevelVS.cso";
-	//level.ps_id_ = "LevelPS.cso";
 	level.vs_id_ = "LevelVS.cso";
 	level.ps_id_ = "LevelPS.cso";
 	level.texture_id = { "Ground.png" };
@@ -22,23 +16,20 @@ void TestGame::OnInit()
 	KGCA41B::FMOD_MGR->Init();
 
 	for (int i = 0;i < 1000;i++) {
-	KGCA41B::StaticObject actor;
-	KGCA41B::C_Transform transform;
-	KGCA41B::AABBShape collision_box;
+		KGCA41B::StaticObject actor;
+		KGCA41B::C_Transform transform;
+		KGCA41B::AABBShape collision_box;
 
-	actor.OnInit(reg_scene, transform, collision_box, "AAA");
-	actor_list.push_back(actor);
-}
-
+		actor.OnInit(reg_scene, transform, collision_box, "AAA");
+		actor_list.push_back(actor);
+	}
 
 	sys_sound.OnCreate(reg_scene); 
-	sys_input.OnCreate(reg_scene);
   
 	KGCA41B::ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
 	ent_sound = reg_scene.create();
-
 
 	for (int i = 0; i < 100; ++i)
 	{
@@ -67,14 +58,8 @@ void TestGame::OnInit()
 	debug_camera.tag = "Player";
 	reg_scene.emplace<KGCA41B::C_Camera>(ent_player, debug_camera);
 
-	KGCA41B::C_InputMapping debug_input;
-	debug_input.tag = "Player";
-	reg_scene.emplace<KGCA41B::C_InputMapping>(ent_player, debug_input);
-
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Player");
-	sys_input.OnCreate(reg_scene);
-
 }
 
 void TestGame::OnUpdate()
@@ -86,7 +71,6 @@ void TestGame::OnUpdate()
 	}
 
 	sys_sound.OnUpdate(reg_scene);
-	sys_input.OnUpdate(reg_scene);
 	sys_camera.OnUpdate(reg_scene);
 
 	KGCA41B::QUADTREE->Frame(&sys_camera);

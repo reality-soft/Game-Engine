@@ -18,8 +18,8 @@ namespace KGCA41B
 		XMMATRIX GetViewProj();
 		XMFLOAT2 ndc;
 	private:
-		void CameraMovement(C_InputMapping& input_mapping);
-		void CameraAction(C_InputMapping& input_mapping);
+		void CameraMovement();
+		void CameraAction();
 		void CreateMatrix();
 
 	private:

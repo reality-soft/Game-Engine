@@ -57,17 +57,10 @@ void CameraSystem::OnCreate(entt::registry& reg)
 
 void CameraSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_input = reg.view<C_InputMapping>();
 	auto view_trans = reg.view<C_Transform>();
 
-	for (auto ent : view_input)
-	{
-		auto& input = view_input.get<C_InputMapping>(ent);
-		
-		//CameraMovement(input);
-		CameraAction(input);
-	}
-
+	CameraMovement();
+	CameraAction();
 	CreateMatrix();
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
@@ -118,55 +111,17 @@ XMMATRIX KGCA41B::CameraSystem::GetViewProj()
 	return view_matrix * projection_matrix;
 }
 
-void CameraSystem::CameraMovement(C_InputMapping& input_mapping)
+void CameraSystem::CameraMovement()
 {
 	XMVECTOR front_dir = camera->look * camera->speed * TM_DELTATIME;
 	XMVECTOR right_dir = camera->right * camera->speed * TM_DELTATIME * -1.f;
 	XMVECTOR up_dir = camera->up * camera->speed * TM_DELTATIME;
 
-	for (auto axis_type : input_mapping.axis_types)
-	{
-		switch (axis_type)
-		{
-		case AxisType::IDLE:
-			break;
-
-		case AxisType::FROWARD:
-			camera->position += front_dir * input_mapping.axis_value[(int)AxisType::FROWARD];
-			camera->look += front_dir * input_mapping.axis_value[(int)AxisType::FROWARD];
-
-		case AxisType::RIGHT:
-			camera->position += right_dir * input_mapping.axis_value[(int)AxisType::RIGHT];
-			camera->look += right_dir * input_mapping.axis_value[(int)AxisType::RIGHT];
-
-		case AxisType::UP:
-			camera->position += up_dir * input_mapping.axis_value[(int)AxisType::UP];
-			camera->look += up_dir * input_mapping.axis_value[(int)AxisType::UP];
-
-		case AxisType::YAW:
-			camera->yaw += input_mapping.axis_value[(int)AxisType::YAW] * TM_DELTATIME * 5;
-
-		case AxisType::PITCH:
-			camera->pitch += input_mapping.axis_value[(int)AxisType::PITCH] * TM_DELTATIME * 5;
-
-		case AxisType::ROLL:
-			camera->roll += input_mapping.axis_value[(int)AxisType::ROLL] * TM_DELTATIME * 5;
-		}
-	}
 }
 
-void CameraSystem::CameraAction(C_InputMapping& input_mapping)
+void CameraSystem::CameraAction()
 {
-	for (auto actions : input_mapping.actions)
-	{
-		switch (actions)
-		{
-		case ActionType::ATTACK:
-		{
 
-		} break;
-		}
-	}
 }
 
 void CameraSystem::CreateMatrix()
