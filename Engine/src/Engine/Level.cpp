@@ -149,7 +149,7 @@ void Level::Render(bool culling)
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
-		DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayoyt());
+		DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayout());
 	}
 
 	{ // Set Shader Stage

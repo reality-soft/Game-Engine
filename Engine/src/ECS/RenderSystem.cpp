@@ -186,7 +186,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 			VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter.vs_id);
 			if (vs)
 			{
-				device_context->IASetInputLayout(vs->InputLayoyt());
+				device_context->IASetInputLayout(vs->InputLayout());
 				device_context->VSSetShader(vs->Get(), 0, 0);
 			}
 
@@ -266,7 +266,7 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->IASetInputLayout(shader->InputLayout());
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
@@ -296,7 +296,7 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		
-		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->IASetInputLayout(shader->InputLayout());
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
@@ -316,7 +316,7 @@ void RenderSystem::RenderBoxShape(C_BoxShape& box_shape)
 	device_context->IASetVertexBuffers(0, 1, box_shape.vertex_buffer.GetAddressOf(), &stride, &offset);
 	device_context->IASetIndexBuffer(box_shape.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	device_context->IASetInputLayout(shader->InputLayoyt());
+	device_context->IASetInputLayout(shader->InputLayout());
 	device_context->VSSetShader(shader->Get(), 0, 0);
 
 
