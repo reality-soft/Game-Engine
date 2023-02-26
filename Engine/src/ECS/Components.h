@@ -149,7 +149,7 @@ namespace KGCA41B
 		vector<DWORD>			index_list;
 		ComPtr<ID3D11Buffer>	index_buffer;
 
-		BoxShape()
+		C_BoxShape()
 		{
 			// ���ؽ� ����
 			vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +0.0f} });

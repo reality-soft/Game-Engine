@@ -18,7 +18,7 @@ namespace KGCA41B
 		void PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation);
 		void RenderStaticMesh(C_StaticMesh& static_mesh);
 		void RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh, const C_Animation& animation_component);
-		void RenderBoxShape(BoxShape& box_shape);
+		void RenderBoxShape(C_BoxShape& box_shape);
 		void SetParticle(Particle& particle);
 		void SetSprite(Sprite* sprite);
 		void RenderParticle(Particle& particle);

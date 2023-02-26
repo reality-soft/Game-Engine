@@ -115,8 +115,6 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		RenderStaticMesh(static_mesh);
 	}
 
-	// SkeletalMesh Render
-	auto view_skm = reg.view<Material, SkeletalMesh, Transform>();
 	for (auto ent : view_skm)
 	{
 		auto& transform = reg.get<C_Transform>(ent);
@@ -128,23 +126,23 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	}
 
 	// BoxShape Render
-	auto view_box = reg.view<BoxShape, Material, Transform>();
+	auto view_box = reg.view<C_BoxShape, C_Transform>();
 	for (auto ent : view_box)
 	{
-		auto& box = reg.get<BoxShape>(ent);
+		auto& box = reg.get<C_BoxShape>(ent);
 		SetCbTransform(box);
 
-		auto& material = reg.get<Material>(ent);
-		SetMaterial(material);
+		//auto& material = reg.get<Material>(ent);
+		//SetMaterial(material);
 
 		RenderBoxShape(box);
 	}
 
 	// Emitter Render
-	auto view_effect = reg.view<Effect>();
+	auto view_effect = reg.view<C_Effect>();
 	for (auto ent : view_effect)
 	{
-		auto& effect = reg.get<Effect>(ent);
+		auto& effect = reg.get<C_Effect>(ent);
 
 		for (auto& emitter : effect.emitters)
 		{
@@ -156,10 +154,10 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 			// ��� ��� ���
 			{
-				auto view_camera = reg.view<Camera>();
+				auto view_camera = reg.view<C_Camera>();
 				for (auto entity : view_camera)
 				{
-					auto& camera = view_camera.get<Camera>(entity);
+					auto& camera = view_camera.get<C_Camera>(entity);
 					if (camera.tag == "Player")
 					{
 						XMVECTOR s, o, q, t;
@@ -307,7 +305,7 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 	}
 }
 
-void RenderSystem::RenderBoxShape(BoxShape& box_shape)
+void RenderSystem::RenderBoxShape(C_BoxShape& box_shape)
 {
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(box_shape.vs_id);
 	if (shader == nullptr)
