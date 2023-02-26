@@ -41,7 +41,7 @@ namespace KGCA41B {
 
 		XMMATRIX FbxToDxConvert(FbxAMatrix& fbx_matrix);
 		void CreateMaterialFile(string mesh_name);
-		string RefineMeshName(string mesh_name);
+		void RefineMeshName(string& mesh_name);
 	};
 
 }

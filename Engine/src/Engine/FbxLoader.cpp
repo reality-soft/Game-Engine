@@ -121,7 +121,8 @@ namespace KGCA41B {
 	void FbxLoader::ParseMesh(FbxMesh* fbx_mesh, OutMeshData* out_mesh)
 	{
 		FbxNode* fbx_node = fbx_mesh->GetNode();
-		out_mesh->mesh_name = RefineMeshName(fbx_node->GetName());
+		out_mesh->mesh_name = fbx_node->GetName();
+		RefineMeshName(out_mesh->mesh_name);
 
 		// 스키닝 정보 확인
 		out_mesh->is_skinned = ParseMeshSkinning(fbx_mesh, out_mesh);
@@ -451,10 +452,9 @@ namespace KGCA41B {
 		new_material.SaveEmpty(directory + mesh_name + ".mat");
 	}
 
-	string FbxLoader::RefineMeshName(string mesh_name)
+	void FbxLoader::RefineMeshName(string& mesh_name)
 	{
-		string clean_name = mesh_name;
-		for (auto& word : clean_name)
+		for (auto& word : mesh_name)
 		{
 			if (word == '.' || word == '|' || word == ' ' ||
 				word == '\\' || word == '/' || word == '?' ||
@@ -463,8 +463,6 @@ namespace KGCA41B {
 			
 				word = '_';
 		}
-
-		return clean_name;
 	}
 
 	bool FbxLoader::ParseMeshSkinning(FbxMesh* fbx_mesh, OutMeshData* out_mesh)

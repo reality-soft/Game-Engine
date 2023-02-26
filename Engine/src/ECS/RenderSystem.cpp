@@ -120,7 +120,8 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 	for (auto single_mesh : static_mesh->meshes)
 	{
 		Material* material = RESOURCE->UseResource<Material>(single_mesh.mesh_name + ".mat");
-		material->Set();
+		if (material)
+			material->Set();
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
@@ -150,7 +151,8 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 	for (auto& single_mesh : skeletal_mesh->meshes)
 	{
 		Material* material = RESOURCE->UseResource<Material>(single_mesh.mesh_name + ".mat");
-		material->Set();
+		if (material)
+			material->Set();
 
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
