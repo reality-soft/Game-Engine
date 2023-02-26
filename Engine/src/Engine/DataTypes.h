@@ -117,12 +117,7 @@ namespace KGCA41B
 	};
 
 	// Effect
-	enum E_Sprite
-	{
-		DEFAULT_SPRITE = 0,
-		UV = 1,
-		TEX = 2,
-	};
+	
 
 	enum E_Effect
 	{
@@ -130,6 +125,13 @@ namespace KGCA41B
 		UV_SPRITE = 1,
 		TEX_SPRITE = 2,
 		EMITTER = 3,
+	};
+
+	enum E_Sprite
+	{
+		DEFAULT_SPRITE = 0,
+		UV = 1,
+		TEX = 2,
 	};
 
 	struct Sprite
@@ -209,6 +211,8 @@ namespace KGCA41B
 		XMFLOAT3	add_size;
 		float		add_rotation;
 
+		XMFLOAT3	accelation;
+
 
 		vector<Vertex>			vertex_list;
 		ComPtr<ID3D11Buffer>	vertex_buffer;
@@ -233,6 +237,9 @@ namespace KGCA41B
 			add_velocity = { 0, 0, 0 };
 			add_size = { 0, 0, 0 };
 			add_rotation = 0;
+
+			accelation = { 0, 0, 0 };
+
 		}
 
 		void CreateBuffer()
@@ -254,11 +261,14 @@ namespace KGCA41B
 		float		life_time[2];
 
 		XMFLOAT3	initial_size[2];
+		float		initial_rotation[2];
 		XMFLOAT3	initial_position[2];
+
+		XMFLOAT3	initial_velocity[2];
 
 		XMFLOAT3	size_per_lifetime[2];
 		float		rotation_per_lifetime[2];
-		XMFLOAT3	velocity_per_lifetime[2];
+		XMFLOAT3	accelation_per_lifetime[2];
 
 		string		vs_id;
 		string		ps_id;
@@ -279,12 +289,14 @@ namespace KGCA41B
 			ZeroMemory(life_time, sizeof(float) * 2);
 
 			ZeroMemory(initial_size, sizeof(XMFLOAT3) * 2);
+			ZeroMemory(initial_rotation, sizeof(float) * 2);
 			ZeroMemory(initial_position, sizeof(XMFLOAT3) * 2);
 
+			ZeroMemory(initial_velocity, sizeof(XMFLOAT3) * 2);
 
 			ZeroMemory(size_per_lifetime, sizeof(XMFLOAT3) * 2);
 			ZeroMemory(rotation_per_lifetime, sizeof(float) * 2);
-			ZeroMemory(velocity_per_lifetime, sizeof(XMFLOAT3) * 2);
+			ZeroMemory(accelation_per_lifetime, sizeof(XMFLOAT3) * 2);
 
 			vs_id = "";
 			ps_id = "";
