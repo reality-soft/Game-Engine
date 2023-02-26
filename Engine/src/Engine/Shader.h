@@ -10,7 +10,7 @@ namespace KGCA41B
 	public:
 		virtual bool LoadCompiled(wstring cso_file);
 		ID3D11VertexShader* Get();
-		ID3D11InputLayout* InputLayoyt();
+		ID3D11InputLayout* InputLayout();
 	protected:
 		ComPtr<ID3D11VertexShader> vs;
 		ComPtr<ID3D11InputLayout> input_layout;
