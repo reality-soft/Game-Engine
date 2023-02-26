@@ -24,10 +24,10 @@ CameraSystem::~CameraSystem()
 
 void KGCA41B::CameraSystem::TargetTag(entt::registry& reg, string tag)
 {
-	auto view = reg.view<Camera>();
+	auto view = reg.view<C_Camera>();
 	for (auto entity : view)
 	{
-		auto& camera = view.get<Camera>(entity);
+		auto& camera = view.get<C_Camera>(entity);
 		if (camera.tag == tag)
 		{
 			this->camera = &camera;
@@ -57,21 +57,14 @@ void CameraSystem::OnCreate(entt::registry& reg)
 
 void CameraSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_input = reg.view<InputMapping>();
-	auto view_trans = reg.view<Transform>();
+	auto view_trans = reg.view<C_Transform>();
 
-	for (auto ent : view_input)
-	{
-		auto& input = view_input.get<InputMapping>(ent);
-		
-		CameraMovement(input);
-		CameraAction(input);
-	}
-
+	CameraMovement();
+	CameraAction();
 	CreateMatrix();
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
-	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_viewproj.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, cb_viewproj.buffer.GetAddressOf());
 }
 
 MouseRay CameraSystem::CreateMouseRay()
@@ -108,7 +101,7 @@ MouseRay CameraSystem::CreateMouseRay()
 	return mouse_ray;
 }
 
-Camera* CameraSystem::GetCamera()
+C_Camera* CameraSystem::GetCamera()
 {
 	return camera;
 }
@@ -118,55 +111,17 @@ XMMATRIX KGCA41B::CameraSystem::GetViewProj()
 	return view_matrix * projection_matrix;
 }
 
-void CameraSystem::CameraMovement(InputMapping& input_mapping)
+void CameraSystem::CameraMovement()
 {
 	XMVECTOR front_dir = camera->look * camera->speed * TM_DELTATIME;
 	XMVECTOR right_dir = camera->right * camera->speed * TM_DELTATIME * -1.f;
 	XMVECTOR up_dir = camera->up * camera->speed * TM_DELTATIME;
 
-	for (auto axis_type : input_mapping.axis_types)
-	{
-		switch (axis_type)
-		{
-		case AxisType::IDLE:
-			break;
-
-		case AxisType::FROWARD:
-			camera->position += front_dir * input_mapping.axis_value[(int)AxisType::FROWARD];
-			camera->look += front_dir * input_mapping.axis_value[(int)AxisType::FROWARD];
-
-		case AxisType::RIGHT:
-			camera->position += right_dir * input_mapping.axis_value[(int)AxisType::RIGHT];
-			camera->look += right_dir * input_mapping.axis_value[(int)AxisType::RIGHT];
-
-		case AxisType::UP:
-			camera->position += up_dir * input_mapping.axis_value[(int)AxisType::UP];
-			camera->look += up_dir * input_mapping.axis_value[(int)AxisType::UP];
-
-		case AxisType::YAW:
-			camera->yaw += input_mapping.axis_value[(int)AxisType::YAW] * TM_DELTATIME * 5;
-
-		case AxisType::PITCH:
-			camera->pitch += input_mapping.axis_value[(int)AxisType::PITCH] * TM_DELTATIME * 5;
-
-		case AxisType::ROLL:
-			camera->roll += input_mapping.axis_value[(int)AxisType::ROLL] * TM_DELTATIME * 5;
-		}
-	}
 }
 
-void CameraSystem::CameraAction(InputMapping& input_mapping)
+void CameraSystem::CameraAction()
 {
-	for (auto actions : input_mapping.actions)
-	{
-		switch (actions)
-		{
-		case ActionType::ATTACK:
-		{
 
-		} break;
-		}
-	}
 }
 
 void CameraSystem::CreateMatrix()

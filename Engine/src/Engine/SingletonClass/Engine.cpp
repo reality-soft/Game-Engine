@@ -50,6 +50,7 @@ namespace KGCA41B {
 			return false;
 
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
+		DINPUT->Init();
 		PHYSICS->Init();
 		TIMER->Init();
 
@@ -76,6 +77,7 @@ namespace KGCA41B {
 
 			// Updates
 			TIMER->Update();
+			DINPUT->Update();
 			PHYSICS->Update();
 
 			scene->OnUpdate();

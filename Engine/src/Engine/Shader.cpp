@@ -12,7 +12,6 @@ bool VertexShader::LoadCompiled(wstring cso_file)
 
     hr = DX11APP->GetDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, vs.GetAddressOf());
 
-
     ID3D11ShaderReflection* reflection = nullptr;
     hr = D3DReflect(blob->GetBufferPointer(), blob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflection);
 
@@ -51,6 +50,13 @@ bool VertexShader::LoadCompiled(wstring cso_file)
             {
                 input_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
                 byte_offset += 16;
+            }
+
+            if (string(param_desc.SemanticName).find("SV_InstanceID") != string::npos)
+            {
+                input_desc.Format = DXGI_FORMAT_R32_UINT;
+                input_desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                byte_offset += 4;
             }
 
             ied.push_back(input_desc);

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FbxLoader.h"
+#include "Material.h"
 
 namespace KGCA41B {
 
@@ -78,8 +79,9 @@ namespace KGCA41B {
 				OutMeshData* out_mesh = new OutMeshData;
 
 				ParseMesh(fbx_mesh, out_mesh);
-
 				out_mesh_list.push_back(out_mesh);
+
+				CreateMaterialFile(out_mesh->mesh_name);
 			}
 		}
 		return true;
@@ -120,6 +122,7 @@ namespace KGCA41B {
 	{
 		FbxNode* fbx_node = fbx_mesh->GetNode();
 		out_mesh->mesh_name = fbx_node->GetName();
+		RefineMeshName(out_mesh->mesh_name);
 
 		// 스키닝 정보 확인
 		out_mesh->is_skinned = ParseMeshSkinning(fbx_mesh, out_mesh);
@@ -242,7 +245,6 @@ namespace KGCA41B {
 				vertex_counter++;
 			}
 		}
-
 		out_mesh->vertices = vertices;
 		out_mesh->skinned_vertices = skinned_vertices;
 	}
@@ -440,6 +442,27 @@ namespace KGCA41B {
 		dx_matrix.r[3] = { (float)fbx_matrix.Get(3, 0), (float)fbx_matrix.Get(3, 2), (float)fbx_matrix.Get(3, 1), 1.0f };
 
 		return dx_matrix;
+	}
+
+	void FbxLoader::CreateMaterialFile(string mesh_name)
+	{
+		string directory = "../../Contents/Material/";
+
+		Material new_material;
+		new_material.SaveEmpty(directory + mesh_name + ".mat");
+	}
+
+	void FbxLoader::RefineMeshName(string& mesh_name)
+	{
+		for (auto& word : mesh_name)
+		{
+			if (word == '.' || word == '|' || word == ' ' ||
+				word == '\\' || word == '/' || word == '?' ||
+				word == '%' || word == '*' || word == ':' ||
+				word == '"' || word == '<' || word == '>')
+			
+				word = '_';
+		}
 	}
 
 	bool FbxLoader::ParseMeshSkinning(FbxMesh* fbx_mesh, OutMeshData* out_mesh)

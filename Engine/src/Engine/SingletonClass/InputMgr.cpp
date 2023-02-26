@@ -4,104 +4,94 @@
 
 using namespace KGCA41B;
 
-bool InputMgr::Init(HWND hwnd, HINSTANCE hinstacne)
+bool InputMgr::Init()
 {
-	RECT crect;
-	GetClientRect(hwnd, &crect);
-	screen_size = { crect.right, crect.bottom };
-
 	HRESULT hr;
-	hr = DirectInput8Create(hinstacne, DIRECTINPUT_HEADER_VERSION, IID_IDirectInput8, (void**)dinput.GetAddressOf(), nullptr);
+	hr = DirectInput8Create(ENGINE->GetInstanceHandle(), DIRECTINPUT_HEADER_VERSION, IID_IDirectInput8, (void**)dinput.GetAddressOf(), nullptr);
 
-	// 키보드
 	hr = dinput.Get()->CreateDevice(GUID_SysKeyboard, di_keyboard.GetAddressOf(), nullptr);
-
 	hr = di_keyboard.Get()->SetDataFormat(&c_dfDIKeyboard);
-
-	hr = di_keyboard.Get()->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
-
+	hr = di_keyboard.Get()->SetCooperativeLevel(ENGINE->GetWindowHandle(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 	hr = di_keyboard.Get()->Acquire();
 
-	// 마우스
 	hr = dinput.Get()->CreateDevice(GUID_SysMouse, di_mouse.GetAddressOf(), nullptr);
-
 	hr = di_mouse.Get()->SetDataFormat(&c_dfDIMouse);
-
-	hr = di_mouse.Get()->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
-
+	hr = di_mouse.Get()->SetCooperativeLevel(ENGINE->GetWindowHandle(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 	hr = di_mouse.Get()->Acquire();
+
+	for (int i = 0; i < 256; i++) {
+		prev_keyboard_state[i] = KEY_FREE;
+	}
+
+	for (int i = 0; i < 4; i++) {
+		prev_rgb_buttons[i] = KEY_FREE;
+	}
 
 	return true;
 }
 
-int InputMgr::Update()
+bool InputMgr::Update()
 {
-	mouse_state.lX = 0;
-	mouse_state.lY = 0;
-	mouse_state.lZ = 0;
-	for (int i = 0; i < 4; ++i)
-	{
-		mouse_state.rgbButtons[i] = 0;
+	HRESULT result = di_keyboard->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);
+	if (FAILED(result)) {
+		return false;
+	}
+	for (int i = 0; i < 256; i++) {
+		if (keyboard_state[i] & 0x80) {
+			if (prev_keyboard_state[i] == KEY_FREE || prev_keyboard_state[i] == KEY_UP) {
+				prev_keyboard_state[i] = KEY_PUSH;
+			}
+			else {
+				prev_keyboard_state[i] = KEY_HOLD;
+			}
+		}
+		else {
+			if (prev_keyboard_state[i] == KEY_HOLD || prev_keyboard_state[i] == KEY_PUSH) {
+				prev_keyboard_state[i] = KEY_UP;
+			}
+			else {
+				prev_keyboard_state[i] = KEY_FREE;
+			}
+		}
 	}
 
-	HRESULT hr;
-
-	hr = di_keyboard.Get()->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);
-	if (FAILED(hr))
-	{
-		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
-			di_keyboard->Acquire();
-		else
-			return KEY_NO_STATE;
+	result = di_mouse->GetDeviceState(sizeof(DIMOUSESTATE2), (LPVOID)&mouse_state);
+	if (FAILED(result)) {
+		return false;
+	}
+	for (int i = 0; i < 4; i++) {
+		if (mouse_state.rgbButtons[i] & 0x80) {
+			if (prev_rgb_buttons[i] == KEY_FREE || prev_rgb_buttons[i] == KEY_UP) {
+				prev_rgb_buttons[i] = KEY_PUSH;
+			}
+			else {
+				prev_rgb_buttons[i] = KEY_HOLD;
+			}
+		}
+		else {
+			if (prev_rgb_buttons[i] == KEY_HOLD || prev_rgb_buttons[i] == KEY_PUSH) {
+				prev_rgb_buttons[i] = KEY_UP;
+			}
+			else {
+				prev_rgb_buttons[i] = KEY_FREE;
+			}
+		}
 	}
 
-	hr = di_mouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&mouse_state);
-	if (FAILED(hr))
-	{
-		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
-			di_mouse->Acquire();
-		else
-			return MOUSE_NO_STATE;
-	}
+	::GetCursorPos(&current_mousepos);
+	::ScreenToClient(ENGINE->GetWindowHandle(), &current_mousepos);
 
-	current_mousepos.x += mouse_state.lX;
-	current_mousepos.y += mouse_state.lY;
-
-	current_mousepos.x = max(current_mousepos.x, 0);
-	current_mousepos.x = min(current_mousepos.x, screen_size.x);
-	current_mousepos.y = max(current_mousepos.y, 0);
-	current_mousepos.y = min(current_mousepos.y, screen_size.y);
-
-	return -1;
+	return true;
 }
 
-bool InputMgr::IsKeyPressed(UCHAR dik)
+KeyState KGCA41B::InputMgr::GetKeyState(DWORD input_key)
 {
-	if (keyboard_state[dik] & 0x80)
-		return true;
-
-	return false;
+	return prev_keyboard_state[input_key];
 }
 
-int InputMgr::GetKeyEvent(UCHAR dik)
+KeyState KGCA41B::InputMgr::GetMouseState(MouseButton input_key)
 {
-	DIDEVICEOBJECTDATA key_data[256];
-	DWORD buffer_size = ARRAYSIZE(key_data);
-
-	if (FAILED(di_keyboard.Get()->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), key_data, &buffer_size, 0)))
-		return 0;
-
-	if (key_data[dik].dwData & 0x80)
-	{
-		// key down event;
-		return 1;
-	}
-	else if (key_data[dik].dwData == 0)
-	{
-		// key up event
-		return -1;
-	}
-	return 0;
+	return prev_rgb_buttons[input_key];
 }
 
 POINT InputMgr::GetMousePosition()
@@ -114,22 +104,17 @@ XMFLOAT2 InputMgr::GetMouseVelocity()
 	return XMFLOAT2(mouse_state.lX, mouse_state.lY);
 }
 
-XMINT3 InputMgr::GetMouseButton()
-{
-	XMINT3 buttons = { 0, 0, 0 };
-	if (mouse_state.rgbButtons[0] & 0x80) // L
-		buttons.x = 1;
-
-	if (mouse_state.rgbButtons[1] & 0x80) // R
-		buttons.y = 1;
-
-	if (mouse_state.rgbButtons[2] & 0x80) // M
-		buttons.z = 1;
-
-	return buttons;
-}
-
 int InputMgr::GetMouseWheel()
 {
 	return mouse_state.lZ;
+}
+
+int KGCA41B::InputMgr::GetDeltaX()
+{
+	return mouse_state.lX;
+}
+
+int KGCA41B::InputMgr::GetDeltaY()
+{
+	return mouse_state.lX;
 }

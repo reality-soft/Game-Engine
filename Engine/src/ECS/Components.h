@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Shape.h"
+#include "Material.h"
 
 
 namespace KGCA41B
@@ -18,7 +19,7 @@ namespace KGCA41B
 		virtual void OnUpdate() {};
 	};
 
-	struct Transform : public Component
+	struct C_Transform : public Component
 	{
 		XMMATRIX local;
 		XMMATRIX world;
@@ -30,32 +31,24 @@ namespace KGCA41B
 		}
 	};
 
-	struct StaticMesh : public Transform
+	struct C_StaticMesh : public C_Transform
 	{
-		string mesh_id;
-		string shader_id;
+		string static_mesh_id;
+		string vertex_shader_id = "StaticMeshVS.cso";
 
 		virtual void OnConstruct() override {};
 	};
 
-	struct SkeletalMesh : public Transform
+	struct C_SkeletalMesh : public C_Transform
 	{
 
-		string mesh_id;
-		string shader_id;
+		string skeletal_mesh_id;
+		string vertex_shader_id = "SkinningVS.cso";
 
 		virtual void OnConstruct() override {};
 	};
 
-	struct Material : public Component
-	{
-		string shader_id;
-		vector<string> texture_id;
-
-		virtual void OnConstruct() override {};
-	};
-
-	struct Camera : public Transform
+	struct C_Camera : public C_Transform
 	{
 		XMVECTOR position, look, up, right, target;
 		float yaw, pitch, roll, distance, speed;
@@ -64,40 +57,24 @@ namespace KGCA41B
 		virtual void OnConstruct() override {};
 	};
 
-	struct Skeleton : public Transform
-	{
-		string skeleton_id;
-
-		virtual void OnConstruct() override {};
-	};
-
-	struct Animation : public Component
+	struct C_Animation : public Component
 	{
 		string anim_id;
 
 		virtual void OnConstruct() override {};
 	};
 
-	struct InputMapping : public Component
-	{
-		vector<AxisType> axis_types;
-		float axis_value[6] = { 0, };
-		vector<ActionType> actions;
-
-		virtual void OnConstruct() override {};
-	};
-
-	struct SoundListener : public Transform
+	struct C_SoundListener : public C_Transform
 	{
 
 	};
 
-	struct SoundGenerator : public Transform
+	struct C_SoundGenerator : public C_Transform
 	{
 		queue<SoundQueue> sound_queue_list;
 	};
 
-	struct BoundingBox : public Transform
+	struct C_BoundingBox : public C_Transform
 	{
 		AABBShape aabb;
 		virtual void OnUpdate() override
@@ -120,7 +97,7 @@ namespace KGCA41B
 		TransformTreeNode(entt::id_type type) : id_type(type) {};
 
 		void OnUpdate(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
-			Transform* cur_transform = static_cast<Transform*>(registry.storage(id_type)->get(entity));
+			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
 			cur_transform->world = world;
 			cur_transform->OnUpdate();
 
@@ -162,7 +139,7 @@ namespace KGCA41B
 	};
 
 
-	struct BoxShape : public Transform
+	struct C_BoxShape : public C_Transform
 	{
 		string vs_id;
 
@@ -174,7 +151,7 @@ namespace KGCA41B
 
 		BoxShape()
 		{
-			// ¹öÅØ½º ¹öÆÛ
+			// ï¿½ï¿½ï¿½Ø½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +0.0f} });
 			vertex_list.push_back({ { +1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +0.0f} });
 			vertex_list.push_back({ { -1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +1.0f} });
@@ -201,7 +178,7 @@ namespace KGCA41B
 
 			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer);
 
-			// ÀÎµ¦½º ¹öÆÛ
+			// ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 			index_list.push_back(0);
 			index_list.push_back(1);
@@ -230,8 +207,15 @@ namespace KGCA41B
 	};
 
 
-	struct Effect : public Transform
+	struct C_Effect : public C_Transform
 	{
 		vector<Emitter> emitters;
+	};
+
+	struct PhysicsCollision : public C_Transform
+	{
+		reactphysics3d::CollisionShape* shape = nullptr;
+		reactphysics3d::Collider* collider = nullptr;
+		reactphysics3d::CollisionBody* body = nullptr;
 	};
 }

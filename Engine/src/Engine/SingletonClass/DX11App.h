@@ -14,7 +14,6 @@ class DLL_API DX11App
 
 public:
     float clear_color[4] = { 0.03f, 0.03f, 0.03f, 1.f };
-
     //=======================================================값반환 함수
     ID3D11Device* GetDevice() { return dx11_device.Get(); }
     ID3D11DeviceContext* GetDeviceContext() { return dx11_context.Get(); }

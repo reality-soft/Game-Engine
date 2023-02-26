@@ -26,22 +26,84 @@ namespace KGCA41B
 			this->n = vertex.n;
 			this->c = vertex.c;
 			this->t = vertex.t;
-
 			return *this;
 		}
+	};
+
+	struct Skeleton
+	{
+		Skeleton() = default;
+		Skeleton(const Skeleton& other)
+		{
+			bind_pose_matrices = other.bind_pose_matrices;
+		}
+
+		map<UINT, XMMATRIX> bind_pose_matrices;
 	};
 
 	template <typename VertexType>
 	struct SingleMesh
 	{
+		SingleMesh() = default;
+		SingleMesh(const SingleMesh<VertexType>& other)
+		{
+			mesh_name = other.mesh_name;
+
+			vertices.resize(other.vertices.size());
+			vertices = other.vertices;
+
+			indices.resize(other.indices.size());
+			indices = other.indices;
+
+			other.vertex_buffer.CopyTo(vertex_buffer.GetAddressOf());
+			other.index_buffer.CopyTo(index_buffer.GetAddressOf());
+		}
+
+		string mesh_name;
 		vector<VertexType> vertices;
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
 	};
 
+	struct SkeletalMesh
+	{
+		SkeletalMesh() = default;
+		SkeletalMesh(const SkeletalMesh& other)
+		{
+			meshes.resize(other.meshes.size());
+			meshes = other.meshes;
+
+			skeleton = other.skeleton;
+		}
+
+		vector<SingleMesh<SkinnedVertex>> meshes;
+		Skeleton skeleton;
+	};
+
+	struct StaticMesh
+	{
+		StaticMesh() = default;
+		StaticMesh(const StaticMesh& other)
+		{
+			meshes.resize(other.meshes.size());
+			meshes = other.meshes;
+		}
+
+		vector<SingleMesh<Vertex>> meshes;
+	};
+
 	struct CbTransform
 	{
+		CbTransform()
+		{
+			data.world_matrix = XMMatrixIdentity();
+		}
+		CbTransform(const CbTransform& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX world_matrix;
@@ -52,6 +114,16 @@ namespace KGCA41B
 
 	struct CbViewProj
 	{
+		CbViewProj()
+		{
+			data.view_matrix = XMMatrixIdentity();
+			data.projection_matrix = XMMatrixIdentity();
+		}
+		CbViewProj(const CbViewProj& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX view_matrix;
@@ -62,19 +134,15 @@ namespace KGCA41B
 
 	struct CbSkeleton
 	{
+		CbSkeleton() = default;
+		CbSkeleton(const CbSkeleton& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
 		struct Data
 		{
 			XMMATRIX  mat_skeleton[255];
-		} data;
-		ComPtr<ID3D11Buffer> buffer;
-	};
-
-	struct CbLight
-	{
-		struct Data
-		{
-			XMVECTOR light_direction;
-			float light_bright;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -331,62 +399,4 @@ namespace KGCA41B
 
 		IDLE
 	};
-
-	
-
 }
-
-static std::wstring to_mw(const std::string& _src)
-{
-	USES_CONVERSION;
-	return std::wstring(A2W(_src.c_str()));
-}
-
-static std::string to_wm(const std::wstring& _src)
-{
-	USES_CONVERSION;
-	return std::string(W2A(_src.c_str()));
-}
-
-static std::vector<std::string> split(std::string input, char delimiter) {
-	std::vector<std::string> answer;
-	std::stringstream ss(input);
-	std::string temp;
-
-	while (getline(ss, temp, delimiter)) {
-		answer.push_back(temp);
-	}
-
-	return answer;
-}
-
-
-static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector3& rpv)
-{
-	rpv.x = xmv.m128_f32[0];
-	rpv.y = xmv.m128_f32[1];
-	rpv.z = xmv.m128_f32[2];
-}
-
-static void XMtoRP(XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
-{
-	rpv.x = xmv.m128_f32[0];
-	rpv.y = xmv.m128_f32[1];
-}
-
-static void RPtoXM(reactphysics3d::Vector3& rpv, XMVECTOR& xmv)
-{
-	xmv.m128_f32[0] = rpv.x;
-	xmv.m128_f32[1] = rpv.y;
-	xmv.m128_f32[2] = rpv.z;
-}
-
-static void RPtoXM(reactphysics3d::Vector2& rpv, XMVECTOR& xmv)
-{
-	xmv.m128_f32[0] = rpv.x;
-	xmv.m128_f32[1] = rpv.y;
-}
-
-#define randf(x) (x*rand()/(float)RAND_MAX)
-#define randf2(x,off) (off+x*rand()/(float)RAND_MAX)
-#define randstep(fMin,fMax) (fMin+((float)fMax-(float)fMin)*rand()/(float)RAND_MAX)

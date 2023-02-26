@@ -3,6 +3,7 @@
 #include "Engine/SingletonClass/Engine.h"
 #include "Engine/SingletonClass/TimeMgr.h"
 #include "Engine/SingletonClass/ResourceMgr.h"
+#include "Engine/SingletonClass/FbxMgr.h"
 #include "Engine/SingletonClass/FmodMgr.h"
 #include "Engine/SingletonClass/GUIMgr.h"
 #include "Engine/SingletonClass/PhysicsMgr.h"
@@ -12,9 +13,8 @@
 
 #include "ECS/RenderSystem.h"
 #include "ECS/CameraSystem.h"
-#include "ECS/InputSystem.h"
-#include "ECS/AnimationSystem.h"
 #include "ECS/SoundSystem.h"
+#include "ECS/LightingSystem.h"
 
 #include "Engine/Scene.h"
 #include "Engine/FbxLoader.h"

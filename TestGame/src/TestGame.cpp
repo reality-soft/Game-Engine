@@ -3,55 +3,18 @@
 
 void TestGame::OnInit()
 {
-
-	DINPUT->Init(ENGINE->GetWindowHandle(), ENGINE->GetInstanceHandle());
 	KGCA41B::RESOURCE->Init("../../Contents/");
-
-	XMINT2 level_size = { 5, 5 };
-	bool result = level.CreateLevel(pow(2, level_size.x) + 1, pow(2, level_size.y) + 1, 10, 100);
-	level.vs_id_ = "LevelVS.cso";
-	level.ps_id_ = "LevelPS.cso";
-	level.gs_id_ = "LevelGS.cso";
-	level.edit_mode = true;
-	level.texture_id = { "Ground.png" };
-
-	KGCA41B::QUADTREE->Init(&level, 4);
 	KGCA41B::FMOD_MGR->Init();
-	KGCA41B::RESOURCE->Init("../Contents");
-
-	for (int i = 0;i < 1000;i++) {
-	KGCA41B::StaticObject actor;
-	KGCA41B::Transform transform;
-	KGCA41B::AABBShape collision_box;
-
-	actor.OnInit(reg_scene, transform, collision_box, "AAA");
-	actor_list.push_back(actor);
-}
-
-
 	sys_sound.OnCreate(reg_scene); 
-	sys_input.OnCreate(reg_scene);
   
 	KGCA41B::ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
-	ent_sound = reg_scene.create();
 
 
-	for (int i = 0; i < 100; ++i)
-	{
-		XMVECTOR random_loacation = { rand() % 100 - 50, rand() % 100 - 50, rand() % 100 - 50, 0 };
-		KGCA41B::AABBShape random_aabb = KGCA41B::AABBShape(random_loacation, 10.0f);
-		int node = KGCA41B::QUADTREE->UpdateNodeObjectBelongs(0, random_aabb, reg_scene.create());;
-		int a = 0;
-	}
+	sys_render.OnCreate(reg_scene);
 
-	//CreatePlayer();
-	//CreateCharacter();
-
-	//sys_render.OnCreate(reg_scene);
-	//sys_animation.OnCreate(reg_scene);
-	KGCA41B::Camera debug_camera;
+	KGCA41B::C_Camera debug_camera;
 	debug_camera.position = { 0, 100, -200, 0 };
 	debug_camera.look = { 0, -1, 0, 0 };
 	debug_camera.up = { 0, 1, 0, 0 };
@@ -63,15 +26,10 @@ void TestGame::OnInit()
 	debug_camera.roll = 0;
 	debug_camera.speed = 100;
 	debug_camera.tag = "Player";
-	reg_scene.emplace<KGCA41B::Camera>(ent_player, debug_camera);
-
-	KGCA41B::InputMapping debug_input;
-	debug_input.tag = "Player";
-	reg_scene.emplace<KGCA41B::InputMapping>(ent_player, debug_input);
+	reg_scene.emplace<KGCA41B::C_Camera>(ent_player, debug_camera);
 
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Player");
-	sys_input.OnCreate(reg_scene);
 
 }
 
@@ -79,25 +37,25 @@ void TestGame::OnUpdate()
 {
 	KGCA41B::FMOD_MGR->Update();
 
-	for (KGCA41B::StaticObject actor : actor_list) {
-		actor.OnUpdate(reg_scene);
-	}
+	FbxMgr::GetInst()->ImportAndSaveFbx("../../Contents/STM/LeeEnfieldMKIII.fbx");
 
-	sys_sound.OnUpdate(reg_scene);
-	sys_input.OnUpdate(reg_scene);
-	sys_camera.OnUpdate(reg_scene);
+	test_object.transform = XMMatrixIdentity();
+	C_Transform transform;
+	transform.local = XMMatrixIdentity();
+	transform.world = XMMatrixIdentity();
 
-	KGCA41B::QUADTREE->Frame(&sys_camera);
+	test_object.OnInit(reg_scene, transform, AABBShape(XMVectorZero(), 10.0f), "LeeEnfieldMKIII.stmesh");
+
+	KGCA41B::Material mat1;
 }
 
 void TestGame::OnRender()
 {
-	KGCA41B::QUADTREE->Render();
+	sys_render.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRelease()
 {
 	KGCA41B::RESOURCE->Release();
-	KGCA41B::FMOD_MGR->Release();
 }
 
