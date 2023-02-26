@@ -25,6 +25,7 @@ namespace KGCA41B
 
 	public:
 		bool LoadTextureWIC(wstring filepath);
+		bool LoadTextureDDS(wstring filepath);
 		TEXTYPE texture_type;
 		ComPtr<ID3D11ShaderResourceView>	srv;
 		ComPtr<ID3D11Resource> resource;

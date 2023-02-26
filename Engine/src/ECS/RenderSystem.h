@@ -18,7 +18,10 @@ namespace KGCA41B
 		void PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation);
 		void RenderStaticMesh(C_StaticMesh& static_mesh);
 		void RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh, const C_Animation& animation_component);
-		void RenderEffects(entt::registry& reg);
+		void RenderBoxShape(BoxShape& box_shape);
+		void SetParticle(Particle& particle);
+		void SetSprite(Sprite* sprite);
+		void RenderParticle(Particle& particle);
 	private:
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* device_context = nullptr;
@@ -26,5 +29,9 @@ namespace KGCA41B
 	private:
 		CbTransform cb_transform;
 		CbSkeleton cb_skeleton;
+
+		// Effect
+		CbParticle cb_particle;
+		CbSprite cb_sprite;
 	};
 }
