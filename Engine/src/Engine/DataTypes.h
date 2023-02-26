@@ -61,6 +61,7 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
+		string mesh_name;
 	};
 
 	struct SkeletalMesh

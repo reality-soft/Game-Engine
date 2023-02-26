@@ -297,7 +297,7 @@ bool KGCA41B::ResourceMgr::ImportMaterial(string filename)
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
 
-    PushResource<Material>(id, material);
+    RESOURCE->PushResource<Material>(id, material);
 
     return true;
 }
