@@ -42,7 +42,7 @@ namespace KGCA41B
 		ComPtr<IDirectInputDevice8> di_keyboard;
 		ComPtr<IDirectInputDevice8> di_mouse;
 
-		KeyState keyboard_state[256];
+		UCHAR keyboard_state[256];
 		KeyState prev_keyboard_state[256];
 
 		DIMOUSESTATE mouse_state;

@@ -32,10 +32,15 @@ bool InputMgr::Init()
 
 bool InputMgr::Update()
 {
-	HRESULT result = di_keyboard->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);
-	if (FAILED(result)) {
-		return false;
+	HRESULT hr = di_keyboard.Get()->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);
+	if (FAILED(hr))
+	{
+		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
+			di_keyboard->Acquire();
+		else
+			return false;
 	}
+
 	for (int i = 0; i < 256; i++) {
 		if (keyboard_state[i] & 0x80) {
 			if (prev_keyboard_state[i] == KEY_FREE || prev_keyboard_state[i] == KEY_UP) {
@@ -55,10 +60,15 @@ bool InputMgr::Update()
 		}
 	}
 
-	result = di_mouse->GetDeviceState(sizeof(DIMOUSESTATE2), (LPVOID)&mouse_state);
-	if (FAILED(result)) {
-		return false;
+	hr = di_mouse.Get()->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&mouse_state);
+	if (FAILED(hr))
+	{
+		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
+			di_mouse->Acquire();
+		else
+			return false;
 	}
+
 	for (int i = 0; i < 4; i++) {
 		if (mouse_state.rgbButtons[i] & 0x80) {
 			if (prev_rgb_buttons[i] == KEY_FREE || prev_rgb_buttons[i] == KEY_UP) {
