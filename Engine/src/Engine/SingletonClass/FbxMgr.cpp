@@ -87,7 +87,7 @@ bool KGCA41B::FbxMgr::ImportAndSaveFbx(string filename)
 
 void KGCA41B::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filename)
 {
-    string file_name = RESOURCE->directory() + "SKM/" + filename + ".skmesh";
+    string file_name = RESOURCE->directory() + "STM/" + filename + ".stmesh";
     FileTransfer file_exporter(file_name, WRITE);
 
     int num_of_meshes = static_mesh.meshes.size();
