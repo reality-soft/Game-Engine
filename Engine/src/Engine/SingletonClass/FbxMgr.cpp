@@ -21,21 +21,21 @@ bool KGCA41B::FbxMgr::ImportAndSaveFbx(string filename)
         if (out_mesh->is_skinned)
         {
             SingleMesh<SkinnedVertex> single_mesh;
+            single_mesh.mesh_name = out_mesh->mesh_name;
             single_mesh.vertices = out_mesh->skinned_vertices;
             single_mesh.indices = out_mesh->indices;
+
             res_skeletal_mesh.meshes.push_back(single_mesh);
             res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
-
-            single_mesh.mesh_name = out_mesh->mesh_name;
         }
         else
         {
             SingleMesh<Vertex> single_mesh;
+            single_mesh.mesh_name = out_mesh->mesh_name;
             single_mesh.vertices = out_mesh->vertices;
             single_mesh.indices = out_mesh->indices;
-            res_static_mesh.meshes.push_back(single_mesh);
 
-            single_mesh.mesh_name = out_mesh->mesh_name;
+            res_static_mesh.meshes.push_back(single_mesh);
         }
     }
 

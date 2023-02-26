@@ -152,6 +152,14 @@ namespace KGCA41B
 				return (T*)(&iter->second);
 			}
 		}
+		else if (typeid(T) == typeid(Material))
+		{
+			auto iter = resdic_material.find(id);
+			if (iter != resdic_material.end())
+			{
+				return (T*)(&iter->second);
+			}
+		}
 		else if (typeid(T) == typeid(FMOD::Sound))
 		{
 			auto iter = resdic_sound.find(id);

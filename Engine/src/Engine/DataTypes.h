@@ -47,6 +47,8 @@ namespace KGCA41B
 		SingleMesh() = default;
 		SingleMesh(const SingleMesh<VertexType>& other)
 		{
+			mesh_name = other.mesh_name;
+
 			vertices.resize(other.vertices.size());
 			vertices = other.vertices;
 
@@ -57,11 +59,11 @@ namespace KGCA41B
 			other.index_buffer.CopyTo(index_buffer.GetAddressOf());
 		}
 
+		string mesh_name;
 		vector<VertexType> vertices;
 		ComPtr<ID3D11Buffer> vertex_buffer;
 		vector<UINT> indices;
 		ComPtr<ID3D11Buffer> index_buffer;
-		string mesh_name;
 	};
 
 	struct SkeletalMesh
