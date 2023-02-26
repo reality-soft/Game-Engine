@@ -216,9 +216,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 				RenderParticle(particle);
 			}
-		}
-
-		
+		}	
 	}
 }
 
@@ -227,7 +225,7 @@ void RenderSystem::SetCbTransform(const C_Transform& transform)
 	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world * transform.local);
 
 	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
-	device_context->VSSetConstantBuffers(0, 1, cb_transform.buffer.GetAddressOf());
+	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 }
 
 void RenderSystem::PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation)
