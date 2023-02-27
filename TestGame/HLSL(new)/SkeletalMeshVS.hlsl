@@ -30,8 +30,8 @@ VS_OUT VS(VS_IN input)
 {
     VS_OUT output = (VS_OUT) 0;
     
-    float4 local = float4(input.p, 0.0f);
-    float4 normal = float4(input.n, 0.0f);
+    float4 local = float4(input.p, 1.0f);
+    float4 normal = float4(input.n, 1.0f);
     
     float4 animation = 0;
     float4 anim_normal = 0;

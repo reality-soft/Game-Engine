@@ -30,22 +30,11 @@ void TestGame::OnInit()
 
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Player");
-
+	FbxMgr::GetInst()->ImportAndSaveFbx("../../Contents/FBX/tank.fbx");
 }
 
 void TestGame::OnUpdate()
 {
-	KGCA41B::FMOD_MGR->Update();
-
-	FbxMgr::GetInst()->ImportAndSaveFbx("../../Contents/STM/LeeEnfieldMKIII.fbx");
-
-	test_object.transform = XMMatrixIdentity();
-	C_Transform transform;
-	transform.local = XMMatrixIdentity();
-	transform.world = XMMatrixIdentity();
-
-	test_object.OnInit(reg_scene, transform, AABBShape(XMVectorZero(), 10.0f), "LeeEnfieldMKIII.stmesh");
-
 	KGCA41B::Material mat1;
 }
 
