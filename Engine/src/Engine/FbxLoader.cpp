@@ -192,43 +192,70 @@ namespace KGCA41B {
 		}
 
 		// Index and Layers
+		UINT base_poly = 0;
 		UINT poly_count = fbx_mesh->GetPolygonCount();
-		int i = 0;
 		for (UINT p = 0; p < poly_count; ++p)
 		{
 			UINT poly_size = fbx_mesh->GetPolygonSize(p);
-			for (int pv = 0; pv < poly_size; ++pv)
+			UINT face_count = poly_size - 2;
+			for (int f = 0; f < face_count; ++f)
 			{
-				UINT vertex_index = fbx_mesh->GetPolygonVertex(p, pv);
-				UINT uv_index = fbx_mesh->GetTextureUVIndex(p, pv);
-				out_mesh->indices.push_back(vertex_index);
-
-				if (vertex_color_layer)
+				for (int i = 0; i < 3; ++i)
 				{
-					FbxColor c = ReadColor(fbx_mesh, vertex_color_layer, vertex_index, pv);
-					vertices[vertex_index].c.x = c.mRed;
-					vertices[vertex_index].c.y = c.mGreen;
-					vertices[vertex_index].c.z = c.mBlue;
-					vertices[vertex_index].c.w = 1.0f;
-				}
-				else { vertices[vertex_index].c = { 1, 1, 1, 1 }; }
+					UINT vertex_index = 0;
+					UINT uv_index = 0;
+					UINT cn_index = 0;
+					switch (i)
+					{ 
+					case 0:{
+						vertex_index = fbx_mesh->GetPolygonVertex(p, 0);
+						uv_index = fbx_mesh->GetTextureUVIndex(p, 0);
+						cn_index = 0;
+						break;
+					}
+					case 1: {
+						vertex_index = fbx_mesh->GetPolygonVertex(p, f + 1);
+						uv_index = fbx_mesh->GetTextureUVIndex(p, f + 1);
+						cn_index = f + 1;
+						break;
+					}
+					case 2: {
+						vertex_index = fbx_mesh->GetPolygonVertex(p, f + 2); 
+						uv_index = fbx_mesh->GetTextureUVIndex(p, f + 2); 
+						cn_index = f + 2;
+						break;
+					}
+					}
 
-				if (vertex_uv_layer)
-				{
-					FbxVector2 t = ReadUV(fbx_mesh, vertex_uv_layer, vertex_index, uv_index);
-					vertices[vertex_index].t.x = t.mData[0];
-					vertices[vertex_index].t.y = 1.0f - t.mData[1];
-				}
+					out_mesh->indices.push_back(vertex_index);
 
-				if (vertex_normal_layer)
-				{
-					FbxVector4 n = ReadNormal(fbx_mesh, vertex_normal_layer, vertex_index, pv);
-					n = local_matrix.MultT(n);
-					vertices[vertex_index].n.x = n.mData[0];
-					vertices[vertex_index].n.y = n.mData[2];
-					vertices[vertex_index].n.z = n.mData[1];
+					if (vertex_color_layer)
+					{
+						FbxColor c = ReadColor(fbx_mesh, vertex_color_layer, vertex_index, base_poly + cn_index);
+						vertices[vertex_index].c.x = c.mRed;
+						vertices[vertex_index].c.y = c.mGreen;
+						vertices[vertex_index].c.z = c.mBlue;
+						vertices[vertex_index].c.w = 1.0f;
+					}
+					else { vertices[vertex_index].c = { 1, 1, 1, 1 }; }
+
+					if (vertex_uv_layer)
+					{
+						FbxVector2 t = ReadUV(fbx_mesh, vertex_uv_layer, vertex_index, uv_index);
+						vertices[vertex_index].t.x = t.mData[0];
+						vertices[vertex_index].t.y = 1.0f - t.mData[1];
+					}
+					if (vertex_normal_layer)
+					{
+						FbxVector4 n = ReadNormal(fbx_mesh, vertex_normal_layer, vertex_index, base_poly + cn_index);
+						n = local_matrix.MultT(n);
+						vertices[vertex_index].n.x = n.mData[0];
+						vertices[vertex_index].n.y = n.mData[1];
+						vertices[vertex_index].n.z = n.mData[2];
+					}
 				}
 			}
+			base_poly += poly_size;
 		}
 		out_mesh->vertices = vertices;
 		out_mesh->skinned_vertices = skinned_vertices;
