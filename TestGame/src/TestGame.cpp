@@ -30,7 +30,10 @@ void TestGame::OnInit()
 
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Player");
-	FbxMgr::GetInst()->ImportAndSaveFbx("../../Contents/FBX/tank.fbx");
+
+	Level level;
+	level.CreateLevel(3, 8, 100, {8, 8});
+	QUADTREE->Init(&level);
 }
 
 void TestGame::OnUpdate()

@@ -3,6 +3,63 @@
 
 using namespace KGCA41B;
 
+KGCA41B::LODCell::LODCell(UINT max_lod)
+{
+	lod_index_list.resize(max_lod + 1);
+	lod_index_buffer.resize(max_lod + 1);
+}
+
+bool KGCA41B::LODCell::Create(const UINT corners[4], UINT num_col)
+{
+	UINT lod_row = corners[1] - corners[0];
+	UINT lod_col = (corners[2] - corners[0]) / num_col;
+
+	UINT row_cells = corners[1] - corners[0];
+	UINT col_cells = (corners[2] - corners[0]) / num_col;
+
+	for (int i = 0; i < lod_index_list.size(); ++i)
+	{
+		lod_index_list[i].resize(row_cells / lod_row * col_cells / lod_col * 6);
+		UINT index = 0;
+
+		for (int col = 0; col < col_cells; col += lod_col)
+		{
+			for (int row = 0; row < row_cells; row += lod_row)
+			{
+				lod_index_list[i][index + 0] = corners[0] + row + (col * num_col);
+				lod_index_list[i][index + 1] = lod_index_list[i][index + 0] + lod_row;
+				lod_index_list[i][index + 2] = corners[0] + row + ((col + lod_col) * num_col);
+
+				lod_index_list[i][index + 3] = lod_index_list[i][index + 2];
+				lod_index_list[i][index + 4] = lod_index_list[i][index + 1];
+				lod_index_list[i][index + 5] = lod_index_list[i][index + 2] + lod_row;
+
+				index += 6;
+			}
+		}
+
+		lod_row /= 2;
+		lod_col /= 2;
+	}
+
+	for (int i = 0; i < lod_index_buffer.size(); ++i)
+	{
+		D3D11_BUFFER_DESC desc;
+		D3D11_SUBRESOURCE_DATA subdata;
+		ZeroMemory(&desc, sizeof(desc));
+		ZeroMemory(&subdata, sizeof(subdata));
+
+		desc.ByteWidth = sizeof(UINT) * lod_index_list[i].size();
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		subdata.pSysMem = lod_index_list[i].data();
+
+		HRESULT hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, lod_index_buffer[i].GetAddressOf());
+	}
+
+	return true;
+}
+
 KGCA41B::SpaceNode::SpaceNode(UINT num, UINT depth)
 {
 	node_num = num;
@@ -19,40 +76,12 @@ void KGCA41B::SpaceNode::SetNode(Level* level)
 	XMVECTOR min = XMVectorSet(vertices[coner_index[2]].p.x, MIN_HEIGHT, vertices[coner_index[2]].p.z, 0);
 	XMVECTOR max = XMVectorSet(vertices[coner_index[1]].p.x, MAX_HEIGHT, vertices[coner_index[1]].p.z, 0);
 	area = AABBShape(min, max);
+}
 
-	UINT row_cells = coner_index[1] - coner_index[0];
-	UINT col_cells = (coner_index[2] - coner_index[0]) / world_col;
-	UINT total_cells = row_cells * col_cells;
-	index_list.resize(total_cells * 6);
-
-	UINT index = 0;
-	for (int col = 0; col < col_cells; ++col)
-	{
-		for (int row = 0; row < row_cells; ++row)
-		{
-			index_list[index + 0] = coner_index[0] + row + (col * world_col);
-			index_list[index + 1] = index_list[index + 0] + 1;
-			index_list[index + 2] = coner_index[0] + row + ((col + 1) * world_col);
-
-			index_list[index + 3] = index_list[index + 2];
-			index_list[index + 4] = index_list[index + 1];
-			index_list[index + 5] = index_list[index + 2] + 1;
-
-			index += 6;
-		}
-	}
-
-	D3D11_BUFFER_DESC desc;
-	D3D11_SUBRESOURCE_DATA subdata;
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-
-	desc.ByteWidth = sizeof(UINT) * index_list.size();
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	subdata.pSysMem = index_list.data();
-
-	HRESULT hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, index_buffer.GetAddressOf());
+void KGCA41B::SpaceNode::Render()
+{
+	DX11APP->GetDeviceContext()->IASetIndexBuffer(lod_cell->lod_index_buffer[current_lod].Get(), DXGI_FORMAT_R32_UINT, 0);
+	DX11APP->GetDeviceContext()->DrawIndexed(lod_cell->lod_index_list[current_lod].size(), 0, 0);
 }
 
 SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int row2, int col2)
@@ -65,8 +94,14 @@ SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int r
 	new_node->coner_index[3] = col2 * (world_size_.x + 1) + row2;
 
 	new_node->SetNode(deviding_level_.get());
-
 	total_nodes_.push_back(shared_ptr<SpaceNode>(new_node));
+
+	if (new_node->node_depth == max_depth)
+	{
+		new_node->lod_cell = new LODCell(max_lod);
+		new_node->lod_cell->Create(new_node->coner_index, world_size_.y + 1);
+		leaf_nodes_.push_back(shared_ptr<SpaceNode>(new_node));
+	}
 
 	if (depth < max_depth)
 	{
@@ -84,8 +119,17 @@ SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int r
 
 void KGCA41B::QuadTreeMgr::RenderNode(SpaceNode* node_to_render)
 {
-	DX11APP->GetDeviceContext()->IASetIndexBuffer(node_to_render->index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	DX11APP->GetDeviceContext()->DrawIndexed(node_to_render->index_list.size(), 0, 0);
+	if (node_to_render->lod_cell == nullptr)
+	{
+		RenderNode(node_to_render->child_node_[0].get());
+		RenderNode(node_to_render->child_node_[1].get());
+		RenderNode(node_to_render->child_node_[2].get());
+		RenderNode(node_to_render->child_node_[3].get());
+	}
+	else
+	{
+		node_to_render->Render();
+	}
 }
 
 int KGCA41B::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBShape& object_area, entt::entity object_id)
@@ -150,16 +194,22 @@ std::unordered_set<entt::entity> KGCA41B::QuadTreeMgr::GetObjectListInNode(int n
 	return total_nodes_[node_num].get()->object_list;
 }
 
-void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide, int _max_depth)
+void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide)
 {
 	deviding_level_ = shared_ptr<Level>(level_to_devide);
-
 	world_size_ = level_to_devide->GetWorldSize();
-	max_depth = _max_depth;
 
-	root_node_ = shared_ptr<SpaceNode>(BuildTree(0, 0,0, world_size_.x, world_size_.y));
+	UINT depth = 0;
+	UINT blocks = level_to_devide->GetBlocks().x;
+	while (blocks != 1)
+	{
+		blocks /= 2;
+		depth++;
+	}
 
-	root_node_.get()->index_list;
+	max_depth = depth;
+	max_lod = level_to_devide->MaxLod();
+	root_node_ = shared_ptr<SpaceNode>(BuildTree(0, 0, 0, world_size_.x, world_size_.y));
 }
 
 void KGCA41B::QuadTreeMgr::Frame(CameraSystem* applied_camera)
@@ -177,6 +227,14 @@ void KGCA41B::QuadTreeMgr::Render()
 void KGCA41B::QuadTreeMgr::Release()
 {
 
+}
+
+void KGCA41B::QuadTreeMgr::UpdateLOD()
+{
+	for (auto node : leaf_nodes_)
+	{
+		float distance = camera_frustum_.frustum_plane[0].DotFromPoint(node.get()->area.center);
+	}
 }
 
 void KGCA41B::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
