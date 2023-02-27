@@ -58,7 +58,8 @@ public:
 
 	void Close()
 	{		
-		fclose(file_ptr);	
+		if (file_ptr)
+			fclose(file_ptr);	
 	}
 
 private:
