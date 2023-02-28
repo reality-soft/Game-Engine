@@ -29,7 +29,7 @@ namespace KGCA41B
 	{
 	public:
 		Level() = default;
-		~Level() = default;
+		~Level();
 
 	public:
 		// Import
@@ -75,11 +75,11 @@ namespace KGCA41B
 
 		UINT num_row_vertex_;
 		UINT num_col_vertex_;
-
-		UINT max_lod;
 		float cell_distance_;
-		UINT cell_scale;
-		XMINT2 row_col_blocks;
+
+		UINT max_lod_;
+		UINT cell_scale_;
+		XMINT2 row_col_blocks_;
 		float uv_scale_;
 
 

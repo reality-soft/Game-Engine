@@ -75,6 +75,26 @@ void KGCA41B::SkySphere::Render()
 }
 
 
+KGCA41B::Level::~Level()
+{
+	level_mesh_.vertices.clear();
+	level_mesh_.vertex_buffer.Get()->Release();
+	level_mesh_.vertex_buffer.ReleaseAndGetAddressOf();
+
+	level_mesh_.indices.clear();
+	level_mesh_.index_buffer.Get()->Release();
+	level_mesh_.index_buffer.ReleaseAndGetAddressOf();
+
+	height_list_.clear();
+
+	height_field_body_->removeCollider(height_field_collider_);
+	PHYSICS->GetPhysicsWorld()->destroyCollisionBody(height_field_body_);
+
+	height_field_shape_ = nullptr;
+	height_field_collider_ = nullptr;
+	height_field_body_ = nullptr;
+}
+
 bool KGCA41B::Level::ImportFromFile(string filepath)
 {
 	FileTransfer file_transfer(filepath, READ);
@@ -92,34 +112,28 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 
 	file_transfer.Close();
 
+	XMFLOAT2 minmax_height = GetMinMaxHeight();
+
 	if (CreateBuffers() == false)
 		return false;
 
-	XMFLOAT2 minmax_height = GetMinMaxHeight();
-	CreateHeightField(minmax_height.x, minmax_height.y);
+	if (CreateHeightField(minmax_height.x, minmax_height.y) == false)
+		return false;
 
+	return true;
 	return true;
 }
 
 bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale, XMINT2 _row_col_blocks)
 {
-	// ƒıµÂ∆Æ∏Æ ∫–«“Ω√ ±Ì¿Ã :
-	// int depth = 0;
-	// int z = _row_col_blocks.x;
-	// while (z != 1)
-	// {
-	// 	z /= 2;
-	// 	depth++;
-	// }
-
-	max_lod = _max_lod;
-	cell_scale = _cell_scale;
-	row_col_blocks = _row_col_blocks;
+	max_lod_ = _max_lod;
+	cell_scale_ = _cell_scale;
+	row_col_blocks_ = _row_col_blocks;
 	uv_scale_ = _uv_scale;
 
-	num_row_vertex_ = pow(2, max_lod) * row_col_blocks.x + 1;
-	num_col_vertex_ = pow(2, max_lod) * row_col_blocks.y + 1;
-	cell_distance_ = cell_scale / pow(2, max_lod);
+	num_row_vertex_ = pow(2, max_lod_) * row_col_blocks_.x + 1;
+	num_col_vertex_ = pow(2, max_lod_) * row_col_blocks_.y + 1;
+	cell_distance_ = cell_scale_ / pow(2, max_lod_);
 
 	UINT num_row_cell = num_row_vertex_ - 1;
 	UINT num_col_cell = num_col_vertex_ - 1;
@@ -175,7 +189,6 @@ bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 		return false;
 
 	return true;
-
 }
 
 bool Level::CreateHeightField(float min_height, float max_height)
@@ -258,12 +271,12 @@ XMINT2 KGCA41B::Level::GetWorldSize()
 
 XMINT2 KGCA41B::Level::GetBlocks()
 {
-	return row_col_blocks;
+	return row_col_blocks_;
 }
 
 UINT KGCA41B::Level::MaxLod()
 {
-	return max_lod;
+	return max_lod_;
 }
 
 
