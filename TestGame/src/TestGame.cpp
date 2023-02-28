@@ -13,16 +13,8 @@ void TestGame::OnInit()
 
 
 	sys_render.OnCreate(reg_scene);
-
-	KGCA41B::C_Camera debug_camera;
-	debug_camera.near_z = 1.f;
-	debug_camera.far_z = 10000.f;
-	debug_camera.fov = XMConvertToRadians(45);
-	debug_camera.tag = "Player";
-	reg_scene.emplace<KGCA41B::C_Camera>(ent_player, debug_camera);
-
 	sys_camera.OnCreate(reg_scene);
-	sys_camera.TargetTag(reg_scene, "Player");
+	sys_camera.TargetTag(reg_scene, "Debug");
 
 	Level level;
 	level.CreateLevel(3, 8, 100, {8, 8});

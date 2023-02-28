@@ -22,8 +22,8 @@ namespace KGCA41B {
 	class DLL_API SpaceNode 
 	{
 	public:
-		SpaceNode() = default;
 		SpaceNode(UINT num, UINT depth);
+		~SpaceNode();
 
 
 	public:
@@ -32,7 +32,7 @@ namespace KGCA41B {
 	public:
 		UINT node_num, node_depth;
 		AABBShape area;
-		shared_ptr<SpaceNode> child_node_[4];
+		SpaceNode* child_node_[4] = { 0, };
 		std::unordered_set<entt::entity> object_list;
 		UINT coner_index[4];
 		LODCell* lod_cell = nullptr;
@@ -50,7 +50,7 @@ namespace KGCA41B {
 		void Release();
 
 	public:
-		void UpdateLOD();
+		void UpdateLOD(XMVECTOR camera_pos);
 		void MapCulling(Frustum& frustum, SpaceNode* node);
 		void ObjectCulling();
 	private:
@@ -59,10 +59,10 @@ namespace KGCA41B {
 		UINT node_count = 0;
 		UINT max_lod;
 
-		vector<shared_ptr<SpaceNode>> total_nodes_;
-		vector<shared_ptr<SpaceNode>> leaf_nodes_;
+		vector<SpaceNode*> total_nodes_;
+		vector<SpaceNode*> leaf_nodes_;
 
-		shared_ptr<SpaceNode> root_node_;
+		SpaceNode* root_node_ = nullptr;
 
 
 	private:
@@ -74,7 +74,9 @@ namespace KGCA41B {
 		std::vector<int>					FindCollisionSearchNode(int node_num);
 		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
 
-		shared_ptr<Level> deviding_level_;
+		Level* deviding_level_ = nullptr;
 		Frustum camera_frustum_;
+
+		bool wire_frame = false;
 	};
 }

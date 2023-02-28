@@ -66,6 +66,24 @@ KGCA41B::SpaceNode::SpaceNode(UINT num, UINT depth)
 	node_depth = depth;
 }
 
+KGCA41B::SpaceNode::~SpaceNode()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (child_node_[i])
+		{
+			delete child_node_[i];
+			child_node_[i] = nullptr;
+		}
+
+		if (lod_cell)
+		{
+			delete lod_cell;
+			lod_cell = nullptr;
+		}
+	}
+}
+
 void KGCA41B::SpaceNode::SetNode(Level* level)
 {
 	vector<Vertex> vertices = level->GetLevelVertex();
@@ -93,14 +111,14 @@ SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int r
 	new_node->coner_index[2] = col2 * (world_size_.x + 1) + row1;
 	new_node->coner_index[3] = col2 * (world_size_.x + 1) + row2;
 
-	new_node->SetNode(deviding_level_.get());
-	total_nodes_.push_back(shared_ptr<SpaceNode>(new_node));
+	new_node->SetNode(deviding_level_);
+	total_nodes_.push_back(new_node);
 
 	if (new_node->node_depth == max_depth)
 	{
 		new_node->lod_cell = new LODCell(max_lod);
 		new_node->lod_cell->Create(new_node->coner_index, world_size_.y + 1);
-		leaf_nodes_.push_back(shared_ptr<SpaceNode>(new_node));
+		leaf_nodes_.push_back(new_node);
 	}
 
 	if (depth < max_depth)
@@ -108,10 +126,10 @@ SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int r
 		int row_mid = (row1 + row2) / 2;
 		int col_mid = (col1 + col2) / 2;
 
-		new_node->child_node_[0] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row1,    col1,	row_mid, col_mid));
-		new_node->child_node_[1] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row_mid, col1,    row2,    col_mid));
-		new_node->child_node_[2] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row1,    col_mid, row_mid, col2));
-		new_node->child_node_[3] = shared_ptr<SpaceNode>(BuildTree(depth + 1, row_mid, col_mid, row2,    col2));
+		new_node->child_node_[0] = BuildTree(depth + 1, row1,    col1,	row_mid, col_mid);
+		new_node->child_node_[1] = BuildTree(depth + 1, row_mid, col1,    row2,    col_mid);
+		new_node->child_node_[2] = BuildTree(depth + 1, row1,    col_mid, row_mid, col2);
+		new_node->child_node_[3] = BuildTree(depth + 1, row_mid, col_mid, row2,    col2);
 	}
 
 	return new_node;
@@ -121,10 +139,10 @@ void KGCA41B::QuadTreeMgr::RenderNode(SpaceNode* node_to_render)
 {
 	if (node_to_render->lod_cell == nullptr)
 	{
-		RenderNode(node_to_render->child_node_[0].get());
-		RenderNode(node_to_render->child_node_[1].get());
-		RenderNode(node_to_render->child_node_[2].get());
-		RenderNode(node_to_render->child_node_[3].get());
+		RenderNode(node_to_render->child_node_[0]);
+		RenderNode(node_to_render->child_node_[1]);
+		RenderNode(node_to_render->child_node_[2]);
+		RenderNode(node_to_render->child_node_[3]);
 	}
 	else
 	{
@@ -134,12 +152,12 @@ void KGCA41B::QuadTreeMgr::RenderNode(SpaceNode* node_to_render)
 
 int KGCA41B::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBShape& object_area, entt::entity object_id)
 {
-	SpaceNode* parent_node = root_node_.get();
+	SpaceNode* parent_node = root_node_;
 	int new_node_num = 0;
 
 	for (int i = 0; i < 4; ++i)
 	{
-		SpaceNode* child_node = parent_node->child_node_[i].get();
+		SpaceNode* child_node = parent_node->child_node_[i];
 
 		if (child_node->area.AABBOverlap(object_area) == OverlapType::INSIDE)
 		{
@@ -163,8 +181,8 @@ int KGCA41B::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBSh
 		return cur_node_num;
 	}
 
-	total_nodes_[cur_node_num].get()->object_list.erase(object_id);
-	total_nodes_[new_node_num].get()->object_list.insert(object_id);
+	total_nodes_[cur_node_num]->object_list.erase(object_id);
+	total_nodes_[new_node_num]->object_list.insert(object_id);
 
 	return new_node_num;
 }
@@ -172,7 +190,7 @@ int KGCA41B::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBSh
 std::vector<int> KGCA41B::QuadTreeMgr::FindCollisionSearchNode(int node_num)
 {
 	std::vector<int> node_to_search;
-	SpaceNode* current_node = total_nodes_[node_num].get();
+	SpaceNode* current_node = total_nodes_[node_num];
 
 	int last_child_num = 0;
 
@@ -191,12 +209,12 @@ std::vector<int> KGCA41B::QuadTreeMgr::FindCollisionSearchNode(int node_num)
 
 std::unordered_set<entt::entity> KGCA41B::QuadTreeMgr::GetObjectListInNode(int node_num)
 {
-	return total_nodes_[node_num].get()->object_list;
+	return total_nodes_[node_num]->object_list;
 }
 
 void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide)
 {
-	deviding_level_ = shared_ptr<Level>(level_to_devide);
+	deviding_level_ = level_to_devide;
 	world_size_ = level_to_devide->GetWorldSize();
 
 	UINT depth = 0;
@@ -209,31 +227,46 @@ void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide)
 
 	max_depth = depth;
 	max_lod = level_to_devide->MaxLod();
-	root_node_ = shared_ptr<SpaceNode>(BuildTree(0, 0, 0, world_size_.x, world_size_.y));
+	root_node_ = BuildTree(0, 0, 0, world_size_.x, world_size_.y);
 }
 
 void KGCA41B::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
-	deviding_level_.get()->Update();
+	UpdateLOD(applied_camera->GetCamera()->camera_pos);
+	deviding_level_->Update();
 
 }
 void KGCA41B::QuadTreeMgr::Render()
 {
-	deviding_level_.get()->Render(true);
-	MapCulling(camera_frustum_, root_node_.get());
+	if (wire_frame)
+		DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->Wireframe());
+
+	deviding_level_->Render(true);
+	MapCulling(camera_frustum_, root_node_);
+
+	if (wire_frame)
+		DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
 void KGCA41B::QuadTreeMgr::Release()
 {
-
+	if (root_node_)
+	{
+		delete root_node_;
+		root_node_ = nullptr;
+	}
+	total_nodes_.clear();
+	leaf_nodes_.clear();
+	deviding_level_ = nullptr;
 }
 
-void KGCA41B::QuadTreeMgr::UpdateLOD()
+void KGCA41B::QuadTreeMgr::UpdateLOD(XMVECTOR camera_pos)
 {
 	for (auto node : leaf_nodes_)
-	{
-		float distance = camera_frustum_.frustum_plane[0].DotFromPoint(node.get()->area.center);
+	{		
+		float distance = Distance(camera_pos, node->area.center);
+		node->current_lod = min((UINT)(100 / distance), max_lod);
 	}
 }
 
@@ -255,7 +288,7 @@ void KGCA41B::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				MapCulling(frustum, node->child_node_[i].get());
+				MapCulling(frustum, node->child_node_[i]);
 			}
 		}
 	}

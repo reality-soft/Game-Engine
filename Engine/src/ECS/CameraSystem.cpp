@@ -18,7 +18,6 @@ CameraSystem::CameraSystem()
 
 CameraSystem::~CameraSystem()
 {
-	viewport = nullptr;
 }
 
 void KGCA41B::CameraSystem::TargetTag(entt::registry& reg, string tag)
@@ -49,23 +48,17 @@ void CameraSystem::OnCreate(entt::registry& reg)
 	if (camera == nullptr) {
 		entt::entity debug_entity_ = reg.create();
 		C_Camera debug_camera_;
-		//debug_camera_.camera_matrix = XMMatrixTranslationFromVector({ 0, 0, 0, 0 }) * XMMatrixRotationY(XMConvertToRadians(90));
+
 		debug_camera_.camera_pos = XMVectorZero();
 		debug_camera_.pitch_yaw = { 0 , 0 };
 		debug_camera_.near_z = 1.f;
 		debug_camera_.far_z = 10000.f;
 		debug_camera_.fov = XMConvertToRadians(45);
 		debug_camera_.tag = "Debug";
+
 		reg.emplace<C_Camera>(debug_entity_, debug_camera_);
 		camera = reg.try_get<C_Camera>(debug_entity_);
 	}
-
-	//XMVECTOR position = XMVector4Normalize(camera->camera_matrix.r[3]);
-	//XMVECTOR target = XMVector4Normalize(camera->world.r[3]);
-	//XMVECTOR up = XMVector4Normalize({ 0, 1, 0, 0 });
-
-	//if (camera != nullptr)
-		//cb_viewproj.data.view_matrix = XMMatrixLookAtLH(position, target, up);
 
 	D3D11_BUFFER_DESC desc;
 	D3D11_SUBRESOURCE_DATA subdata;
