@@ -90,7 +90,7 @@ void KGCA41B::Material::Set()
 	if (pixel_shader)
 		DX11APP->GetDeviceContext()->PSSetShader(pixel_shader, 0, 0);
 
-	DX11APP->GetDeviceContext()->PSSetShaderResources(0, 7, textures);
+	DX11APP->GetDeviceContext()->PSGetShaderResources(0, 7, textures);
 }
 
 void KGCA41B::Material::LoadAndCreate(string filename)

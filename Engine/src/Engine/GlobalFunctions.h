@@ -113,8 +113,3 @@ static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
 	DirectX::XMVECTOR vector = DirectX::XMVectorSubtract(p1, p2);	
 	return DirectX::XMVector3Length(vector).m128_f32[0];
 }
-
-#define randf(x) (x*rand()/(float)RAND_MAX)
-#define randf2(x,off) (off+x*rand()/(float)RAND_MAX)
-#define randstep(fMin,fMax) (fMin+((float)fMax-(float)fMin)*rand()/(float)RAND_MAX)
-#define clamp(x,MinX,MaxX) if (x>MaxX) x=MaxX; else if (x<MinX) x=MinX;
