@@ -7,6 +7,7 @@ namespace KGCA41B {
 	class DLL_API ComponentSystem
 	{
 		SINGLETON(ComponentSystem)
+#define COMPONENT ComponentSystem::GetInst()
 	public:
 		bool OnInit(entt::registry& registry) {
 			registry.on_construct<Component>().connect<&ComponentSystem::OnConstruct<Component>>(this);
