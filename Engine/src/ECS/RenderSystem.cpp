@@ -4,6 +4,8 @@
 #include "TimeMgr.h"
 #include "DataMgr.h"
 #include "DataTypes.h"
+#include "DXStates.h"
+
 using namespace KGCA41B;
 
 RenderSystem::RenderSystem()
@@ -18,7 +20,7 @@ RenderSystem::~RenderSystem()
 	device_context = nullptr;
 }
 
-void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
+void RenderSystem::OnCreate(entt::registry& reg)
 {
 	HRESULT hr;
 
@@ -54,49 +56,9 @@ void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeleton.buffer.GetAddressOf());
 
-	// Init Sprite Buffer
-	ZeroMemory(&cb_sprite.data, sizeof(CbSprite::Data));
-
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-
-	cb_sprite.data.billboard_matrix = XMMatrixIdentity();
-
-	desc.ByteWidth = sizeof(CbSprite::Data);
-
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	subdata.pSysMem = &cb_sprite.data;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_sprite.buffer.GetAddressOf());
-
-	// Init Particle Buffer
-	ZeroMemory(&cb_particle.data, sizeof(CbParticle::Data));
-
-	cb_particle.data.values.x = 0.0f;
-	cb_particle.data.values.y = 0.0f;
-	cb_particle.data.values.z = 0.0f;
-	cb_particle.data.values.w = 0.0f;
-
-	cb_particle.data.color.x = 1.0f;
-	cb_particle.data.color.y = 1.0f;
-	cb_particle.data.color.z = 1.0f;
-	cb_particle.data.color.w = 1.0f;
-
-	cb_particle.data.transform = XMMatrixIdentity();
-
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-
-	desc.ByteWidth = sizeof(CbParticle::Data);
-
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	subdata.pSysMem = &cb_particle.data;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_particle.buffer.GetAddressOf());
+	// Create Effect Data
+	CreateEffectCB();
+	CreateEffectBuffer();
 }
 
 void RenderSystem::OnUpdate(entt::registry& reg)
@@ -126,100 +88,12 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	}
 
 	// BoxShape Render
-	auto view_box = reg.view<C_BoxShape, C_Transform>();
-	for (auto ent : view_box)
-	{
-		auto& box = reg.get<C_BoxShape>(ent);
-		SetCbTransform(box);
-
-		//auto& material = reg.get<Material>(ent);
-		//SetMaterial(material);
-
-		RenderBoxShape(box);
-	}
+	RenderBoxShape(reg);
+	
 
 	// Emitter Render
-	auto view_effect = reg.view<C_Effect>();
-	for (auto ent : view_effect)
-	{
-		auto& effect = reg.get<C_Effect>(ent);
-
-		for (auto& emitter : effect.emitters)
-		{
-			Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
-			if (sprite == nullptr)
-				return;
-
-			SetCbTransform(effect);
-
-			// ��� ��� ���
-			{
-				auto view_camera = reg.view<C_Camera>();
-				for (auto entity : view_camera)
-				{
-					auto& camera = view_camera.get<C_Camera>(entity);
-					if (camera.tag == "Player")
-					{
-						XMVECTOR s, o, q, t;
-						XMFLOAT3 position(camera.position.m128_f32[0], camera.position.m128_f32[1], camera.position.m128_f32[2]);
-
-						s = XMVectorReplicate(1.0f);
-						o = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-						q = XMQuaternionRotationRollPitchYaw(camera.pitch, camera.yaw, camera.roll);
-						t = XMLoadFloat3(&position);
-						auto world_matrix = XMMatrixAffineTransformation(s, o, q, t);
-						auto view_matrix = XMMatrixInverse(0, world_matrix);
-						XMVECTOR determinant;
-						XMMATRIX mat_view_inverse = XMMatrixInverse(&determinant, view_matrix);
-						mat_view_inverse.r[3].m128_f32[0] = 0.0f;
-						mat_view_inverse.r[3].m128_f32[1] = 0.0f;
-						mat_view_inverse.r[3].m128_f32[2] = 0.0f;
-						cb_sprite.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
-					}
-				}
-			}
-			
-
-			SetSprite(sprite);
-
-			// ���̴� ����
-			VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter.vs_id);
-			if (vs)
-			{
-				device_context->IASetInputLayout(vs->InputLayoyt());
-				device_context->VSSetShader(vs->Get(), 0, 0);
-			}
-
-			//GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter.geo_id);
-			//if(gs)
-			//	device_context->GSSetShader(gs->Get(), 0, 0);
-
-			PixelShader* ps = RESOURCE->UseResource<PixelShader>(emitter.ps_id);
-			if (ps)
-				device_context->PSSetShader(ps->Get(), 0, 0);
-
-			// particle ���� ��ŭ ��ƼŬ ���
-			for (auto& particle : emitter.particles)
-			{
-				if (!particle.enable)
-					continue;
-
-				if (sprite->type == TEX)
-				{
-					TextureSprite* tex_sprite = (TextureSprite*)sprite;
-					Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
-					if (texture != nullptr)
-						device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-				}
-
-				SetParticle(particle);
-
-				RenderParticle(particle);
-			}
-		}
-
-		
-	}
+	RenderEffects(reg);
+	
 }
 
 void RenderSystem::SetCbTransform(const C_Transform& transform)
@@ -227,7 +101,7 @@ void RenderSystem::SetCbTransform(const C_Transform& transform)
 	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world * transform.local);
 
 	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
-	device_context->VSSetConstantBuffers(0, 1, cb_transform.buffer.GetAddressOf());
+	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 }
 
 void RenderSystem::PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation)
@@ -305,31 +179,301 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 	}
 }
 
-void RenderSystem::RenderBoxShape(C_BoxShape& box_shape)
+void RenderSystem::CreateEffectCB()
 {
-	VertexShader* shader = RESOURCE->UseResource<VertexShader>(box_shape.vs_id);
-	if (shader == nullptr)
-		return;
+	HRESULT hr;
+	D3D11_BUFFER_DESC desc;
+	D3D11_SUBRESOURCE_DATA subdata;
+
+	// Init Effect Buffer
+	ZeroMemory(&cb_effect_.data, sizeof(CbEffect::Data));
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	cb_effect_.data.world = XMMatrixIdentity();
+	cb_effect_.data.view_proj = XMMatrixIdentity();
+
+	desc.ByteWidth = sizeof(CbEffect::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &cb_effect_.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect_.buffer.GetAddressOf());
+
+	// Init Sprite Buffer
+	ZeroMemory(&cb_sprite_.data, sizeof(CbSprite::Data));
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	cb_sprite_.data.billboard_matrix = XMMatrixIdentity();
+
+	desc.ByteWidth = sizeof(CbSprite::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &cb_sprite_.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_sprite_.buffer.GetAddressOf());
+
+	// Init Particle Buffer
+	ZeroMemory(&cb_particle_.data, sizeof(CbParticle::Data));
+
+	cb_particle_.data.values.x = 0.0f;
+	cb_particle_.data.values.y = 0.0f;
+	cb_particle_.data.values.z = 0.0f;
+	cb_particle_.data.values.w = 0.0f;
+
+	cb_particle_.data.color.x = 1.0f;
+	cb_particle_.data.color.y = 1.0f;
+	cb_particle_.data.color.z = 1.0f;
+	cb_particle_.data.color.w = 1.0f;
+
+	cb_particle_.data.transform = XMMatrixIdentity();
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbParticle::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &cb_particle_.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_particle_.buffer.GetAddressOf());
+}
+
+void RenderSystem::CreateEffectBuffer()
+{
+	effect_vertex_.p = { 0, 0, 0 };
+	effect_vertex_.c = { 1.0f, 1.0f, 1.0f, 1.0f };
+	effect_vertex_.t = { 0.5f, 0.5f };
+
+	D3D11_BUFFER_DESC bufDesc;
+
+	ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+	bufDesc.ByteWidth = sizeof(EffectVertex);
+	bufDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufDesc.CPUAccessFlags = 0;
+	bufDesc.MiscFlags = 0;
+	bufDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA subResourse;
+
+	ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+	subResourse.pSysMem = &effect_vertex_;
+	subResourse.SysMemPitch;
+	subResourse.SysMemSlicePitch;
+
+	DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer_);
+}
+
+void RenderSystem::RenderBoxShape(entt::registry& reg)
+{
+	auto view_box = reg.view<C_BoxShape, C_Transform>();
+	for (auto ent : view_box)
+	{
+		auto& box = reg.get<C_BoxShape>(ent);
+		SetCbTransform(box);
+
+		auto material = RESOURCE->UseResource<Material>(box.material_id);
+		material->Set();
+
+		VertexShader* shader = RESOURCE->UseResource<VertexShader>(box.vs_id);
+		if (shader == nullptr)
+			return;
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+		device_context->IASetVertexBuffers(0, 1, box.vertex_buffer.GetAddressOf(), &stride, &offset);
+		device_context->IASetIndexBuffer(box.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->VSSetShader(shader->Get(), 0, 0);
+
+		device_context->DrawIndexed(box.index_list.size(), 0, 0);
+	}
+
+	
+}
+
+void RenderSystem::RenderEffects(entt::registry& reg)
+{
+	auto view_effect = reg.view<C_Effect>();
+	for (auto ent : view_effect)
+	{
+		device_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
+ 		auto& effect = reg.get<C_Effect>(ent);
+
+		for (auto& emitter : effect.emitters)
+		{
+			switch (emitter->type)
+			{
+			case SPRITE_EMITTER:
+			{
+				SpriteEmitter* sprite_emitter = (SpriteEmitter*)emitter.get();
+
+				if (sprite_emitter == nullptr)
+					return;
+
+				Sprite* sprite = RESOURCE->UseResource<Sprite>(sprite_emitter->sprite_id);
+				if (sprite == nullptr)
+					return;
+
+				// 카메라 가져오기
+					// 빌보드 행렬 적용 후 CB 적용
+					// cb_effect_ 적용
+				auto view_camera = reg.view<C_Camera>();
+				for (auto entity : view_camera)
+				{
+					auto& camera = view_camera.get<C_Camera>(entity);
+					if (camera.tag == "Player")
+					{
+						XMVECTOR s, o, q, t;
+						XMFLOAT3 position(camera.position.m128_f32[0], camera.position.m128_f32[1], camera.position.m128_f32[2]);
+
+						s = XMVectorReplicate(1.0f);
+						o = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+						q = XMQuaternionRotationRollPitchYaw(camera.pitch, camera.yaw, camera.roll);
+						t = XMLoadFloat3(&position);
+						auto world_matrix = XMMatrixAffineTransformation(s, o, q, t);
+						auto view_matrix = XMMatrixInverse(0, world_matrix);
+						auto projection_matrix = XMMatrixPerspectiveFovLH(camera.fov, camera.aspect, camera.near_z, camera.far_z);
+						XMVECTOR determinant;
+						XMMATRIX mat_view_inverse = XMMatrixInverse(&determinant, view_matrix);
+						mat_view_inverse.r[3].m128_f32[0] = 0.0f;
+						mat_view_inverse.r[3].m128_f32[1] = 0.0f;
+						mat_view_inverse.r[3].m128_f32[2] = 0.0f;
+						// 빌보드 행렬 적용
+						cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
+
+						// 트랜스 폼 적용
+						cb_effect_.data.world = XMMatrixTranspose(effect.world * effect.local);
+						cb_effect_.data.view_proj = XMMatrixTranspose(XMMatrixMultiply(view_matrix, projection_matrix));
+
+						device_context->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
+						device_context->GSSetConstantBuffers(0, 1, cb_effect_.buffer.GetAddressOf());
+					}
+
+				}
+
+				SetSprite(sprite);
+
+				SetShaderAndMaterial(emitter.get());
+
+				SetStates(emitter.get());
+
+				// particle 설정
+				for (auto& particle : emitter->particles)
+				{
+					if (!particle.enable)
+						continue;
+
+					if (sprite->type == TEX_SPRITE)
+					{
+						TextureSprite* tex_sprite = (TextureSprite*)sprite;
+						Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
+						if (texture != nullptr)
+							device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+					}
+
+					SetParticle(particle);
+
+					// VertexBuffer 설정
+					UINT stride = sizeof(EffectVertex);
+					UINT offset = 0;
+					device_context->IASetVertexBuffers(0, 1, vertex_buffer_.GetAddressOf(), &stride, &offset);
+					device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
+					device_context->Draw(1, 0);
+				}
+			}break;
+			case POINT_EMITTER:
+			{
+
+			}break;
+			}
 
 
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
 
-	device_context->IASetVertexBuffers(0, 1, box_shape.vertex_buffer.GetAddressOf(), &stride, &offset);
-	device_context->IASetIndexBuffer(box_shape.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	device_context->IASetInputLayout(shader->InputLayoyt());
-	device_context->VSSetShader(shader->Get(), 0, 0);
+		}
+		
+	}
 
 
-	device_context->DrawIndexed(box_shape.index_list.size(), 0, 0);
+	device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+	device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
+	device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	device_context->GSSetShader(nullptr, 0, 0);
+}
+
+void RenderSystem::SetShaderAndMaterial(Emitter* emitter)
+{
+	// 쉐이더 및 머터리얼 적용
+	VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter->vs_id);
+	if (vs)
+	{
+		device_context->IASetInputLayout(vs->InputLayoyt());
+		device_context->VSSetShader(vs->Get(), 0, 0);
+	}
+
+	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter->geo_id);
+	if (gs)
+		device_context->GSSetShader(gs->Get(), 0, 0);
+
+	Material* material = RESOURCE->UseResource<Material>(emitter->mat_id);
+
+	if (material)
+		material->Set();
+}
+
+void RenderSystem::SetStates(Emitter* emitter)
+{
+	// BS 설정
+	switch (emitter->bs_state)
+	{
+	case DEFAULT_BS:
+		device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+		break;
+	case NO_BLEND:
+		device_context->OMSetBlendState(nullptr, nullptr, -1);
+		break;
+	case ALPHA_BLEND:
+		device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+		break;
+	case DUALSOURCE_BLEND:
+		device_context->OMSetBlendState(DXStates::bs_dual_source_blend(), nullptr, -1);
+		break;
+	}
+
+	// DS 설정
+	switch (emitter->ds_state)
+	{
+	case DEFAULT_NONE:
+		device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
+		break;
+	case DEPTH_COMP_NOWRITE:
+		device_context->OMSetDepthStencilState(DXStates::ds_depth_enable_no_write(), 0xff);
+		break;
+	case DEPTH_COMP_WRITE:
+		device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
+		break;
+	}
 }
 
 void RenderSystem::SetParticle(Particle& particle)
 {
-	cb_particle.data.color		= particle.color;
-	cb_particle.data.values.x	= particle.timer;
-	cb_particle.data.values.y	= particle.frame_ratio;
+	cb_particle_.data.color		= particle.color;
+	cb_particle_.data.values.x	= particle.timer;
+	cb_particle_.data.values.y	= particle.frame_ratio;
 
 	XMMATRIX s = XMMatrixScalingFromVector(XMLoadFloat3(&particle.scale));
 	auto q = XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&particle.rotation));;
@@ -338,23 +482,23 @@ void RenderSystem::SetParticle(Particle& particle)
 	XMMATRIX sr = XMMatrixMultiply(s, r);
 	XMMATRIX srt = XMMatrixMultiply(sr, t);
 
-	cb_particle.data.transform = XMMatrixTranspose(srt);
+	cb_particle_.data.transform = XMMatrixTranspose(srt);
 
-	device_context->UpdateSubresource(cb_particle.buffer.Get(), 0, nullptr, &cb_particle.data, 0, 0);
-	device_context->VSSetConstantBuffers(3, 1, cb_particle.buffer.GetAddressOf());
+	device_context->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
+	device_context->GSSetConstantBuffers(2, 1, cb_particle_.buffer.GetAddressOf());
 }
 
 void RenderSystem::SetSprite(Sprite* sprite)
 {
 	// max_frame ���
-	cb_sprite.data.value.y = sprite->max_frame;
+	cb_sprite_.data.value.y = sprite->max_frame;
 	switch (sprite->type)
 	{
 	// UV
-	case UV:
+	case UV_SPRITE:
 	{
 		// type
-		cb_sprite.data.value.x = 0;
+		cb_sprite_.data.value.x = 0;
 
 
 		UVSprite* uv_sprite = (UVSprite*)sprite;
@@ -364,39 +508,27 @@ void RenderSystem::SetSprite(Sprite* sprite)
 		if (texture != nullptr)
 			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 
-		cb_sprite.data.value.z = uv_sprite->uv_list.size();
+		cb_sprite_.data.value.z = uv_sprite->uv_list.size();
 
 		for (int i = 0; i < uv_sprite->uv_list.size(); i++)
 		{
-			cb_sprite.data.value2[i].x = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
-			cb_sprite.data.value2[i].y = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
-			cb_sprite.data.value2[i].z = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
-			cb_sprite.data.value2[i].w = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
+			cb_sprite_.data.value2[i].x = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
+			cb_sprite_.data.value2[i].y = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
+			cb_sprite_.data.value2[i].z = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
+			cb_sprite_.data.value2[i].w = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
 		}
 	}break;
 	// Tex
-	case TEX:
+	case TEX_SPRITE:
 	{
 		// type
-		cb_sprite.data.value.x = 1;
+		cb_sprite_.data.value.x = 1;
 
 
 	}break;
 	}
 
-	device_context->UpdateSubresource(cb_sprite.buffer.Get(), 0, nullptr, &cb_sprite.data, 0, 0);
-	device_context->VSSetConstantBuffers(2, 1, cb_sprite.buffer.GetAddressOf());
+	device_context->UpdateSubresource(cb_sprite_.buffer.Get(), 0, nullptr, &cb_sprite_.data, 0, 0);
+	device_context->GSSetConstantBuffers(1, 1, cb_sprite_.buffer.GetAddressOf());
 }
-
-void RenderSystem::RenderParticle(Particle& particle)
-{
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-
-	device_context->IASetVertexBuffers(0, 1, particle.vertex_buffer.GetAddressOf(), &stride, &offset);
-	device_context->IASetIndexBuffer(particle.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	device_context->DrawIndexed(particle.index_list.size(), 0, 0);
-}
-
 
