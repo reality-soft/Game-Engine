@@ -1,11 +1,78 @@
 #include "stdafx.h"
 #include "Level.h"
 #include "DX11App.h"
-#include "ResourceMgr.h"
 #include "PhysicsMgr.h"
-#include "InputMgr.h"
 #include "FileTransfer.h"
+
 using namespace KGCA41B;
+
+KGCA41B::SkySphere::SkySphere()
+{
+}
+
+KGCA41B::SkySphere::~SkySphere()
+{
+}
+
+bool KGCA41B::SkySphere::CreateSphere(float scale)
+{
+	sphere_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>("sphere_mesh.stmesh"));
+	vs = shared_ptr<VertexShader>(RESOURCE->UseResource<VertexShader>("StaticMeshVS.cso"));
+
+	if (sphere_mesh.get() == nullptr)
+		return false;
+
+	if (vs.get() == nullptr)
+		return false;
+
+	cb_transform.data.world_matrix = XMMatrixTranspose(XMMatrixScaling(scale, scale, scale));
+
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC desc;
+	D3D11_SUBRESOURCE_DATA subresource;
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subresource, sizeof(subresource));
+
+	desc.ByteWidth = sizeof(CbTransform::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	subresource.pSysMem = &cb_transform.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subresource, cb_transform.buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	return true;
+}
+
+void KGCA41B::SkySphere::Frame()
+{
+	DX11APP->GetDeviceContext()->VSSetShader(nullptr, 0, 0);
+	DX11APP->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetShader(nullptr, 0, 0);
+
+	DX11APP->GetDeviceContext()->IASetInputLayout(vs.get()->InputLayout());
+	DX11APP->GetDeviceContext()->VSSetShader(vs.get()->Get(), 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+}
+
+void KGCA41B::SkySphere::Render()
+{
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+
+	for (auto mesh : sphere_mesh.get()->meshes)
+	{
+		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>(mesh.mesh_name + ".mat");
+		if (material)
+			material->Set();
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(mesh.indices.size(), 0, 0);
+	}
+}
 
 
 bool KGCA41B::Level::ImportFromFile(string filepath)
@@ -15,8 +82,8 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 	//Single Datas;
 	file_transfer.ReadBinary<UINT>(num_row_vertex_);
 	file_transfer.ReadBinary<UINT>(num_col_vertex_);
-	file_transfer.ReadBinary<int>(cell_distance_);
-	file_transfer.ReadBinary<int>(uv_scale_);
+	file_transfer.ReadBinary<float>(cell_distance_);
+	file_transfer.ReadBinary<float>(uv_scale_);
 
 	// Arrays
 	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
@@ -34,18 +101,32 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 	return true;
 }
 
-bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_scale)
+bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale, XMINT2 _row_col_blocks)
 {
-    num_row_vertex_ = num_row;
-    num_col_vertex_ = num_col;
-    UINT num_row_cell = num_row_vertex_ - 1;
-    UINT num_col_cell = num_col_vertex_ - 1;
-    int num_half_row = num_row_vertex_ / 2;
-    int num_half_col = num_col_vertex_ / 2;
-	cell_distance_ = cell_distance;
-	uv_scale_ = uv_scale;
+	// ƒıµÂ∆Æ∏Æ ∫–«“Ω√ ±Ì¿Ã :
+	// int depth = 0;
+	// int z = _row_col_blocks.x;
+	// while (z != 1)
+	// {
+	// 	z /= 2;
+	// 	depth++;
+	// }
 
-    level_mesh_.vertices.resize(num_row_vertex_ * num_col_vertex_);
+	max_lod = _max_lod;
+	cell_scale = _cell_scale;
+	row_col_blocks = _row_col_blocks;
+	uv_scale_ = _uv_scale;
+
+	num_row_vertex_ = pow(2, max_lod) * row_col_blocks.x + 1;
+	num_col_vertex_ = pow(2, max_lod) * row_col_blocks.y + 1;
+	cell_distance_ = cell_scale / pow(2, max_lod);
+
+	UINT num_row_cell = num_row_vertex_ - 1;
+	UINT num_col_cell = num_col_vertex_ - 1;
+	float half_row = num_row_vertex_ / 2;
+	float half_col = num_col_vertex_ / 2;
+
+	level_mesh_.vertices.resize(num_row_vertex_ * num_col_vertex_);
 
 	for (int r = 0; r < num_row_vertex_; ++r)
 	{
@@ -53,18 +134,18 @@ bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_sc
 		{
 			UINT index = r * num_row_vertex_ + c;
 
-			level_mesh_.vertices[index].p.x = (float)(c - num_half_row) * cell_distance_;
+			level_mesh_.vertices[index].p.x = (c - half_row) * cell_distance_;
 			level_mesh_.vertices[index].p.y = 0.0f;
-			level_mesh_.vertices[index].p.z = (float)(num_half_col - r) * cell_distance_;
+			level_mesh_.vertices[index].p.z = (half_col - r) * cell_distance_;
 
 			level_mesh_.vertices[index].c = { 1, 1, 1, 1 };
 
-			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell) * uv_scale_;
-			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell) * uv_scale_;
+			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell)*uv_scale_;
+			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell)*uv_scale_;
 		}
 	}
 
-	level_mesh_.indices.resize(num_row_cell * num_col_cell * 6.0f);
+	level_mesh_.indices.resize(num_row_cell * num_col_cell * 6);
 	UINT index = 0;
 	for (UINT r = 0; r < num_row_cell; ++r)
 	{
@@ -83,13 +164,18 @@ bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_sc
 			index += 6;
 		}
 	}
-	
+
 	GenVertexNormal();
+	XMFLOAT2 minmax_height = GetMinMaxHeight();
 
 	if (CreateBuffers() == false)
 		return false;
 
-    return true;
+	if (CreateHeightField(minmax_height.x, minmax_height.y) == false)
+		return false;
+
+	return true;
+
 }
 
 bool Level::CreateHeightField(float min_height, float max_height)
@@ -141,8 +227,8 @@ void Level::Render(bool culling)
 	}
 
 	{ // Samplers Stage
-		ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->PointWrap();
-		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
+		ID3D11SamplerState* sample = DX11APP->GetCommonStates()->LinearWrap();
+		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sample);
 	}
 
 	{ // Input Assembly Stage
@@ -168,6 +254,16 @@ void Level::Render(bool culling)
 XMINT2 KGCA41B::Level::GetWorldSize()
 {
 	return XMINT2(num_row_vertex_ - 1, num_col_vertex_ - 1);
+}
+
+XMINT2 KGCA41B::Level::GetBlocks()
+{
+	return row_col_blocks;
+}
+
+UINT KGCA41B::Level::MaxLod()
+{
+	return max_lod;
 }
 
 
@@ -232,21 +328,34 @@ float Level::GetHeightAt(float x, float z)
 	return height;
 }
 
+XMVECTOR KGCA41B::Level::GetNormalAt(float x, float z)
+{
+	float cell_x = (float)((num_row_vertex_ - 1) * cell_distance_ / 2.0f + x);
+	float cell_z = (float)((num_col_vertex_ - 1) * cell_distance_ / 2.0f - z);
+
+	cell_x /= (float)cell_distance_;
+	cell_z /= (float)cell_distance_;
+
+	float vertex_x = floorf(cell_x);
+	float vertex_z = floorf(cell_z);
+
+	if (vertex_x < 0.f)  vertex_x = 0.f;
+	if (vertex_z < 0.f)  vertex_z = 0.f;
+	if ((float)(num_row_vertex_ - 2) < vertex_x)	vertex_x = (float)(num_row_vertex_ - 2);
+	if ((float)(num_col_vertex_ - 2) < vertex_z)	vertex_z = (float)(num_col_vertex_ - 2);
+
+	XMFLOAT3 normal;
+
+	normal = GetNormal(
+		(int)vertex_x * num_row_vertex_ + (int)vertex_z, 
+		(int)vertex_x * num_row_vertex_ + (int)vertex_z + 1, 
+		(int)vertex_x + 1 * num_row_vertex_ + (int)vertex_z);
+
+	return XMLoadFloat3(&normal);
+}
+
 void Level::GetHeightList()
 {
-	// If you need every '1' unit's interpolated height... (Using GetHeightAt())
-	{
-		//int num_row = static_cast<int>(num_row_vertex_) * cell_distance_;
-		//int num_col = static_cast<int>(num_col_vertex_) * cell_distance_;
-		//for (int r = -(num_row / 2); r < num_row / 2; ++r)
-		//{
-		//	for (int c = -(num_col / 2); c < num_col / 2; ++c)
-		//	{
-		//		height_list_.push_back(GetHeightAt(r, c));
-		//	}
-		//}
-	}
-
 	for (auto vertex : level_mesh_.vertices)
 	{
 		height_list_.push_back(vertex.p.y);
@@ -309,6 +418,18 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = level_mesh_.indices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.index_buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	D3D11_SAMPLER_DESC sample_desc;
+	ZeroMemory(&sample_desc, sizeof(sample_desc));
+	sample_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sample_desc.MaxLOD = FLT_MAX;
+	sample_desc.MinLOD = FLT_MIN;
+	hr = DX11APP->GetDevice()->CreateSamplerState(&sample_desc, mip_map_sample.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 

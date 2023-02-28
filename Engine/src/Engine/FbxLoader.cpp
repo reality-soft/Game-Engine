@@ -56,12 +56,14 @@ namespace KGCA41B {
 
 		fbx_importer->Import(fbx_scene);
 
-		FbxAxisSystem SceneAxisSystem = fbx_scene->GetGlobalSettings().GetAxisSystem();
-
-		FbxSystemUnit::m.ConvertScene(fbx_scene);
-
-		FbxGeometryConverter converter(fbx_manager);
-		converter.Triangulate(fbx_scene, true);
+		FbxAxisSystem axis_system = fbx_scene->GetGlobalSettings().GetAxisSystem();
+		FbxAxisSystem::MayaZUp.ConvertScene(fbx_scene);
+		axis_system = fbx_scene->GetGlobalSettings().GetAxisSystem();
+		FbxSystemUnit	system_unit = fbx_scene->GetGlobalSettings().GetSystemUnit();
+		if (system_unit.GetScaleFactor() != 1.0f)
+		{
+			FbxSystemUnit::cm.ConvertScene(fbx_scene);
+		}
 
 		root_node = fbx_scene->GetRootNode();
 		PreProcess(root_node);
@@ -160,68 +162,16 @@ namespace KGCA41B {
 			vertex_normal_layer = fbx_layer->GetNormals();
 		}
 
-		// Á¤Á¡
+		// Vertex
 		UINT cp_count = fbx_mesh->GetControlPointsCount();
-
 		vector<Vertex> vertices; vertices.resize(cp_count);
 		vector<SkinnedVertex> skinned_vertices; skinned_vertices.resize(cp_count);
-
-		UINT poly_count = fbx_mesh->GetPolygonCount();
-		for (int p = 0; p < poly_count; ++p)
-		{
-			for (int v = 0; v < 3; ++v)
-			{
-				UINT vertex_index = 0;
-				UINT texture_index = 0;
-				switch (v)
-				{
-				case 0: vertex_index = fbx_mesh->GetPolygonVertex(p, 0); break;
-				case 1: vertex_index = fbx_mesh->GetPolygonVertex(p, 1); break;
-				case 2: vertex_index = fbx_mesh->GetPolygonVertex(p, 2); break;
-				}
-
-				out_mesh->indices.push_back(vertex_index);
-
-				switch (v)
-				{
-				case 0: texture_index = fbx_mesh->GetTextureUVIndex(p, 0); break;
-				case 1: texture_index = fbx_mesh->GetTextureUVIndex(p, 1); break;
-				case 2: texture_index = fbx_mesh->GetTextureUVIndex(p, 2); break;
-				}
-
-				if (vertex_color_layer)
-				{
-					FbxColor c = ReadColor(fbx_mesh, vertex_color_layer, vertex_index, p + v);
-					vertices[vertex_index].c.x = c.mRed;
-					vertices[vertex_index].c.y = c.mGreen;
-					vertices[vertex_index].c.z = c.mBlue;
-					vertices[vertex_index].c.w = 1.0f;
-				}
-				else { vertices[vertex_index].c = { 1, 1, 1, 1 }; }
-
-				if (vertex_uv_layer)
-				{
-					FbxVector2 t = ReadUV(fbx_mesh, vertex_uv_layer, vertex_index, texture_index);
-					vertices[vertex_index].t.x = t.mData[0];
-					vertices[vertex_index].t.y = 1.0f - t.mData[1];
-				}
-
-				if (vertex_normal_layer)
-				{
-					FbxVector4 n = ReadNormal(fbx_mesh, vertex_normal_layer, vertex_index, p + v);
-					n = local_matrix.MultT(n);
-					vertices[vertex_index].n.x = n.mData[0];
-					vertices[vertex_index].n.y = n.mData[2];
-					vertices[vertex_index].n.z = n.mData[1];
-				}
-			}
-		}
-
+		vertices.resize(cp_count);
 		for (UINT cp = 0; cp < cp_count; ++cp)
 		{
 			vertices[cp].p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[0]);
-			vertices[cp].p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[2]);
-			vertices[cp].p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[1]);
+			vertices[cp].p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[1]);
+			vertices[cp].p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[2]);
 
 			if (out_mesh->is_skinned)
 			{
@@ -241,6 +191,72 @@ namespace KGCA41B {
 			}
 		}
 
+		// Index and Layers
+		UINT base_poly = 0;
+		UINT poly_count = fbx_mesh->GetPolygonCount();
+		for (UINT p = 0; p < poly_count; ++p)
+		{
+			UINT poly_size = fbx_mesh->GetPolygonSize(p);
+			UINT face_count = poly_size - 2;
+			for (int f = 0; f < face_count; ++f)
+			{
+				for (int i = 0; i < 3; ++i)
+				{
+					UINT vertex_index = 0;
+					UINT uv_index = 0;
+					UINT cn_index = 0;
+					switch (i)
+					{ 
+					case 0:{
+						vertex_index = fbx_mesh->GetPolygonVertex(p, 0);
+						uv_index = fbx_mesh->GetTextureUVIndex(p, 0);
+						cn_index = 0;
+						break;
+					}
+					case 1: {
+						vertex_index = fbx_mesh->GetPolygonVertex(p, f + 1);
+						uv_index = fbx_mesh->GetTextureUVIndex(p, f + 1);
+						cn_index = f + 1;
+						break;
+					}
+					case 2: {
+						vertex_index = fbx_mesh->GetPolygonVertex(p, f + 2); 
+						uv_index = fbx_mesh->GetTextureUVIndex(p, f + 2); 
+						cn_index = f + 2;
+						break;
+					}
+					}
+
+					out_mesh->indices.push_back(vertex_index);
+
+					if (vertex_color_layer)
+					{
+						FbxColor c = ReadColor(fbx_mesh, vertex_color_layer, vertex_index, base_poly + cn_index);
+						vertices[vertex_index].c.x = c.mRed;
+						vertices[vertex_index].c.y = c.mGreen;
+						vertices[vertex_index].c.z = c.mBlue;
+						vertices[vertex_index].c.w = 1.0f;
+					}
+					else { vertices[vertex_index].c = { 1, 1, 1, 1 }; }
+
+					if (vertex_uv_layer)
+					{
+						FbxVector2 t = ReadUV(fbx_mesh, vertex_uv_layer, vertex_index, uv_index);
+						vertices[vertex_index].t.x = t.mData[0];
+						vertices[vertex_index].t.y = 1.0f - t.mData[1];
+					}
+					if (vertex_normal_layer)
+					{
+						FbxVector4 n = ReadNormal(fbx_mesh, vertex_normal_layer, vertex_index, base_poly + cn_index);
+						n = local_matrix.MultT(n);
+						vertices[vertex_index].n.x = n.mData[0];
+						vertices[vertex_index].n.y = n.mData[1];
+						vertices[vertex_index].n.z = n.mData[2];
+					}
+				}
+			}
+			base_poly += poly_size;
+		}
 		out_mesh->vertices = vertices;
 		out_mesh->skinned_vertices = skinned_vertices;
 	}
@@ -271,16 +287,9 @@ namespace KGCA41B {
 			switch (vertex_uv_layer->GetReferenceMode())
 			{
 			case FbxLayerElementUV::eDirect:
-			{
-				t = vertex_uv_layer->GetDirectArray().GetAt(uv_index);
-				break;
-			}
-
 			case FbxLayerElementUV::eIndexToDirect:
 			{
 				t = vertex_uv_layer->GetDirectArray().GetAt(uv_index);
-				//int index = vertex_uv_layer->GetIndexArray().GetAt(uv_index);
-				//t = vertex_uv_layer->GetDirectArray().GetAt(index);
 				break;
 			}
 			break;

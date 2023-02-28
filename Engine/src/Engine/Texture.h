@@ -5,18 +5,6 @@
 
 namespace KGCA41B
 {
-	enum
-	{
-		DIFFUSE,
-		NORMALMAP,
-		METALIC,
-		ROUGHNESS,
-		SPECULAR,
-		AMBIENT,
-		OPACITY
-
-	} typedef TEXTYPE;
-
 	class DLL_API Texture
 	{
 	public:
@@ -26,9 +14,8 @@ namespace KGCA41B
 	public:
 		bool LoadTextureWIC(wstring filepath);
 		bool LoadTextureDDS(wstring filepath);
-		TEXTYPE texture_type;
 		ComPtr<ID3D11ShaderResourceView>	srv;
-		ComPtr<ID3D11Resource> resource;
+		ComPtr<ID3D11Texture2D> texture;
 		D3D11_TEXTURE2D_DESC				texture_desc;
 	};
 }
