@@ -30,6 +30,13 @@ namespace KGCA41B
 		}
 	};
 
+	struct EffectVertex
+	{
+		XMFLOAT3   p;
+		XMFLOAT4   c;
+		XMFLOAT2   t;
+	};
+
 	struct Skeleton
 	{
 		Skeleton() = default;
@@ -185,27 +192,35 @@ namespace KGCA41B
 	};
 
 	// Effect
-	
-
-	enum E_Effect
+	enum E_EffectType
 	{
-		NONE = 0,
-		UV_SPRITE = 1,
-		TEX_SPRITE = 2,
-		EMITTER = 3,
+		NONE			= 0,
+		UV_SPRITE		= 1,
+		TEX_SPRITE		= 2,
+		SPRITE_EMITTER	= 3,
+		POINT_EMITTER	= 4,
+		EFFECT			= 5,
 	};
 
-	enum E_Sprite
+	enum E_EffectBS
 	{
-		DEFAULT_SPRITE = 0,
-		UV = 1,
-		TEX = 2,
+		DEFAULT_BS			= 0,
+		NO_BLEND			= 1,
+		ALPHA_BLEND			= 2,
+		DUALSOURCE_BLEND	= 3,
+	};
+
+	enum E_EffectDS
+	{
+		DEFAULT_NONE		= 0,
+		DEPTH_COMP_NOWRITE	= 1,
+		DEPTH_COMP_WRITE	= 2,
 	};
 
 	struct Sprite
 	{
-		int			max_frame = 5;
-		E_Sprite	type = DEFAULT_SPRITE;
+		int				max_frame = 5;
+		E_EffectType	type = NONE;
 	};
 
 	struct UVSprite : public Sprite
@@ -215,7 +230,7 @@ namespace KGCA41B
 		UVSprite()
 		{
 			tex_id = "";
-			type = UV;
+			type = UV_SPRITE;
 		}
 	};
 
@@ -224,8 +239,19 @@ namespace KGCA41B
 		vector<string>	tex_id_list;
 		TextureSprite()
 		{
-			type = TEX;
+			type = TEX_SPRITE;
 		}
+	};
+
+	struct CbEffect
+	{
+		struct Data
+		{
+			XMMATRIX world;
+			XMMATRIX view_proj;
+		}data;
+		ComPtr<ID3D11Buffer> buffer;
+
 	};
 
 	struct CbSprite
@@ -281,13 +307,6 @@ namespace KGCA41B
 
 		XMFLOAT3	accelation;
 
-
-		vector<Vertex>			vertex_list;
-		ComPtr<ID3D11Buffer>	vertex_buffer;
-
-		vector<DWORD>			index_list;
-		ComPtr<ID3D11Buffer>	index_buffer;
-
 		Particle()
 		{
 			enable = true;
@@ -309,19 +328,18 @@ namespace KGCA41B
 			accelation = { 0, 0, 0 };
 
 		}
-
-		void CreateBuffer()
-		{
-			
-		}
 	};
 
 	struct Emitter
 	{
 		float		timer;
 
-		string		sprite_id;
+		E_EffectType type;
 
+		// true		: emit_once
+		// false	: emit_per_second
+		bool		b_emit_once_or_per_second;
+		int			emit_partice_once;
 		int			emit_per_second;
 
 		XMFLOAT4	color;
@@ -331,16 +349,20 @@ namespace KGCA41B
 		XMFLOAT3	initial_size[2];
 		float		initial_rotation[2];
 		XMFLOAT3	initial_position[2];
-
 		XMFLOAT3	initial_velocity[2];
 
+
+		// TODO : life time graph
 		XMFLOAT3	size_per_lifetime[2];
 		float		rotation_per_lifetime[2];
 		XMFLOAT3	accelation_per_lifetime[2];
 
 		string		vs_id;
-		string		ps_id;
 		string		geo_id;
+		string		mat_id;
+
+		E_EffectBS	bs_state;
+		E_EffectDS  ds_state;
 
 		vector<Particle> particles;
 
@@ -348,8 +370,10 @@ namespace KGCA41B
 		{
 			timer = 0.0f;
 
-			sprite_id = "";
+			type = NONE;
 
+			b_emit_once_or_per_second = false;
+			emit_partice_once = 0;
 			emit_per_second = 0;
 
 			color = { 1.0, 1.0f, 1.0f, 1.0f };
@@ -367,8 +391,30 @@ namespace KGCA41B
 			ZeroMemory(accelation_per_lifetime, sizeof(XMFLOAT3) * 2);
 
 			vs_id = "";
-			ps_id = "";
 			geo_id = "";
+			mat_id = "";
+
+			bs_state = DEFAULT_BS;
+			ds_state = DEFAULT_NONE;
+		}
+	};
+
+	struct SpriteEmitter : Emitter
+	{
+		string	sprite_id;
+
+		SpriteEmitter() : Emitter()
+		{
+			type = SPRITE_EMITTER;
+			sprite_id = "";
+		}
+	};
+
+	struct PointEmitter : Emitter
+	{
+		PointEmitter() : Emitter()
+		{
+			type = POINT_EMITTER;
 		}
 	};
 
