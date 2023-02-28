@@ -142,6 +142,7 @@ namespace KGCA41B
 	struct C_BoxShape : public C_Transform
 	{
 		string vs_id;
+		string material_id;
 
 		vector<Vertex>			vertex_list;
 		ComPtr<ID3D11Buffer>	vertex_buffer;
@@ -151,6 +152,8 @@ namespace KGCA41B
 
 		C_BoxShape()
 		{
+			material_id = "box_material.mat";
+
 			// ���ؽ� ����
 			vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +0.0f} });
 			vertex_list.push_back({ { +1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +0.0f} });
@@ -209,7 +212,7 @@ namespace KGCA41B
 
 	struct C_Effect : public C_Transform
 	{
-		vector<Emitter> emitters;
+		vector<shared_ptr<Emitter>> emitters;
 	};
 
 	struct PhysicsCollision : public C_Transform
