@@ -160,8 +160,8 @@ void Level::Render(bool culling)
 	}
 
 	{ // Samplers Stage
-		ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->PointWrap();
-		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
+		ID3D11SamplerState* sample = DX11APP->GetCommonStates()->LinearWrap();
+		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sample);
 	}
 
 	{ // Input Assembly Stage
@@ -351,6 +351,18 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = level_mesh_.indices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.index_buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	D3D11_SAMPLER_DESC sample_desc;
+	ZeroMemory(&sample_desc, sizeof(sample_desc));
+	sample_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sample_desc.MaxLOD = FLT_MAX;
+	sample_desc.MinLOD = FLT_MIN;
+	hr = DX11APP->GetDevice()->CreateSamplerState(&sample_desc, mip_map_sample.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 
