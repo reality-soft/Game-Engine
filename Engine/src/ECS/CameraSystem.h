@@ -19,6 +19,7 @@ namespace KGCA41B
 		XMFLOAT2 ndc;
 	private:
 		void CameraMovement();
+		void UpdateVectors();
 		void CameraAction();
 		void CreateMatrix();
 
@@ -29,6 +30,11 @@ namespace KGCA41B
 		XMMATRIX world_matrix;
 		XMMATRIX view_matrix;
 		XMMATRIX projection_matrix;
+
+		XMVECTOR look;
+		XMVECTOR right;
+		XMVECTOR up;
+		XMVECTOR position;
 
 		CbViewProj cb_viewproj;
 	};

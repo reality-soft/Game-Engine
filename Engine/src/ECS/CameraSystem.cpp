@@ -12,8 +12,7 @@ CameraSystem::CameraSystem()
 	camera = nullptr;
 	viewport = DX11APP->GetViewPortAddress();
 
-	world_matrix = XMMatrixIdentity();
-	view_matrix = cb_viewproj.data.view_matrix = XMMatrixIdentity();
+	cb_viewproj.data.view_matrix = XMMatrixIdentity();
 	projection_matrix = cb_viewproj.data.projection_matrix = XMMatrixIdentity();
 }
 
@@ -37,8 +36,14 @@ void KGCA41B::CameraSystem::TargetTag(entt::registry& reg, string tag)
 
 void CameraSystem::OnCreate(entt::registry& reg)
 {
+	XMMATRIX transform_matrix = camera->world * camera->local;
+
+	XMVECTOR position = transform_matrix.r[3];
+	XMVECTOR target = camera->world.r[3];
+	XMVECTOR up = { 0, 1, 0, 0 };
+
 	if (camera != nullptr)
-		cb_viewproj.data.view_matrix = XMMatrixLookAtLH(camera->position, camera->target, camera->up);
+		cb_viewproj.data.view_matrix = XMMatrixLookAtLH(position, target, up);
 
 	D3D11_BUFFER_DESC desc;
 	D3D11_SUBRESOURCE_DATA subdata;
@@ -61,6 +66,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 
 	CameraMovement();
 	CameraAction();
+
 	CreateMatrix();
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
@@ -90,7 +96,6 @@ MouseRay CameraSystem::CreateMouseRay()
 	XMVECTOR ray_dir;
 	XMVECTOR ray_origin;
 
-
 	ray_origin = XMVector3TransformCoord({0, 0, 0, 0}, inv_view);
 	ray_dir = XMVector3TransformNormal({ndc_x, ndc_y, 1.0f, 0}, inv_view);
 	ray_dir = XMVector3Normalize(ray_dir);
@@ -113,10 +118,18 @@ XMMATRIX KGCA41B::CameraSystem::GetViewProj()
 
 void CameraSystem::CameraMovement()
 {
-	XMVECTOR front_dir = camera->look * camera->speed * TM_DELTATIME;
-	XMVECTOR right_dir = camera->right * camera->speed * TM_DELTATIME * -1.f;
-	XMVECTOR up_dir = camera->up * camera->speed * TM_DELTATIME;
+	//XMVECTOR front_dir = camera->look * camera->speed * TM_DELTATIME;
+	//XMVECTOR right_dir = camera->right * camera->speed * TM_DELTATIME * -1.f;
+	//XMVECTOR up_dir = camera->up * camera->speed * TM_DELTATIME;
 
+}
+
+void KGCA41B::CameraSystem::UpdateVectors()
+{
+	look = XMVector3Normalize(XMMatrixTranspose(view_matrix).r[2]);
+	right = XMVector3Normalize(XMMatrixTranspose(view_matrix).r[0]);
+	up = XMVector3Normalize(XMMatrixTranspose(view_matrix).r[1]);
+	position = world_matrix.r[3];
 }
 
 void CameraSystem::CameraAction()
@@ -129,21 +142,8 @@ void CameraSystem::CreateMatrix()
 	camera->aspect = viewport->Width / viewport->Height;
 	projection_matrix = XMMatrixPerspectiveFovLH(camera->fov, camera->aspect, camera->near_z, camera->far_z);
 
-	XMVECTOR s, o, q, t;
-	XMFLOAT3 position(camera->position.m128_f32[0], camera->position.m128_f32[1], camera->position.m128_f32[2]);
-
-	s = XMVectorReplicate(1.0f);
-	o = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-	q = XMQuaternionRotationRollPitchYaw(camera->pitch, camera->yaw, camera->roll);
-	t = XMLoadFloat3(&position);
-	world_matrix = XMMatrixAffineTransformation(s, o, q, t);
+	world_matrix = camera->camera_matrix;
 	view_matrix = XMMatrixInverse(0, world_matrix);
-
-	camera->look = XMVector3Normalize(XMMatrixTranspose(view_matrix).r[2]);
-	camera->right = XMVector3Normalize(XMMatrixTranspose(view_matrix).r[0]);
-	camera->up = XMVector3Normalize(XMMatrixTranspose(view_matrix).r[1]);
-	camera->position = world_matrix.r[3];
-
 
 	cb_viewproj.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_viewproj.data.projection_matrix = XMMatrixTranspose(projection_matrix);
