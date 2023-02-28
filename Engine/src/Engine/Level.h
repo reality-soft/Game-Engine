@@ -1,53 +1,28 @@
 #pragma once
-#include "DataTypes.h"
-#include "DllMacro.h"
 #include "Components.h"
+#include "DllMacro.h"
+#include "DataTypes.h"
+#include "ResourceMgr.h"
 
 #define LerpByTan(start, end, tan) (start - (start * tan) + (end * tan))
 
-
 namespace KGCA41B
 {
-	struct CbHitCircle
+	class DLL_API SkySphere
 	{
-		CbHitCircle() = default;
-		CbHitCircle(const CbHitCircle& other)
-		{
-			data = other.data;
-			other.buffer.CopyTo(buffer.GetAddressOf());
-		}
-		struct Data
-		{
-			bool is_hit = false;
-			float circle_radius = 0.0f;
-			XMVECTOR hitpoint = { 0, 0, 0, 0 };
-		} data;
+	public:
+		SkySphere();
+		~SkySphere();
 
-		ComPtr<ID3D11Buffer> buffer;
-	};
+	public:
+		bool CreateSphere(float scale);
+		void Frame();
+		void Render();
 
-	struct CbEditOption
-	{
-		CbEditOption() = default;
-		CbEditOption(const CbEditOption& other)
-		{
-			data = other.data;
-			other.buffer.CopyTo(buffer.GetAddressOf());
-		}
-		struct Data
-		{
-			XMINT4 altitude = {0, 0, 0, 0};
-
-		} data;
-		ComPtr<ID3D11Buffer> buffer;
-	};
-	struct StreamVertex
-	{
-		XMFLOAT4 p;
-		XMFLOAT3 o;
-		XMFLOAT3 n;
-		XMFLOAT4 c;
-		XMFLOAT2 t;
+	private:
+		shared_ptr<StaticMesh> sphere_mesh;
+		shared_ptr<VertexShader> vs;
+		CbTransform cb_transform;
 	};
 
 	class DLL_API Level
@@ -82,6 +57,9 @@ namespace KGCA41B
 		string ps_id_;
 		vector<string> texture_id;
 
+	public:
+		SkySphere sky_sphere;
+
 	protected:
 		void GenVertexNormal();
 		void GetHeightList();
@@ -102,7 +80,8 @@ namespace KGCA41B
 		float cell_distance_;
 		UINT cell_scale;
 		XMINT2 row_col_blocks;
-		float uv_scale_;		 
+		float uv_scale_;
+
 
 	protected:
 		reactphysics3d::HeightFieldShape* height_field_shape_ = nullptr;

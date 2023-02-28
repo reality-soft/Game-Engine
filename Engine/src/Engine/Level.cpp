@@ -1,11 +1,78 @@
 #include "stdafx.h"
 #include "Level.h"
 #include "DX11App.h"
-#include "ResourceMgr.h"
 #include "PhysicsMgr.h"
-#include "InputMgr.h"
 #include "FileTransfer.h"
+
 using namespace KGCA41B;
+
+KGCA41B::SkySphere::SkySphere()
+{
+}
+
+KGCA41B::SkySphere::~SkySphere()
+{
+}
+
+bool KGCA41B::SkySphere::CreateSphere(float scale)
+{
+	sphere_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>("sphere_mesh.stmesh"));
+	vs = shared_ptr<VertexShader>(RESOURCE->UseResource<VertexShader>("StaticMeshVS.cso"));
+
+	if (sphere_mesh.get() == nullptr)
+		return false;
+
+	if (vs.get() == nullptr)
+		return false;
+
+	cb_transform.data.world_matrix = XMMatrixTranspose(XMMatrixScaling(scale, scale, scale));
+
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC desc;
+	D3D11_SUBRESOURCE_DATA subresource;
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subresource, sizeof(subresource));
+
+	desc.ByteWidth = sizeof(CbTransform::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	subresource.pSysMem = &cb_transform.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subresource, cb_transform.buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	return true;
+}
+
+void KGCA41B::SkySphere::Frame()
+{
+	DX11APP->GetDeviceContext()->VSSetShader(nullptr, 0, 0);
+	DX11APP->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetShader(nullptr, 0, 0);
+
+	DX11APP->GetDeviceContext()->IASetInputLayout(vs.get()->InputLayout());
+	DX11APP->GetDeviceContext()->VSSetShader(vs.get()->Get(), 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+}
+
+void KGCA41B::SkySphere::Render()
+{
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+
+	for (auto mesh : sphere_mesh.get()->meshes)
+	{
+		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>(mesh.mesh_name + ".mat");
+		if (material)
+			material->Set();
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(mesh.indices.size(), 0, 0);
+	}
+}
 
 
 bool KGCA41B::Level::ImportFromFile(string filepath)

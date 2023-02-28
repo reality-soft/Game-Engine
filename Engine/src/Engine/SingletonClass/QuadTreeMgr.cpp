@@ -263,4 +263,5 @@ void KGCA41B::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
 
 void KGCA41B::QuadTreeMgr::ObjectCulling()
 {
+
 }
