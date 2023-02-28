@@ -177,6 +177,16 @@ set<string> KGCA41B::ResourceMgr::GetTotalSpriteID()
     return sprite;
 }
 
+set<string> KGCA41B::ResourceMgr::GetTotalMATID()
+{
+    set<string> mat;
+    for (auto pair : resdic_material)
+    {
+        mat.insert(pair.first);
+    }
+    return mat;
+}
+
 
 void KGCA41B::ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
 {
@@ -333,7 +343,7 @@ bool ResourceMgr::ImportSprite(string filename)
     if (str_type == "")
         return false;
 
-    E_Effect type = (E_Effect)stoi(str_type);
+    E_EffectType type = (E_EffectType)stoi(str_type);
 
     switch (type)
     {
