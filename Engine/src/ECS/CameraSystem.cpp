@@ -86,8 +86,14 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 {
 	auto view_trans = reg.view<C_Transform>();
 
+	if (camera->tag == "Debug")
+		DebugCameraMovement();
+
+	else if (camera->tag == "Player")
+		PlayerCameraMovement();
+
 	CameraAction();
-	CameraMovement();
+
 	CreateMatrix();
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
@@ -132,69 +138,54 @@ C_Camera* CameraSystem::GetCamera()
 	return camera;
 }
 
-XMMATRIX KGCA41B::CameraSystem::GetViewProj()
+XMMATRIX KGCA41B::CameraSystem::GetViewProj()  
 {
 	return view_matrix * projection_matrix;
 }
 
-void CameraSystem::CameraMovement()
+void CameraSystem::DebugCameraMovement()
 {
 	XMVECTOR front_dir = look * speed * TM_DELTATIME;
-	XMVECTOR right_dir = right * speed * TM_DELTATIME * -1.f;
+	XMVECTOR right_dir = right * speed * TM_DELTATIME;
 	XMVECTOR up_dir = up * speed * TM_DELTATIME;
-
-
-	if (camera->tag != "Debug") return;
-	
-	XMMATRIX transform = XMMatrixIdentity();
 
 	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
 	{
-		float yaw = TM_DELTATIME * DINPUT->GetDeltaX() * 10;
-		float pitch = TM_DELTATIME * DINPUT->GetDeltaY() * 10;
+		float yaw = DINPUT->GetDeltaX() * TM_DELTATIME;
+		float pitch = DINPUT->GetDeltaY() * TM_DELTATIME;
 
 		camera->pitch_yaw.x += pitch;
 		camera->pitch_yaw.y += yaw;
-		//transform *= (XMMatrixRotationX(XMConvertToRadians(yaw)) * XMMatrixRotationY(XMConvertToRadians(pitch)));
 	}
-	
-	XMFLOAT4 translation = { 0.0f, 0.0f, 0.0f, 0.0f };
+
 	if (DINPUT->GetKeyState(DIK_W) == KEY_HOLD)
 	{
-		translation.z -= 1;
+		camera->camera_pos += front_dir;
 	}
 	if (DINPUT->GetKeyState(DIK_S) == KEY_HOLD)
 	{
-		translation.z += 1;
+		camera->camera_pos -= front_dir;
 	}
 	if (DINPUT->GetKeyState(DIK_A) == KEY_HOLD)
 	{
-		translation.x -= 1;
+		camera->camera_pos -= right_dir;
 	}
 	if (DINPUT->GetKeyState(DIK_D) == KEY_HOLD)
 	{
-		translation.x += 1;
+		camera->camera_pos += right_dir;
 	}
 	if (DINPUT->GetKeyState(DIK_Q) == KEY_HOLD)
 	{
-		translation.y += 1;
+		camera->camera_pos -= up_dir;
 	}
 	if (DINPUT->GetKeyState(DIK_E) == KEY_HOLD)
 	{
-		translation.y -= 1;
+		camera->camera_pos += up_dir;
 	}
+}
 
-	camera->camera_pos += front_dir * translation.z;
-	camera->camera_pos += right_dir * translation.x;
-	camera->camera_pos += up_dir * translation.y;
-
-	right_dir *= translation.z;
-	up_dir *= translation.y;
-	front_dir *= translation.x;
-	
-	transform *= XMMatrixTranslationFromVector(right_dir);
-	transform *= XMMatrixTranslationFromVector(up_dir);
-	transform *= XMMatrixTranslationFromVector(front_dir);
+void KGCA41B::CameraSystem::PlayerCameraMovement()
+{
 }
 
 void KGCA41B::CameraSystem::UpdateVectors()
@@ -217,20 +208,21 @@ void CameraSystem::CreateMatrix()
 	XMMATRIX w, v;
 	XMVECTOR S, O, Q, T;
 
+	camera->camera_pos.m128_f32[3] = 0;
+
 	S = XMVectorReplicate(1.0f);
-	O = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	O = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	Q = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, 0);
 	w = DirectX::XMMatrixAffineTransformation(S, O, Q, camera->camera_pos); // 원점으로부터 카메라 벡터를 반전시켜 회전 축으로 사용합니다.
 	v = DirectX::XMMatrixInverse(0, w);
-
-	if (camera->pitch_yaw.x != 0)
-		int a = 0;
 
 	view_matrix = v;
 	camera->camera_pos = w.r[3];
 
 	cb_viewproj.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_viewproj.data.projection_matrix = XMMatrixTranspose(projection_matrix);
+	cb_viewproj.data.camera_position = camera->camera_pos;
+	cb_viewproj.data.camera_position.m128_f32[3] = camera->far_z;
 
 	look = XMVector3Normalize(w.r[2]);
 	right = XMVector3Normalize(w.r[0]);
