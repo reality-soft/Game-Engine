@@ -74,19 +74,19 @@ void EffectSystem::UpdateTimer(Emitter* emitter)
 
 void EffectSystem::EmitParticles(Emitter* emitter)
 {
-	if (!emitter->b_emit_once_or_per_second)
+	switch (emitter->emit_type)
 	{
+	case PER_SECOND:
 		// 한 번만 실행되도록
-		if (emitter->particles.size() >= emitter->emit_partice_once)
+		if (emitter->particles.size() >= emitter->emit_once)
 			return;
 
-		for (int i = 0; i < emitter->emit_partice_once; i++)
+		for (int i = 0; i < emitter->emit_once; i++)
 		{
 			EmitParticle(emitter);
 		}
-	}
-	else
-	{
+		break;
+	case ONCE:
 		// 1초마다 파티클 생성
 		if (emitter->timer > 1.0f)
 		{
@@ -98,9 +98,11 @@ void EffectSystem::EmitParticles(Emitter* emitter)
 			}
 
 		}
+		break;
+	case PER_FRAME:
+		EmitParticle(emitter);
+		break;
 	}
-	
-
 }
 
 void EffectSystem::EmitParticle(Emitter* emitter)

@@ -198,7 +198,6 @@ namespace KGCA41B
 		UV_SPRITE		= 1,
 		TEX_SPRITE		= 2,
 		SPRITE_EMITTER	= 3,
-		POINT_EMITTER	= 4,
 		EFFECT			= 5,
 	};
 
@@ -215,6 +214,13 @@ namespace KGCA41B
 		DEFAULT_NONE		= 0,
 		DEPTH_COMP_NOWRITE	= 1,
 		DEPTH_COMP_WRITE	= 2,
+	};
+
+	enum E_EmitType
+	{
+		PER_SECOND	= 0,
+		ONCE		= 1,
+		PER_FRAME	= 2,
 	};
 
 	struct Sprite
@@ -336,11 +342,10 @@ namespace KGCA41B
 
 		E_EffectType type;
 
-		// true		: emit_once
-		// false	: emit_per_second
-		bool		b_emit_once_or_per_second;
-		int			emit_partice_once;
+		E_EmitType	emit_type;
 		int			emit_per_second;
+		int			emit_once;
+		int			emit_per_frame;
 
 		XMFLOAT4	color;
 
@@ -372,9 +377,11 @@ namespace KGCA41B
 
 			type = NONE;
 
-			b_emit_once_or_per_second = false;
-			emit_partice_once = 0;
+			emit_type = PER_SECOND;
+
+			emit_once = 0;
 			emit_per_second = 0;
+			emit_per_frame = 0;
 
 			color = { 1.0, 1.0f, 1.0f, 1.0f };
 
@@ -407,14 +414,6 @@ namespace KGCA41B
 		{
 			type = SPRITE_EMITTER;
 			sprite_id = "";
-		}
-	};
-
-	struct PointEmitter : Emitter
-	{
-		PointEmitter() : Emitter()
-		{
-			type = POINT_EMITTER;
 		}
 	};
 

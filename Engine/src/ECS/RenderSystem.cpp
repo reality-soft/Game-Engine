@@ -396,10 +396,6 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 					device_context->Draw(1, 0);
 				}
 			}break;
-			case POINT_EMITTER:
-			{
-
-			}break;
 			}
 
 
