@@ -111,8 +111,8 @@ bool GeometryShader::LoadCompiled(wstring _csoFIle)
     D3D11_SO_DECLARATION_ENTRY ied[] =
     {
         { 0, "SV_POSITION", 0, 0, 4, 0 },
-        { 0, "POSITION",    0, 0, 3, 0 },
-        { 0, "NORMAL",      0, 0, 3, 0 },
+        //{ 0, "POSITION",    0, 0, 3, 0 },
+        //{ 0, "NORMAL",      0, 0, 3, 0 },
         { 0, "COLOR",       0, 0, 4, 0 },
         { 0, "TEXCOORD",    0, 0, 2, 0 }
     };
