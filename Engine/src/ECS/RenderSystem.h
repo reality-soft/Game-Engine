@@ -27,10 +27,11 @@ namespace KGCA41B
 		void RenderBoxShape(entt::registry& reg);
 
 		void RenderEffects(entt::registry& reg);
-		void SetShaderAndMaterial(Emitter* emitter);
-		void SetStates(Emitter* emitter);
-		void SetParticle(Particle& particle);
-		void SetSprite(Sprite* sprite);
+			void SetEffectCB(entt::registry& reg, C_Effect& effect);
+			void SetSpriteCB(Sprite* sprite);
+			void SetShaderAndMaterial(Emitter* emitter);
+			void SetStates(Emitter* emitter);
+			void SetParticleCB(Particle& particle);
 	public:
 
 	private:

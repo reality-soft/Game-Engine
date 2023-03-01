@@ -316,99 +316,96 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 
 		for (auto& emitter : effect.emitters)
 		{
-			switch (emitter->type)
+			if (emitter == nullptr)
+				return;
+
+			// Effect 설정
+			SetEffectCB(reg, effect);
+
+			// Sprite 정보 설정
+			Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter->sprite_id);
+			if (sprite == nullptr)
+				return;
+
+			SetSpriteCB(sprite);
+
+			// 이펙트의 쉐이더 및 머터리얼 설정
+			SetShaderAndMaterial(emitter.get());
+
+			// BS 및 DS 설정
+			SetStates(emitter.get());
+
+			// particle 설정
+			for (auto& particle : emitter->particles)
 			{
-			case SPRITE_EMITTER:
-			{
-				SpriteEmitter* sprite_emitter = (SpriteEmitter*)emitter.get();
+				if (!particle.enable)
+					continue;
 
-				if (sprite_emitter == nullptr)
-					return;
-
-				Sprite* sprite = RESOURCE->UseResource<Sprite>(sprite_emitter->sprite_id);
-				if (sprite == nullptr)
-					return;
-
-				// 카메라 가져오기
-					// 빌보드 행렬 적용 후 CB 적용
-					// cb_effect_ 적용
-				auto view_camera = reg.view<C_Camera>();
-				for (auto entity : view_camera)
+				if (sprite->type == TEX_SPRITE)
 				{
-					auto& camera = view_camera.get<C_Camera>(entity);
-					if (camera.tag == "Player")
-					{
-						XMVECTOR s, o, q, t;
-						XMFLOAT3 position(camera.position.m128_f32[0], camera.position.m128_f32[1], camera.position.m128_f32[2]);
-
-						s = XMVectorReplicate(1.0f);
-						o = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-						q = XMQuaternionRotationRollPitchYaw(camera.pitch, camera.yaw, camera.roll);
-						t = XMLoadFloat3(&position);
-						auto world_matrix = XMMatrixAffineTransformation(s, o, q, t);
-						auto view_matrix = XMMatrixInverse(0, world_matrix);
-						auto projection_matrix = XMMatrixPerspectiveFovLH(camera.fov, camera.aspect, camera.near_z, camera.far_z);
-						XMVECTOR determinant;
-						XMMATRIX mat_view_inverse = XMMatrixInverse(&determinant, view_matrix);
-						mat_view_inverse.r[3].m128_f32[0] = 0.0f;
-						mat_view_inverse.r[3].m128_f32[1] = 0.0f;
-						mat_view_inverse.r[3].m128_f32[2] = 0.0f;
-						// 빌보드 행렬 적용
-						cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
-
-						// 트랜스 폼 적용
-						cb_effect_.data.world = XMMatrixTranspose(effect.world * effect.local);
-						cb_effect_.data.view_proj = XMMatrixTranspose(XMMatrixMultiply(view_matrix, projection_matrix));
-
-						device_context->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
-						device_context->GSSetConstantBuffers(0, 1, cb_effect_.buffer.GetAddressOf());
-					}
-
+					TextureSprite* tex_sprite = (TextureSprite*)sprite;
+					Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
+					if (texture != nullptr)
+						device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 				}
 
-				SetSprite(sprite);
+				SetParticleCB(particle);
 
-				SetShaderAndMaterial(emitter.get());
-
-				SetStates(emitter.get());
-
-				// particle 설정
-				for (auto& particle : emitter->particles)
-				{
-					if (!particle.enable)
-						continue;
-
-					if (sprite->type == TEX_SPRITE)
-					{
-						TextureSprite* tex_sprite = (TextureSprite*)sprite;
-						Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
-						if (texture != nullptr)
-							device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-					}
-
-					SetParticle(particle);
-
-					// VertexBuffer 설정
-					UINT stride = sizeof(EffectVertex);
-					UINT offset = 0;
-					device_context->IASetVertexBuffers(0, 1, vertex_buffer_.GetAddressOf(), &stride, &offset);
-					device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
-					device_context->Draw(1, 0);
-				}
-			}break;
+				// VertexBuffer 설정
+				UINT stride = sizeof(EffectVertex);
+				UINT offset = 0;
+				device_context->IASetVertexBuffers(0, 1, vertex_buffer_.GetAddressOf(), &stride, &offset);
+				device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
+				device_context->Draw(1, 0);
 			}
-
-
-
 		}
-		
 	}
 
-
+	// BS, DS 복구 작업
 	device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
 	device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
 	device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	device_context->GSSetShader(nullptr, 0, 0);
+}
+
+void RenderSystem::SetEffectCB(entt::registry& reg, C_Effect& effect)
+{
+	// 카메라 가져오기
+				// 빌보드 행렬 적용 후 CB 적용
+				// cb_effect_ 적용
+	auto view_camera = reg.view<C_Camera>();
+	for (auto entity : view_camera)
+	{
+		auto& camera = view_camera.get<C_Camera>(entity);
+		if (camera.tag == "Player")
+		{
+			XMVECTOR s, o, q, t;
+			XMFLOAT3 position(camera.position.m128_f32[0], camera.position.m128_f32[1], camera.position.m128_f32[2]);
+
+			s = XMVectorReplicate(1.0f);
+			o = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+			q = XMQuaternionRotationRollPitchYaw(camera.pitch, camera.yaw, camera.roll);
+			t = XMLoadFloat3(&position);
+			auto world_matrix = XMMatrixAffineTransformation(s, o, q, t);
+			auto view_matrix = XMMatrixInverse(0, world_matrix);
+			auto projection_matrix = XMMatrixPerspectiveFovLH(camera.fov, camera.aspect, camera.near_z, camera.far_z);
+			XMVECTOR determinant;
+			XMMATRIX mat_view_inverse = XMMatrixInverse(&determinant, view_matrix);
+			mat_view_inverse.r[3].m128_f32[0] = 0.0f;
+			mat_view_inverse.r[3].m128_f32[1] = 0.0f;
+			mat_view_inverse.r[3].m128_f32[2] = 0.0f;
+			// 빌보드 행렬 적용
+			cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
+
+			// 트랜스 폼 적용
+			cb_effect_.data.world = XMMatrixTranspose(effect.world * effect.local);
+			cb_effect_.data.view_proj = XMMatrixTranspose(XMMatrixMultiply(view_matrix, projection_matrix));
+
+			device_context->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
+			device_context->GSSetConstantBuffers(0, 1, cb_effect_.buffer.GetAddressOf());
+		}
+
+	}
 }
 
 void RenderSystem::SetShaderAndMaterial(Emitter* emitter)
@@ -465,7 +462,7 @@ void RenderSystem::SetStates(Emitter* emitter)
 	}
 }
 
-void RenderSystem::SetParticle(Particle& particle)
+void RenderSystem::SetParticleCB(Particle& particle)
 {
 	cb_particle_.data.color		= particle.color;
 	cb_particle_.data.values.x	= particle.timer;
@@ -484,10 +481,8 @@ void RenderSystem::SetParticle(Particle& particle)
 	device_context->GSSetConstantBuffers(2, 1, cb_particle_.buffer.GetAddressOf());
 }
 
-void RenderSystem::SetSprite(Sprite* sprite)
+void RenderSystem::SetSpriteCB(Sprite* sprite)
 {
-	// max_frame ���
-	cb_sprite_.data.value.y = sprite->max_frame;
 	switch (sprite->type)
 	{
 	// UV

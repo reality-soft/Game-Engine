@@ -9,7 +9,7 @@ namespace KGCA41B
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 	public:
-		void UpdateTimer(Emitter* emitter);
+		void UpdateParticles(Emitter* emitter);
 		void EmitParticles(Emitter* emitter);
 		void EmitParticle(Emitter* emitter);
 	};

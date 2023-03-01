@@ -197,8 +197,15 @@ namespace KGCA41B
 		NONE			= 0,
 		UV_SPRITE		= 1,
 		TEX_SPRITE		= 2,
-		SPRITE_EMITTER	= 3,
+		EMITTER			= 3,
 		EFFECT			= 5,
+	};
+
+	enum E_EmitterAttributeType
+	{
+		INITIAL_SET			= 0,
+		ADD_PER_LIFETIME	= 1,
+		SET_PER_LIFETIME	= 2,
 	};
 
 	enum E_EffectBS
@@ -220,12 +227,11 @@ namespace KGCA41B
 	{
 		PER_SECOND	= 0,
 		ONCE		= 1,
-		PER_FRAME	= 2,
+		AFTER_TIME	= 2,
 	};
 
 	struct Sprite
 	{
-		int				max_frame = 5;
 		E_EffectType	type = NONE;
 	};
 
@@ -266,7 +272,7 @@ namespace KGCA41B
 		{
 			// 0 : UV, 1 : Texture
 			//int type;
-			//int max_frame;
+			//int padding;
 			//int uv_list_size;
 			//int padding;
 			XMINT4 value;
@@ -304,13 +310,12 @@ namespace KGCA41B
 		XMFLOAT4	color;
 
 		XMFLOAT3	position;
+		XMFLOAT3	velocity;
 		XMFLOAT3	rotation;
 		XMFLOAT3	scale;
 
-		XMFLOAT3	add_velocity;
 		XMFLOAT3	add_size;
 		float		add_rotation;
-
 		XMFLOAT3	accelation;
 
 		Particle()
@@ -326,11 +331,10 @@ namespace KGCA41B
 			position = { 0, 0, 0 };
 			rotation = { 0, 0, 0 };
 			scale = { 0, 0, 0 };
+			velocity = { 0, 0, 0 };
 
-			add_velocity = { 0, 0, 0 };
 			add_size = { 0, 0, 0 };
 			add_rotation = 0;
-
 			accelation = { 0, 0, 0 };
 
 		}
@@ -342,25 +346,58 @@ namespace KGCA41B
 
 		E_EffectType type;
 
+		string	sprite_id;
+
 		E_EmitType	emit_type;
 		int			emit_per_second;
 		int			emit_once;
-		int			emit_per_frame;
-
-		XMFLOAT4	color;
+		float		emit_time;
 
 		float		life_time[2];
+		
+		E_EmitterAttributeType color_setting_type;
+		E_EmitterAttributeType size_setting_type;
+		E_EmitterAttributeType rotation_setting_type;
+		E_EmitterAttributeType position_setting_type;
 
-		XMFLOAT3	initial_size[2];
-		float		initial_rotation[2];
-		XMFLOAT3	initial_position[2];
-		XMFLOAT3	initial_velocity[2];
+		// COLOR
+			// INITIAL_SET
+			XMFLOAT4	initial_color;
+			// SET_PER_LIFETIME
+			XMFLOAT4				color_timeline[100];
+			map<float, XMFLOAT4>	color_timeline_map;
 
+		// SIZE
+			// INITIAL_SET
+			XMFLOAT3	initial_size[2];
+			// ADD_PER_LIFETIME
+			XMFLOAT3	add_size_per_lifetime[2];
+			// SET_PER_LIFETIME
+			XMFLOAT3				size_timeline[100];
+			map<float, XMFLOAT3>	size_timeline_map;
 
-		// TODO : life time graph
-		XMFLOAT3	size_per_lifetime[2];
-		float		rotation_per_lifetime[2];
-		XMFLOAT3	accelation_per_lifetime[2];
+		// ROTATION
+			// INITIAL_SET
+			float		initial_rotation[2];
+			// ADD_PER_LIFETIME
+			float		add_rotation_per_lifetime[2];
+			// SET_PER_LIFETIME
+			float				rotation_timeline[100];
+			map<float, float>	rotation_timeline_map;
+
+		// POSITION
+			// INITIAL_SET
+			XMFLOAT3	initial_position[2];
+			XMFLOAT3	initial_velocity[2];
+			// ADD_PER_LIFETIME
+			XMFLOAT3	accelation_per_lifetime[2];
+			// SET_PER_LIFETIME
+			XMFLOAT3				velocity_timeline[100];
+			map<float, XMFLOAT3>	velocity_timeline_map;
+
+		// GRAVITY
+			// ON_OFF
+			bool gravity_on_off;
 
 		string		vs_id;
 		string		geo_id;
@@ -373,6 +410,9 @@ namespace KGCA41B
 
 		Emitter()
 		{
+			type = EMITTER;
+			sprite_id = "";
+
 			timer = 0.0f;
 
 			type = NONE;
@@ -381,21 +421,37 @@ namespace KGCA41B
 
 			emit_once = 0;
 			emit_per_second = 0;
-			emit_per_frame = 0;
-
-			color = { 1.0, 1.0f, 1.0f, 1.0f };
+			emit_time = 0.0f;
 
 			ZeroMemory(life_time, sizeof(float) * 2);
 
-			ZeroMemory(initial_size, sizeof(XMFLOAT3) * 2);
-			ZeroMemory(initial_rotation, sizeof(float) * 2);
-			ZeroMemory(initial_position, sizeof(XMFLOAT3) * 2);
+			color_setting_type		= INITIAL_SET;
+			size_setting_type		= INITIAL_SET;
+			rotation_setting_type	= INITIAL_SET;
+			position_setting_type	= INITIAL_SET;
 
-			ZeroMemory(initial_velocity, sizeof(XMFLOAT3) * 2);
+			// COLOR
+			initial_color = { 1.0, 1.0f, 1.0f, 1.0f };
+			ZeroMemory(color_timeline, sizeof(XMFLOAT4) * 100);
 
-			ZeroMemory(size_per_lifetime, sizeof(XMFLOAT3) * 2);
-			ZeroMemory(rotation_per_lifetime, sizeof(float) * 2);
+			// SIZE
+			ZeroMemory(initial_size,			sizeof(XMFLOAT3) * 2);
+			ZeroMemory(add_size_per_lifetime,	sizeof(XMFLOAT3) * 2);
+			ZeroMemory(size_timeline,			sizeof(XMFLOAT3) * 100);
+
+			// ROTATION
+			ZeroMemory(initial_rotation,			sizeof(float) * 2);
+			ZeroMemory(add_rotation_per_lifetime,	sizeof(float) * 2);
+			ZeroMemory(rotation_timeline,			sizeof(float) * 100);
+
+			// POSITION
+			ZeroMemory(initial_position,		sizeof(XMFLOAT3) * 2);
+			ZeroMemory(initial_velocity,		sizeof(XMFLOAT3) * 2);
 			ZeroMemory(accelation_per_lifetime, sizeof(XMFLOAT3) * 2);
+			ZeroMemory(velocity_timeline,		sizeof(XMFLOAT3) * 100);
+
+			// GRAVITY
+			gravity_on_off = false;
 
 			vs_id = "";
 			geo_id = "";
@@ -403,17 +459,6 @@ namespace KGCA41B
 
 			bs_state = DEFAULT_BS;
 			ds_state = DEFAULT_NONE;
-		}
-	};
-
-	struct SpriteEmitter : Emitter
-	{
-		string	sprite_id;
-
-		SpriteEmitter() : Emitter()
-		{
-			type = SPRITE_EMITTER;
-			sprite_id = "";
 		}
 	};
 
