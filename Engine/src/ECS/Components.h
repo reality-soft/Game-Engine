@@ -50,9 +50,10 @@ namespace KGCA41B
 
 	struct C_Camera : public C_Transform
 	{
-		XMVECTOR distance_from_target;
-		XMVECTOR camera_pos;
-		XMFLOAT2 pitch_yaw;
+		XMVECTOR camera_pos = { 0, 0, 0, 0 };
+		XMVECTOR target_pos;
+		XMVECTOR local_pos;
+		XMFLOAT2 pitch_yaw = { 0, 0 };
 		float near_z, far_z, fov, aspect;
 
 		virtual void OnConstruct() override {};
@@ -60,10 +61,10 @@ namespace KGCA41B
 		{
 			XMVECTOR target_translation, target_rotation, target_scale;
 			XMVECTOR local_translation, local_rotation, local_scale;
-			XMMatrixDecompose(&target_scale, &target_rotation, &target_translation, world * local);
-			XMMatrixDecompose(&local_scale, &local_rotation, &local_translation, local);
-
-			//camera_matrix = XMMatrixAffineTransformation({ 1.0f, 1.0f, 1.0f, 1.0f }, target_translation - distance_from_target, local_rotation, target_translation);
+			XMVECTOR camera_translation, camera_rotation, camera_scale;
+			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
+			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
+			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, world * local);
 		}
 	};
 

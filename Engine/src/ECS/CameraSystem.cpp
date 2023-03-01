@@ -88,8 +88,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 
 	if (camera->tag == "Debug")
 		DebugCameraMovement();
-
-	else if (camera->tag == "Player")
+	else
 		PlayerCameraMovement();
 
 	CameraAction();
@@ -186,6 +185,16 @@ void CameraSystem::DebugCameraMovement()
 
 void KGCA41B::CameraSystem::PlayerCameraMovement()
 {
+	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
+	{
+		float yaw = DINPUT->GetDeltaX() * TM_DELTATIME;
+		float pitch = DINPUT->GetDeltaY() * TM_DELTATIME;
+
+		camera->pitch_yaw.x += pitch;
+		camera->pitch_yaw.y += yaw;
+	}
+
+	camera->OnUpdate();
 }
 
 void KGCA41B::CameraSystem::UpdateVectors()
@@ -213,7 +222,12 @@ void CameraSystem::CreateMatrix()
 	S = XMVectorReplicate(1.0f);
 	O = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	Q = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, 0);
-	w = DirectX::XMMatrixAffineTransformation(S, O, Q, camera->camera_pos); // 원점으로부터 카메라 벡터를 반전시켜 회전 축으로 사용합니다.
+	if (camera->tag == "Debug") {
+		w = DirectX::XMMatrixAffineTransformation(S, O, Q, camera->camera_pos);
+	}
+	else {
+		w = DirectX::XMMatrixAffineTransformation(S, -camera->local_pos * Q, Q, camera->camera_pos);
+	}
 	v = DirectX::XMMatrixInverse(0, w);
 
 	view_matrix = v;
