@@ -350,14 +350,12 @@ bool ResourceMgr::ImportSprite(string filename)
     case UV_SPRITE:
     {
         UVSprite uv_sprite;
-        uv_sprite.max_frame = stoi(item->GetValue("MaxFrame"));
         uv_sprite.tex_id = item->GetValue("tex_id");
 
-        // TODO : UVList 파싱... 데이터 형태 수정해야할듯
         auto uvListItem = sheet->LoadItem("uvList");
         // 리스트에서 가장 높은 프레임의 값을 가져온다.
         int max = 0;
-        for (int i = 1; i <= uv_sprite.max_frame + 1; i++)
+        for (int i = 1; true; i++)
         {
             if (uvListItem->values[to_string(i)] == "")
             {
@@ -381,13 +379,12 @@ bool ResourceMgr::ImportSprite(string filename)
     case TEX_SPRITE:
     {
         TextureSprite tex_sprite;
-        tex_sprite.max_frame = stoi(item->GetValue("MaxFrame"));
 
         // TODO : 데이터 형태 수정해야할듯
         auto texListItem = sheet->LoadItem("texList");
         // 리스트에서 가장 높은 프레임의 값을 가져온다.
         int max = 0;
-        for (int i = 1; i <= tex_sprite.max_frame + 1; i++)
+        for (int i = 1; true; i++)
         {
             if (texListItem->values[to_string(i)] == "")
             {
