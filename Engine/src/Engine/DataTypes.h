@@ -148,6 +148,23 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	struct CbSkySphere
+	{
+		CbSkySphere()
+		{
+			data.time      = { 360, 360, 360, 360 };
+			data.sky_color = { 1.0f,  1.0f,   1.0f,  1.0f };
+		}
+		struct Data
+		{
+			XMFLOAT4 time;
+			XMFLOAT4 sky_color;
+			XMFLOAT4 strength;
+		} data;
+
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 	// Physics
 	struct MouseRay
 	{
