@@ -128,6 +128,7 @@ namespace KGCA41B
 		{
 			XMMATRIX view_matrix;
 			XMMATRIX projection_matrix;
+			XMVECTOR camera_position;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};

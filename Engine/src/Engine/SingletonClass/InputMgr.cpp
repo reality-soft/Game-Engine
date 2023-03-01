@@ -126,5 +126,5 @@ int KGCA41B::InputMgr::GetDeltaX()
 
 int KGCA41B::InputMgr::GetDeltaY()
 {
-	return mouse_state.lX;
+	return mouse_state.lY;
 }

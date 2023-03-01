@@ -19,7 +19,9 @@ namespace KGCA41B
 		void SetSpeed(float speed) { this->speed = speed; };
 		XMFLOAT2 ndc;
 	private:
-		void CameraMovement();
+		void DebugCameraMovement();
+		void PlayerCameraMovement();
+
 		void UpdateVectors();
 		void CameraAction();
 		void CreateMatrix();
