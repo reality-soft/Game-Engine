@@ -32,6 +32,8 @@ namespace KGCA41B
 
     public:
         PhysicsWorld* GetPhysicsWorld() { return physics_world_; }
+        EventListener event_listener;
+
         WorldRayCallback WorldPicking(const MouseRay& mouse_ray);
         bool ObjectPicking(const MouseRay& mouse_ray, CollisionBody* target);
     public:
@@ -39,6 +41,6 @@ namespace KGCA41B
 
     private:
         PhysicsWorld* physics_world_;
-        float accmulator = 0.0f;
+        long double accmulator = 0;
     };
 }

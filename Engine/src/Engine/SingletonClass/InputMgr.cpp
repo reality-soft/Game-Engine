@@ -32,6 +32,13 @@ bool InputMgr::Init()
 
 bool InputMgr::Update()
 {
+	if (is_active == false)
+	{
+		di_keyboard->Unacquire();
+		di_mouse->Unacquire();
+		return false;
+	}
+
 	HRESULT hr = di_keyboard.Get()->GetDeviceState(sizeof(keyboard_state), (LPVOID)&keyboard_state);
 	if (FAILED(hr))
 	{
@@ -116,6 +123,9 @@ XMFLOAT2 InputMgr::GetMouseVelocity()
 
 int InputMgr::GetMouseWheel()
 {
+	if (is_active == false)
+		return mouse_state.lZ = 0;
+
 	return mouse_state.lZ;
 }
 
@@ -127,4 +137,9 @@ int KGCA41B::InputMgr::GetDeltaX()
 int KGCA41B::InputMgr::GetDeltaY()
 {
 	return mouse_state.lY;
+}
+
+void KGCA41B::InputMgr::Active(bool shoud_active)
+{
+	is_active = shoud_active;
 }

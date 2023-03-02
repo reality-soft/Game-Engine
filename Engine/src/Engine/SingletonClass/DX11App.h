@@ -30,6 +30,9 @@ public:
     D3D11_VIEWPORT* GetViewPortAddress() { return &view_port; }
     DirectX::CommonStates* GetCommonStates() { return dx_states; }
 
+    void SetWireframes();
+    void SetSolid();
+
 public:
     bool OnInit(POINT buffer_size, HWND hwnd);
 

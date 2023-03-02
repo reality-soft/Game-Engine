@@ -37,6 +37,8 @@ namespace KGCA41B
 		int GetMouseWheel();
 		int GetDeltaX();
 		int GetDeltaY();
+
+		void Active(bool shoud_active);
 	private:
 		ComPtr<IDirectInput8> dinput;
 		ComPtr<IDirectInputDevice8> di_keyboard;
@@ -49,6 +51,8 @@ namespace KGCA41B
 		KeyState  prev_rgb_buttons[4];
 
 		POINT current_mousepos;
+
+		bool is_active = true;
 	};
 
 }
