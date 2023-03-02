@@ -22,14 +22,16 @@ bool PhysicsMgr::Init()
 
 	// Change the number of iterations of the position solver 
 	physics_world_->setNbIterationsPositionSolver(5);
-
+	physics_world_->setEventListener(&event_listener);
 
 	return true;
 }
 
 void PhysicsMgr::Update()
 {
+	// Constant physics time step 
 	const float timestep = 1.0f / 60.0f;
+
 	accmulator += TM_DELTATIME;
 
 	while (accmulator >= timestep)
