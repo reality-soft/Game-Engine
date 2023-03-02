@@ -16,12 +16,24 @@ namespace KGCA41B
 
 		void SetCbTransform(const C_Transform* const transform);
 		void PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation);
-		void RenderStaticMesh(const C_StaticMesh* const static_mesh);
-		void RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh, const C_Animation* const animation_component);
-		void RenderBoxShape(const C_BoxShape* const box_shape);
-		void SetParticle(Particle& particle);
-		void SetSprite(Sprite* sprite);
-		void RenderParticle(Particle& particle);
+		void RenderStaticMesh(C_StaticMesh& static_mesh);
+		void RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh, const C_Animation& animation_component);
+		
+
+		// Effect Rendering
+		void CreateEffectCB();
+		void CreateEffectBuffer();
+
+		void RenderBoxShape(entt::registry& reg);
+
+		void RenderEffects(entt::registry& reg);
+			void SetEffectCB(entt::registry& reg, C_Effect& effect);
+			void SetSpriteCB(Sprite* sprite);
+			void SetShaderAndMaterial(Emitter* emitter);
+			void SetStates(Emitter* emitter);
+			void SetParticleCB(Particle& particle);
+	public:
+
 	private:
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* device_context = nullptr;
@@ -31,7 +43,10 @@ namespace KGCA41B
 		CbSkeleton cb_skeleton;
 
 		// Effect
-		CbParticle cb_particle;
-		CbSprite cb_sprite;
+		EffectVertex			effect_vertex_;
+		ComPtr<ID3D11Buffer>	vertex_buffer_;
+		CbEffect	cb_effect_;
+		CbParticle	cb_particle_;
+		CbSprite	cb_sprite_;
 	};
 }
