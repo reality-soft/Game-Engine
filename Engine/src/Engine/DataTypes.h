@@ -89,6 +89,20 @@ namespace KGCA41B
 			meshes.resize(other.meshes.size());
 			meshes = other.meshes;
 		}
+		XMFLOAT3 GetMaxXYZ()
+		{
+			XMFLOAT3 max_xyz = {0, 0, 0};
+			for (auto mesh : meshes)
+			{
+				for (auto vertex : mesh.vertices)
+				{
+					max_xyz.x = max(max_xyz.x, vertex.p.x);
+					max_xyz.y = max(max_xyz.y, vertex.p.y);
+					max_xyz.z = max(max_xyz.z, vertex.p.z);
+				}
+			}
+			return max_xyz;
+		}
 
 		vector<SingleMesh<Vertex>> meshes;
 	};
@@ -164,6 +178,45 @@ namespace KGCA41B
 
 		ComPtr<ID3D11Buffer> buffer;
 	};
+
+	struct InstanceData
+	{
+		InstanceData()
+		{
+			col_transform.identity();
+			index = 0;
+
+			S = { 1 ,1, 1 };
+			R = { 0 ,0, 0 };
+			T = { 0 ,0, 0 };
+		}
+		string GetName()
+		{			
+			return obj_name + "_" + to_string(index);
+		}
+		string obj_name;
+		UINT index;
+
+		XMFLOAT3 S;
+		XMFLOAT3 R;
+		XMFLOAT3 T;
+
+		reactphysics3d::Transform col_transform;
+		reactphysics3d::BoxShape* box_shape = nullptr;
+		reactphysics3d::Collider* box_collider = nullptr;
+		reactphysics3d::CollisionBody* collision_body = nullptr;
+	};
+
+	struct CbInstance
+	{
+		struct Data
+		{
+			XMMATRIX instance_transform[128];
+		}data;
+
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 
 	// Physics
 	struct MouseRay

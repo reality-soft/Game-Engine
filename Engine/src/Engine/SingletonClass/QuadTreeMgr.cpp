@@ -239,14 +239,8 @@ void KGCA41B::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 }
 void KGCA41B::QuadTreeMgr::Render()
 {
-	if (wire_frame)
-		DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->Wireframe());
-
 	deviding_level_->Render(true);
 	MapCulling(camera_frustum_, root_node_);
-
-	if (wire_frame)
-		DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
 void KGCA41B::QuadTreeMgr::Release()
