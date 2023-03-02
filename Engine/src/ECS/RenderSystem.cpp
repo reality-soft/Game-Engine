@@ -69,21 +69,23 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 	for (auto ent : view_stm)
 	{
-		auto& transform = reg.get<C_Transform>(ent);
+		auto* transform = reg.try_get<C_Transform>(ent);
 		SetCbTransform(transform);
 
-		auto& static_mesh = reg.get<C_StaticMesh>(ent);
-		SetCbTransform(transform);
+		auto* static_mesh = reg.try_get<C_StaticMesh>(ent);
 		RenderStaticMesh(static_mesh);
 	}
 
 	for (auto ent : view_skm)
 	{
-		auto& transform = reg.get<C_Transform>(ent);
+		auto* transform = reg.try_get<C_Transform>(ent);
 		SetCbTransform(transform);
 
-		auto& skeletal_mesh = reg.get<C_SkeletalMesh>(ent);
-		auto& animation = reg.get<C_Animation>(ent);
+		auto* skeletal_mesh = reg.try_get<C_SkeletalMesh>(ent);
+		auto* animation = reg.try_get<C_Animation>(ent);
+		if (skeletal_mesh == nullptr || animation == nullptr) {
+			continue;
+		}
 		RenderSkeletalMesh(skeletal_mesh, animation);
 	}
 
@@ -96,9 +98,9 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	
 }
 
-void RenderSystem::SetCbTransform(const C_Transform& transform)
+void RenderSystem::SetCbTransform(const C_Transform* const transform)
 {
-	cb_transform.data.world_matrix = XMMatrixTranspose(transform.world * transform.local);
+	cb_transform.data.world_matrix = XMMatrixTranspose(transform->world * transform->local);
 
 	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
 	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
@@ -123,10 +125,10 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, const vector<OutAnimD
 	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
 }
 
-void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
+void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_component)
 {
-	StaticMesh* static_mesh = RESOURCE->UseResource<StaticMesh>(static_mesh_component.static_mesh_id);
-	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh_component.vertex_shader_id);
+	StaticMesh* static_mesh = RESOURCE->UseResource<StaticMesh>(static_mesh_component->static_mesh_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh_component->vertex_shader_id);
 
 	SetCbTransform(static_mesh_component);
 
@@ -142,7 +144,7 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->IASetInputLayout(shader->InputLayout());
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
@@ -150,11 +152,11 @@ void RenderSystem::RenderStaticMesh(C_StaticMesh& static_mesh_component)
 
 }
 
-void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_components, const C_Animation& animation_component)
+void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, const C_Animation* const animation_component)
 {
-	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components.skeletal_mesh_id);
-	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components.vertex_shader_id);
-	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation_component.anim_id);
+	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components->skeletal_mesh_id);
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components->vertex_shader_id);
+	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation_component->anim_id);
 	if (res_animation != nullptr) {
 		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
 	}
@@ -172,7 +174,7 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh_compon
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		
-		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->IASetInputLayout(shader->InputLayout());
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
@@ -302,8 +304,6 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 
 		device_context->DrawIndexed(box.index_list.size(), 0, 0);
 	}
-
-	
 }
 
 void RenderSystem::RenderEffects(entt::registry& reg)

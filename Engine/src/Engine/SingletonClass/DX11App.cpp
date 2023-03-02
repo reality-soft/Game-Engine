@@ -2,6 +2,16 @@
 #include "DX11App.h"
 
 
+void DX11App::SetWireframes()
+{
+    dx11_context->RSSetState(dx_states->Wireframe());
+}
+
+void DX11App::SetSolid()
+{
+    dx11_context->RSSetState(dx_states->CullNone());
+}
+
 bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
 {
     HRESULT hr;
@@ -27,7 +37,7 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     swap_chain_desc.BufferDesc.Height = buffer_size.y;
     swap_chain_desc.BufferDesc.RefreshRate.Numerator = 60;
     swap_chain_desc.BufferDesc.RefreshRate.Denominator = 1;
-    swap_chain_desc.SampleDesc.Count = 1;
+    swap_chain_desc.SampleDesc.Count = 4;
     swap_chain_desc.SampleDesc.Quality = 0;
     swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
@@ -60,7 +70,12 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     if (FAILED(hr))
         return false;
 
-    hr = dx11_device.Get()->CreateRenderTargetView(rt_texture, nullptr, dx11_rtview.GetAddressOf());
+    D3D11_RENDER_TARGET_VIEW_DESC rt_desc;
+    ZeroMemory(&rt_desc, sizeof(rt_desc));
+    rt_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    rt_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+
+    hr = dx11_device.Get()->CreateRenderTargetView(rt_texture, &rt_desc, dx11_rtview.GetAddressOf());
     if (FAILED(hr))
         return false;
 
@@ -76,7 +91,8 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     texture_desc.MipLevels = 1;
     texture_desc.ArraySize = 1;
     texture_desc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-    texture_desc.SampleDesc.Count = 1;
+    texture_desc.SampleDesc.Count = 4;
+    texture_desc.SampleDesc.Quality = 0;
     texture_desc.Usage = D3D11_USAGE_DEFAULT;
     texture_desc.CPUAccessFlags = 0;
     texture_desc.MiscFlags = 0;
@@ -91,7 +107,7 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc;
     ZeroMemory(&dsv_desc, sizeof(dsv_desc));
     dsv_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
     hr = dx11_device->CreateDepthStencilView(ds_texture, &dsv_desc, dx11_dsview.GetAddressOf());
     if (FAILED(hr))
         return false;
@@ -150,8 +166,8 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     dx11_rtview.ReleaseAndGetAddressOf();
     dx11_dsview.ReleaseAndGetAddressOf();
 
-    dx11_context.Get()->ClearState();
-    dx11_context.Get()->Flush();
+    //dx11_context.Get()->ClearState();
+    //dx11_context.Get()->Flush();
     
     // 백버퍼 리사이즈
     DXGI_SWAP_CHAIN_DESC swap_chain_desc;
@@ -159,9 +175,15 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     hr = dx11_swap_chain.Get()->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 
     // 백버퍼의 텍스처로 새로운 렌더타깃 뷰 생성
+    D3D11_RENDER_TARGET_VIEW_DESC rt_desc;
+    ZeroMemory(&rt_desc, sizeof(rt_desc));
+    rt_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    rt_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+
+
     ComPtr<ID3D11Texture2D> rt_texture;
     hr = dx11_swap_chain.Get()->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)rt_texture.GetAddressOf());
-    hr = dx11_device.Get()->CreateRenderTargetView(rt_texture.Get(), NULL, dx11_rtview.GetAddressOf());
+    hr = dx11_device.Get()->CreateRenderTargetView(rt_texture.Get(), &rt_desc, dx11_rtview.GetAddressOf());
 
 
     // 깊이_스텐실 버퍼 생성
@@ -174,8 +196,9 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     td.Height = scd.BufferDesc.Height;
     td.MipLevels = 1;
     td.ArraySize = 1;
+    td.SampleDesc.Count = 4;
+    td.SampleDesc.Quality = 0;
     td.Format = DXGI_FORMAT_R24G8_TYPELESS;
-    td.SampleDesc.Count = 1;
     td.Usage = D3D11_USAGE_DEFAULT;
     td.CPUAccessFlags = 0;
     td.MiscFlags = 0;
@@ -187,7 +210,7 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
     ZeroMemory(&dsvDesc, sizeof(dsvDesc));
     dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
     hr = dx11_device.Get()->CreateDepthStencilView(ds_texture.Get(), &dsvDesc, dx11_dsview.GetAddressOf());
 
     // 뷰포트 생성
@@ -209,4 +232,10 @@ void DX11App::OnRelease()
         delete dx_states;
         dx_states = nullptr;
     }
+}
+
+void DX11App::CreatePreProcess()
+{
+
+
 }

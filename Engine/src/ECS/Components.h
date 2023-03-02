@@ -50,11 +50,22 @@ namespace KGCA41B
 
 	struct C_Camera : public C_Transform
 	{
-		XMVECTOR position, look, up, right, target;
-		float yaw, pitch, roll, distance, speed;
+		XMVECTOR camera_pos = { 0, 0, 0, 0 };
+		XMVECTOR target_pos;
+		XMVECTOR local_pos;
+		XMFLOAT2 pitch_yaw = { 0, 0 };
 		float near_z, far_z, fov, aspect;
 
 		virtual void OnConstruct() override {};
+		virtual void OnUpdate() override
+		{
+			XMVECTOR target_translation, target_rotation, target_scale;
+			XMVECTOR local_translation, local_rotation, local_scale;
+			XMVECTOR camera_translation, camera_rotation, camera_scale;
+			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
+			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
+			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, world * local);
+		}
 	};
 
 	struct C_Animation : public Component

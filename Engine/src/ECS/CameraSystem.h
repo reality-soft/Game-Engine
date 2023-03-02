@@ -16,20 +16,30 @@ namespace KGCA41B
 		MouseRay CreateMouseRay();
 		C_Camera* GetCamera();
 		XMMATRIX GetViewProj();
+		void SetSpeed(float speed) { this->speed = speed; };
 		XMFLOAT2 ndc;
 	private:
-		void CameraMovement();
+		void DebugCameraMovement();
+		void PlayerCameraMovement();
+
+		void UpdateVectors();
 		void CameraAction();
 		void CreateMatrix();
 
 	private:
-		C_Camera* camera;
+		C_Camera* camera = nullptr;
 		D3D11_VIEWPORT* viewport;
 
 		XMMATRIX world_matrix;
 		XMMATRIX view_matrix;
 		XMMATRIX projection_matrix;
 
+		XMVECTOR look;
+		XMVECTOR right;
+		XMVECTOR up;
+
 		CbViewProj cb_viewproj;
+
+		float speed = 30;
 	};
 }

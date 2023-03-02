@@ -19,10 +19,11 @@ namespace KGCA41B
 		string sepcular;
 		string ambient;
 		string opacity;
-		string shader = "SurfacePS.cso";
+		string shader = "MeshSurfacePS.cso";
 
 		ID3D11ShaderResourceView* textures[7];
 		ID3D11PixelShader* pixel_shader;
+		ID3D11SamplerState* sampler;
 
 		void SaveEmpty(string filename);
 		void Create();

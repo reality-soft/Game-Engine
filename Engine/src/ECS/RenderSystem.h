@@ -14,7 +14,7 @@ namespace KGCA41B
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
-		void SetCbTransform(const C_Transform& transform);
+		void SetCbTransform(const C_Transform* const transform);
 		void PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation);
 		void RenderStaticMesh(C_StaticMesh& static_mesh);
 		void RenderSkeletalMesh(const C_SkeletalMesh& skeletal_mesh, const C_Animation& animation_component);

@@ -10,26 +10,33 @@
 
 namespace KGCA41B {
 
+	class LODCell
+	{
+	public:
+		LODCell(UINT max_lod);
+		bool Create(const UINT corners[4], UINT num_col);
+		vector<vector<UINT>> lod_index_list;
+		vector<ComPtr<ID3D11Buffer>> lod_index_buffer;
+	};
+
 	class DLL_API SpaceNode 
 	{
 	public:
-		SpaceNode() = default;
 		SpaceNode(UINT num, UINT depth);
+		~SpaceNode();
 
 
 	public:
 		void SetNode(Level* level);
-
+		void Render();
 	public:
 		UINT node_num, node_depth;
 		AABBShape area;
-
-		shared_ptr<SpaceNode> child_node_[4];
+		SpaceNode* child_node_[4] = { 0, };
 		std::unordered_set<entt::entity> object_list;
-
 		UINT coner_index[4];
-		vector<UINT> index_list;
-		ComPtr<ID3D11Buffer> index_buffer;
+		LODCell* lod_cell = nullptr;
+		UINT current_lod = 0;
 	};
 
 	class DLL_API QuadTreeMgr
@@ -37,21 +44,25 @@ namespace KGCA41B {
 		SINGLETON(QuadTreeMgr)
 #define QUADTREE QuadTreeMgr::GetInst()
 	public:
-		void Init(Level* level_to_devide, int _max_depth);
+		void Init(Level* level_to_devide);
 		void Frame(CameraSystem* applied_camera);
 		void Render();
 		void Release();
 
 	public:
+		void UpdateLOD(XMVECTOR camera_pos);
 		void MapCulling(Frustum& frustum, SpaceNode* node);
 		void ObjectCulling();
 	private:
 		XMINT2 world_size_;
 		UINT max_depth;
 		UINT node_count = 0;
+		UINT max_lod;
 
-		vector<shared_ptr<SpaceNode>> total_nodes_;
-		shared_ptr<SpaceNode> root_node_;
+		vector<SpaceNode*> total_nodes_;
+		vector<SpaceNode*> leaf_nodes_;
+
+		SpaceNode* root_node_ = nullptr;
 
 
 	private:
@@ -63,7 +74,9 @@ namespace KGCA41B {
 		std::vector<int>					FindCollisionSearchNode(int node_num);
 		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
 
-		shared_ptr<Level> deviding_level_;
+		Level* deviding_level_ = nullptr;
 		Frustum camera_frustum_;
+
+		bool wire_frame = false;
 	};
 }

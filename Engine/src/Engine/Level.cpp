@@ -1,12 +1,254 @@
 #include "stdafx.h"
 #include "Level.h"
 #include "DX11App.h"
-#include "ResourceMgr.h"
 #include "PhysicsMgr.h"
-#include "InputMgr.h"
 #include "FileTransfer.h"
+#include "TimeMgr.h"
+
 using namespace KGCA41B;
 
+KGCA41B::SkySphere::SkySphere()
+{
+}
+
+KGCA41B::SkySphere::~SkySphere()
+{
+}
+
+bool KGCA41B::SkySphere::CreateSphere()
+{
+	sphere_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>("SkySphere.stmesh"));
+	cloud_dome = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>("CloudDome.stmesh"));
+
+	vs = shared_ptr<VertexShader>(RESOURCE->UseResource<VertexShader>("SkySphereVS.cso"));
+
+	if (sphere_mesh.get() == nullptr)
+		return false;
+
+	if (cloud_dome.get() == nullptr);
+
+	if (vs.get() == nullptr)
+		return false;
+
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC desc;
+	D3D11_SUBRESOURCE_DATA subresource;
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subresource, sizeof(subresource));
+
+	desc.ByteWidth = sizeof(CbTransform::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	subresource.pSysMem = &cb_transform.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subresource, cb_transform.buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subresource, sizeof(subresource));
+
+	desc.ByteWidth = sizeof(CbSkySphere::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	subresource.pSysMem = &cb_sky.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subresource, cb_sky.buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	return true;
+}
+
+void KGCA41B::SkySphere::FrameRender(const C_Camera* camera)
+{
+	DX11APP->GetDeviceContext()->VSSetShader(nullptr, 0, 0);
+	DX11APP->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetShader(nullptr, 0, 0);
+
+	DX11APP->GetDeviceContext()->IASetInputLayout(vs.get()->InputLayout());
+	DX11APP->GetDeviceContext()->VSSetShader(vs.get()->Get(), 0, 0);
+
+	//DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullClockwise());
+	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Additive(), 0, -1);
+	{
+		FrameBackgroundSky(camera);
+		RenderBackgroundSky();
+
+		FrameSunStarSky(camera);
+		RenderSunStarSky();
+
+		FrameCloudSky(camera);
+		RenderCloudSky();
+	}
+	//DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
+	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
+}
+
+void KGCA41B::SkySphere::FrameBackgroundSky(const C_Camera* camera)
+{
+	XMMATRIX following_camera_matrix =
+		XMMatrixScaling(camera->far_z * 0.9, camera->far_z * 0.9, camera->far_z * 0.9) *
+		XMMatrixTranslationFromVector(camera->camera_pos);
+
+	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_transform.buffer.Get(), 0, 0, &cb_transform.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+
+	skycolor_afternoon = { 1.0f,  0.2f,   0.01f, 1.0f };
+	skycolor_noon = { 0.2f,  0.2f,   0.5f,  1.0f };
+	skycolor_night = { 0.01f, 0.005f, 0.03f, 1.0f };
+	cb_sky.data.strength.x = 0.5f;
+	cb_sky.data.strength.y = 0.5f;
+	cb_sky.data.strength.z = 0.01f;
+
+
+	if (cb_sky.data.time.x >= 0)
+	{
+		cb_sky.data.time.x -= TM_DELTATIME * 10;
+		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_noon, (360 - cb_sky.data.time.x) / 360);
+		cb_sky.data.strength.w = cb_sky.data.strength.x;
+
+	}
+	else if (cb_sky.data.time.y >= 0)
+	{
+		cb_sky.data.time.y -= TM_DELTATIME * 10;
+		cb_sky.data.sky_color = LerpColor(skycolor_noon, skycolor_afternoon, (360 - cb_sky.data.time.y) / 360);
+		cb_sky.data.strength.w = cb_sky.data.strength.y;
+	}
+	else if (cb_sky.data.time.z >= 0)
+	{
+		cb_sky.data.time.z -= TM_DELTATIME * 10;
+		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_night, (360 - cb_sky.data.time.z) / 360);
+		cb_sky.data.strength.w = cb_sky.data.strength.y + (cb_sky.data.strength.z - cb_sky.data.strength.y) * (360 - cb_sky.data.time.z) / 360;
+	}
+	else if (cb_sky.data.time.w >= 0)
+	{
+		cb_sky.data.time.w -= TM_DELTATIME * 10;
+		cb_sky.data.sky_color = LerpColor(skycolor_night, skycolor_afternoon, (360 - cb_sky.data.time.w) / 360);
+		cb_sky.data.strength.w = cb_sky.data.strength.z + (cb_sky.data.strength.y - cb_sky.data.strength.z) * (360 - cb_sky.data.time.w) / 360;
+	}
+	else
+	{
+		cb_sky.data.time = { 360, 360, 360, 360 };
+	}
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_sky.buffer.Get(), 0, 0, &cb_sky.data, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
+}
+
+void KGCA41B::SkySphere::RenderBackgroundSky()
+{
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+
+	for (auto mesh : sphere_mesh.get()->meshes)
+	{
+		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("BackgroundSky.mat");
+		if (material)
+			material->Set();
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(mesh.indices.size(), 0, 0);
+	}
+}
+
+void KGCA41B::SkySphere::FrameSunStarSky(const C_Camera* camera)
+{
+	XMMATRIX following_camera_matrix =
+		XMMatrixScaling(camera->far_z * 0.8, camera->far_z * 0.8, camera->far_z * 0.8) *
+		XMMatrixTranslationFromVector(camera->camera_pos);
+
+	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_transform.buffer.Get(), 0, 0, &cb_transform.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+
+	cb_sky.data.sky_color = { 1, 1, 1, 0 };
+	cb_sky.data.strength.w = -1;
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_sky.buffer.Get(), 0, 0, &cb_sky.data, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
+}
+
+void KGCA41B::SkySphere::RenderSunStarSky()
+{
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+
+	for (auto mesh : sphere_mesh.get()->meshes)
+	{
+		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("SunStarSky.mat");
+		if (material)
+			material->Set();
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(mesh.indices.size(), 0, 0);
+	}
+}
+
+void KGCA41B::SkySphere::FrameCloudSky(const C_Camera* camera)
+{
+	XMMATRIX following_camera_matrix =
+		XMMatrixScaling(camera->far_z * 0.5, camera->far_z * 0.5, camera->far_z * 0.5) *
+		XMMatrixTranslationFromVector(camera->camera_pos) * 
+		XMMatrixRotationX(XMConvertToRadians(-90)) * 
+		XMMatrixRotationY(XMConvertToRadians(TM_GAMETIME));
+
+	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_transform.buffer.Get(), 0, 0, &cb_transform.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+
+	cb_sky.data.sky_color = { 1, 1, 1, 0 };
+	cb_sky.data.strength.w = -1;
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_sky.buffer.Get(), 0, 0, &cb_sky.data, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
+
+	ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->LinearWrap();
+	DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
+}
+
+void KGCA41B::SkySphere::RenderCloudSky()
+{
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+
+	for (auto mesh : cloud_dome.get()->meshes)
+	{
+		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("CloudSky.mat");
+		if (material)
+			material->Set();
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(mesh.indices.size(), 0, 0);
+	}
+}
+
+
+KGCA41B::Level::~Level()
+{
+	level_mesh_.vertices.clear();
+	level_mesh_.vertex_buffer.Get()->Release();
+	level_mesh_.vertex_buffer.ReleaseAndGetAddressOf();
+
+	level_mesh_.indices.clear();
+	level_mesh_.index_buffer.Get()->Release();
+	level_mesh_.index_buffer.ReleaseAndGetAddressOf();
+
+	height_list_.clear();
+
+	height_field_body_->removeCollider(height_field_collider_);
+	PHYSICS->GetPhysicsWorld()->destroyCollisionBody(height_field_body_);
+
+	height_field_shape_ = nullptr;
+	height_field_collider_ = nullptr;
+	height_field_body_ = nullptr;
+}
 
 bool KGCA41B::Level::ImportFromFile(string filepath)
 {
@@ -15,8 +257,8 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 	//Single Datas;
 	file_transfer.ReadBinary<UINT>(num_row_vertex_);
 	file_transfer.ReadBinary<UINT>(num_col_vertex_);
-	file_transfer.ReadBinary<int>(cell_distance_);
-	file_transfer.ReadBinary<int>(uv_scale_);
+	file_transfer.ReadBinary<float>(cell_distance_);
+	file_transfer.ReadBinary<float>(uv_scale_);
 
 	// Arrays
 	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
@@ -25,27 +267,35 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 
 	file_transfer.Close();
 
+	XMFLOAT2 minmax_height = GetMinMaxHeight();
+
 	if (CreateBuffers() == false)
 		return false;
 
-	XMFLOAT2 minmax_height = GetMinMaxHeight();
-	CreateHeightField(minmax_height.x, minmax_height.y);
+	if (CreateHeightField(minmax_height.x, minmax_height.y) == false)
+		return false;
 
+	return true;
 	return true;
 }
 
-bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_scale)
+bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale, XMINT2 _row_col_blocks)
 {
-    num_row_vertex_ = num_row;
-    num_col_vertex_ = num_col;
-    UINT num_row_cell = num_row_vertex_ - 1;
-    UINT num_col_cell = num_col_vertex_ - 1;
-    int num_half_row = num_row_vertex_ / 2;
-    int num_half_col = num_col_vertex_ / 2;
-	cell_distance_ = cell_distance;
-	uv_scale_ = uv_scale;
+	max_lod_ = _max_lod;
+	cell_scale_ = _cell_scale;
+	row_col_blocks_ = _row_col_blocks;
+	uv_scale_ = _uv_scale;
 
-    level_mesh_.vertices.resize(num_row_vertex_ * num_col_vertex_);
+	num_row_vertex_ = pow(2, max_lod_) * row_col_blocks_.x + 1;
+	num_col_vertex_ = pow(2, max_lod_) * row_col_blocks_.y + 1;
+	cell_distance_ = cell_scale_ / pow(2, max_lod_);
+
+	UINT num_row_cell = num_row_vertex_ - 1;
+	UINT num_col_cell = num_col_vertex_ - 1;
+	float half_row = num_row_vertex_ / 2;
+	float half_col = num_col_vertex_ / 2;
+
+	level_mesh_.vertices.resize(num_row_vertex_ * num_col_vertex_);
 
 	for (int r = 0; r < num_row_vertex_; ++r)
 	{
@@ -53,18 +303,18 @@ bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_sc
 		{
 			UINT index = r * num_row_vertex_ + c;
 
-			level_mesh_.vertices[index].p.x = (float)(c - num_half_row) * cell_distance_;
+			level_mesh_.vertices[index].p.x = (c - half_row) * cell_distance_;
 			level_mesh_.vertices[index].p.y = 0.0f;
-			level_mesh_.vertices[index].p.z = (float)(num_half_col - r) * cell_distance_;
+			level_mesh_.vertices[index].p.z = (half_col - r) * cell_distance_;
 
 			level_mesh_.vertices[index].c = { 1, 1, 1, 1 };
 
-			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell) * uv_scale_;
-			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell) * uv_scale_;
+			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell)*uv_scale_;
+			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell)*uv_scale_;
 		}
 	}
 
-	level_mesh_.indices.resize(num_row_cell * num_col_cell * 6.0f);
+	level_mesh_.indices.resize(num_row_cell * num_col_cell * 6);
 	UINT index = 0;
 	for (UINT r = 0; r < num_row_cell; ++r)
 	{
@@ -83,13 +333,24 @@ bool Level::CreateLevel(UINT num_row, UINT num_col, int cell_distance, int uv_sc
 			index += 6;
 		}
 	}
-	
+
 	GenVertexNormal();
+	XMFLOAT2 minmax_height = GetMinMaxHeight();
 
 	if (CreateBuffers() == false)
 		return false;
 
-    return true;
+	if (CreateHeightField(minmax_height.x, minmax_height.y) == false)
+		return false;
+
+	sky_sphere.CreateSphere();
+
+	return true;
+}
+
+void KGCA41B::Level::SetCamera(C_Camera* _camera)
+{
+	camera = _camera;
 }
 
 bool Level::CreateHeightField(float min_height, float max_height)
@@ -117,9 +378,24 @@ bool Level::CreateHeightField(float min_height, float max_height)
 	return true;
 }
 
+void KGCA41B::Level::RenderObjects()
+{
+	for (auto inst : inst_objects)
+	{
+		inst.Frame();
+		inst.Render();
+	}
+}
+
+void KGCA41B::Level::RenderSkySphere()
+{
+	sky_sphere.FrameRender(camera);
+}
+
 void Level::Update()
 {
-
+	RenderSkySphere();
+	RenderObjects();
 }
 
 void Level::Render(bool culling)
@@ -141,15 +417,15 @@ void Level::Render(bool culling)
 	}
 
 	{ // Samplers Stage
-		ID3D11SamplerState* sampler = DX11APP->GetCommonStates()->PointWrap();
-		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
+		ID3D11SamplerState* sample = DX11APP->GetCommonStates()->LinearWrap();
+		DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sample);
 	}
 
 	{ // Input Assembly Stage
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
-		DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayoyt());
+		DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayout());
 	}
 
 	{ // Set Shader Stage
@@ -168,6 +444,16 @@ void Level::Render(bool culling)
 XMINT2 KGCA41B::Level::GetWorldSize()
 {
 	return XMINT2(num_row_vertex_ - 1, num_col_vertex_ - 1);
+}
+
+XMINT2 KGCA41B::Level::GetBlocks()
+{
+	return row_col_blocks_;
+}
+
+UINT KGCA41B::Level::MaxLod()
+{
+	return max_lod_;
 }
 
 
@@ -232,21 +518,34 @@ float Level::GetHeightAt(float x, float z)
 	return height;
 }
 
+XMVECTOR KGCA41B::Level::GetNormalAt(float x, float z)
+{
+	float cell_x = (float)((num_row_vertex_ - 1) * cell_distance_ / 2.0f + x);
+	float cell_z = (float)((num_col_vertex_ - 1) * cell_distance_ / 2.0f - z);
+
+	cell_x /= (float)cell_distance_;
+	cell_z /= (float)cell_distance_;
+
+	float vertex_x = floorf(cell_x);
+	float vertex_z = floorf(cell_z);
+
+	if (vertex_x < 0.f)  vertex_x = 0.f;
+	if (vertex_z < 0.f)  vertex_z = 0.f;
+	if ((float)(num_row_vertex_ - 2) < vertex_x)	vertex_x = (float)(num_row_vertex_ - 2);
+	if ((float)(num_col_vertex_ - 2) < vertex_z)	vertex_z = (float)(num_col_vertex_ - 2);
+
+	XMFLOAT3 normal;
+
+	normal = GetNormal(
+		(int)vertex_x * num_row_vertex_ + (int)vertex_z, 
+		(int)vertex_x * num_row_vertex_ + (int)vertex_z + 1, 
+		(int)vertex_x + 1 * num_row_vertex_ + (int)vertex_z);
+
+	return XMLoadFloat3(&normal);
+}
+
 void Level::GetHeightList()
 {
-	// If you need every '1' unit's interpolated height... (Using GetHeightAt())
-	{
-		//int num_row = static_cast<int>(num_row_vertex_) * cell_distance_;
-		//int num_col = static_cast<int>(num_col_vertex_) * cell_distance_;
-		//for (int r = -(num_row / 2); r < num_row / 2; ++r)
-		//{
-		//	for (int c = -(num_col / 2); c < num_col / 2; ++c)
-		//	{
-		//		height_list_.push_back(GetHeightAt(r, c));
-		//	}
-		//}
-	}
-
 	for (auto vertex : level_mesh_.vertices)
 	{
 		height_list_.push_back(vertex.p.y);
@@ -309,6 +608,18 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = level_mesh_.indices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.index_buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	D3D11_SAMPLER_DESC sample_desc;
+	ZeroMemory(&sample_desc, sizeof(sample_desc));
+	sample_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sample_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sample_desc.MaxLOD = FLT_MAX;
+	sample_desc.MinLOD = FLT_MIN;
+	hr = DX11APP->GetDevice()->CreateSamplerState(&sample_desc, mip_map_sample.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 

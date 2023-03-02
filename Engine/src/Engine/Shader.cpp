@@ -76,7 +76,7 @@ ID3D11VertexShader* VertexShader::Get()
 	return vs.Get();
 }
 
-ID3D11InputLayout* VertexShader::InputLayoyt()
+ID3D11InputLayout* VertexShader::InputLayout()
 {
     return input_layout.Get();
 }

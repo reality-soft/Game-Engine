@@ -10,6 +10,7 @@ KGCA41B::Material::Material()
 		textures[i] = nullptr;
 
 	pixel_shader = nullptr;
+	sampler = nullptr;
 }
 
 void KGCA41B::Material::SaveEmpty(string filename)
@@ -67,6 +68,8 @@ void KGCA41B::Material::Create()
 
 	if (ps)
 		pixel_shader = ps->Get();
+
+	sampler = DX11APP->GetCommonStates()->PointWrap();
 }
 
 void KGCA41B::Material::Save(string filename)
@@ -90,6 +93,8 @@ void KGCA41B::Material::Set()
 	if (pixel_shader)
 		DX11APP->GetDeviceContext()->PSSetShader(pixel_shader, 0, 0);
 
+
+	DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 	DX11APP->GetDeviceContext()->PSSetShaderResources(0, 7, textures);
 }
 
