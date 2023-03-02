@@ -113,3 +113,15 @@ static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
 	DirectX::XMVECTOR vector = DirectX::XMVectorSubtract(p1, p2);	
 	return DirectX::XMVector3Length(vector).m128_f32[0];
 }
+
+static DirectX::XMFLOAT4 LerpColor(DirectX::XMFLOAT4 start_color, DirectX::XMFLOAT4 end_color, float key)
+{
+	DirectX::XMFLOAT4 lerped_color = start_color;
+
+	lerped_color.x += (end_color.x - start_color.x) * key;
+	lerped_color.y += (end_color.y - start_color.y) * key;
+	lerped_color.z += (end_color.z - start_color.z) * key;
+	lerped_color.w = 1.0f;
+
+	return lerped_color;
+}
