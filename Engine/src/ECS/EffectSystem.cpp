@@ -47,7 +47,7 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 
 		// Life Time에 따른 속성 값 조정
 		int frame_percentage = particle.frame_ratio * 100.0f;
-		frame_percentage = max(99, frame_percentage);
+		frame_percentage = min(100, frame_percentage);
 
 		// COLOR
 		switch (emitter->color_setting_type)
@@ -97,18 +97,15 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 		switch (emitter->position_setting_type)
 		{
 		case INITIAL_SET:
-			XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.velocity)));
 			break;
 		case ADD_PER_LIFETIME:
 			XMVECTOR acc = TIMER->GetDeltaTime() * XMLoadFloat3(&particle.accelation);
 			particle.velocity.x += acc.m128_f32[0];
 			particle.velocity.y += acc.m128_f32[1];
 			particle.velocity.z += acc.m128_f32[2];
-			XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.velocity)));
 			break;
 		case SET_PER_LIFETIME:
 			particle.velocity = emitter->velocity_timeline[frame_percentage];
-			XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.velocity)));
 			break;
 		}
 
@@ -116,31 +113,10 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 		if (emitter->gravity_on_off)
 		{
 			XMVECTOR gravity = { 0.0f, -9.8f, 0.0f, 0.0f };
-			XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * gravity));
+			XMStoreFloat3(&particle.velocity, XMVectorAdd(XMLoadFloat3(&particle.velocity), TIMER->GetDeltaTime() * gravity));
 		}
 		
-
-		//// 알파 값들 조정 
-		//if (particle.frame_ratio < 0.3f)
-		//{
-		//	particle.color.w = 1.0f / 0.3f * particle.frame_ratio;
-		//}
-		//else if (particle.frame_ratio > 0.3f)
-		//{
-		//	particle.color.w = 1.0f - 1.0f / 0.7f * (particle.frame_ratio - 0.3f);
-		//}
-
-		//XMVECTOR acc = TIMER->GetDeltaTime() * XMLoadFloat3(&particle.accelation);
-		//particle.add_velocity.x += acc.m128_f32[0];
-		//particle.add_velocity.y += acc.m128_f32[1];
-		//particle.add_velocity.z += acc.m128_f32[2];
-
-		//XMStoreFloat3(&particle.scale, XMVectorAdd(XMLoadFloat3(&particle.scale), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.add_size)));
-		//XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.add_velocity)));
-
-		//
-		//particle.rotation.z += TIMER->GetDeltaTime() * particle.add_rotation;
-
+		XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.velocity)));
 	}
 }
 
@@ -148,7 +124,7 @@ void EffectSystem::EmitParticles(Emitter* emitter)
 {
 	switch (emitter->emit_type)
 	{
-	case PER_SECOND:
+	case ONCE:
 		// 한 번만 실행되도록
 		if (emitter->particles.size() >= emitter->emit_once)
 			return;
@@ -158,7 +134,7 @@ void EffectSystem::EmitParticles(Emitter* emitter)
 			EmitParticle(emitter);
 		}
 		break;
-	case ONCE:
+	case PER_SECOND:
 		// 1초마다 파티클 생성
 		if (emitter->timer > 1.0f)
 		{
@@ -174,7 +150,7 @@ void EffectSystem::EmitParticles(Emitter* emitter)
 	case AFTER_TIME:
 		if (emitter->timer > emitter->emit_time)
 		{
-			emitter->timer -= 1.0f;
+			emitter->timer -= emitter->emit_time;
 
 			for (int i = 0; i < emitter->emit_time; i++)
 			{
