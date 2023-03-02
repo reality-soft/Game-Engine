@@ -284,7 +284,7 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 	for (auto ent : view_box)
 	{
 		auto& box = reg.get<C_BoxShape>(ent);
-		SetCbTransform(box);
+		SetCbTransform(&box);
 
 		auto material = RESOURCE->UseResource<Material>(box.material_id);
 		material->Set();
@@ -299,7 +299,7 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 		device_context->IASetVertexBuffers(0, 1, box.vertex_buffer.GetAddressOf(), &stride, &offset);
 		device_context->IASetIndexBuffer(box.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		device_context->IASetInputLayout(shader->InputLayoyt());
+		device_context->IASetInputLayout(shader->InputLayout());
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
 		device_context->DrawIndexed(box.index_list.size(), 0, 0);
@@ -379,27 +379,14 @@ void RenderSystem::SetEffectCB(entt::registry& reg, C_Effect& effect)
 		auto& camera = view_camera.get<C_Camera>(entity);
 		if (camera.tag == "Player")
 		{
-			XMVECTOR s, o, q, t;
-			XMFLOAT3 position(camera.position.m128_f32[0], camera.position.m128_f32[1], camera.position.m128_f32[2]);
-
-			s = XMVectorReplicate(1.0f);
-			o = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-			q = XMQuaternionRotationRollPitchYaw(camera.pitch, camera.yaw, camera.roll);
-			t = XMLoadFloat3(&position);
-			auto world_matrix = XMMatrixAffineTransformation(s, o, q, t);
-			auto view_matrix = XMMatrixInverse(0, world_matrix);
-			auto projection_matrix = XMMatrixPerspectiveFovLH(camera.fov, camera.aspect, camera.near_z, camera.far_z);
-			XMVECTOR determinant;
-			XMMATRIX mat_view_inverse = XMMatrixInverse(&determinant, view_matrix);
-			mat_view_inverse.r[3].m128_f32[0] = 0.0f;
-			mat_view_inverse.r[3].m128_f32[1] = 0.0f;
-			mat_view_inverse.r[3].m128_f32[2] = 0.0f;
+			
 			// 빌보드 행렬 적용
-			cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
+			//cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
+			//cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
 
 			// 트랜스 폼 적용
 			cb_effect_.data.world = XMMatrixTranspose(effect.world * effect.local);
-			cb_effect_.data.view_proj = XMMatrixTranspose(XMMatrixMultiply(view_matrix, projection_matrix));
+			//cb_effect_.data.view_proj = XMMatrixTranspose(XMMatrixMultiply(view_matrix, projection_matrix));
 
 			device_context->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
 			device_context->GSSetConstantBuffers(0, 1, cb_effect_.buffer.GetAddressOf());
@@ -414,7 +401,7 @@ void RenderSystem::SetShaderAndMaterial(Emitter* emitter)
 	VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter->vs_id);
 	if (vs)
 	{
-		device_context->IASetInputLayout(vs->InputLayoyt());
+		device_context->IASetInputLayout(vs->InputLayout());
 		device_context->VSSetShader(vs->Get(), 0, 0);
 	}
 
