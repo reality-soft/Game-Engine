@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
+
 namespace KGCA41B
 {
 	struct Vertex
@@ -192,6 +193,9 @@ namespace KGCA41B
 	};
 
 	// Effect
+
+#define EFFECT_TIMELINE_SIZE 101
+
 	enum E_EffectType
 	{
 		NONE			= 0,
@@ -340,6 +344,7 @@ namespace KGCA41B
 		}
 	};
 
+
 	struct Emitter
 	{
 		float		timer;
@@ -364,8 +369,8 @@ namespace KGCA41B
 			// INITIAL_SET
 			XMFLOAT4	initial_color;
 			// SET_PER_LIFETIME
-			XMFLOAT4				color_timeline[100];
-			map<float, XMFLOAT4>	color_timeline_map;
+			XMFLOAT4				color_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, XMFLOAT4>	color_timeline_map;
 
 		// SIZE
 			// INITIAL_SET
@@ -373,17 +378,17 @@ namespace KGCA41B
 			// ADD_PER_LIFETIME
 			XMFLOAT3	add_size_per_lifetime[2];
 			// SET_PER_LIFETIME
-			XMFLOAT3				size_timeline[100];
-			map<float, XMFLOAT3>	size_timeline_map;
+			XMFLOAT3				size_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, XMFLOAT3>	size_timeline_map;
 
 		// ROTATION
-			// INITIAL_SET
+			// INITIAL_SET	
 			float		initial_rotation[2];
 			// ADD_PER_LIFETIME
 			float		add_rotation_per_lifetime[2];
 			// SET_PER_LIFETIME
-			float				rotation_timeline[100];
-			map<float, float>	rotation_timeline_map;
+			float				rotation_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, float>	rotation_timeline_map;
 
 		// POSITION
 			// INITIAL_SET
@@ -392,8 +397,8 @@ namespace KGCA41B
 			// ADD_PER_LIFETIME
 			XMFLOAT3	accelation_per_lifetime[2];
 			// SET_PER_LIFETIME
-			XMFLOAT3				velocity_timeline[100];
-			map<float, XMFLOAT3>	velocity_timeline_map;
+			XMFLOAT3				velocity_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, XMFLOAT3>	velocity_timeline_map;
 
 		// GRAVITY
 			// ON_OFF
@@ -432,23 +437,23 @@ namespace KGCA41B
 
 			// COLOR
 			initial_color = { 1.0, 1.0f, 1.0f, 1.0f };
-			ZeroMemory(color_timeline, sizeof(XMFLOAT4) * 100);
+			ZeroMemory(color_timeline, sizeof(XMFLOAT4) * EFFECT_TIMELINE_SIZE);
 
 			// SIZE
 			ZeroMemory(initial_size,			sizeof(XMFLOAT3) * 2);
 			ZeroMemory(add_size_per_lifetime,	sizeof(XMFLOAT3) * 2);
-			ZeroMemory(size_timeline,			sizeof(XMFLOAT3) * 100);
+			ZeroMemory(size_timeline,			sizeof(XMFLOAT3) * EFFECT_TIMELINE_SIZE);
 
 			// ROTATION
 			ZeroMemory(initial_rotation,			sizeof(float) * 2);
 			ZeroMemory(add_rotation_per_lifetime,	sizeof(float) * 2);
-			ZeroMemory(rotation_timeline,			sizeof(float) * 100);
+			ZeroMemory(rotation_timeline,			sizeof(float) * EFFECT_TIMELINE_SIZE);
 
 			// POSITION
 			ZeroMemory(initial_position,		sizeof(XMFLOAT3) * 2);
 			ZeroMemory(initial_velocity,		sizeof(XMFLOAT3) * 2);
 			ZeroMemory(accelation_per_lifetime, sizeof(XMFLOAT3) * 2);
-			ZeroMemory(velocity_timeline,		sizeof(XMFLOAT3) * 100);
+			ZeroMemory(velocity_timeline,		sizeof(XMFLOAT3) * EFFECT_TIMELINE_SIZE);
 
 			// GRAVITY
 			gravity_on_off = false;
