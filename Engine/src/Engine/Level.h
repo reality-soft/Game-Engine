@@ -3,6 +3,7 @@
 #include "DllMacro.h"
 #include "DataTypes.h"
 #include "ResourceMgr.h"
+#include "InstancedObject.h"
 
 #define LerpByTan(start, end, tan) (start - (start * tan) + (end * tan))
 
@@ -55,6 +56,7 @@ namespace KGCA41B
 	public:
 		// Create
 		bool CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale, XMINT2 _row_col_blocks);
+		void SetCamera(C_Camera* _camera);
 		void Update();
 		void Render(bool culling);
 
@@ -73,8 +75,10 @@ namespace KGCA41B
 		string vs_id_;
 		string ps_id_;
 		vector<string> texture_id;
+		C_Camera* camera = nullptr;
 
 	public:
+		vector<InstancedObject> inst_objects;
 		SkySphere sky_sphere;
 
 	protected:
@@ -84,6 +88,9 @@ namespace KGCA41B
 		XMFLOAT3 GetNormal(UINT i0, UINT i1, UINT i2);
 		bool CreateBuffers();
 		bool CreateHeightField(float min_height, float max_height);
+
+		void RenderObjects();
+		void RenderSkySphere();
 
 	protected:
 		SingleMesh<Vertex> level_mesh_;

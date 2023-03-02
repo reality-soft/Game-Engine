@@ -70,7 +70,7 @@ void KGCA41B::SkySphere::FrameRender(const C_Camera* camera)
 	DX11APP->GetDeviceContext()->IASetInputLayout(vs.get()->InputLayout());
 	DX11APP->GetDeviceContext()->VSSetShader(vs.get()->Get(), 0, 0);
 
-	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullClockwise());
+	//DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullClockwise());
 	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Additive(), 0, -1);
 	{
 		FrameBackgroundSky(camera);
@@ -82,7 +82,7 @@ void KGCA41B::SkySphere::FrameRender(const C_Camera* camera)
 		FrameCloudSky(camera);
 		RenderCloudSky();
 	}
-	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
+	//DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
 }
 
@@ -107,26 +107,26 @@ void KGCA41B::SkySphere::FrameBackgroundSky(const C_Camera* camera)
 
 	if (cb_sky.data.time.x >= 0)
 	{
-		cb_sky.data.time.x -= TM_DELTATIME;
+		cb_sky.data.time.x -= TM_DELTATIME * 10;
 		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_noon, (360 - cb_sky.data.time.x) / 360);
 		cb_sky.data.strength.w = cb_sky.data.strength.x;
 
 	}
 	else if (cb_sky.data.time.y >= 0)
 	{
-		cb_sky.data.time.y -= TM_DELTATIME;
+		cb_sky.data.time.y -= TM_DELTATIME * 10;
 		cb_sky.data.sky_color = LerpColor(skycolor_noon, skycolor_afternoon, (360 - cb_sky.data.time.y) / 360);
 		cb_sky.data.strength.w = cb_sky.data.strength.y;
 	}
 	else if (cb_sky.data.time.z >= 0)
 	{
-		cb_sky.data.time.z -= TM_DELTATIME;
+		cb_sky.data.time.z -= TM_DELTATIME * 10;
 		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_night, (360 - cb_sky.data.time.z) / 360);
 		cb_sky.data.strength.w = cb_sky.data.strength.y + (cb_sky.data.strength.z - cb_sky.data.strength.y) * (360 - cb_sky.data.time.z) / 360;
 	}
 	else if (cb_sky.data.time.w >= 0)
 	{
-		cb_sky.data.time.w -= TM_DELTATIME;
+		cb_sky.data.time.w -= TM_DELTATIME * 10;
 		cb_sky.data.sky_color = LerpColor(skycolor_night, skycolor_afternoon, (360 - cb_sky.data.time.w) / 360);
 		cb_sky.data.strength.w = cb_sky.data.strength.z + (cb_sky.data.strength.y - cb_sky.data.strength.z) * (360 - cb_sky.data.time.w) / 360;
 	}
@@ -343,7 +343,14 @@ bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 	if (CreateHeightField(minmax_height.x, minmax_height.y) == false)
 		return false;
 
+	sky_sphere.CreateSphere();
+
 	return true;
+}
+
+void KGCA41B::Level::SetCamera(C_Camera* _camera)
+{
+	camera = _camera;
 }
 
 bool Level::CreateHeightField(float min_height, float max_height)
@@ -371,9 +378,24 @@ bool Level::CreateHeightField(float min_height, float max_height)
 	return true;
 }
 
+void KGCA41B::Level::RenderObjects()
+{
+	for (auto inst : inst_objects)
+	{
+		inst.Frame();
+		inst.Render();
+	}
+}
+
+void KGCA41B::Level::RenderSkySphere()
+{
+	sky_sphere.FrameRender(camera);
+}
+
 void Level::Update()
 {
-
+	RenderSkySphere();
+	RenderObjects();
 }
 
 void Level::Render(bool culling)
