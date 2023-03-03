@@ -20,6 +20,8 @@ namespace KGCA41B
 		vector<InstanceData> instance_list;
 		InstanceData* selected_instance = nullptr;
 		string object_name;
+		string mesh_id_;
+		string vs_id_;
 
 	public:
 		void AddNewInstance();
@@ -32,8 +34,10 @@ namespace KGCA41B
 
 	private:
 		void CreateInstanceBuffer();
-		shared_ptr<StaticMesh> static_mesh;
-		shared_ptr<VertexShader> vs;
+
+
+		StaticMesh* static_mesh;
+		VertexShader* vs;
 		CbInstance instancing;
 
 	private:
