@@ -15,8 +15,11 @@ InstancedObject::~InstancedObject()
 
 void InstancedObject::Init(string stmesh_id, string vs_id)
 {
-	static_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>(stmesh_id));
-	vs = shared_ptr<VertexShader>(RESOURCE->UseResource<VertexShader>(vs_id));
+	mesh_id_ = stmesh_id;
+	vs_id_ = vs_id;
+
+	static_mesh = RESOURCE->UseResource<StaticMesh>(stmesh_id);
+	vs = RESOURCE->UseResource<VertexShader>(vs_id);
 
 	CreateInstanceBuffer();
 	DX11APP->GetDeviceContext()->UpdateSubresource(instancing.buffer.Get(), 0, 0, &instancing.data, 0, 0);
@@ -37,8 +40,8 @@ void InstancedObject::Frame()
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(instancing.buffer.Get(), 0, 0, &instancing.data, 0, 0);
 	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, instancing.buffer.GetAddressOf());
-	DX11APP->GetDeviceContext()->IASetInputLayout(vs.get()->InputLayout());
-	DX11APP->GetDeviceContext()->VSSetShader(vs.get()->Get(), 0, 0);
+	DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayout());
+	DX11APP->GetDeviceContext()->VSSetShader(vs->Get(), 0, 0);
 }
 
 void InstancedObject::Render()
@@ -88,7 +91,7 @@ void InstancedObject::AddNewInstance()
 	if (instance_list.size() > 128)
 		return;
 
-	reactphysics3d::Vector3 box_extend; XMtoRP(XMLoadFloat3(&static_mesh.get()->GetMaxXYZ()), box_extend);
+	reactphysics3d::Vector3 box_extend; XMtoRP(XMLoadFloat3(&static_mesh->GetMaxXYZ()), box_extend);
 	InstanceData data;
 
 	//data.col_transform.identity();
@@ -127,9 +130,9 @@ XMMATRIX InstancedObject::TransformS(XMFLOAT3& sacling)
 XMMATRIX KGCA41B::InstancedObject::TransformR(XMFLOAT3& roation)
 {
 	XMMATRIX rotation = XMMatrixIdentity();
-	rotation *= XMMatrixRotationX(roation.x);
-	rotation *= XMMatrixRotationY(roation.y);
-	rotation *= XMMatrixRotationZ(roation.z);
+	rotation *= XMMatrixRotationX(XMConvertToRadians(roation.x));
+	rotation *= XMMatrixRotationY(XMConvertToRadians(roation.y));
+	rotation *= XMMatrixRotationZ(XMConvertToRadians(roation.z));
 
 	return rotation;
 }

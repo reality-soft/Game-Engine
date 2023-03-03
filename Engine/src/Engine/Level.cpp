@@ -76,8 +76,11 @@ void KGCA41B::SkySphere::FrameRender(const C_Camera* camera)
 		FrameBackgroundSky(camera);
 		RenderBackgroundSky();
 
-		FrameSunStarSky(camera);
-		RenderSunStarSky();
+		FrameSunSky(camera);
+		RenderSunSky();
+
+		FrameStarSky(camera);
+		RenderStarSky();
 
 		FrameCloudSky(camera);
 		RenderCloudSky();
@@ -156,11 +159,13 @@ void KGCA41B::SkySphere::RenderBackgroundSky()
 	}
 }
 
-void KGCA41B::SkySphere::FrameSunStarSky(const C_Camera* camera)
+void KGCA41B::SkySphere::FrameSunSky(const C_Camera* camera)
 {
 	XMMATRIX following_camera_matrix =
 		XMMatrixScaling(camera->far_z * 0.8, camera->far_z * 0.8, camera->far_z * 0.8) *
-		XMMatrixTranslationFromVector(camera->camera_pos);
+		XMMatrixTranslationFromVector(camera->camera_pos) *
+		XMMatrixRotationY(XMConvertToRadians(90)) *
+		XMMatrixRotationZ(XMConvertToRadians(TM_GAMETIME));
 
 	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
 
@@ -173,14 +178,50 @@ void KGCA41B::SkySphere::FrameSunStarSky(const C_Camera* camera)
 	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
 }
 
-void KGCA41B::SkySphere::RenderSunStarSky()
+void KGCA41B::SkySphere::RenderSunSky()
 {
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
-	for (auto mesh : sphere_mesh.get()->meshes)
+	for (auto mesh : cloud_dome.get()->meshes)
 	{
-		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("SunStarSky.mat");
+		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("SunSky.mat");
+		if (material)
+			material->Set();
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(mesh.indices.size(), 0, 0);
+	}
+}
+
+void KGCA41B::SkySphere::FrameStarSky(const C_Camera* camera)
+{
+	XMMATRIX following_camera_matrix =
+		XMMatrixScaling(camera->far_z * 0.8, camera->far_z * 0.8, camera->far_z * 0.8) *
+		XMMatrixTranslationFromVector(camera->camera_pos) *
+		XMMatrixRotationY(XMConvertToRadians(-90)) *
+		XMMatrixRotationZ(XMConvertToRadians(TM_GAMETIME));
+
+	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_transform.buffer.Get(), 0, 0, &cb_transform.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+
+	cb_sky.data.sky_color = { 1, 1, 1, 0 };
+	cb_sky.data.strength.w = -1;
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_sky.buffer.Get(), 0, 0, &cb_sky.data, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
+}
+
+void KGCA41B::SkySphere::RenderStarSky()
+{
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+
+	for (auto mesh : cloud_dome.get()->meshes)
+	{
+		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("StarSky.mat");
 		if (material)
 			material->Set();
 
@@ -259,13 +300,31 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 	file_transfer.ReadBinary<UINT>(num_col_vertex_);
 	file_transfer.ReadBinary<float>(cell_distance_);
 	file_transfer.ReadBinary<float>(uv_scale_);
+	file_transfer.ReadBinary<UINT>(max_lod_);
+	file_transfer.ReadBinary<UINT>(cell_scale_);
+	file_transfer.ReadBinary<XMINT2>(row_col_blocks_);
 
 	// Arrays
 	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
 	file_transfer.ReadBinary<UINT>(level_mesh_.indices);
 	file_transfer.ReadBinary<string>(texture_id);
 
+	UINT inst_list_size = 0;
+	file_transfer.ReadBinary<UINT>(inst_list_size);
+	//ZeroMemory(inst_objects.data(), sizeof(inst_objects));
+	inst_objects.resize(inst_list_size);
+
+	for (auto& inst : inst_objects)
+	{
+		file_transfer.ReadBinary<InstanceData>(inst.instance_list);
+		file_transfer.ReadBinary<string>(inst.mesh_id_);
+		file_transfer.ReadBinary<string>(inst.vs_id_);
+	}
+
 	file_transfer.Close();
+
+	vs_id_ = "LevelVS.cso";
+	ps_id_ = "LevelPS.cso";
 
 	XMFLOAT2 minmax_height = GetMinMaxHeight();
 
@@ -275,7 +334,13 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 	if (CreateHeightField(minmax_height.x, minmax_height.y) == false)
 		return false;
 
-	return true;
+	for (auto& inst : inst_objects)
+	{
+		inst.Init(inst.mesh_id_, inst.vs_id_);
+	}
+
+	sky_sphere.CreateSphere();
+
 	return true;
 }
 
@@ -307,7 +372,7 @@ bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 			level_mesh_.vertices[index].p.y = 0.0f;
 			level_mesh_.vertices[index].p.z = (half_col - r) * cell_distance_;
 
-			level_mesh_.vertices[index].c = { 1, 1, 1, 1 };
+			level_mesh_.vertices[index].c = { 0, 0, 0, 0 };
 
 			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell)*uv_scale_;
 			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell)*uv_scale_;
@@ -396,6 +461,8 @@ void Level::Update()
 {
 	RenderSkySphere();
 	RenderObjects();
+
+	SetTexturesToLayer();
 }
 
 void Level::Render(bool culling)
@@ -405,15 +472,9 @@ void Level::Render(bool culling)
 
 
 	{ // Textures Stage
-		UINT slot = 0;
-		for (auto id : texture_id)
-		{
-			Texture* texture = RESOURCE->UseResource<Texture>(id);
-			if (texture != nullptr)
-			{
-				DX11APP->GetDeviceContext()->PSSetShaderResources(slot++, 1, texture->srv.GetAddressOf());
-			}
-		}
+
+		DX11APP->GetDeviceContext()->PSSetShaderResources(0, ARRAYSIZE(texture_layers), texture_layers);
+
 	}
 
 	{ // Samplers Stage
@@ -456,6 +517,22 @@ UINT KGCA41B::Level::MaxLod()
 	return max_lod_;
 }
 
+
+void KGCA41B::Level::SetTexturesToLayer()
+{
+	int index = 0;
+	for (auto texid : texture_id)
+	{
+		if (index >= ARRAYSIZE(texture_layers))
+			break;
+
+		Texture* texture = RESOURCE->UseResource<Texture>(texid);
+		if (texture)
+		{
+			texture_layers[index++] = texture->srv.Get();
+		}
+	}
+}
 
 void Level::GenVertexNormal()
 {
