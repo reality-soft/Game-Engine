@@ -92,9 +92,117 @@ namespace KGCA41B
 		{
 			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
 
+			world = translation;
+
 			aabb.min = XMVector3TransformCoord(aabb.min, translation);
 			aabb.max = XMVector3TransformCoord(aabb.max, translation);
 			aabb.center = (aabb.min + aabb.max) / 2;
+		}
+
+		string vs_id = "StaticMeshVS.cso";
+
+		vector<Vertex>			vertex_list;
+		ComPtr<ID3D11Buffer>	vertex_buffer;
+
+		vector<DWORD>			index_list;
+		ComPtr<ID3D11Buffer>	index_buffer;
+
+		int x, y, z;
+
+		void SetXYZ(int x, int y, int z) {
+			vertex_list.clear();
+			vertex_list.push_back({ XMFLOAT3(-x / 2,  y, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });  // Top left
+			vertex_list.push_back({ XMFLOAT3(x / 2,  y, -z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top right
+			vertex_list.push_back({ XMFLOAT3(-x / 2, 0, -z / 2), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });  // Bottom left
+			vertex_list.push_back({ XMFLOAT3(x / 2, 0, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });   // Bottom right
+			vertex_list.push_back({ XMFLOAT3(-x / 2,  y,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top front
+			vertex_list.push_back({ XMFLOAT3(x / 2,  y,  z / 2),    XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });    // Top back
+			vertex_list.push_back({ XMFLOAT3(-x / 2, 0,  z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });  // Bottom front
+			vertex_list.push_back({ XMFLOAT3(x / 2, 0,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });   // Bottom back
+
+			D3D11_BUFFER_DESC bufDesc;
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(Vertex) * vertex_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			D3D11_SUBRESOURCE_DATA subResourse;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &vertex_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer);
+
+			index_list.clear();
+			index_list.push_back(0);
+			index_list.push_back(1);
+			index_list.push_back(2);
+			index_list.push_back(1);
+			index_list.push_back(3);
+			index_list.push_back(2);
+
+			index_list.push_back(4);
+			index_list.push_back(5);
+			index_list.push_back(6);
+			index_list.push_back(5);
+			index_list.push_back(7);
+			index_list.push_back(6);
+
+			index_list.push_back(4);
+			index_list.push_back(6);
+			index_list.push_back(2);
+			index_list.push_back(4);
+			index_list.push_back(2);
+			index_list.push_back(0);
+
+			index_list.push_back(1);
+			index_list.push_back(5);
+			index_list.push_back(3);
+			index_list.push_back(5);
+			index_list.push_back(7);
+			index_list.push_back(3);
+
+			index_list.push_back(4);
+			index_list.push_back(0);
+			index_list.push_back(5);
+			index_list.push_back(5);
+			index_list.push_back(0);
+			index_list.push_back(1);
+
+			index_list.push_back(2);
+			index_list.push_back(3);
+			index_list.push_back(6);
+			index_list.push_back(3);
+			index_list.push_back(7);
+			index_list.push_back(6);
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(DWORD) * index_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &index_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &index_buffer);
+
+			aabb.min = { -static_cast<float>(x) / 2, static_cast<float>(y), -static_cast<float>(z) / 2, 0 };
+			aabb.min = { static_cast<float>(x) / 2, -static_cast<float>(y), static_cast<float>(z) / 2, 0 };
 		}
 	};
 
