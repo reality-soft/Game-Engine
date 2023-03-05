@@ -93,6 +93,7 @@ void reality::Material::Set()
 	if (pixel_shader)
 		DX11APP->GetDeviceContext()->PSSetShader(pixel_shader, 0, 0);
 
+
 	DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 	DX11APP->GetDeviceContext()->PSSetShaderResources(0, 7, textures);
 }

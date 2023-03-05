@@ -39,6 +39,13 @@ namespace reality
 		}
 	};
 
+	struct EffectVertex
+	{
+		XMFLOAT3   p;
+		XMFLOAT4   c;
+		XMFLOAT2   t;
+	};
+
 	struct Skeleton
 	{
 		Skeleton() = default;
@@ -156,6 +163,26 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	struct CbCameraEffect
+	{
+		CbCameraEffect()
+		{
+			data.main_billboard = XMMatrixIdentity();
+		}
+		CbCameraEffect(const CbCameraEffect& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
+		struct Data
+		{
+			XMMATRIX view_matrix;
+			XMMATRIX projection_matrix;
+			XMMATRIX main_billboard;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 	struct CbSkeleton
 	{
 		CbSkeleton() = default;
@@ -265,27 +292,50 @@ namespace reality
 	};
 
 	// Effect
-	
 
-	enum E_Effect
+#define EFFECT_TIMELINE_SIZE 101
+
+	enum E_EffectType
 	{
-		NONE = 0,
-		UV_SPRITE = 1,
-		TEX_SPRITE = 2,
-		EMITTER = 3,
+		NONE			= 0,
+		UV_SPRITE		= 1,
+		TEX_SPRITE		= 2,
+		EMITTER			= 3,
+		EFFECT			= 5,
 	};
 
-	enum E_Sprite
+	enum E_EmitterAttributeType
 	{
-		DEFAULT_SPRITE = 0,
-		UV = 1,
-		TEX = 2,
+		INITIAL_SET			= 0,
+		ADD_PER_LIFETIME	= 1,
+		SET_PER_LIFETIME	= 2,
+	};
+
+	enum E_EffectBS
+	{
+		DEFAULT_BS			= 0,
+		NO_BLEND			= 1,
+		ALPHA_BLEND			= 2,
+		DUALSOURCE_BLEND	= 3,
+	};
+
+	enum E_EffectDS
+	{
+		DEFAULT_NONE		= 0,
+		DEPTH_COMP_NOWRITE	= 1,
+		DEPTH_COMP_WRITE	= 2,
+	};
+
+	enum E_EmitType
+	{
+		PER_SECOND	= 0,
+		ONCE		= 1,
+		AFTER_TIME	= 2,
 	};
 
 	struct Sprite
 	{
-		int			max_frame = 5;
-		E_Sprite	type = DEFAULT_SPRITE;
+		E_EffectType	type = NONE;
 	};
 
 	struct UVSprite : public Sprite
@@ -295,7 +345,7 @@ namespace reality
 		UVSprite()
 		{
 			tex_id = "";
-			type = UV;
+			type = UV_SPRITE;
 		}
 	};
 
@@ -304,17 +354,26 @@ namespace reality
 		vector<string>	tex_id_list;
 		TextureSprite()
 		{
-			type = TEX;
+			type = TEX_SPRITE;
 		}
 	};
 
-	struct CbSprite
+	struct CbEffect
+	{
+		__declspec(align(16)) struct Data
+		{
+			XMMATRIX world;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
+	struct CbEmitter
 	{
 		__declspec(align(16)) struct Data
 		{
 			// 0 : UV, 1 : Texture
 			//int type;
-			//int max_frame;
+			//int padding;
 			//int uv_list_size;
 			//int padding;
 			XMINT4 value;
@@ -323,7 +382,7 @@ namespace reality
 			//float end_u[255];
 			//float end_v[255];
 			XMFLOAT4 value2[255];
-			XMMATRIX billboard_matrix;
+			XMMATRIX world;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -352,21 +411,13 @@ namespace reality
 		XMFLOAT4	color;
 
 		XMFLOAT3	position;
+		XMFLOAT3	velocity;
 		XMFLOAT3	rotation;
 		XMFLOAT3	scale;
 
-		XMFLOAT3	add_velocity;
 		XMFLOAT3	add_size;
 		float		add_rotation;
-
 		XMFLOAT3	accelation;
-
-
-		vector<Vertex>			vertex_list;
-		ComPtr<ID3D11Buffer>	vertex_buffer;
-
-		vector<DWORD>			index_list;
-		ComPtr<ID3D11Buffer>	index_buffer;
 
 		Particle()
 		{
@@ -381,74 +432,135 @@ namespace reality
 			position = { 0, 0, 0 };
 			rotation = { 0, 0, 0 };
 			scale = { 0, 0, 0 };
+			velocity = { 0, 0, 0 };
 
-			add_velocity = { 0, 0, 0 };
 			add_size = { 0, 0, 0 };
 			add_rotation = 0;
-
 			accelation = { 0, 0, 0 };
 
 		}
-
-		void CreateBuffer()
-		{
-			
-		}
 	};
+
 
 	struct Emitter
 	{
 		float		timer;
 
-		string		sprite_id;
+		E_EffectType type;
 
+		string	sprite_id;
+
+		E_EmitType	emit_type;
 		int			emit_per_second;
-
-		XMFLOAT4	color;
+		int			emit_once;
+		float		emit_time;
 
 		float		life_time[2];
+		
+		E_EmitterAttributeType color_setting_type;
+		E_EmitterAttributeType size_setting_type;
+		E_EmitterAttributeType rotation_setting_type;
+		E_EmitterAttributeType position_setting_type;
 
-		XMFLOAT3	initial_size[2];
-		float		initial_rotation[2];
-		XMFLOAT3	initial_position[2];
+		// COLOR
+			// INITIAL_SET
+			XMFLOAT4	initial_color;
+			// SET_PER_LIFETIME
+			XMFLOAT4				color_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, XMFLOAT4>	color_timeline_map;
 
-		XMFLOAT3	initial_velocity[2];
+		// SIZE
+			// INITIAL_SET
+			XMFLOAT3	initial_size[2];
+			// ADD_PER_LIFETIME
+			XMFLOAT3	add_size_per_lifetime[2];
+			// SET_PER_LIFETIME
+			XMFLOAT3				size_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, XMFLOAT3>	size_timeline_map;
 
-		XMFLOAT3	size_per_lifetime[2];
-		float		rotation_per_lifetime[2];
-		XMFLOAT3	accelation_per_lifetime[2];
+		// ROTATION
+			// INITIAL_SET	
+			float		initial_rotation[2];
+			// ADD_PER_LIFETIME
+			float		add_rotation_per_lifetime[2];
+			// SET_PER_LIFETIME
+			float				rotation_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, float>	rotation_timeline_map;
+
+		// POSITION
+			// INITIAL_SET
+			XMFLOAT3	initial_position[2];
+			XMFLOAT3	initial_velocity[2];
+			// ADD_PER_LIFETIME
+			XMFLOAT3	accelation_per_lifetime[2];
+			// SET_PER_LIFETIME
+			XMFLOAT3				velocity_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, XMFLOAT3>	velocity_timeline_map;
+
+		// GRAVITY
+			// ON_OFF
+			bool gravity_on_off;
 
 		string		vs_id;
-		string		ps_id;
 		string		geo_id;
+		string		mat_id;
+
+		E_EffectBS	bs_state;
+		E_EffectDS  ds_state;
 
 		vector<Particle> particles;
 
 		Emitter()
 		{
-			timer = 0.0f;
-
+			type = EMITTER;
 			sprite_id = "";
 
-			emit_per_second = 0;
+			timer = 0.0f;
 
-			color = { 1.0, 1.0f, 1.0f, 1.0f };
+			type = NONE;
+
+			emit_type = PER_SECOND;
+
+			emit_once = 0;
+			emit_per_second = 0;
+			emit_time = 0.0f;
 
 			ZeroMemory(life_time, sizeof(float) * 2);
 
-			ZeroMemory(initial_size, sizeof(XMFLOAT3) * 2);
-			ZeroMemory(initial_rotation, sizeof(float) * 2);
-			ZeroMemory(initial_position, sizeof(XMFLOAT3) * 2);
+			color_setting_type		= INITIAL_SET;
+			size_setting_type		= INITIAL_SET;
+			rotation_setting_type	= INITIAL_SET;
+			position_setting_type	= INITIAL_SET;
 
-			ZeroMemory(initial_velocity, sizeof(XMFLOAT3) * 2);
+			// COLOR
+			initial_color = { 1.0, 1.0f, 1.0f, 1.0f };
+			ZeroMemory(color_timeline, sizeof(XMFLOAT4) * EFFECT_TIMELINE_SIZE);
 
-			ZeroMemory(size_per_lifetime, sizeof(XMFLOAT3) * 2);
-			ZeroMemory(rotation_per_lifetime, sizeof(float) * 2);
+			// SIZE
+			ZeroMemory(initial_size,			sizeof(XMFLOAT3) * 2);
+			ZeroMemory(add_size_per_lifetime,	sizeof(XMFLOAT3) * 2);
+			ZeroMemory(size_timeline,			sizeof(XMFLOAT3) * EFFECT_TIMELINE_SIZE);
+
+			// ROTATION
+			ZeroMemory(initial_rotation,			sizeof(float) * 2);
+			ZeroMemory(add_rotation_per_lifetime,	sizeof(float) * 2);
+			ZeroMemory(rotation_timeline,			sizeof(float) * EFFECT_TIMELINE_SIZE);
+
+			// POSITION
+			ZeroMemory(initial_position,		sizeof(XMFLOAT3) * 2);
+			ZeroMemory(initial_velocity,		sizeof(XMFLOAT3) * 2);
 			ZeroMemory(accelation_per_lifetime, sizeof(XMFLOAT3) * 2);
+			ZeroMemory(velocity_timeline,		sizeof(XMFLOAT3) * EFFECT_TIMELINE_SIZE);
+
+			// GRAVITY
+			gravity_on_off = false;
 
 			vs_id = "";
-			ps_id = "";
 			geo_id = "";
+			mat_id = "";
+
+			bs_state = DEFAULT_BS;
+			ds_state = DEFAULT_NONE;
 		}
 	};
 

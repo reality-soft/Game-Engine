@@ -17,11 +17,23 @@ namespace reality
 		void SetCbTransform(const C_Transform* const transform);
 		void PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation);
 		void RenderStaticMesh(const C_StaticMesh* const static_mesh);
-		void RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh, const C_Animation* const animation_component);
-		void RenderBoxShape(const C_BoxShape* const box_shape);
-		void SetParticle(Particle& particle);
-		void SetSprite(Sprite* sprite);
-		void RenderParticle(Particle& particle);
+		void RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, const C_Animation* const animation_component);
+		
+
+		// Effect Rendering
+		void CreateEffectCB();
+		void CreateEffectBuffer();
+
+		void RenderBoxShape(entt::registry& reg);
+		void RenderBoundingBox(const C_BoundingBox* const);
+		void RenderEffects(entt::registry& reg);
+			void SetEffectCB(C_Effect& effect);
+			void SetEmitterCB(Emitter* emitter);
+			void SetShaderAndMaterial(Emitter* emitter);
+			void SetStates(Emitter* emitter);
+			void SetParticleCB(Particle& particle);
+	public:
+
 	private:
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* device_context = nullptr;
@@ -31,7 +43,10 @@ namespace reality
 		CbSkeleton cb_skeleton;
 
 		// Effect
-		CbParticle cb_particle;
-		CbSprite cb_sprite;
+		EffectVertex			effect_vertex_;
+		ComPtr<ID3D11Buffer>	vertex_buffer_;
+		CbEffect	cb_effect;
+		CbEmitter	cb_emitter;
+		CbParticle	cb_particle_;
 	};
 }

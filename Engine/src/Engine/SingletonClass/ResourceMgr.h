@@ -41,6 +41,7 @@ namespace reality
 		set<string> GetTotalSTMID();
 		set<string> GetTotalANIMID();
 		set<string> GetTotalSpriteID();
+		set<string> GetTotalMATID();
 
 	public:
 		void PushStaticMesh(string id, const StaticMesh& static_mesh);

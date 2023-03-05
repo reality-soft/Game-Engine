@@ -15,6 +15,7 @@
 #include "ECS/CameraSystem.h"
 #include "ECS/SoundSystem.h"
 #include "ECS/LightingSystem.h"
+#include "ECS/EffectSystem.h"
 
 #include "Engine/Scene.h"
 #include "Engine/FbxLoader.h"
