@@ -3,6 +3,7 @@
 #include <fstream>
 #include <io.h>
 #include "DataTypes.h"
+#include "ResourceMgr.h"
 
 using namespace KGCA41B;
 
@@ -88,7 +89,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string path)
 
 	shared_ptr<DataSheet> newSheet = std::make_shared<DataSheet>();
 	auto splited_str = split(path, '/');
-	auto strs2 = split(splited_str[max(splited_str.size() - 1, 0)], '.');
+	auto strs2 = split(splited_str[max((int)splited_str.size() - 1, 0)], '.');
 
 	newSheet->sheet_name = strs2[0];
 
@@ -181,6 +182,112 @@ void KGCA41B::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 
 	fstream fs;
 	fs.open(directory_ + '/' + fileName, ios::out);
+	if (fs.fail())
+		return;
+
+	string line = "\n";
+
+	auto sheet = resdic_sheet[sheetName];
+
+	// 카테고리 먼저 출력하기
+	for (auto& category : sheet->categories)
+	{
+		if (fs.is_open())
+		{
+			string str = category + ',';
+			fs.write(str.c_str(), str.size());
+		}
+
+	}
+
+	if (fs.is_open())
+	{
+		fs.write(line.c_str(), line.size());
+	}
+
+
+	for (auto& pair : sheet->resdic_item)
+	{
+		auto data = pair.second;
+
+		for (auto& category : sheet->categories)
+		{
+			if (fs.is_open())
+			{
+				string str2 = data->values[category] + ',';
+				fs.write(str2.c_str(), str2.size());
+			}
+
+		}
+		if (fs.is_open())
+		{
+			fs.write(line.c_str(), line.size());
+		}
+	}
+
+	fs.close();
+}
+
+void KGCA41B::DataMgr::SaveSprite(string sheetName)
+{
+	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
+		return;
+
+	fstream fs;
+	fs.open(RESOURCE->directory() + '/' + "Sprite" + '/' + sheetName + ".csv", ios::out);
+	if (fs.fail())
+		return;
+
+	string line = "\n";
+
+	auto sheet = resdic_sheet[sheetName];
+
+	// 카테고리 먼저 출력하기
+	for (auto& category : sheet->categories)
+	{
+		if (fs.is_open())
+		{
+			string str = category + ',';
+			fs.write(str.c_str(), str.size());
+		}
+
+	}
+
+	if (fs.is_open())
+	{
+		fs.write(line.c_str(), line.size());
+	}
+
+
+	for (auto& pair : sheet->resdic_item)
+	{
+		auto data = pair.second;
+
+		for (auto& category : sheet->categories)
+		{
+			if (fs.is_open())
+			{
+				string str2 = data->values[category] + ',';
+				fs.write(str2.c_str(), str2.size());
+			}
+
+		}
+		if (fs.is_open())
+		{
+			fs.write(line.c_str(), line.size());
+		}
+	}
+
+	fs.close();
+}
+
+void KGCA41B::DataMgr::SaveEffect(string sheetName)
+{
+	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
+		return;
+
+	fstream fs;
+	fs.open(RESOURCE->directory() + '/' + "Effect" + '/' + sheetName + ".csv", ios::out);
 	if (fs.fail())
 		return;
 

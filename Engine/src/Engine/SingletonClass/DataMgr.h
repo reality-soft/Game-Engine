@@ -111,6 +111,8 @@ namespace KGCA41B
 		void LoadSheetFile(string fileName);
 		void SaveSheetFile(string sheetName);
 		void SaveSheetFileAs(string sheetName, string fileName);
+		void SaveSprite(string sheetName);
+		void SaveEffect(string sheetName);
 		void SaveAll();
 	};
 
