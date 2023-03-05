@@ -19,6 +19,19 @@ namespace KGCA41B
 		virtual void OnUpdate() {};
 	};
 
+	struct C_Movement : public Component
+	{
+		entt::entity actor_id;
+
+		XMVECTOR direction;
+		float speed;
+		float max_speed;
+		float acceleration;
+		float gravity_scale;
+		float rotation;
+		float angular_velocity;
+	};
+
 	struct C_Transform : public Component
 	{
 		XMMATRIX local;
