@@ -305,7 +305,7 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 	file_transfer.ReadBinary<XMINT2>(row_col_blocks_);
 
 	// Arrays
-	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
+	file_transfer.ReadBinary<LevelVertex>(level_mesh_.vertices);
 	file_transfer.ReadBinary<UINT>(level_mesh_.indices);
 	file_transfer.ReadBinary<string>(texture_id);
 
@@ -376,6 +376,9 @@ bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 
 			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell)*uv_scale_;
 			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell)*uv_scale_;
+
+			level_mesh_.vertices[index].t_layer.x = (float)c / (float)(num_row_cell);
+			level_mesh_.vertices[index].t_layer.y = (float)r / (float)(num_col_cell);
 		}
 	}
 
@@ -409,6 +412,10 @@ bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 		return false;
 
 	sky_sphere.CreateSphere();
+
+	alpha_layer.CreateAlphaTexture(1024, 1024 / num_col_cell);
+
+	texture_id.resize(5);
 
 	return true;
 }
@@ -462,7 +469,7 @@ void Level::Update()
 	RenderSkySphere();
 	RenderObjects();
 
-	SetTexturesToLayer();
+	SetTextures();
 }
 
 void Level::Render(bool culling)
@@ -474,7 +481,7 @@ void Level::Render(bool culling)
 	{ // Textures Stage
 
 		DX11APP->GetDeviceContext()->PSSetShaderResources(0, ARRAYSIZE(texture_layers), texture_layers);
-
+		DX11APP->GetDeviceContext()->PSSetShaderResources(5, 1, alpha_layer.alpha_srv.GetAddressOf());
 	}
 
 	{ // Samplers Stage
@@ -483,7 +490,7 @@ void Level::Render(bool culling)
 	}
 
 	{ // Input Assembly Stage
-		UINT stride = sizeof(Vertex);
+		UINT stride = sizeof(LevelVertex);
 		UINT offset = 0;
 		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
 		DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayout());
@@ -518,7 +525,7 @@ UINT KGCA41B::Level::MaxLod()
 }
 
 
-void KGCA41B::Level::SetTexturesToLayer()
+void KGCA41B::Level::SetTextures()
 {
 	int index = 0;
 	for (auto texid : texture_id)
@@ -665,7 +672,7 @@ bool Level::CreateBuffers()
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(Vertex) * level_mesh_.vertices.size();
+	desc.ByteWidth = sizeof(LevelVertex) * level_mesh_.vertices.size();
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	subdata.pSysMem = level_mesh_.vertices.data();
@@ -685,18 +692,6 @@ bool Level::CreateBuffers()
 	subdata.pSysMem = level_mesh_.indices.data();
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, level_mesh_.index_buffer.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	D3D11_SAMPLER_DESC sample_desc;
-	ZeroMemory(&sample_desc, sizeof(sample_desc));
-	sample_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sample_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sample_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sample_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sample_desc.MaxLOD = FLT_MAX;
-	sample_desc.MinLOD = FLT_MIN;
-	hr = DX11APP->GetDevice()->CreateSamplerState(&sample_desc, mip_map_sample.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 

@@ -40,19 +40,19 @@ bool VertexShader::LoadCompiled(wstring cso_file)
                 byte_offset += 8;
             }
 
-            if (string(param_desc.SemanticName).find("F3") != string::npos)
+            else if (string(param_desc.SemanticName).find("F3") != string::npos)
             {
                 input_desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
                 byte_offset += 12;
             }
 
-            if (string(param_desc.SemanticName).find("F4") != string::npos)
+            else if (string(param_desc.SemanticName).find("F4") != string::npos)
             {
                 input_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
                 byte_offset += 16;
             }
 
-            if (string(param_desc.SemanticName).find("SV_InstanceID") != string::npos)
+            else if (string(param_desc.SemanticName).find("SV_InstanceID") != string::npos)
             {
                 input_desc.Format = DXGI_FORMAT_R32_UINT;
                 input_desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
@@ -114,7 +114,8 @@ bool GeometryShader::LoadCompiled(wstring _csoFIle)
         { 0, "POSITION",    0, 0, 3, 0 },
         { 0, "NORMAL",      0, 0, 3, 0 },
         { 0, "COLOR",       0, 0, 4, 0 },
-        { 0, "TEXCOORD",    0, 0, 2, 0 }
+        { 0, "TEXCOORD",    0, 0, 2, 0 },
+        { 0, "TEXCOORD",    1, 0, 2, 0 },
     };
 
     hr = DX11APP->GetDevice()->CreateGeometryShaderWithStreamOutput(blob->GetBufferPointer(), blob->GetBufferSize(), ied, ARRAYSIZE(ied), 0, 0, 0, 0, gs.GetAddressOf());
