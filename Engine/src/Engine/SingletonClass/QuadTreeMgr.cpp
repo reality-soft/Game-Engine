@@ -86,7 +86,7 @@ KGCA41B::SpaceNode::~SpaceNode()
 
 void KGCA41B::SpaceNode::SetNode(Level* level)
 {
-	vector<Vertex> vertices = level->GetLevelVertex();
+	vector<LevelVertex> vertices = level->GetLevelVertex();
 	vector<UINT> indices = level->GetLevelIndex();
 	UINT world_row = level->GetWorldSize().x + 1;
 	UINT world_col = level->GetWorldSize().y + 1;

@@ -11,6 +11,15 @@ namespace KGCA41B
 		XMFLOAT2   t;
 	};
 
+	struct LevelVertex
+	{
+		XMFLOAT3   p;
+		XMFLOAT3   n;
+		XMFLOAT4   c;
+		XMFLOAT2   t;
+		XMFLOAT2   t_layer;
+	};
+
 	struct SkinnedVertex
 	{
 		XMFLOAT3   p;
