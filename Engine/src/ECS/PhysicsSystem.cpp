@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PhysicsSystem.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 void PhysicsSystem::OnCreate(entt::registry& reg)
 {

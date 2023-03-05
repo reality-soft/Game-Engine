@@ -2,7 +2,7 @@
 #include "PhysicsMgr.h"
 #include "TimeMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 bool PhysicsMgr::Init()
 {
@@ -46,7 +46,7 @@ void PhysicsMgr::Release()
 	physics_common_.destroyPhysicsWorld(physics_world_);
 }
 
-WorldRayCallback KGCA41B::PhysicsMgr::WorldPicking(const MouseRay& mouse_ray)
+WorldRayCallback reality::PhysicsMgr::WorldPicking(const MouseRay& mouse_ray)
 {
 	WorldRayCallback raycast_callback;
 	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
@@ -55,7 +55,7 @@ WorldRayCallback KGCA41B::PhysicsMgr::WorldPicking(const MouseRay& mouse_ray)
 	return raycast_callback;
 }
 
-bool KGCA41B::PhysicsMgr::ObjectPicking(const MouseRay& mouse_ray, CollisionBody* target)
+bool reality::PhysicsMgr::ObjectPicking(const MouseRay& mouse_ray, CollisionBody* target)
 {
 	Ray ray(mouse_ray.start_point, mouse_ray.end_point);
 	RaycastInfo ray_info;

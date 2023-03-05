@@ -2,7 +2,7 @@
 #include "DllMacro.h"
 #include "FbxLoader.h"
 
-namespace KGCA41B {
+namespace reality {
 	class DLL_API FbxMgr
 	{
 		SINGLETON(FbxMgr)
@@ -19,7 +19,7 @@ namespace KGCA41B {
 	public:
 		StaticMesh LoadStaticMesh(string filename);
 		SkeletalMesh LoadSkeletalMesh(string filename);
-		vector<KGCA41B::OutAnimData> LoadAnimation(string filename);
+		vector<reality::OutAnimData> LoadAnimation(string filename);
 
 	private:
 		bool CreateBuffers(SingleMesh<Vertex>& mesh);

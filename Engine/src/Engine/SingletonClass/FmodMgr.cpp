@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FmodMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 bool FmodMgr::Init()
 {

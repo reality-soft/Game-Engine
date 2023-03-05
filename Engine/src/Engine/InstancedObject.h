@@ -3,7 +3,7 @@
 #include "DataTypes.h"
 #include "Shader.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API InstancedObject
 	{

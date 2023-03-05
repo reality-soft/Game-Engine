@@ -3,7 +3,7 @@
 #include "DllMacro.h"
 #include <dinput.h>
   
-namespace KGCA41B
+namespace reality
 {
 	enum KeyState
 	{
@@ -24,7 +24,7 @@ namespace KGCA41B
 	class DLL_API InputMgr
 	{
 		SINGLETON(InputMgr);
-#define DINPUT KGCA41B::InputMgr::GetInst()
+#define DINPUT reality::InputMgr::GetInst()
 	public:
 		bool Init();
 		bool Update();

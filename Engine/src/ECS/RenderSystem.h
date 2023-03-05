@@ -2,7 +2,7 @@
 #include "System.h"
 #include "FbxOutData.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API RenderSystem : public System
 	{

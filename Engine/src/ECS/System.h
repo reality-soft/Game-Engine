@@ -1,7 +1,7 @@
 #pragma once
 #include "Components.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class System
 	{

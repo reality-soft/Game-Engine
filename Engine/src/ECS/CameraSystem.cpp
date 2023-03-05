@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "PhysicsMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 CameraSystem::CameraSystem()
 {
@@ -20,7 +20,7 @@ CameraSystem::~CameraSystem()
 {
 }
 
-void CameraSystem::TargetTag(entt::registry& reg, string tag)
+void reality::CameraSystem::TargetTag(entt::registry& reg, string tag)
 {
 	auto view = reg.view<C_Camera>();
 	for (auto entity : view)
@@ -74,7 +74,7 @@ void CameraSystem::OnCreate(entt::registry& reg)
 	HRESULT hr;
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_viewproj.buffer.GetAddressOf());
 
-	// ºôº¸µå »ó¼ö¹öÆÛ
+	// ë¹Œë³´ë“œ ìƒìˆ˜ë²„í¼
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
@@ -102,7 +102,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
 	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, cb_viewproj.buffer.GetAddressOf());
 
-	// ºôº¸µå »ó¼ö¹öÆÛ Àû¿ë
+	// ë¹Œë³´ë“œ ìƒìˆ˜ë²„í¼ ì ìš©
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
 	DX11APP->GetDeviceContext()->GSSetConstantBuffers(0, 1, cb_effect.buffer.GetAddressOf());
 }
@@ -144,7 +144,7 @@ C_Camera* CameraSystem::GetCamera()
 	return camera;
 }
 
-XMMATRIX CameraSystem::GetViewProj()  
+XMMATRIX reality::CameraSystem::GetViewProj()  
 {
 	return view_matrix * projection_matrix;
 }
@@ -190,7 +190,8 @@ void CameraSystem::DebugCameraMovement()
 	}
 }
 
-void CameraSystem::PlayerCameraMovement()
+
+void reality::CameraSystem::PlayerCameraMovement()
 {
 	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
 	{
@@ -204,7 +205,8 @@ void CameraSystem::PlayerCameraMovement()
 	camera->OnUpdate();
 }
 
-void CameraSystem::UpdateVectors()
+
+void reality::CameraSystem::UpdateVectors()
 {
 	look = XMVector3Normalize(world_matrix.r[2]);
 	right = XMVector3Normalize(world_matrix.r[0]);
@@ -249,7 +251,7 @@ void CameraSystem::CreateMatrix()
 	right = XMVector3Normalize(w.r[0]);
 	up = XMVector3Normalize(w.r[1]);
 
-	// ºôº¸µå »ó¼ö¹öÆÛ ¾÷µ¥ÀÌÆ®
+	// ë¹Œë³´ë“œ ìƒìˆ˜ë²„í¼ ì—…ë°ì´íŠ¸
 	XMVECTOR vec;
 	cb_effect.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_effect.data.projection_matrix = XMMatrixTranspose(projection_matrix);

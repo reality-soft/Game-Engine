@@ -2,7 +2,7 @@
 #include "FbxLoader.h"
 #include "Material.h"
 
-namespace KGCA41B {
+namespace reality {
 
 	void FbxLoader::Destroy()
 	{
