@@ -104,7 +104,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 
 	// 빌보드 상수버퍼 적용
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
-	DX11APP->GetDeviceContext()->GSSetConstantBuffers(1, 1, cb_effect.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->GSSetConstantBuffers(0, 1, cb_effect.buffer.GetAddressOf());
 }
 
 MouseRay CameraSystem::CreateMouseRay()
@@ -253,5 +253,9 @@ void CameraSystem::CreateMatrix()
 	XMVECTOR vec;
 	cb_effect.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_effect.data.projection_matrix = XMMatrixTranspose(projection_matrix);
-	cb_effect.data.main_billboard = XMMatrixTranspose(XMMatrixInverse(&vec, view_matrix));
+	XMMATRIX billboard = XMMatrixInverse(&vec, view_matrix);
+	billboard.r[3].m128_f32[0] = 0.0f;
+	billboard.r[3].m128_f32[1] = 0.0f;
+	billboard.r[3].m128_f32[2] = 0.0f;
+	cb_effect.data.main_billboard = XMMatrixTranspose(billboard);
 }

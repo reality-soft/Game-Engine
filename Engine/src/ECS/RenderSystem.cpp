@@ -341,7 +341,6 @@ void RenderSystem::RenderBoundingBox(const C_BoundingBox* const box)
 	device_context->DrawIndexed(box->index_list.size(), 0, 0);
 }
 
-
 void RenderSystem::RenderEffects(entt::registry& reg)
 {
 	auto view_effect = reg.view<C_Effect>();
@@ -409,7 +408,7 @@ void RenderSystem::SetEffectCB(C_Effect& effect)
 	cb_effect.data.world = effect.world;
 
 	device_context->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
-	device_context->GSSetConstantBuffers(2, 1, cb_effect.buffer.GetAddressOf());
+	device_context->GSSetConstantBuffers(1, 1, cb_effect.buffer.GetAddressOf());
 }
 
 void RenderSystem::SetEmitterCB(Emitter* emitter)
@@ -454,7 +453,7 @@ void RenderSystem::SetEmitterCB(Emitter* emitter)
 	}
 
 	device_context->UpdateSubresource(cb_emitter.buffer.Get(), 0, nullptr, &cb_emitter.data, 0, 0);
-	device_context->GSSetConstantBuffers(3, 1, cb_emitter.buffer.GetAddressOf());
+	device_context->GSSetConstantBuffers(2, 1, cb_emitter.buffer.GetAddressOf());
 }
 
 void RenderSystem::SetShaderAndMaterial(Emitter* emitter)
@@ -527,6 +526,6 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	cb_particle_.data.transform = XMMatrixTranspose(srt);
 
 	device_context->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
-	device_context->GSSetConstantBuffers(4, 1, cb_particle_.buffer.GetAddressOf());
+	device_context->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());
 }
 
