@@ -347,31 +347,32 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	for (auto ent : view_effect)
 	{
 		device_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
- 		auto& effect = reg.get<C_Effect>(ent);
+ 		auto& effect_comp = reg.get<C_Effect>(ent);
 
-		SetEffectCB(effect);
+		auto& effect = effect_comp.effect;
 
-		for (auto& emitter : effect.emitters)
+		SetEffectCB(effect, effect_comp.world);
+
+		for (auto& pair : effect.emitters)
 		{
-			if (emitter == nullptr)
-				return;
+			auto& emitter = pair.second;
 
 			// Effect 설정
-			SetEmitterCB(emitter.get());
+			SetEmitterCB(emitter);
 
 			// Sprite 정보 설정
-			Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter->sprite_id);
+			Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
 			if (sprite == nullptr)
 				return;
 
 			// 이펙트의 쉐이더 및 머터리얼 설정
-			SetShaderAndMaterial(emitter.get());
+			SetShaderAndMaterial(emitter);
 
 			// BS 및 DS 설정
-			SetStates(emitter.get());
+			SetStates(emitter);
 
 			// particle 설정
-			for (auto& particle : emitter->particles)
+			for (auto& particle : emitter.particles)
 			{
 				if (!particle.enable)
 					continue;
@@ -403,18 +404,18 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	device_context->GSSetShader(nullptr, 0, 0);
 }
 
-void RenderSystem::SetEffectCB(C_Effect& effect)
+void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
 {
-	cb_effect.data.world = effect.world;
+	cb_effect.data.world = world;
 
 	device_context->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
 	device_context->GSSetConstantBuffers(1, 1, cb_effect.buffer.GetAddressOf());
 }
 
-void RenderSystem::SetEmitterCB(Emitter* emitter)
+void RenderSystem::SetEmitterCB(Emitter& emitter)
 {
 	// Sprite 정보 입력
-	Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter->sprite_id);
+	Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
 
 	switch (sprite->type)
 	{
@@ -456,30 +457,30 @@ void RenderSystem::SetEmitterCB(Emitter* emitter)
 	device_context->GSSetConstantBuffers(2, 1, cb_emitter.buffer.GetAddressOf());
 }
 
-void RenderSystem::SetShaderAndMaterial(Emitter* emitter)
+void RenderSystem::SetShaderAndMaterial(Emitter& emitter)
 {
 	// 쉐이더 및 머터리얼 적용
-	VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter->vs_id);
+	VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter.vs_id);
 	if (vs)
 	{
 		device_context->IASetInputLayout(vs->InputLayout());
 		device_context->VSSetShader(vs->Get(), 0, 0);
 	}
 
-	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter->geo_id);
+	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter.geo_id);
 	if (gs)
 		device_context->GSSetShader(gs->Get(), 0, 0);
 
-	Material* material = RESOURCE->UseResource<Material>(emitter->mat_id);
+	Material* material = RESOURCE->UseResource<Material>(emitter.mat_id);
 
 	if (material)
 		material->Set();
 }
 
-void RenderSystem::SetStates(Emitter* emitter)
+void RenderSystem::SetStates(Emitter& emitter)
 {
 	// BS 설정
-	switch (emitter->bs_state)
+	switch (emitter.bs_state)
 	{
 	case DEFAULT_BS:
 		device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
@@ -496,7 +497,7 @@ void RenderSystem::SetStates(Emitter* emitter)
 	}
 
 	// DS 설정
-	switch (emitter->ds_state)
+	switch (emitter.ds_state)
 	{
 	case DEFAULT_NONE:
 		device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);

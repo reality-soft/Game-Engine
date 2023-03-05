@@ -27,10 +27,10 @@ namespace KGCA41B
 		void RenderBoxShape(entt::registry& reg);
 		void RenderBoundingBox(const C_BoundingBox* const);
 		void RenderEffects(entt::registry& reg);
-			void SetEffectCB(C_Effect& effect);
-			void SetEmitterCB(Emitter* emitter);
-			void SetShaderAndMaterial(Emitter* emitter);
-			void SetStates(Emitter* emitter);
+			void SetEffectCB(Effect& effect, XMMATRIX& world);
+			void SetEmitterCB(Emitter& emitter);
+			void SetShaderAndMaterial(Emitter& emitter);
+			void SetStates(Emitter& emitter);
 			void SetParticleCB(Particle& particle);
 	public:
 

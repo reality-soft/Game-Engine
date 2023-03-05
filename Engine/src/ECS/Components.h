@@ -331,7 +331,8 @@ namespace KGCA41B
 
 	struct C_Effect : public C_Transform
 	{
-		vector<shared_ptr<Emitter>> emitters;
+		string effect_id;
+		Effect effect;
 	};
 
 	struct PhysicsCollision : public C_Transform

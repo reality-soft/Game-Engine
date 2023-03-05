@@ -433,7 +433,6 @@ namespace KGCA41B
 		}
 	};
 
-
 	struct Emitter
 	{
 		float		timer;
@@ -554,6 +553,11 @@ namespace KGCA41B
 			bs_state = DEFAULT_BS;
 			ds_state = DEFAULT_NONE;
 		}
+	};
+
+	struct Effect
+	{
+		map<string, Emitter> emitters;
 	};
 
 	enum class AxisType
