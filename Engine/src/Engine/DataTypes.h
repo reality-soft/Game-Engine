@@ -155,6 +155,26 @@ namespace KGCA41B
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	struct CbCameraEffect
+	{
+		CbCameraEffect()
+		{
+			data.main_billboard = XMMatrixIdentity();
+		}
+		CbCameraEffect(const CbCameraEffect& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
+		struct Data
+		{
+			XMMATRIX view_matrix;
+			XMMATRIX projection_matrix;
+			XMMATRIX main_billboard;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 	struct CbSkeleton
 	{
 		CbSkeleton() = default;
@@ -332,16 +352,14 @@ namespace KGCA41B
 
 	struct CbEffect
 	{
-		struct Data
+		__declspec(align(16)) struct Data
 		{
 			XMMATRIX world;
-			XMMATRIX view_proj;
-		}data;
+		} data;
 		ComPtr<ID3D11Buffer> buffer;
-
 	};
 
-	struct CbSprite
+	struct CbEmitter
 	{
 		__declspec(align(16)) struct Data
 		{
@@ -356,7 +374,7 @@ namespace KGCA41B
 			//float end_u[255];
 			//float end_v[255];
 			XMFLOAT4 value2[255];
-			XMMATRIX billboard_matrix;
+			XMMATRIX world;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};

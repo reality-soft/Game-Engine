@@ -27,8 +27,8 @@ namespace KGCA41B
 		void RenderBoxShape(entt::registry& reg);
 
 		void RenderEffects(entt::registry& reg);
-			void SetEffectCB(entt::registry& reg, C_Effect& effect);
-			void SetSpriteCB(Sprite* sprite);
+			void SetEffectCB(C_Effect& effect);
+			void SetEmitterCB(Emitter* emitter);
 			void SetShaderAndMaterial(Emitter* emitter);
 			void SetStates(Emitter* emitter);
 			void SetParticleCB(Particle& particle);
@@ -45,8 +45,8 @@ namespace KGCA41B
 		// Effect
 		EffectVertex			effect_vertex_;
 		ComPtr<ID3D11Buffer>	vertex_buffer_;
-		CbEffect	cb_effect_;
+		CbEffect	cb_effect;
+		CbEmitter	cb_emitter;
 		CbParticle	cb_particle_;
-		CbSprite	cb_sprite_;
 	};
 }

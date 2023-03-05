@@ -188,66 +188,74 @@ void RenderSystem::CreateEffectCB()
 	D3D11_SUBRESOURCE_DATA subdata;
 
 	// Init Effect Buffer
-	ZeroMemory(&cb_effect_.data, sizeof(CbEffect::Data));
+	{
+		ZeroMemory(&cb_effect.data, sizeof(CbEffect::Data));
 
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
+		ZeroMemory(&desc, sizeof(desc));
+		ZeroMemory(&subdata, sizeof(subdata));
 
-	cb_effect_.data.world = XMMatrixIdentity();
-	cb_effect_.data.view_proj = XMMatrixIdentity();
+		cb_effect.data.world = XMMatrixIdentity();
 
-	desc.ByteWidth = sizeof(CbEffect::Data);
+		desc.ByteWidth = sizeof(CbEffect::Data);
 
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	subdata.pSysMem = &cb_effect_.data;
+		subdata.pSysMem = &cb_effect.data;
 
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect_.buffer.GetAddressOf());
+		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect.buffer.GetAddressOf());
+	}
 
-	// Init Sprite Buffer
-	ZeroMemory(&cb_sprite_.data, sizeof(CbSprite::Data));
+	// Init Emitter Buffer
+	{
+		ZeroMemory(&cb_emitter.data, sizeof(CbEmitter::Data));
 
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
+		ZeroMemory(&desc, sizeof(desc));
+		ZeroMemory(&subdata, sizeof(subdata));
 
-	cb_sprite_.data.billboard_matrix = XMMatrixIdentity();
+		cb_emitter.data.world = XMMatrixIdentity();
+		ZeroMemory(&cb_emitter.data.value, sizeof(XMINT4) * 4);
+		ZeroMemory(&cb_emitter.data.value2, sizeof(XMFLOAT4) * 4);
 
-	desc.ByteWidth = sizeof(CbSprite::Data);
+		desc.ByteWidth = sizeof(CbEmitter::Data);
 
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	subdata.pSysMem = &cb_sprite_.data;
+		subdata.pSysMem = &cb_emitter.data;
 
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_sprite_.buffer.GetAddressOf());
-
+		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_emitter.buffer.GetAddressOf());
+	}
+	
 	// Init Particle Buffer
-	ZeroMemory(&cb_particle_.data, sizeof(CbParticle::Data));
+	{
+		ZeroMemory(&cb_particle_.data, sizeof(CbParticle::Data));
 
-	cb_particle_.data.values.x = 0.0f;
-	cb_particle_.data.values.y = 0.0f;
-	cb_particle_.data.values.z = 0.0f;
-	cb_particle_.data.values.w = 0.0f;
+		cb_particle_.data.values.x = 0.0f;
+		cb_particle_.data.values.y = 0.0f;
+		cb_particle_.data.values.z = 0.0f;
+		cb_particle_.data.values.w = 0.0f;
 
-	cb_particle_.data.color.x = 1.0f;
-	cb_particle_.data.color.y = 1.0f;
-	cb_particle_.data.color.z = 1.0f;
-	cb_particle_.data.color.w = 1.0f;
+		cb_particle_.data.color.x = 1.0f;
+		cb_particle_.data.color.y = 1.0f;
+		cb_particle_.data.color.z = 1.0f;
+		cb_particle_.data.color.w = 1.0f;
 
-	cb_particle_.data.transform = XMMatrixIdentity();
+		cb_particle_.data.transform = XMMatrixIdentity();
 
-	ZeroMemory(&desc, sizeof(desc));
-	ZeroMemory(&subdata, sizeof(subdata));
+		ZeroMemory(&desc, sizeof(desc));
+		ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(CbParticle::Data);
+		desc.ByteWidth = sizeof(CbParticle::Data);
 
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	subdata.pSysMem = &cb_particle_.data;
+		subdata.pSysMem = &cb_particle_.data;
 
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_particle_.buffer.GetAddressOf());
+		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_particle_.buffer.GetAddressOf());
+	}
+	
 }
 
 void RenderSystem::CreateEffectBuffer()
@@ -314,20 +322,20 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 		device_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
  		auto& effect = reg.get<C_Effect>(ent);
 
+		SetEffectCB(effect);
+
 		for (auto& emitter : effect.emitters)
 		{
 			if (emitter == nullptr)
 				return;
 
 			// Effect 설정
-			SetEffectCB(reg, effect);
+			SetEmitterCB(emitter.get());
 
 			// Sprite 정보 설정
 			Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter->sprite_id);
 			if (sprite == nullptr)
 				return;
-
-			SetSpriteCB(sprite);
 
 			// 이펙트의 쉐이더 및 머터리얼 설정
 			SetShaderAndMaterial(emitter.get());
@@ -368,31 +376,57 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	device_context->GSSetShader(nullptr, 0, 0);
 }
 
-void RenderSystem::SetEffectCB(entt::registry& reg, C_Effect& effect)
+void RenderSystem::SetEffectCB(C_Effect& effect)
 {
-	// 카메라 가져오기
-				// 빌보드 행렬 적용 후 CB 적용
-				// cb_effect_ 적용
-	auto view_camera = reg.view<C_Camera>();
-	for (auto entity : view_camera)
+	cb_effect.data.world = effect.world;
+
+	device_context->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
+	device_context->GSSetConstantBuffers(2, 1, cb_effect.buffer.GetAddressOf());
+}
+
+void RenderSystem::SetEmitterCB(Emitter* emitter)
+{
+	// Sprite 정보 입력
+	Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter->sprite_id);
+
+	switch (sprite->type)
 	{
-		auto& camera = view_camera.get<C_Camera>(entity);
-		if (camera.tag == "Player")
+		// UV
+	case UV_SPRITE:
+	{
+		// type
+		cb_emitter.data.value.x = 0;
+
+
+		UVSprite* uv_sprite = (UVSprite*)sprite;
+
+		// SRV ���
+		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite->tex_id);
+		if (texture != nullptr)
+			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+
+		cb_emitter.data.value.z = uv_sprite->uv_list.size();
+
+		for (int i = 0; i < uv_sprite->uv_list.size(); i++)
 		{
-			
-			// 빌보드 행렬 적용
-			//cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
-			//cb_sprite_.data.billboard_matrix = XMMatrixTranspose(mat_view_inverse);
-
-			// 트랜스 폼 적용
-			cb_effect_.data.world = XMMatrixTranspose(effect.world * effect.local);
-			//cb_effect_.data.view_proj = XMMatrixTranspose(XMMatrixMultiply(view_matrix, projection_matrix));
-
-			device_context->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
-			device_context->GSSetConstantBuffers(0, 1, cb_effect_.buffer.GetAddressOf());
+			cb_emitter.data.value2[i].x = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
+			cb_emitter.data.value2[i].y = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
+			cb_emitter.data.value2[i].z = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
+			cb_emitter.data.value2[i].w = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
 		}
+	}break;
+	// Tex
+	case TEX_SPRITE:
+	{
+		// type
+		cb_emitter.data.value.x = 1;
 
+
+	}break;
 	}
+
+	device_context->UpdateSubresource(cb_emitter.buffer.Get(), 0, nullptr, &cb_emitter.data, 0, 0);
+	device_context->GSSetConstantBuffers(3, 1, cb_emitter.buffer.GetAddressOf());
 }
 
 void RenderSystem::SetShaderAndMaterial(Emitter* emitter)
@@ -465,48 +499,6 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	cb_particle_.data.transform = XMMatrixTranspose(srt);
 
 	device_context->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
-	device_context->GSSetConstantBuffers(2, 1, cb_particle_.buffer.GetAddressOf());
-}
-
-void RenderSystem::SetSpriteCB(Sprite* sprite)
-{
-	switch (sprite->type)
-	{
-	// UV
-	case UV_SPRITE:
-	{
-		// type
-		cb_sprite_.data.value.x = 0;
-
-
-		UVSprite* uv_sprite = (UVSprite*)sprite;
-
-		// SRV ���
-		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite->tex_id);
-		if (texture != nullptr)
-			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
-
-		cb_sprite_.data.value.z = uv_sprite->uv_list.size();
-
-		for (int i = 0; i < uv_sprite->uv_list.size(); i++)
-		{
-			cb_sprite_.data.value2[i].x = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
-			cb_sprite_.data.value2[i].y = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
-			cb_sprite_.data.value2[i].z = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
-			cb_sprite_.data.value2[i].w = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
-		}
-	}break;
-	// Tex
-	case TEX_SPRITE:
-	{
-		// type
-		cb_sprite_.data.value.x = 1;
-
-
-	}break;
-	}
-
-	device_context->UpdateSubresource(cb_sprite_.buffer.Get(), 0, nullptr, &cb_sprite_.data, 0, 0);
-	device_context->GSSetConstantBuffers(1, 1, cb_sprite_.buffer.GetAddressOf());
+	device_context->GSSetConstantBuffers(4, 1, cb_particle_.buffer.GetAddressOf());
 }
 
