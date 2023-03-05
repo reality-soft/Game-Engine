@@ -2,7 +2,7 @@
 #include "EffectSystem.h"
 #include "TimeMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 
 void EffectSystem::OnCreate(entt::registry& reg)

@@ -2,9 +2,9 @@
 #include "DXStates.h"
 #include "DX11App.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
-ID3D11BlendState* KGCA41B::DXStates::bs_default()
+ID3D11BlendState* reality::DXStates::bs_default()
 {
 	static ComPtr<ID3D11BlendState>		blend_state;
 
@@ -47,7 +47,7 @@ ID3D11BlendState* KGCA41B::DXStates::bs_default()
 	    return blend_state.Get();
 }
 
-ID3D11BlendState* KGCA41B::DXStates::bs_dual_source_blend()
+ID3D11BlendState* reality::DXStates::bs_dual_source_blend()
 {
     static ComPtr<ID3D11BlendState>		blend_state;
 
@@ -90,7 +90,7 @@ ID3D11BlendState* KGCA41B::DXStates::bs_dual_source_blend()
         return blend_state.Get();
 }
 
-ID3D11BlendState* KGCA41B::DXStates::bs_alpha_to_coverage_enable()
+ID3D11BlendState* reality::DXStates::bs_alpha_to_coverage_enable()
 {
     static ComPtr<ID3D11BlendState>		blend_state;
 
@@ -133,7 +133,7 @@ ID3D11BlendState* KGCA41B::DXStates::bs_alpha_to_coverage_enable()
         return blend_state.Get();
 }
 
-ID3D11DepthStencilState* KGCA41B::DXStates::ds_defalut()
+ID3D11DepthStencilState* reality::DXStates::ds_defalut()
 {
     static ComPtr<ID3D11DepthStencilState> depth_stencil_state;
 
@@ -168,7 +168,7 @@ ID3D11DepthStencilState* KGCA41B::DXStates::ds_defalut()
 	    return depth_stencil_state.Get();
 }
 
-ID3D11DepthStencilState* KGCA41B::DXStates::ds_depth_disable()
+ID3D11DepthStencilState* reality::DXStates::ds_depth_disable()
 {
     static ComPtr<ID3D11DepthStencilState> depth_stencil_state;
 
@@ -203,7 +203,7 @@ ID3D11DepthStencilState* KGCA41B::DXStates::ds_depth_disable()
         return depth_stencil_state.Get();
 }
 
-ID3D11DepthStencilState* KGCA41B::DXStates::ds_depth_enable_no_write()
+ID3D11DepthStencilState* reality::DXStates::ds_depth_enable_no_write()
 {
     static ComPtr<ID3D11DepthStencilState> depth_stencil_state;
 
@@ -239,7 +239,7 @@ ID3D11DepthStencilState* KGCA41B::DXStates::ds_depth_enable_no_write()
 }
 
 
-ID3D11RasterizerState* KGCA41B::DXStates::rs_solid_cull_none()
+ID3D11RasterizerState* reality::DXStates::rs_solid_cull_none()
 {
     static ComPtr<ID3D11RasterizerState>		rasterizer_state;
 
@@ -263,7 +263,7 @@ ID3D11RasterizerState* KGCA41B::DXStates::rs_solid_cull_none()
         return rasterizer_state.Get();
 }
 
-ID3D11RasterizerState* KGCA41B::DXStates::rs_solid_cull_back()
+ID3D11RasterizerState* reality::DXStates::rs_solid_cull_back()
 {
     static ComPtr<ID3D11RasterizerState>		rasterizer_state;
 
@@ -287,7 +287,7 @@ ID3D11RasterizerState* KGCA41B::DXStates::rs_solid_cull_back()
         return rasterizer_state.Get();
 }
 
-ID3D11RasterizerState* KGCA41B::DXStates::rs_solid_cull_front()
+ID3D11RasterizerState* reality::DXStates::rs_solid_cull_front()
 {
     static ComPtr<ID3D11RasterizerState>		rasterizer_state;
 
@@ -311,7 +311,7 @@ ID3D11RasterizerState* KGCA41B::DXStates::rs_solid_cull_front()
         return rasterizer_state.Get();
 }
 
-ID3D11RasterizerState* KGCA41B::DXStates::rs_wireframe_cull_none()
+ID3D11RasterizerState* reality::DXStates::rs_wireframe_cull_none()
 {
     static ComPtr<ID3D11RasterizerState>		rasterizer_state;
 
@@ -335,7 +335,7 @@ ID3D11RasterizerState* KGCA41B::DXStates::rs_wireframe_cull_none()
         return rasterizer_state.Get();
 }
 
-ID3D11RasterizerState* KGCA41B::DXStates::rs_wireframe_cull_back()
+ID3D11RasterizerState* reality::DXStates::rs_wireframe_cull_back()
 {
     static ComPtr<ID3D11RasterizerState>		rasterizer_state;
 
@@ -359,7 +359,7 @@ ID3D11RasterizerState* KGCA41B::DXStates::rs_wireframe_cull_back()
         return rasterizer_state.Get();
 }
 
-ID3D11RasterizerState* KGCA41B::DXStates::rs_wireframe_cull_front()
+ID3D11RasterizerState* reality::DXStates::rs_wireframe_cull_front()
 {
     static ComPtr<ID3D11RasterizerState>		rasterizer_state;
 
@@ -383,7 +383,7 @@ ID3D11RasterizerState* KGCA41B::DXStates::rs_wireframe_cull_front()
         return rasterizer_state.Get();
 }
 
-ID3D11SamplerState* KGCA41B::DXStates::ss_defalut()
+ID3D11SamplerState* reality::DXStates::ss_defalut()
 {
 
     static ComPtr<ID3D11SamplerState>		sampler_state;

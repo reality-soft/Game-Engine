@@ -177,7 +177,7 @@ set<string> reality::ResourceMgr::GetTotalSpriteID()
     return sprite;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalMATID()
+set<string> reality::ResourceMgr::GetTotalMATID()
 {
     set<string> mat;
     for (auto pair : resdic_material)
