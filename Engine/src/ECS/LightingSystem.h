@@ -1,7 +1,7 @@
 #pragma once
 #include "System.h"
 
-namespace KGCA41B
+namespace reality
 {
 	struct CbLight
 	{

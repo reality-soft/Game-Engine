@@ -3,7 +3,7 @@
 #include "ComponentSystem.h"
 #include "QuadTreeMgr.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API Actor
 	{

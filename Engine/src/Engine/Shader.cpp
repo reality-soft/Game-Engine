@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Shader.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 bool VertexShader::LoadCompiled(wstring cso_file)
 {

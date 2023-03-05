@@ -5,17 +5,17 @@
 #include "FileTransfer.h"
 #include "TimeMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
-KGCA41B::SkySphere::SkySphere()
+reality::SkySphere::SkySphere()
 {
 }
 
-KGCA41B::SkySphere::~SkySphere()
+reality::SkySphere::~SkySphere()
 {
 }
 
-bool KGCA41B::SkySphere::CreateSphere()
+bool reality::SkySphere::CreateSphere()
 {
 	sphere_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>("SkySphere.stmesh"));
 	cloud_dome = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>("CloudDome.stmesh"));
@@ -61,7 +61,7 @@ bool KGCA41B::SkySphere::CreateSphere()
 	return true;
 }
 
-void KGCA41B::SkySphere::FrameRender(const C_Camera* camera)
+void reality::SkySphere::FrameRender(const C_Camera* camera)
 {
 	DX11APP->GetDeviceContext()->VSSetShader(nullptr, 0, 0);
 	DX11APP->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
@@ -89,7 +89,7 @@ void KGCA41B::SkySphere::FrameRender(const C_Camera* camera)
 	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
 }
 
-void KGCA41B::SkySphere::FrameBackgroundSky(const C_Camera* camera)
+void reality::SkySphere::FrameBackgroundSky(const C_Camera* camera)
 {
 	XMMATRIX following_camera_matrix =
 		XMMatrixScaling(camera->far_z * 0.9, camera->far_z * 0.9, camera->far_z * 0.9) *
@@ -142,14 +142,14 @@ void KGCA41B::SkySphere::FrameBackgroundSky(const C_Camera* camera)
 	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
 }
 
-void KGCA41B::SkySphere::RenderBackgroundSky()
+void reality::SkySphere::RenderBackgroundSky()
 {
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
 	for (auto mesh : sphere_mesh.get()->meshes)
 	{
-		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("BackgroundSky.mat");
+		reality::Material* material = RESOURCE->UseResource<reality::Material>("BackgroundSky.mat");
 		if (material)
 			material->Set();
 
@@ -159,7 +159,7 @@ void KGCA41B::SkySphere::RenderBackgroundSky()
 	}
 }
 
-void KGCA41B::SkySphere::FrameSunSky(const C_Camera* camera)
+void reality::SkySphere::FrameSunSky(const C_Camera* camera)
 {
 	XMMATRIX following_camera_matrix =
 		XMMatrixScaling(camera->far_z * 0.8, camera->far_z * 0.8, camera->far_z * 0.8) *
@@ -178,14 +178,14 @@ void KGCA41B::SkySphere::FrameSunSky(const C_Camera* camera)
 	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
 }
 
-void KGCA41B::SkySphere::RenderSunSky()
+void reality::SkySphere::RenderSunSky()
 {
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
 	for (auto mesh : cloud_dome.get()->meshes)
 	{
-		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("SunSky.mat");
+		reality::Material* material = RESOURCE->UseResource<reality::Material>("SunSky.mat");
 		if (material)
 			material->Set();
 
@@ -195,7 +195,7 @@ void KGCA41B::SkySphere::RenderSunSky()
 	}
 }
 
-void KGCA41B::SkySphere::FrameStarSky(const C_Camera* camera)
+void reality::SkySphere::FrameStarSky(const C_Camera* camera)
 {
 	XMMATRIX following_camera_matrix =
 		XMMatrixScaling(camera->far_z * 0.8, camera->far_z * 0.8, camera->far_z * 0.8) *
@@ -214,14 +214,14 @@ void KGCA41B::SkySphere::FrameStarSky(const C_Camera* camera)
 	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());
 }
 
-void KGCA41B::SkySphere::RenderStarSky()
+void reality::SkySphere::RenderStarSky()
 {
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
 	for (auto mesh : cloud_dome.get()->meshes)
 	{
-		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("StarSky.mat");
+		reality::Material* material = RESOURCE->UseResource<reality::Material>("StarSky.mat");
 		if (material)
 			material->Set();
 
@@ -231,7 +231,7 @@ void KGCA41B::SkySphere::RenderStarSky()
 	}
 }
 
-void KGCA41B::SkySphere::FrameCloudSky(const C_Camera* camera)
+void reality::SkySphere::FrameCloudSky(const C_Camera* camera)
 {
 	XMMATRIX following_camera_matrix =
 		XMMatrixScaling(camera->far_z * 0.5, camera->far_z * 0.5, camera->far_z * 0.5) *
@@ -253,14 +253,14 @@ void KGCA41B::SkySphere::FrameCloudSky(const C_Camera* camera)
 	DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 }
 
-void KGCA41B::SkySphere::RenderCloudSky()
+void reality::SkySphere::RenderCloudSky()
 {
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
 	for (auto mesh : cloud_dome.get()->meshes)
 	{
-		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>("CloudSky.mat");
+		reality::Material* material = RESOURCE->UseResource<reality::Material>("CloudSky.mat");
 		if (material)
 			material->Set();
 
@@ -271,7 +271,7 @@ void KGCA41B::SkySphere::RenderCloudSky()
 }
 
 
-KGCA41B::Level::~Level()
+reality::Level::~Level()
 {
 	level_mesh_.vertices.clear();
 	level_mesh_.vertex_buffer.Get()->Release();
@@ -291,7 +291,7 @@ KGCA41B::Level::~Level()
 	height_field_body_ = nullptr;
 }
 
-bool KGCA41B::Level::ImportFromFile(string filepath)
+bool reality::Level::ImportFromFile(string filepath)
 {
 	FileTransfer file_transfer(filepath, READ);
 
@@ -344,7 +344,7 @@ bool KGCA41B::Level::ImportFromFile(string filepath)
 	return true;
 }
 
-bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale, XMINT2 _row_col_blocks)
+bool reality::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale, XMINT2 _row_col_blocks)
 {
 	max_lod_ = _max_lod;
 	cell_scale_ = _cell_scale;
@@ -420,7 +420,7 @@ bool KGCA41B::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 	return true;
 }
 
-void KGCA41B::Level::SetCamera(C_Camera* _camera)
+void reality::Level::SetCamera(C_Camera* _camera)
 {
 	camera = _camera;
 }
@@ -450,7 +450,7 @@ bool Level::CreateHeightField(float min_height, float max_height)
 	return true;
 }
 
-void KGCA41B::Level::RenderObjects()
+void reality::Level::RenderObjects()
 {
 	for (auto inst : inst_objects)
 	{
@@ -459,7 +459,7 @@ void KGCA41B::Level::RenderObjects()
 	}
 }
 
-void KGCA41B::Level::RenderSkySphere()
+void reality::Level::RenderSkySphere()
 {
 	sky_sphere.FrameRender(camera);
 }
@@ -509,23 +509,23 @@ void Level::Render(bool culling)
 	}
 }
 
-XMINT2 KGCA41B::Level::GetWorldSize()
+XMINT2 reality::Level::GetWorldSize()
 {
 	return XMINT2(num_row_vertex_ - 1, num_col_vertex_ - 1);
 }
 
-XMINT2 KGCA41B::Level::GetBlocks()
+XMINT2 reality::Level::GetBlocks()
 {
 	return row_col_blocks_;
 }
 
-UINT KGCA41B::Level::MaxLod()
+UINT reality::Level::MaxLod()
 {
 	return max_lod_;
 }
 
 
-void KGCA41B::Level::SetTextures()
+void reality::Level::SetTextures()
 {
 	int index = 0;
 	for (auto texid : texture_id)
@@ -602,7 +602,7 @@ float Level::GetHeightAt(float x, float z)
 	return height;
 }
 
-XMVECTOR KGCA41B::Level::GetNormalAt(float x, float z)
+XMVECTOR reality::Level::GetNormalAt(float x, float z)
 {
 	float cell_x = (float)((num_row_vertex_ - 1) * cell_distance_ / 2.0f + x);
 	float cell_z = (float)((num_col_vertex_ - 1) * cell_distance_ / 2.0f - z);
@@ -636,7 +636,7 @@ void Level::GetHeightList()
 	}
 }
 
-XMFLOAT2 KGCA41B::Level::GetMinMaxHeight()
+XMFLOAT2 reality::Level::GetMinMaxHeight()
 {
 	float min = 0;
 	float max = 0;

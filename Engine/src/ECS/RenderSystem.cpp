@@ -4,7 +4,7 @@
 #include "TimeMgr.h"
 #include "DataMgr.h"
 #include "DataTypes.h"
-using namespace KGCA41B;
+using namespace reality;
 
 RenderSystem::RenderSystem()
 {
@@ -18,7 +18,7 @@ RenderSystem::~RenderSystem()
 	device_context = nullptr;
 }
 
-void KGCA41B::RenderSystem::OnCreate(entt::registry& reg)
+void reality::RenderSystem::OnCreate(entt::registry& reg)
 {
 	HRESULT hr;
 

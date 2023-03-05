@@ -7,7 +7,7 @@
 
 #define LerpByTan(start, end, tan) (start - (start * tan) + (end * tan))
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API SkySphere
 	{

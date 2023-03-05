@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "PhysicsMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 CameraSystem::CameraSystem()
 {
@@ -20,7 +20,7 @@ CameraSystem::~CameraSystem()
 {
 }
 
-void KGCA41B::CameraSystem::TargetTag(entt::registry& reg, string tag)
+void reality::CameraSystem::TargetTag(entt::registry& reg, string tag)
 {
 	auto view = reg.view<C_Camera>();
 	for (auto entity : view)
@@ -129,7 +129,7 @@ C_Camera* CameraSystem::GetCamera()
 	return camera;
 }
 
-XMMATRIX KGCA41B::CameraSystem::GetViewProj()  
+XMMATRIX reality::CameraSystem::GetViewProj()  
 {
 	return view_matrix * projection_matrix;
 }
@@ -175,7 +175,7 @@ void CameraSystem::DebugCameraMovement()
 	}
 }
 
-void KGCA41B::CameraSystem::PlayerCameraMovement()
+void reality::CameraSystem::PlayerCameraMovement()
 {
 	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
 	{
@@ -189,7 +189,7 @@ void KGCA41B::CameraSystem::PlayerCameraMovement()
 	camera->OnUpdate();
 }
 
-void KGCA41B::CameraSystem::UpdateVectors()
+void reality::CameraSystem::UpdateVectors()
 {
 	look = XMVector3Normalize(world_matrix.r[2]);
 	right = XMVector3Normalize(world_matrix.r[0]);

@@ -2,7 +2,7 @@
 #include "FbxOutData.h"
 #include "DllMacro.h"
 
-namespace KGCA41B {
+namespace reality {
 
 	class DLL_API FbxLoader
 	{

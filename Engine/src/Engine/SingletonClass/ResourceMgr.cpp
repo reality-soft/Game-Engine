@@ -5,7 +5,7 @@
 #include <io.h>
 #include "DataMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 bool ResourceMgr::Init(LPCWSTR packagefile)
 {
@@ -61,7 +61,7 @@ void ResourceMgr::LoadDir(string path, Load_Func load_func)
     } while (_findnext(handle, &fd) == 0);
 }
 
-map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
+map<string, string> reality::ResourceMgr::GetTotalResID()
 {
     map<string, string> res_id_map;
     
@@ -97,7 +97,7 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     return res_id_map;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalTexID()
+set<string> reality::ResourceMgr::GetTotalTexID()
 {
     set<string> tex_id_set;
     for (auto pair : resdic_texture)
@@ -107,7 +107,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalTexID()
     return tex_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalVSID()
+set<string> reality::ResourceMgr::GetTotalVSID()
 {
     set<string> vs_id_set;
     for (auto pair : resdic_vs)
@@ -117,7 +117,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalVSID()
     return vs_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalPSID()
+set<string> reality::ResourceMgr::GetTotalPSID()
 {
     set<string> ps_id_set;
     for (auto pair : resdic_ps)
@@ -127,7 +127,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalPSID()
     return ps_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalGSID()
+set<string> reality::ResourceMgr::GetTotalGSID()
 {
     set<string> gs_id_set;
     for (auto pair : resdic_gs)
@@ -137,7 +137,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalGSID()
     return gs_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
+set<string> reality::ResourceMgr::GetTotalSKMID()
 {
     set<string> skm;
     for (auto pair : resdic_skeletal_mesh)
@@ -147,7 +147,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
     return skm;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalSTMID()
+set<string> reality::ResourceMgr::GetTotalSTMID()
 {
     set<string> stm;
     for (auto pair : resdic_static_mesh)
@@ -157,7 +157,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalSTMID()
     return stm;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
+set<string> reality::ResourceMgr::GetTotalANIMID()
 {
     set<string> anim;
     for (auto pair : resdic_animation)
@@ -167,7 +167,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
     return anim;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalSpriteID()
+set<string> reality::ResourceMgr::GetTotalSpriteID()
 {
     set<string> sprite;
     for (auto pair : resdic_sprite)
@@ -178,22 +178,22 @@ set<string> KGCA41B::ResourceMgr::GetTotalSpriteID()
 }
 
 
-void KGCA41B::ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
+void reality::ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
 {
     resdic_static_mesh.insert({ id, static_mesh });
 }
 
-void KGCA41B::ResourceMgr::PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh)
+void reality::ResourceMgr::PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh)
 {
     resdic_skeletal_mesh.insert({ id, skeletal_mesh });
 }
 
-void KGCA41B::ResourceMgr::PushAnimation(string id, const vector<OutAnimData>& animation)
+void reality::ResourceMgr::PushAnimation(string id, const vector<OutAnimData>& animation)
 {
     resdic_animation.insert({ id, animation });
 }
 
-bool KGCA41B::ResourceMgr::ImportShaders(string filename)
+bool reality::ResourceMgr::ImportShaders(string filename)
 {
 
     if (filename.find("VS") != string::npos)
@@ -253,7 +253,7 @@ bool ResourceMgr::ImportSound(string filename)
     return true;
 }
 
-bool KGCA41B::ResourceMgr::ImportSKM(string filename)
+bool reality::ResourceMgr::ImportSKM(string filename)
 {
     SkeletalMesh skeletal_mesh = FBX->LoadSkeletalMesh(filename);
 
@@ -265,7 +265,7 @@ bool KGCA41B::ResourceMgr::ImportSKM(string filename)
     return false;
 }
 
-bool KGCA41B::ResourceMgr::ImportSTM(string filename)
+bool reality::ResourceMgr::ImportSTM(string filename)
 {
     StaticMesh static_mesh = FBX->LoadStaticMesh(filename);
 
@@ -277,7 +277,7 @@ bool KGCA41B::ResourceMgr::ImportSTM(string filename)
     return false;
 }
 
-bool KGCA41B::ResourceMgr::ImportANIM(string filename)
+bool reality::ResourceMgr::ImportANIM(string filename)
 {
     vector<OutAnimData> animation = FBX->LoadAnimation(filename);
 
@@ -399,7 +399,7 @@ bool ResourceMgr::ImportSprite(string filename)
     return true;
 }
 
-bool KGCA41B::ResourceMgr::SaveSprite(string name, shared_ptr<Sprite> new_sprite)
+bool reality::ResourceMgr::SaveSprite(string name, shared_ptr<Sprite> new_sprite)
 {
     if (resdic_sprite.find(name) != resdic_sprite.end())
         return false;
@@ -411,7 +411,7 @@ bool KGCA41B::ResourceMgr::SaveSprite(string name, shared_ptr<Sprite> new_sprite
     
 }
 
-bool KGCA41B::ResourceMgr::ImportMaterial(string filename)
+bool reality::ResourceMgr::ImportMaterial(string filename)
 {
     Material material;
     material.LoadAndCreate(filename);

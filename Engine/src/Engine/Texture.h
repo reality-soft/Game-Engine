@@ -4,7 +4,7 @@
 #include "WICTextureLoader.h"
 #include "DDSTextureLoader.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API Texture
 	{

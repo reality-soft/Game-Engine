@@ -8,7 +8,7 @@
 #define MIN_HEIGHT -1000.f
 #define MAX_HEIGHT  1000.f
 
-namespace KGCA41B {
+namespace reality {
 
 	class LODCell
 	{

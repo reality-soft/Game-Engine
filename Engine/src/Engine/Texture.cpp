@@ -2,7 +2,7 @@
 #include "Texture.h"
 #include "DX11App.h"
 
-bool KGCA41B::Texture::LoadTextureWIC(wstring filepath)
+bool reality::Texture::LoadTextureWIC(wstring filepath)
 {
 	HRESULT hr;
 
@@ -24,7 +24,7 @@ bool KGCA41B::Texture::LoadTextureWIC(wstring filepath)
 	return true;
 }
 
-bool KGCA41B::Texture::LoadTextureDDS(wstring filepath)
+bool reality::Texture::LoadTextureDDS(wstring filepath)
 {
 	ID3D11Resource* resource = nullptr;
 	HRESULT hr = CreateDDSTextureFromFile(DX11APP->GetDevice(), filepath.c_str(), &resource, srv.GetAddressOf());
@@ -41,7 +41,7 @@ bool KGCA41B::Texture::LoadTextureDDS(wstring filepath)
 	return true;
 }
 
-bool KGCA41B::AlphaTexLayer::CreateAlphaTexture(int pixels, int _texel_per_vertex)
+bool reality::AlphaTexLayer::CreateAlphaTexture(int pixels, int _texel_per_vertex)
 {
 	pixel_size = pixels;
 	texel_per_vertex = _texel_per_vertex;
@@ -85,7 +85,7 @@ bool KGCA41B::AlphaTexLayer::CreateAlphaTexture(int pixels, int _texel_per_verte
 	return true;
 }
 
-void KGCA41B::AlphaTexLayer::SetTexelAt(const XMVECTOR& pos, float radius, int current_layer, bool paint_mode)
+void reality::AlphaTexLayer::SetTexelAt(const XMVECTOR& pos, float radius, int current_layer, bool paint_mode)
 {
 	XMFLOAT2 texel_coord;
 

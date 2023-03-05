@@ -4,7 +4,7 @@
 
 #define CHANNEL_MAX_COUNT 1000
 
-namespace KGCA41B 
+namespace reality 
 {
     class DLL_API FmodMgr
     {

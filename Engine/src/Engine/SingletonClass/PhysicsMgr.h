@@ -4,7 +4,7 @@
 
 using namespace reactphysics3d;
 
-namespace KGCA41B
+namespace reality
 {
     class WorldRayCallback : public RaycastCallback
     {
@@ -24,7 +24,7 @@ namespace KGCA41B
     class DLL_API PhysicsMgr
     {
         SINGLETON(PhysicsMgr);
-#define PHYSICS KGCA41B::PhysicsMgr::GetInst()
+#define PHYSICS reality::PhysicsMgr::GetInst()
     public:
         bool Init();
         void Update();

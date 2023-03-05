@@ -1,10 +1,8 @@
 #pragma once
 #include "DX11App.h"
 
-namespace KGCA41B
+namespace reality
 {
-
-
 	class DLL_API VertexShader
 	{
 	public:

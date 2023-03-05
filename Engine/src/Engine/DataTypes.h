@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-namespace KGCA41B
+namespace reality
 {
 	struct Vertex
 	{

@@ -5,7 +5,7 @@
 #include "ResourceMgr.h"
 #include "Dx11App.h"
 
-bool KGCA41B::FbxMgr::ImportAndSaveFbx(string filename)
+bool reality::FbxMgr::ImportAndSaveFbx(string filename)
 {
     FbxLoader fbx_loader;
     if (!fbx_loader.LoadFromFbxFile(filename))
@@ -85,7 +85,7 @@ bool KGCA41B::FbxMgr::ImportAndSaveFbx(string filename)
     return true;
 }
 
-void KGCA41B::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filename)
+void reality::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filename)
 {
     string file_name = RESOURCE->directory() + "STM/" + filename + ".stmesh";
     FileTransfer file_exporter(file_name, WRITE);
@@ -110,7 +110,7 @@ void KGCA41B::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filen
     }
 }
 
-void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string filename)
+void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string filename)
 {
     string file_name = RESOURCE->directory() + "SKM/" + filename + ".skmesh";
     FileTransfer file_exporter(file_name, WRITE);
@@ -151,7 +151,7 @@ void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
     file_exporter.WriteBinaryWithoutSize<XMMATRIX>(bind_pose_matrices.data(), num_of_matrices); 
 }
 
-void KGCA41B::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string filename)
+void reality::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string filename)
 {
     string file_name = RESOURCE->directory() + "ANIM/" + filename + ".anim";
     FileTransfer file_exporter(file_name, WRITE);
@@ -189,7 +189,7 @@ void KGCA41B::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string
     }
 }
 
-KGCA41B::StaticMesh KGCA41B::FbxMgr::LoadStaticMesh(string filename)
+reality::StaticMesh reality::FbxMgr::LoadStaticMesh(string filename)
 {
     FileTransfer file_exporter(filename, READ);
 
@@ -215,7 +215,7 @@ KGCA41B::StaticMesh KGCA41B::FbxMgr::LoadStaticMesh(string filename)
     return static_mesh;
 }
 
-KGCA41B::SkeletalMesh KGCA41B::FbxMgr::LoadSkeletalMesh(string filename)
+reality::SkeletalMesh reality::FbxMgr::LoadSkeletalMesh(string filename)
 {
     FileTransfer file_exporter(filename, READ);
 
@@ -254,7 +254,7 @@ KGCA41B::SkeletalMesh KGCA41B::FbxMgr::LoadSkeletalMesh(string filename)
     return skeletal_mesh;
 }
 
-vector<KGCA41B::OutAnimData> KGCA41B::FbxMgr::LoadAnimation(string filename)
+vector<reality::OutAnimData> reality::FbxMgr::LoadAnimation(string filename)
 {
     vector<OutAnimData> animation_data;
 
@@ -291,7 +291,7 @@ vector<KGCA41B::OutAnimData> KGCA41B::FbxMgr::LoadAnimation(string filename)
     return animation_data;
 }
 
-bool KGCA41B::FbxMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
+bool reality::FbxMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
 {
     HRESULT hr;
 
@@ -327,7 +327,7 @@ bool KGCA41B::FbxMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
     return true;
 }
 
-bool KGCA41B::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
+bool reality::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
     HRESULT hr;
 
     // VertexBuffer

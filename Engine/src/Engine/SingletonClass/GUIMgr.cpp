@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GUIMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
 {
@@ -73,12 +73,12 @@ GuiWidget* GUIMgr::FindWidget(string widget_name)
 	return nullptr;
 }
 
-ImGuiContext* KGCA41B::GUIMgr::GetContext()
+ImGuiContext* reality::GUIMgr::GetContext()
 {
 	return context;
 }
 
-ImFont* KGCA41B::GUIMgr::AddFont(string font_name, LPCSTR ttf_file, float font_size)
+ImFont* reality::GUIMgr::AddFont(string font_name, LPCSTR ttf_file, float font_size)
 {
 	ImFont* new_font;
 

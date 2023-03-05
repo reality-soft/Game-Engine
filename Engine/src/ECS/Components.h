@@ -7,7 +7,7 @@
 #include "Material.h"
 
 
-namespace KGCA41B
+namespace reality
 {
 #define TYPE_ID(type) entt::type_hash<type>().value()
 

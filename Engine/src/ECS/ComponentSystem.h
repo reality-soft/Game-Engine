@@ -3,7 +3,7 @@
 #include "Components.h"
 #include "../Engine/DLLMacro.h"
 
-namespace KGCA41B {
+namespace reality {
 	class DLL_API ComponentSystem
 	{
 		SINGLETON(ComponentSystem)
