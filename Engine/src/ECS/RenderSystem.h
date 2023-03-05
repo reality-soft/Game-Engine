@@ -25,7 +25,7 @@ namespace KGCA41B
 		void CreateEffectBuffer();
 
 		void RenderBoxShape(entt::registry& reg);
-
+		void RenderBoundingBox(const C_BoundingBox* const);
 		void RenderEffects(entt::registry& reg);
 			void SetEffectCB(C_Effect& effect);
 			void SetEmitterCB(Emitter* emitter);

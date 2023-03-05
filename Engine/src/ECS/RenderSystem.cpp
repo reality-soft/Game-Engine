@@ -63,9 +63,9 @@ void RenderSystem::OnCreate(entt::registry& reg)
 
 void RenderSystem::OnUpdate(entt::registry& reg)
 {
-
 	auto view_stm = reg.view<C_StaticMesh, C_Transform>();
 	auto view_skm = reg.view<C_SkeletalMesh, C_Transform>();
+	auto view_bb = reg.view<C_BoundingBox>();
 
 	for (auto ent : view_stm)
 	{
@@ -89,13 +89,20 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		RenderSkeletalMesh(skeletal_mesh, animation);
 	}
 
+	DX11APP->GetDeviceContext()->RSSetState(DXStates::rs_wireframe_cull_none());
+	for (auto ent : view_bb)
+	{
+		auto* bounding_box = reg.try_get<C_BoundingBox>(ent);
+		RenderBoundingBox(bounding_box);
+	}
+	DX11APP->GetDeviceContext()->RSSetState(DXStates::rs_solid_cull_none());
+
 	// BoxShape Render
 	RenderBoxShape(reg);
 	
 
 	// Emitter Render
 	RenderEffects(reg);
-	
 }
 
 void RenderSystem::SetCbTransform(const C_Transform* const transform)
@@ -313,6 +320,27 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 		device_context->DrawIndexed(box.index_list.size(), 0, 0);
 	}
 }
+
+void RenderSystem::RenderBoundingBox(const C_BoundingBox* const box)
+{
+	VertexShader* shader = RESOURCE->UseResource<VertexShader>(box->vs_id);
+	if (shader == nullptr)
+		return;
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	SetCbTransform(box);
+
+	device_context->IASetVertexBuffers(0, 1, box->vertex_buffer.GetAddressOf(), &stride, &offset);
+	device_context->IASetIndexBuffer(box->index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+	device_context->IASetInputLayout(shader->InputLayout());
+	device_context->VSSetShader(shader->Get(), 0, 0);
+
+	device_context->DrawIndexed(box->index_list.size(), 0, 0);
+}
+
 
 void RenderSystem::RenderEffects(entt::registry& reg)
 {

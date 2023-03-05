@@ -30,8 +30,11 @@ namespace KGCA41B
 		void FrameBackgroundSky(const C_Camera* camera);
 		void RenderBackgroundSky();
 
-		void FrameSunStarSky(const C_Camera* camera);
-		void RenderSunStarSky();
+		void FrameSunSky(const C_Camera* camera);
+		void RenderSunSky();
+
+		void FrameStarSky(const C_Camera* camera);
+		void RenderStarSky();
 
 		void FrameCloudSky(const C_Camera* camera);
 		void RenderCloudSky();
@@ -78,6 +81,10 @@ namespace KGCA41B
 		C_Camera* camera = nullptr;
 
 	public:
+		void SetTexturesToLayer();
+
+	public:
+		ID3D11ShaderResourceView* texture_layers[16] = {0,};
 		vector<InstancedObject> inst_objects;
 		SkySphere sky_sphere;
 
@@ -100,11 +107,11 @@ namespace KGCA41B
 		UINT num_row_vertex_;
 		UINT num_col_vertex_;
 		float cell_distance_;
+		float uv_scale_;
 
 		UINT max_lod_;
 		UINT cell_scale_;
 		XMINT2 row_col_blocks_;
-		float uv_scale_;
 
 
 	protected:
