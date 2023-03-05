@@ -50,11 +50,22 @@ namespace KGCA41B
 
 	struct C_Camera : public C_Transform
 	{
-		XMVECTOR position, look, up, right, target;
-		float yaw, pitch, roll, distance, speed;
+		XMVECTOR camera_pos = { 0, 0, 0, 0 };
+		XMVECTOR target_pos;
+		XMVECTOR local_pos;
+		XMFLOAT2 pitch_yaw = { 0, 0 };
 		float near_z, far_z, fov, aspect;
 
 		virtual void OnConstruct() override {};
+		virtual void OnUpdate() override
+		{
+			XMVECTOR target_translation, target_rotation, target_scale;
+			XMVECTOR local_translation, local_rotation, local_scale;
+			XMVECTOR camera_translation, camera_rotation, camera_scale;
+			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
+			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
+			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, world * local);
+		}
 	};
 
 	struct C_Animation : public Component
@@ -81,9 +92,117 @@ namespace KGCA41B
 		{
 			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
 
+			world = translation;
+
 			aabb.min = XMVector3TransformCoord(aabb.min, translation);
 			aabb.max = XMVector3TransformCoord(aabb.max, translation);
 			aabb.center = (aabb.min + aabb.max) / 2;
+		}
+
+		string vs_id = "StaticMeshVS.cso";
+
+		vector<Vertex>			vertex_list;
+		ComPtr<ID3D11Buffer>	vertex_buffer;
+
+		vector<DWORD>			index_list;
+		ComPtr<ID3D11Buffer>	index_buffer;
+
+		int x, y, z;
+
+		void SetXYZ(int x, int y, int z) {
+			vertex_list.clear();
+			vertex_list.push_back({ XMFLOAT3(-x / 2,  y, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });  // Top left
+			vertex_list.push_back({ XMFLOAT3(x / 2,  y, -z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top right
+			vertex_list.push_back({ XMFLOAT3(-x / 2, 0, -z / 2), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });  // Bottom left
+			vertex_list.push_back({ XMFLOAT3(x / 2, 0, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });   // Bottom right
+			vertex_list.push_back({ XMFLOAT3(-x / 2,  y,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top front
+			vertex_list.push_back({ XMFLOAT3(x / 2,  y,  z / 2),    XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });    // Top back
+			vertex_list.push_back({ XMFLOAT3(-x / 2, 0,  z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });  // Bottom front
+			vertex_list.push_back({ XMFLOAT3(x / 2, 0,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });   // Bottom back
+
+			D3D11_BUFFER_DESC bufDesc;
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(Vertex) * vertex_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			D3D11_SUBRESOURCE_DATA subResourse;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &vertex_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer);
+
+			index_list.clear();
+			index_list.push_back(0);
+			index_list.push_back(1);
+			index_list.push_back(2);
+			index_list.push_back(1);
+			index_list.push_back(3);
+			index_list.push_back(2);
+
+			index_list.push_back(4);
+			index_list.push_back(5);
+			index_list.push_back(6);
+			index_list.push_back(5);
+			index_list.push_back(7);
+			index_list.push_back(6);
+
+			index_list.push_back(4);
+			index_list.push_back(6);
+			index_list.push_back(2);
+			index_list.push_back(4);
+			index_list.push_back(2);
+			index_list.push_back(0);
+
+			index_list.push_back(1);
+			index_list.push_back(5);
+			index_list.push_back(3);
+			index_list.push_back(5);
+			index_list.push_back(7);
+			index_list.push_back(3);
+
+			index_list.push_back(4);
+			index_list.push_back(0);
+			index_list.push_back(5);
+			index_list.push_back(5);
+			index_list.push_back(0);
+			index_list.push_back(1);
+
+			index_list.push_back(2);
+			index_list.push_back(3);
+			index_list.push_back(6);
+			index_list.push_back(3);
+			index_list.push_back(7);
+			index_list.push_back(6);
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(DWORD) * index_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &index_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &index_buffer);
+
+			aabb.min = { -static_cast<float>(x) / 2, static_cast<float>(y), -static_cast<float>(z) / 2, 0 };
+			aabb.min = { static_cast<float>(x) / 2, -static_cast<float>(y), static_cast<float>(z) / 2, 0 };
 		}
 	};
 
@@ -138,61 +257,81 @@ namespace KGCA41B
 		}
 	};
 
-	struct Particle
+
+	struct C_BoxShape : public C_Transform
 	{
-		bool		enable;
-		string		tex_id;
-		XMFLOAT3	position;
-		XMFLOAT3	velocity;
-		float		duration;
-		float		timer;
-		XMFLOAT4	color;
-		Particle()
+		string vs_id;
+		string material_id;
+
+		vector<Vertex>			vertex_list;
+		ComPtr<ID3D11Buffer>	vertex_buffer;
+
+		vector<DWORD>			index_list;
+		ComPtr<ID3D11Buffer>	index_buffer;
+
+		C_BoxShape()
 		{
-			enable = true;
-			position = {0, 0, 0};
-			velocity = { 0, 0, 0 };
-			duration = 3.0f;
-			timer = 0.0f;
-			color = {0.0f, 0.0f, 0.0f, 0.0f};
+			material_id = "box_material.mat";
+
+			// ���ؽ� ����
+			vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +0.0f} });
+			vertex_list.push_back({ { +1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +0.0f} });
+			vertex_list.push_back({ { -1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +1.0f} });
+			vertex_list.push_back({ { +1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f} });
+
+			D3D11_BUFFER_DESC bufDesc;
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(Vertex) * vertex_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			D3D11_SUBRESOURCE_DATA subResourse;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &vertex_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer);
+
+			// �ε��� ����
+
+			index_list.push_back(0);
+			index_list.push_back(1);
+			index_list.push_back(2);
+			index_list.push_back(2);
+			index_list.push_back(1);
+			index_list.push_back(3);
+
+			ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
+
+			bufDesc.ByteWidth = sizeof(DWORD) * index_list.size();
+			bufDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			bufDesc.CPUAccessFlags = 0;
+			bufDesc.MiscFlags = 0;
+			bufDesc.StructureByteStride = 0;
+
+			ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
+
+			subResourse.pSysMem = &index_list.at(0);
+			subResourse.SysMemPitch;
+			subResourse.SysMemSlicePitch;
+
+			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &index_buffer);
 		}
 	};
 
 
-	struct BaseEffect : public C_Transform
+	struct C_Effect : public C_Transform
 	{
-		bool					enabled_ = false;
-		string					vs_id;
-		string					ps_id;
-		vector<Vertex>			vertex_list;
-		ComPtr<ID3D11Buffer>	vertex_buffer;
-	};
-
-	struct UVSprite : public BaseEffect
-	{
-		string						tex_id;
-		UINT						cur_frame = 1;
-		UINT						max_frame;
-		vector<UINT>				index_list;
-		ComPtr<ID3D11Buffer>		index_buffer;
-		vector<pair<POINT, POINT>>	uv_list;
-	};
-
-	struct TextureSprite : public BaseEffect
-	{
-		UINT						cur_frame = 1;
-		UINT						max_frame;
-		vector<UINT>				index_list;
-		ComPtr<ID3D11Buffer>		index_buffer;
-		vector<string>				tex_id_list;
-	};
-
-	struct Particles : public BaseEffect
-	{
-		string				geo_id;
-		vector<string>		tex_id_list;
-		UINT				particle_count;
-		vector<Particle>	particle_list;
+		vector<shared_ptr<Emitter>> emitters;
 	};
 
 	struct PhysicsCollision : public C_Transform

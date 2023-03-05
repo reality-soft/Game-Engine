@@ -3,6 +3,7 @@
 #include "FmodMgr.h"
 #include "FbxMgr.h"
 #include <io.h>
+#include "DataMgr.h"
 
 using namespace KGCA41B;
 
@@ -34,6 +35,7 @@ void ResourceMgr::LoadAllResource()
     LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
     LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
     LoadDir(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
+    LoadDir(directory_ + "/Sprite/", &ResourceMgr::ImportSprite);
     LoadDir(directory_ + "/Material/", &ResourceMgr::ImportMaterial);
 }
 
@@ -165,6 +167,27 @@ set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
     return anim;
 }
 
+set<string> KGCA41B::ResourceMgr::GetTotalSpriteID()
+{
+    set<string> sprite;
+    for (auto pair : resdic_sprite)
+    {
+        sprite.insert(pair.first);
+    }
+    return sprite;
+}
+
+set<string> KGCA41B::ResourceMgr::GetTotalMATID()
+{
+    set<string> mat;
+    for (auto pair : resdic_material)
+    {
+        mat.insert(pair.first);
+    }
+    return mat;
+}
+
+
 void KGCA41B::ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
 {
     resdic_static_mesh.insert({ id, static_mesh });
@@ -279,7 +302,15 @@ bool KGCA41B::ResourceMgr::ImportANIM(string filename)
 bool ResourceMgr::ImportTexture(string filename)
 {
     Texture new_tex;
-    new_tex.LoadTextureWIC(to_mw(filename));
+    bool success_load = false;
+
+    success_load = new_tex.LoadTextureWIC(to_mw(filename));
+
+    if (!success_load)
+        success_load = new_tex.LoadTextureDDS(to_mw(filename));
+
+    if (!success_load)
+        return false;
 
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
@@ -287,6 +318,104 @@ bool ResourceMgr::ImportTexture(string filename)
     resdic_texture.insert(make_pair(id, new_tex));
 
     return false;
+}
+
+bool ResourceMgr::ImportSprite(string filename)
+{
+    DATA->LoadSheetFile(filename);
+
+    auto strs1 = split(filename, '/');
+    auto name = strs1[max((int)strs1.size() - 1, 0)];
+    auto strs2 = split(name, '.');
+    name = strs2[0];
+
+    auto sheet = DATA->LoadSheet(name);
+
+    if (!sheet)
+        return false;
+
+    auto item = sheet->LoadItem(name);
+    if (item == NULL)
+        return false;
+
+    string str_type = item->GetValue("type");
+
+    if (str_type == "")
+        return false;
+
+    E_EffectType type = (E_EffectType)stoi(str_type);
+
+    switch (type)
+    {
+    case UV_SPRITE:
+    {
+        UVSprite uv_sprite;
+        uv_sprite.tex_id = item->GetValue("tex_id");
+
+        auto uvListItem = sheet->LoadItem("uvList");
+        // 리스트에서 가장 높은 프레임의 값을 가져온다.
+        int max = 0;
+        for (int i = 1; true; i++)
+        {
+            if (uvListItem->values[to_string(i)] == "")
+            {
+                max = i - 1;
+                break;
+            }
+
+        }
+        // 가장 낮은 프레임부터 가장 높은 프레임까지 파싱해서 uv값을 넣어준다.
+        uv_sprite.uv_list.clear();
+        for (int i = 0; i < max; i++)
+        {
+            // 0 0 25 25 형식
+            auto splited_str = split(uvListItem->values[to_string(i + 1)], ' ');
+            uv_sprite.uv_list.push_back({ { stol(splited_str[0]), stol(splited_str[1]) }, { stol(splited_str[2]), stol(splited_str[3]) } });
+        }
+
+        // 로딩한 스프라이트를 리스트에 넣는다.
+        resdic_sprite.insert({ name, make_shared<UVSprite>(uv_sprite) });
+    } break;
+    case TEX_SPRITE:
+    {
+        TextureSprite tex_sprite;
+
+        // TODO : 데이터 형태 수정해야할듯
+        auto texListItem = sheet->LoadItem("texList");
+        // 리스트에서 가장 높은 프레임의 값을 가져온다.
+        int max = 0;
+        for (int i = 1; true; i++)
+        {
+            if (texListItem->values[to_string(i)] == "")
+            {
+                max = i - 1;
+                break;
+            }
+        }
+        // 가장 낮은 프레임부터 가장 높은 프레임까지 파싱해서 tex_id값을 넣어준다.
+        tex_sprite.tex_id_list.clear();
+        for (int i = 0; i < max; i++)
+        {
+            tex_sprite.tex_id_list.push_back(texListItem->values[to_string(i + 1)]);
+        }
+        // 로딩한 스프라이트를 리스트에 넣는다.
+        resdic_sprite.insert({ name, make_shared<TextureSprite>(tex_sprite) });
+    } break;
+    }
+
+    return true;
+}
+
+bool KGCA41B::ResourceMgr::SaveSprite(string name, shared_ptr<Sprite> new_sprite)
+{
+    if (resdic_sprite.find(name) != resdic_sprite.end())
+        return false;
+    else
+    {
+        resdic_sprite.insert({ name, new_sprite });
+        return true;
+    }
+    
 }
 
 bool KGCA41B::ResourceMgr::ImportMaterial(string filename)
@@ -297,7 +426,7 @@ bool KGCA41B::ResourceMgr::ImportMaterial(string filename)
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
 
-    PushResource<Material>(id, material);
+    RESOURCE->PushResource<Material>(id, material);
 
     return true;
 }

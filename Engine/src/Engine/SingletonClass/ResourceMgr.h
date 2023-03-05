@@ -40,6 +40,8 @@ namespace KGCA41B
 		set<string> GetTotalSKMID();
 		set<string> GetTotalSTMID();
 		set<string> GetTotalANIMID();
+		set<string> GetTotalSpriteID();
+		set<string> GetTotalMATID();
 
 	public:
 		void PushStaticMesh(string id, const StaticMesh& static_mesh);
@@ -60,14 +62,24 @@ namespace KGCA41B
 		map<string, Material> resdic_material;
 
 		map<string, FMOD::Sound*>	resdic_sound;
+
+		map<string, shared_ptr<Sprite>> resdic_sprite;
+
 	private:
 		bool ImportShaders(string filename);
 		bool ImportSound(string filename);
 		bool ImportTexture(string filename);
-		bool ImportMaterial(string filename);
+    bool ImportMaterial(string filename);
 		bool ImportSKM(string filename);
 		bool ImportSTM(string filename);
 		bool ImportANIM(string filename);
+	public:
+		bool ImportSprite(string filename);
+		bool SaveSprite(string name, shared_ptr<Sprite> new_sprite);
+
+		bool CreateBuffers(SingleMesh<Vertex>& mesh);
+		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
+
 	};
 
 	template<typename T>
@@ -152,12 +164,28 @@ namespace KGCA41B
 				return (T*)(&iter->second);
 			}
 		}
+		else if (typeid(T) == typeid(Material))
+		{
+			auto iter = resdic_material.find(id);
+			if (iter != resdic_material.end())
+			{
+				return (T*)(&iter->second);
+			}
+		}
 		else if (typeid(T) == typeid(FMOD::Sound))
 		{
 			auto iter = resdic_sound.find(id);
 			if (iter != resdic_sound.end())
 			{
 				return (T*)iter->second;
+			}
+		}
+		else if (typeid(T) == typeid(Sprite))
+		{
+			auto iter = resdic_sprite.find(id);
+			if (iter != resdic_sprite.end())
+			{
+				return (T*)iter->second.get();
 			}
 		}
 		return nullptr;

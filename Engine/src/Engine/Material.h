@@ -8,7 +8,7 @@ namespace KGCA41B
 	class DLL_API Material
 	{
 	public:
-		Material() = default;
+		Material();
 		~Material() = default;
 
 	public:
@@ -19,11 +19,16 @@ namespace KGCA41B
 		string sepcular;
 		string ambient;
 		string opacity;
-		string shader = "SurfacePS.cso";
+		string shader = "MeshSurfacePS.cso";
 
 		ID3D11ShaderResourceView* textures[7];
+		ID3D11PixelShader* pixel_shader;
+		ID3D11SamplerState* sampler;
 
-		void CreateAndSave(string filename);
+		void SaveEmpty(string filename);
+		void Create();
+		void Save(string filename);
+		void Set();
 		void LoadAndCreate(string filename);
 	};
 }

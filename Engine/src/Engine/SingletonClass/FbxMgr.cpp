@@ -21,16 +21,20 @@ bool KGCA41B::FbxMgr::ImportAndSaveFbx(string filename)
         if (out_mesh->is_skinned)
         {
             SingleMesh<SkinnedVertex> single_mesh;
+            single_mesh.mesh_name = out_mesh->mesh_name;
             single_mesh.vertices = out_mesh->skinned_vertices;
             single_mesh.indices = out_mesh->indices;
+
             res_skeletal_mesh.meshes.push_back(single_mesh);
             res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
         }
         else
         {
             SingleMesh<Vertex> single_mesh;
+            single_mesh.mesh_name = out_mesh->mesh_name;
             single_mesh.vertices = out_mesh->vertices;
             single_mesh.indices = out_mesh->indices;
+
             res_static_mesh.meshes.push_back(single_mesh);
         }
     }
@@ -83,7 +87,27 @@ bool KGCA41B::FbxMgr::ImportAndSaveFbx(string filename)
 
 void KGCA41B::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filename)
 {
+    string file_name = RESOURCE->directory() + "STM/" + filename + ".stmesh";
+    FileTransfer file_exporter(file_name, WRITE);
 
+    int num_of_meshes = static_mesh.meshes.size();
+
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_meshes, 1);
+
+    for (int cur_mesh_index = 0;cur_mesh_index < num_of_meshes;cur_mesh_index++) {
+        string mesh_name = static_mesh.meshes[cur_mesh_index].mesh_name;
+        int mesh_name_size = mesh_name.size() + 1;
+        file_exporter.WriteBinaryWithoutSize<int>(&mesh_name_size, 1);
+        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(mesh_name.c_str()), mesh_name_size);
+
+        int num_of_vertices = static_mesh.meshes[cur_mesh_index].vertices.size();
+        file_exporter.WriteBinaryWithoutSize<int>(&num_of_vertices, 1);
+        file_exporter.WriteBinaryWithoutSize<Vertex>(const_cast<Vertex*>(static_mesh.meshes[cur_mesh_index].vertices.data()), num_of_vertices);
+
+        int num_of_indices = static_mesh.meshes[cur_mesh_index].indices.size();
+        file_exporter.WriteBinaryWithoutSize<int>(&num_of_indices, 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(const_cast<UINT*>(static_mesh.meshes[cur_mesh_index].indices.data()), num_of_indices);
+    }
 }
 
 void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string filename)
@@ -96,6 +120,11 @@ void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
     file_exporter.WriteBinaryWithoutSize<int>(&num_of_meshes, 1);
 
     for (int cur_mesh_index = 0;cur_mesh_index < num_of_meshes;cur_mesh_index++) {
+        string mesh_name = skeletal_mesh.meshes[cur_mesh_index].mesh_name;
+        int mesh_name_size = mesh_name.size() + 1;
+        file_exporter.WriteBinaryWithoutSize<int>(&mesh_name_size, 1);
+        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(mesh_name.c_str()), mesh_name_size);
+
         int num_of_vertices = skeletal_mesh.meshes[cur_mesh_index].vertices.size();
         file_exporter.WriteBinaryWithoutSize<int>(&num_of_vertices, 1);
         file_exporter.WriteBinaryWithoutSize<SkinnedVertex>(const_cast<SkinnedVertex*>(skeletal_mesh.meshes[cur_mesh_index].vertices.data()), num_of_vertices);
@@ -103,15 +132,6 @@ void KGCA41B::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
         int num_of_indices = skeletal_mesh.meshes[cur_mesh_index].indices.size();
         file_exporter.WriteBinaryWithoutSize<int>(&num_of_indices, 1);
         file_exporter.WriteBinaryWithoutSize<UINT>(const_cast<UINT*>(skeletal_mesh.meshes[cur_mesh_index].indices.data()), num_of_indices);
-
-        //string shader_id = skeletal_mesh.meshes[cur_mesh_index].material.shader_id;
-        //string texture_id = skeletal_mesh.meshes[cur_mesh_index].material.texture_id;
-        //int shader_id_size = shader_id.size() + 1;
-        //int texture_id_size = texture_id.size() + 1;
-        //file_exporter.WriteBinaryWithoutSize<int>(&shader_id_size, 1);
-        //file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(shader_id.c_str()), shader_id_size);
-        //file_exporter.WriteBinaryWithoutSize<int>(&texture_id_size, 1);
-        //file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(texture_id.c_str()), texture_id_size);
     }
 
     vector<UINT> keys;
@@ -171,7 +191,28 @@ void KGCA41B::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string
 
 KGCA41B::StaticMesh KGCA41B::FbxMgr::LoadStaticMesh(string filename)
 {
-    return StaticMesh();
+    FileTransfer file_exporter(filename, READ);
+
+    StaticMesh static_mesh;
+
+    int num_of_meshes = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+
+    static_mesh.meshes.resize(num_of_meshes);
+
+    for (int cur_mesh_index = 0;cur_mesh_index < num_of_meshes;cur_mesh_index++) {
+        int mesh_name_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        static_mesh.meshes[cur_mesh_index].mesh_name = file_exporter.ReadBinaryWithoutSize<char>(mesh_name_size).data();
+
+        int num_of_vertices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        static_mesh.meshes[cur_mesh_index].vertices = file_exporter.ReadBinaryWithoutSize<Vertex>(num_of_vertices);
+
+        int num_of_indices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        static_mesh.meshes[cur_mesh_index].indices = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_indices);
+
+        CreateBuffers(static_mesh.meshes[cur_mesh_index]);
+    }
+
+    return static_mesh;
 }
 
 KGCA41B::SkeletalMesh KGCA41B::FbxMgr::LoadSkeletalMesh(string filename)
@@ -185,6 +226,9 @@ KGCA41B::SkeletalMesh KGCA41B::FbxMgr::LoadSkeletalMesh(string filename)
     skeletal_mesh.meshes.resize(num_of_meshes);
 
     for (int cur_mesh_index = 0;cur_mesh_index < num_of_meshes;cur_mesh_index++) {
+        int mesh_name_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        skeletal_mesh.meshes[cur_mesh_index].mesh_name = file_exporter.ReadBinaryWithoutSize<char>(mesh_name_size).data();
+        
         int num_of_vertices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
         skeletal_mesh.meshes[cur_mesh_index].vertices = file_exporter.ReadBinaryWithoutSize<SkinnedVertex>(num_of_vertices);
 
@@ -192,12 +236,6 @@ KGCA41B::SkeletalMesh KGCA41B::FbxMgr::LoadSkeletalMesh(string filename)
         skeletal_mesh.meshes[cur_mesh_index].indices = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_indices);
         
         CreateBuffers(skeletal_mesh.meshes[cur_mesh_index]);
-
-        //int shader_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        //skeletal_mesh.meshes[cur_mesh_index].material.shader_id = file_exporter.ReadBinaryWithoutSize<char>(shader_id_size).data();
-
-        //int texture_id_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        //skeletal_mesh.meshes[cur_mesh_index].material.texture_id = file_exporter.ReadBinaryWithoutSize<char>(texture_id_size).data();
     }
 
     vector<UINT> keys;

@@ -2,8 +2,39 @@
 #include "Material.h"
 #include "FileTransfer.h"
 #include "ResourceMgr.h"
+#include <io.h>
 
-void KGCA41B::Material::CreateAndSave(string filename)
+KGCA41B::Material::Material()
+{
+	for (int i = 0; i < 7; ++i)
+		textures[i] = nullptr;
+
+	pixel_shader = nullptr;
+	sampler = nullptr;
+}
+
+void KGCA41B::Material::SaveEmpty(string filename)
+{
+	if (_access(filename.c_str(), 0) != -1)
+	{
+		return;
+	}
+
+	TextFileTransfer file_trans(filename, WRITE);
+
+	file_trans.WriteText("diffuse", "null");
+	file_trans.WriteText("normalmap", "null");
+	file_trans.WriteText("metalic", "null");
+	file_trans.WriteText("roughness", "null");
+	file_trans.WriteText("sepcular", "null");
+	file_trans.WriteText("ambient", "null");
+	file_trans.WriteText("opacity", "null");
+	file_trans.WriteText("shader", "null");
+
+	file_trans.Close();
+}
+
+void KGCA41B::Material::Create()
 {
 	Texture* dif = RESOURCE->UseResource<Texture>(diffuse);
 	Texture* nor = RESOURCE->UseResource<Texture>(normalmap);
@@ -12,28 +43,37 @@ void KGCA41B::Material::CreateAndSave(string filename)
 	Texture* spe = RESOURCE->UseResource<Texture>(sepcular);
 	Texture* amb = RESOURCE->UseResource<Texture>(ambient);
 	Texture* opa = RESOURCE->UseResource<Texture>(opacity);
-	
-	if (dif != nullptr)
+	PixelShader* ps = RESOURCE->UseResource<PixelShader>(shader);
+
+	if (dif)
 		textures[0] = dif->srv.Get();
 
-	if (nor != nullptr)
+	if (nor)
 		textures[1] = nor->srv.Get();
 
-	if (met != nullptr)
+	if (met)
 		textures[2] = met->srv.Get();
 
-	if (rou != nullptr)
+	if (rou)
 		textures[3] = rou->srv.Get();
 
-	if (spe != nullptr)
+	if (spe)
 		textures[4] = spe->srv.Get();
 
-	if (amb != nullptr)
+	if (amb)
 		textures[5] = amb->srv.Get();
 
-	if (opa != nullptr)
+	if (opa)
 		textures[6] = opa->srv.Get();
 
+	if (ps)
+		pixel_shader = ps->Get();
+
+	sampler = DX11APP->GetCommonStates()->PointWrap();
+}
+
+void KGCA41B::Material::Save(string filename)
+{
 	TextFileTransfer file_trans(filename, WRITE);
 
 	file_trans.WriteText("diffuse", diffuse);
@@ -46,11 +86,16 @@ void KGCA41B::Material::CreateAndSave(string filename)
 	file_trans.WriteText("shader", shader);
 
 	file_trans.Close();
+}
 
-	auto strs = split(filename, '/');
-	string id = strs[strs.size() - 1];
+void KGCA41B::Material::Set()
+{
+	if (pixel_shader)
+		DX11APP->GetDeviceContext()->PSSetShader(pixel_shader, 0, 0);
 
-	RESOURCE->PushResource<Material>(id, *this);
+
+	DX11APP->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
+	DX11APP->GetDeviceContext()->PSSetShaderResources(0, 7, textures);
 }
 
 void KGCA41B::Material::LoadAndCreate(string filename)
@@ -68,32 +113,5 @@ void KGCA41B::Material::LoadAndCreate(string filename)
 
 	file_trans.Close();
 
-	Texture* dif = RESOURCE->UseResource<Texture>(diffuse);
-	Texture* nor = RESOURCE->UseResource<Texture>(normalmap);
-	Texture* met = RESOURCE->UseResource<Texture>(metalic);
-	Texture* rou = RESOURCE->UseResource<Texture>(roughness);
-	Texture* spe = RESOURCE->UseResource<Texture>(sepcular);
-	Texture* amb = RESOURCE->UseResource<Texture>(ambient);
-	Texture* opa = RESOURCE->UseResource<Texture>(opacity);
-
-	if (dif != nullptr)
-		textures[0] = dif->srv.Get();
-
-	if (nor != nullptr)
-		textures[1] = nor->srv.Get();
-
-	if (met != nullptr)
-		textures[2] = met->srv.Get();
-
-	if (rou != nullptr)
-		textures[3] = rou->srv.Get();
-
-	if (spe != nullptr)
-		textures[4] = spe->srv.Get();
-
-	if (amb != nullptr)
-		textures[5] = amb->srv.Get();
-
-	if (opa != nullptr)
-		textures[6] = opa->srv.Get();
+	Create();
 }
