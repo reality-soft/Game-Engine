@@ -11,14 +11,14 @@ using std::fstream;
 using std::stringstream;
 using std::ios;
 
-bool reality::DataMgr::Init(string directory)
+bool DataMgr::Init(string directory)
 {
 	set_directory(directory);
 	LoadAllData();
 	return true;
 }
 
-void reality::DataMgr::Release()
+void DataMgr::Release()
 {
 	SaveAll();
 }
@@ -54,12 +54,12 @@ std::vector<string> reality::DataMgr::GetAllDataSheetID()
 	return id_set;
 }
 
-void reality::DataMgr::LoadAllData()
+void DataMgr::LoadAllData()
 {
 	LoadDir(directory_);
 }
 
-void reality::DataMgr::LoadDir(string path)
+void DataMgr::LoadDir(string path)
 {
 	string tempAdd = path + "/" + "*.*";
 	intptr_t handle;
@@ -80,7 +80,7 @@ void reality::DataMgr::LoadDir(string path)
 	} while (_findnext(handle, &fd) == 0);
 }
 
-void reality::DataMgr::LoadSheetFile(string path)
+void DataMgr::LoadSheetFile(string path)
 {
 	fstream fs;
 	fs.open(path, ios::in);
@@ -121,7 +121,7 @@ void reality::DataMgr::LoadSheetFile(string path)
 	resdic_sheet.insert({ newSheet->sheet_name , newSheet });
 	fs.close();
 }
-void reality::DataMgr::SaveSheetFile(string sheetName)
+void DataMgr::SaveSheetFile(string sheetName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -173,7 +173,7 @@ void reality::DataMgr::SaveSheetFile(string sheetName)
 
 	fs.close();
 }
-void reality::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
+void DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -228,7 +228,7 @@ void reality::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 	fs.close();
 }
 
-void KGCA41B::DataMgr::SaveSprite(string sheetName)
+void DataMgr::SaveSprite(string sheetName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -281,7 +281,7 @@ void KGCA41B::DataMgr::SaveSprite(string sheetName)
 	fs.close();
 }
 
-void KGCA41B::DataMgr::SaveEffect(string sheetName)
+void DataMgr::SaveEffect(string sheetName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -334,7 +334,7 @@ void KGCA41B::DataMgr::SaveEffect(string sheetName)
 	fs.close();
 }
 
-void KGCA41B::DataMgr::SaveAll()
+void DataMgr::SaveAll()
 {
 	for (auto sheet : resdic_sheet)
 	{
