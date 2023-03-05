@@ -3,11 +3,11 @@
 
 void TestGame::OnInit()
 {
-	KGCA41B::RESOURCE->Init("../../Contents/");
-	KGCA41B::FMOD_MGR->Init();
+	reality::RESOURCE->Init("../../Contents/");
+	reality::FMOD_MGR->Init();
 	sys_sound.OnCreate(reg_scene); 
   
-	KGCA41B::ComponentSystem::GetInst()->OnInit(reg_scene);
+	reality::ComponentSystem::GetInst()->OnInit(reg_scene);
 
 	ent_player = reg_scene.create();
 
@@ -23,7 +23,7 @@ void TestGame::OnInit()
 
 void TestGame::OnUpdate()
 {
-	KGCA41B::Material mat1;
+	reality::Material mat1;
 }
 
 void TestGame::OnRender()
@@ -33,6 +33,6 @@ void TestGame::OnRender()
 
 void TestGame::OnRelease()
 {
-	KGCA41B::RESOURCE->Release();
+	reality::RESOURCE->Release();
 }
 

@@ -1,9 +1,7 @@
 #pragma once
-#pragma warning(disable: 4099)
 #include "DataTypes.h"
-#include <fbxsdk.h>
 
-namespace KGCA41B
+namespace reality
 {
 	struct AnimTrack
 	{

@@ -1,8 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-
-namespace KGCA41B
+namespace reality
 {
 	struct Vertex
 	{
@@ -10,6 +9,15 @@ namespace KGCA41B
 		XMFLOAT3   n;
 		XMFLOAT4   c;
 		XMFLOAT2   t;
+	};
+
+	struct LevelVertex
+	{
+		XMFLOAT3   p;
+		XMFLOAT3   n;
+		XMFLOAT4   c;
+		XMFLOAT2   t;
+		XMFLOAT2   t_layer;
 	};
 
 	struct SkinnedVertex

@@ -5,7 +5,7 @@
 #include <io.h>
 #include "DataMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 bool ResourceMgr::Init(LPCWSTR packagefile)
 {

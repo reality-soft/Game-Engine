@@ -1,7 +1,7 @@
 #pragma once
 #include "Shape.h"
 
-namespace KGCA41B {
+namespace reality {
     enum class CollisionType
     {
         C_OUT = 0,

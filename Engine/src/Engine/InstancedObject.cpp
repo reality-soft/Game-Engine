@@ -3,7 +3,7 @@
 #include "ResourceMgr.h"
 #include "PhysicsMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 InstancedObject::InstancedObject()
 {
@@ -54,7 +54,7 @@ void InstancedObject::Render()
 
 	for (auto mesh : static_mesh->meshes)
 	{
-		KGCA41B::Material* material = RESOURCE->UseResource<KGCA41B::Material>(mesh.mesh_name + ".mat");
+		reality::Material* material = RESOURCE->UseResource<reality::Material>(mesh.mesh_name + ".mat");
 		if (material)
 			material->Set();
 
@@ -106,7 +106,7 @@ void InstancedObject::AddNewInstance()
 	selected_instance = &instance_list.back();
 }
 
-InstanceData* KGCA41B::InstancedObject::FindAndSelectWithCollision(reactphysics3d::CollisionBody* col_body)
+InstanceData* reality::InstancedObject::FindAndSelectWithCollision(reactphysics3d::CollisionBody* col_body)
 {
 	for (auto& instance : instance_list)
 	{
@@ -127,7 +127,7 @@ XMMATRIX InstancedObject::TransformS(XMFLOAT3& sacling)
 	return XMMatrixScalingFromVector(XMLoadFloat3(&sacling));
 }
 
-XMMATRIX KGCA41B::InstancedObject::TransformR(XMFLOAT3& roation)
+XMMATRIX reality::InstancedObject::TransformR(XMFLOAT3& roation)
 {
 	XMMATRIX rotation = XMMatrixIdentity();
 	rotation *= XMMatrixRotationX(XMConvertToRadians(roation.x));
@@ -137,12 +137,12 @@ XMMATRIX KGCA41B::InstancedObject::TransformR(XMFLOAT3& roation)
 	return rotation;
 }
 
-XMMATRIX KGCA41B::InstancedObject::TransformT(XMFLOAT3& position)
+XMMATRIX reality::InstancedObject::TransformT(XMFLOAT3& position)
 {
 	return XMMatrixTranslationFromVector(XMLoadFloat3(&position));
 }
 
-void KGCA41B::InstancedObject::UpdateInstance()
+void reality::InstancedObject::UpdateInstance()
 {
 	for (auto instance : instance_list)
 	{

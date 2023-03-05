@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "RenderTargetMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
-bool KGCA41B::RenderTarget::Create(float width, float height)
+bool reality::RenderTarget::Create(float width, float height)
 {
 	HRESULT hr;
 
@@ -21,7 +21,7 @@ bool KGCA41B::RenderTarget::Create(float width, float height)
 	return false;
 }
 
-void KGCA41B::RenderTarget::SetViewPort()
+void reality::RenderTarget::SetViewPort()
 {
 	view_port_.Width = width_;
 	view_port_.Height = height_;
@@ -31,7 +31,7 @@ void KGCA41B::RenderTarget::SetViewPort()
 	view_port_.MaxDepth = 1.0f;
 }
 
-HRESULT KGCA41B::RenderTarget::CreateRenderTargetView()
+HRESULT reality::RenderTarget::CreateRenderTargetView()
 {
 	HRESULT hr;
 
@@ -59,7 +59,7 @@ HRESULT KGCA41B::RenderTarget::CreateRenderTargetView()
 	return hr;
 }
 
-HRESULT KGCA41B::RenderTarget::CreateDepthStencilView()
+HRESULT reality::RenderTarget::CreateDepthStencilView()
 {
 	HRESULT hr;
 	texture_desc_.Format = DXGI_FORMAT_R24G8_TYPELESS;
@@ -88,7 +88,7 @@ HRESULT KGCA41B::RenderTarget::CreateDepthStencilView()
 	return hr;
 }
 
-bool KGCA41B::RenderTarget::SetRenderTarget()
+bool reality::RenderTarget::SetRenderTarget()
 {
 	UINT numViewPorts = 1;
 
@@ -105,7 +105,7 @@ bool KGCA41B::RenderTarget::SetRenderTarget()
 }
 
 
-void KGCA41B::RenderTargetMgr::Init(string back_buffer_name)
+void reality::RenderTargetMgr::Init(string back_buffer_name)
 {
 	shared_ptr<RenderTarget> back_buffer = make_shared<RenderTarget>();
 
@@ -117,7 +117,7 @@ void KGCA41B::RenderTargetMgr::Init(string back_buffer_name)
 	resdic_render_target_.insert({ back_buffer_name, back_buffer });
 }
 
-shared_ptr<RenderTarget> KGCA41B::RenderTargetMgr::MakeRT(std::string rtname, float rtWidth, float rtHeight)
+shared_ptr<RenderTarget> reality::RenderTargetMgr::MakeRT(std::string rtname, float rtWidth, float rtHeight)
 {
 	if (resdic_render_target_.find(rtname) != resdic_render_target_.end())
 		return LoadRT(rtname);
@@ -129,7 +129,7 @@ shared_ptr<RenderTarget> KGCA41B::RenderTargetMgr::MakeRT(std::string rtname, fl
 	return newRT;
 }
 
-shared_ptr<RenderTarget> KGCA41B::RenderTargetMgr::LoadRT(std::string rtname)
+shared_ptr<RenderTarget> reality::RenderTargetMgr::LoadRT(std::string rtname)
 {
 	auto iter = resdic_render_target_.find(rtname);
 	if (iter != resdic_render_target_.end())
@@ -142,10 +142,10 @@ shared_ptr<RenderTarget> KGCA41B::RenderTargetMgr::LoadRT(std::string rtname)
 	}
 }
 
-void KGCA41B::RenderTargetMgr::DeletingRT()
+void reality::RenderTargetMgr::DeletingRT()
 {
 }
 
-void KGCA41B::RenderTargetMgr::ResettingRT()
+void reality::RenderTargetMgr::ResettingRT()
 {
 }

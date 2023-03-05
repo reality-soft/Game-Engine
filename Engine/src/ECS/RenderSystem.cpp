@@ -6,7 +6,7 @@
 #include "DataTypes.h"
 #include "DXStates.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 RenderSystem::RenderSystem()
 {
@@ -20,7 +20,8 @@ RenderSystem::~RenderSystem()
 	device_context = nullptr;
 }
 
-void RenderSystem::OnCreate(entt::registry& reg)
+
+void reality::RenderSystem::OnCreate(entt::registry& reg)
 {
 	HRESULT hr;
 

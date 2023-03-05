@@ -1,7 +1,7 @@
 #pragma once
 #include "DllMacro.h"
 
-namespace KGCA41B
+namespace reality
 {
 	struct DataItem
 	{

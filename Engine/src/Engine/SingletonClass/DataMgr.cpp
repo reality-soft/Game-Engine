@@ -5,25 +5,25 @@
 #include "DataTypes.h"
 #include "ResourceMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 using std::fstream;
 using std::stringstream;
 using std::ios;
 
-bool KGCA41B::DataMgr::Init(string directory)
+bool reality::DataMgr::Init(string directory)
 {
 	set_directory(directory);
 	LoadAllData();
 	return true;
 }
 
-void KGCA41B::DataMgr::Release()
+void reality::DataMgr::Release()
 {
 	SaveAll();
 }
 
-shared_ptr<DataSheet> KGCA41B::DataMgr::AddNewSheet(string sheet_name)
+shared_ptr<DataSheet> reality::DataMgr::AddNewSheet(string sheet_name)
 {
 	if (resdic_sheet.find(sheet_name) != resdic_sheet.end())
 		return resdic_sheet[sheet_name];
@@ -37,7 +37,7 @@ shared_ptr<DataSheet> KGCA41B::DataMgr::AddNewSheet(string sheet_name)
 
 	return newSheet;
 }
-shared_ptr<DataSheet> KGCA41B::DataMgr::LoadSheet(string sheet_name)
+shared_ptr<DataSheet> reality::DataMgr::LoadSheet(string sheet_name)
 {
 	if (resdic_sheet.find(sheet_name) != resdic_sheet.end())
 		return resdic_sheet[sheet_name];
@@ -46,7 +46,7 @@ shared_ptr<DataSheet> KGCA41B::DataMgr::LoadSheet(string sheet_name)
 }
 
 
-std::vector<string> KGCA41B::DataMgr::GetAllDataSheetID()
+std::vector<string> reality::DataMgr::GetAllDataSheetID()
 {
 	vector<string> id_set;
 	for (auto pair : resdic_sheet)
@@ -54,12 +54,12 @@ std::vector<string> KGCA41B::DataMgr::GetAllDataSheetID()
 	return id_set;
 }
 
-void KGCA41B::DataMgr::LoadAllData()
+void reality::DataMgr::LoadAllData()
 {
 	LoadDir(directory_);
 }
 
-void KGCA41B::DataMgr::LoadDir(string path)
+void reality::DataMgr::LoadDir(string path)
 {
 	string tempAdd = path + "/" + "*.*";
 	intptr_t handle;
@@ -80,7 +80,7 @@ void KGCA41B::DataMgr::LoadDir(string path)
 	} while (_findnext(handle, &fd) == 0);
 }
 
-void KGCA41B::DataMgr::LoadSheetFile(string path)
+void reality::DataMgr::LoadSheetFile(string path)
 {
 	fstream fs;
 	fs.open(path, ios::in);
@@ -121,7 +121,7 @@ void KGCA41B::DataMgr::LoadSheetFile(string path)
 	resdic_sheet.insert({ newSheet->sheet_name , newSheet });
 	fs.close();
 }
-void KGCA41B::DataMgr::SaveSheetFile(string sheetName)
+void reality::DataMgr::SaveSheetFile(string sheetName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -173,7 +173,7 @@ void KGCA41B::DataMgr::SaveSheetFile(string sheetName)
 
 	fs.close();
 }
-void KGCA41B::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
+void reality::DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;

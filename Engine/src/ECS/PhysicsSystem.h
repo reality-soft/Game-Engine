@@ -2,7 +2,7 @@
 #include "System.h"
 #include "PhysicsMgr.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API PhysicsSystem : public System
 	{

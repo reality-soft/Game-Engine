@@ -1,11 +1,11 @@
 #include "DX11App.h"
 #include "Scene.h"
 
-namespace KGCA41B {
+namespace reality {
 	class DLL_API Engine
 	{
 		SINGLETON(Engine)
-#define ENGINE KGCA41B::Engine::GetInst()
+#define ENGINE reality::Engine::GetInst()
 
 	public:
 		bool OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size);

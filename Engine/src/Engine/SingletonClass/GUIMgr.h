@@ -9,7 +9,7 @@
 #include "imgui_internal.h"
 #include "imfilebrowser.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API GuiWidget
 	{

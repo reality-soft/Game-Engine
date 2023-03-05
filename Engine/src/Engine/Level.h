@@ -7,7 +7,7 @@
 
 #define LerpByTan(start, end, tan) (start - (start * tan) + (end * tan))
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API SkySphere
 	{
@@ -23,7 +23,6 @@ namespace KGCA41B
 		XMFLOAT4 skycolor_noon;
 		XMFLOAT4 skycolor_night;
 		FLOAT color_strength;
-
 		CbSkySphere cb_sky;
 
 	private:
@@ -70,7 +69,7 @@ namespace KGCA41B
 		XMINT2 GetWorldSize();
 		XMINT2 GetBlocks();
 		UINT MaxLod();
-		vector<Vertex> GetLevelVertex() { return level_mesh_.vertices; }
+		vector<LevelVertex> GetLevelVertex() { return level_mesh_.vertices; }
 		vector<UINT> GetLevelIndex() { return level_mesh_.indices; }
 		reactphysics3d::CollisionBody* GetCollisionBody() { return height_field_body_; }
 
@@ -81,10 +80,11 @@ namespace KGCA41B
 		C_Camera* camera = nullptr;
 
 	public:
-		void SetTexturesToLayer();
+		void SetTextures();
 
 	public:
-		ID3D11ShaderResourceView* texture_layers[16] = {0,};
+		ID3D11ShaderResourceView* texture_layers[5] = {0,};
+		AlphaTexLayer alpha_layer;
 		vector<InstancedObject> inst_objects;
 		SkySphere sky_sphere;
 
@@ -100,9 +100,8 @@ namespace KGCA41B
 		void RenderSkySphere();
 
 	protected:
-		SingleMesh<Vertex> level_mesh_;
+		SingleMesh<LevelVertex> level_mesh_;
 		vector<float> height_list_;
-		ComPtr<ID3D11SamplerState> mip_map_sample;
 
 		UINT num_row_vertex_;
 		UINT num_col_vertex_;

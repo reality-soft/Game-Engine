@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "TimeMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 void TimeMgr::Init()
 {

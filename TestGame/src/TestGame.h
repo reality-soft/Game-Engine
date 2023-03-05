@@ -1,9 +1,9 @@
 #pragma once
 #include "Engine_Include.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
-class TestGame : public KGCA41B::Scene
+class TestGame : public reality::Scene
 {
 public:
 	virtual void OnInit();
@@ -16,9 +16,9 @@ private:
 
 	entt::entity ent_player;
 
-	KGCA41B::RenderSystem sys_render;
-	KGCA41B::CameraSystem sys_camera;
-	KGCA41B::SoundSystem sys_sound;
+	reality::RenderSystem sys_render;
+	reality::CameraSystem sys_camera;
+	reality::SoundSystem sys_sound;
 
 	StaticObject test_object;
 };

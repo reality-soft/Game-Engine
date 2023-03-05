@@ -4,7 +4,7 @@
 #include "FbxLoader.h"
 #include "DataMgr.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API ResourceMgr
 	{

@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include "QuadTreeMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
-KGCA41B::LODCell::LODCell(UINT max_lod)
+reality::LODCell::LODCell(UINT max_lod)
 {
 	lod_index_list.resize(max_lod + 1);
 	lod_index_buffer.resize(max_lod + 1);
 }
 
-bool KGCA41B::LODCell::Create(const UINT corners[4], UINT num_col)
+bool reality::LODCell::Create(const UINT corners[4], UINT num_col)
 {
 	UINT lod_row = corners[1] - corners[0];
 	UINT lod_col = (corners[2] - corners[0]) / num_col;
@@ -60,13 +60,13 @@ bool KGCA41B::LODCell::Create(const UINT corners[4], UINT num_col)
 	return true;
 }
 
-KGCA41B::SpaceNode::SpaceNode(UINT num, UINT depth)
+reality::SpaceNode::SpaceNode(UINT num, UINT depth)
 {
 	node_num = num;
 	node_depth = depth;
 }
 
-KGCA41B::SpaceNode::~SpaceNode()
+reality::SpaceNode::~SpaceNode()
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -84,9 +84,9 @@ KGCA41B::SpaceNode::~SpaceNode()
 	}
 }
 
-void KGCA41B::SpaceNode::SetNode(Level* level)
+void reality::SpaceNode::SetNode(Level* level)
 {
-	vector<Vertex> vertices = level->GetLevelVertex();
+	vector<LevelVertex> vertices = level->GetLevelVertex();
 	vector<UINT> indices = level->GetLevelIndex();
 	UINT world_row = level->GetWorldSize().x + 1;
 	UINT world_col = level->GetWorldSize().y + 1;
@@ -96,13 +96,13 @@ void KGCA41B::SpaceNode::SetNode(Level* level)
 	area = AABBShape(min, max);
 }
 
-void KGCA41B::SpaceNode::Render()
+void reality::SpaceNode::Render()
 {
 	DX11APP->GetDeviceContext()->IASetIndexBuffer(lod_cell->lod_index_buffer[current_lod].Get(), DXGI_FORMAT_R32_UINT, 0);
 	DX11APP->GetDeviceContext()->DrawIndexed(lod_cell->lod_index_list[current_lod].size(), 0, 0);
 }
 
-SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int row2, int col2)
+SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int row2, int col2)
 {
 	SpaceNode* new_node = new SpaceNode(node_count++, depth);
 
@@ -135,7 +135,7 @@ SpaceNode* KGCA41B::QuadTreeMgr::BuildTree(UINT depth, int row1, int col1, int r
 	return new_node;
 }
 
-void KGCA41B::QuadTreeMgr::RenderNode(SpaceNode* node_to_render)
+void reality::QuadTreeMgr::RenderNode(SpaceNode* node_to_render)
 {
 	if (node_to_render->lod_cell == nullptr)
 	{
@@ -150,7 +150,7 @@ void KGCA41B::QuadTreeMgr::RenderNode(SpaceNode* node_to_render)
 	}
 }
 
-int KGCA41B::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBShape& object_area, entt::entity object_id)
+int reality::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBShape& object_area, entt::entity object_id)
 {
 	SpaceNode* parent_node = root_node_;
 	int new_node_num = 0;
@@ -187,7 +187,7 @@ int KGCA41B::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBSh
 	return new_node_num;
 }
 
-std::vector<int> KGCA41B::QuadTreeMgr::FindCollisionSearchNode(int node_num)
+std::vector<int> reality::QuadTreeMgr::FindCollisionSearchNode(int node_num)
 {
 	std::vector<int> node_to_search;
 	SpaceNode* current_node = total_nodes_[node_num];
@@ -207,12 +207,12 @@ std::vector<int> KGCA41B::QuadTreeMgr::FindCollisionSearchNode(int node_num)
 	return node_to_search;
 }
 
-std::unordered_set<entt::entity> KGCA41B::QuadTreeMgr::GetObjectListInNode(int node_num)
+std::unordered_set<entt::entity> reality::QuadTreeMgr::GetObjectListInNode(int node_num)
 {
 	return total_nodes_[node_num]->object_list;
 }
 
-void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide)
+void reality::QuadTreeMgr::Init(Level* level_to_devide)
 {
 	deviding_level_ = level_to_devide;
 	world_size_ = level_to_devide->GetWorldSize();
@@ -230,20 +230,20 @@ void KGCA41B::QuadTreeMgr::Init(Level* level_to_devide)
 	root_node_ = BuildTree(0, 0, 0, world_size_.x, world_size_.y);
 }
 
-void KGCA41B::QuadTreeMgr::Frame(CameraSystem* applied_camera)
+void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
 	UpdateLOD(applied_camera->GetCamera()->camera_pos);
 	deviding_level_->Update();
 
 }
-void KGCA41B::QuadTreeMgr::Render()
+void reality::QuadTreeMgr::Render()
 {
 	deviding_level_->Render(true);
 	MapCulling(camera_frustum_, root_node_);
 }
 
-void KGCA41B::QuadTreeMgr::Release()
+void reality::QuadTreeMgr::Release()
 {
 	if (root_node_)
 	{
@@ -255,7 +255,7 @@ void KGCA41B::QuadTreeMgr::Release()
 	deviding_level_ = nullptr;
 }
 
-void KGCA41B::QuadTreeMgr::UpdateLOD(XMVECTOR camera_pos)
+void reality::QuadTreeMgr::UpdateLOD(XMVECTOR camera_pos)
 {
 	for (auto node : leaf_nodes_)
 	{		
@@ -264,7 +264,7 @@ void KGCA41B::QuadTreeMgr::UpdateLOD(XMVECTOR camera_pos)
 	}
 }
 
-void KGCA41B::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
+void reality::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
 {
 	OverlapType result = frustum.AABBOverlap(node->area);
 
@@ -288,7 +288,7 @@ void KGCA41B::QuadTreeMgr::MapCulling(Frustum& frustum, SpaceNode* node)
 	}
 }
 
-void KGCA41B::QuadTreeMgr::ObjectCulling()
+void reality::QuadTreeMgr::ObjectCulling()
 {
 
 }
