@@ -3,7 +3,7 @@
 
 namespace KGCA41B
 {
-	class DLL_API Character : Actor
+	class DLL_API Character : public Actor
 	{
 	protected:
 		C_Movement*	 movement_component_;
