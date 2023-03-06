@@ -2,11 +2,11 @@
 #include "TimeMgr.h"
 #include "MovementSystem.h"
 
-void KGCA41B::MovementSystem::OnCreate(entt::registry& reg)
+void reality::MovementSystem::OnCreate(entt::registry& reg)
 {
 }
 
-void KGCA41B::MovementSystem::OnUpdate(entt::registry& reg)
+void reality::MovementSystem::OnUpdate(entt::registry& reg)
 {
 	auto view_movement = reg.view<C_Movement>();
 

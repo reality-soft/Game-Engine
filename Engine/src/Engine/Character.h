@@ -1,7 +1,7 @@
 #pragma once
 #include "Actor.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API Character : public Actor
 	{
