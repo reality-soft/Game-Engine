@@ -16,11 +16,13 @@
 #include "ECS/SoundSystem.h"
 #include "ECS/LightingSystem.h"
 #include "ECS/EffectSystem.h"
+#include "ECS/MovementSystem.h"
 
 #include "Engine/Scene.h"
 #include "Engine/FbxLoader.h"
 #include "Engine/StaticObject.h"
 #include "Engine/Actor.h"
+#include "Engine/Character.h"
 #include "Engine/Level.h"
 #include "Engine/Log.h"
 #include "Engine/EntryPoint.h"
