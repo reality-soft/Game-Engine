@@ -1,5 +1,16 @@
 #pragma once
+#pragma warning(disable : 4275) 
+#pragma warning(disable : 4819) 
+#pragma warning(disable : 4267) 
+#pragma warning(disable : 4101) 
+#pragma warning(disable : 4251) 
+#pragma warning(disable : 4244) 
+#pragma warning(disable : 4099)
+#pragma warning(disable : 26495)
+#pragma warning(disable : 26451)
+
 #include <reactphysics3d/reactphysics3d.h>
+#include <fbxsdk.h>
 #include "fmod.hpp"
 #include <d3d11.h>
 #include <list>

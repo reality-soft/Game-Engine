@@ -4,7 +4,7 @@
 #include "ResourceMgr.h"
 #include <io.h>
 
-KGCA41B::Material::Material()
+reality::Material::Material()
 {
 	for (int i = 0; i < 7; ++i)
 		textures[i] = nullptr;
@@ -13,7 +13,7 @@ KGCA41B::Material::Material()
 	sampler = nullptr;
 }
 
-void KGCA41B::Material::SaveEmpty(string filename)
+void reality::Material::SaveEmpty(string filename)
 {
 	if (_access(filename.c_str(), 0) != -1)
 	{
@@ -34,7 +34,7 @@ void KGCA41B::Material::SaveEmpty(string filename)
 	file_trans.Close();
 }
 
-void KGCA41B::Material::Create()
+void reality::Material::Create()
 {
 	Texture* dif = RESOURCE->UseResource<Texture>(diffuse);
 	Texture* nor = RESOURCE->UseResource<Texture>(normalmap);
@@ -72,7 +72,7 @@ void KGCA41B::Material::Create()
 	sampler = DX11APP->GetCommonStates()->PointWrap();
 }
 
-void KGCA41B::Material::Save(string filename)
+void reality::Material::Save(string filename)
 {
 	TextFileTransfer file_trans(filename, WRITE);
 
@@ -88,7 +88,7 @@ void KGCA41B::Material::Save(string filename)
 	file_trans.Close();
 }
 
-void KGCA41B::Material::Set()
+void reality::Material::Set()
 {
 	if (pixel_shader)
 		DX11APP->GetDeviceContext()->PSSetShader(pixel_shader, 0, 0);
@@ -98,7 +98,7 @@ void KGCA41B::Material::Set()
 	DX11APP->GetDeviceContext()->PSSetShaderResources(0, 7, textures);
 }
 
-void KGCA41B::Material::LoadAndCreate(string filename)
+void reality::Material::LoadAndCreate(string filename)
 {
 	TextFileTransfer file_trans(filename, READ);
 

@@ -2,7 +2,7 @@
 #include "System.h"
 #include "FbxOutData.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API RenderSystem : public System
 	{
@@ -27,11 +27,11 @@ namespace KGCA41B
 		void RenderBoxShape(entt::registry& reg);
 		void RenderBoundingBox(const C_BoundingBox* const);
 		void RenderEffects(entt::registry& reg);
-		void SetEffectCB(entt::registry& reg, C_Effect& effect);
-		void SetSpriteCB(Sprite* sprite);
-		void SetShaderAndMaterial(Emitter* emitter);
-		void SetStates(Emitter* emitter);
-		void SetParticleCB(Particle& particle);
+			void SetEffectCB(Effect& effect, XMMATRIX& world);
+			void SetEmitterCB(Emitter& emitter);
+			void SetShaderAndMaterial(Emitter& emitter);
+			void SetStates(Emitter& emitter);
+			void SetParticleCB(Particle& particle);
 	public:
 
 	private:
@@ -45,8 +45,8 @@ namespace KGCA41B
 		// Effect
 		EffectVertex			effect_vertex_;
 		ComPtr<ID3D11Buffer>	vertex_buffer_;
-		CbEffect	cb_effect_;
+		CbEffect	cb_effect;
+		CbEmitter	cb_emitter;
 		CbParticle	cb_particle_;
-		CbSprite	cb_sprite_;
 	};
 }

@@ -3,7 +3,7 @@
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-namespace KGCA41B {
+namespace reality {
 	std::shared_ptr<spdlog::logger> Log::core_logger;
 	std::shared_ptr<spdlog::logger> Log::client_logger;
 

@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "DllMacro.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API TimeMgr
 	{
@@ -25,8 +25,8 @@ namespace KGCA41B
 		float GetGameTime();
 	};
 }
-#define TIMER        KGCA41B::TimeMgr::GetInst()
-#define TM_GAMETIME  KGCA41B::TimeMgr::GetInst()->GetGameTime()
-#define TM_DELTATIME KGCA41B::TimeMgr::GetInst()->GetDeltaTime()
-#define TM_FPS       KGCA41B::TimeMgr::GetInst()->GetFPS()
+#define TIMER        reality::TimeMgr::GetInst()
+#define TM_GAMETIME  reality::TimeMgr::GetInst()->GetGameTime()
+#define TM_DELTATIME reality::TimeMgr::GetInst()->GetDeltaTime()
+#define TM_FPS       reality::TimeMgr::GetInst()->GetFPS()
 

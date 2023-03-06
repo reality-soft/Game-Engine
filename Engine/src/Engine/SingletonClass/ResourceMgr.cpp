@@ -5,7 +5,7 @@
 #include <io.h>
 #include "DataMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 bool ResourceMgr::Init(LPCWSTR packagefile)
 {
@@ -35,8 +35,9 @@ void ResourceMgr::LoadAllResource()
     LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
     LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
     LoadDir(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
-    LoadDir(directory_ + "/Sprite/", &ResourceMgr::ImportSprite);
     LoadDir(directory_ + "/Material/", &ResourceMgr::ImportMaterial);
+    LoadDir(directory_ + "/Sprite/", &ResourceMgr::ImportSprite);
+    LoadDir(directory_ + "/Effect/", &ResourceMgr::ImportEffect);
 }
 
 void ResourceMgr::LoadDir(string path, Load_Func load_func)
@@ -61,7 +62,7 @@ void ResourceMgr::LoadDir(string path, Load_Func load_func)
     } while (_findnext(handle, &fd) == 0);
 }
 
-map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
+map<string, string> ResourceMgr::GetTotalResID()
 {
     map<string, string> res_id_map;
     
@@ -97,7 +98,7 @@ map<string, string> KGCA41B::ResourceMgr::GetTotalResID()
     return res_id_map;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalTexID()
+set<string> ResourceMgr::GetTotalTexID()
 {
     set<string> tex_id_set;
     for (auto pair : resdic_texture)
@@ -107,7 +108,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalTexID()
     return tex_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalVSID()
+set<string> ResourceMgr::GetTotalVSID()
 {
     set<string> vs_id_set;
     for (auto pair : resdic_vs)
@@ -117,7 +118,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalVSID()
     return vs_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalPSID()
+set<string> ResourceMgr::GetTotalPSID()
 {
     set<string> ps_id_set;
     for (auto pair : resdic_ps)
@@ -127,7 +128,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalPSID()
     return ps_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalGSID()
+set<string> ResourceMgr::GetTotalGSID()
 {
     set<string> gs_id_set;
     for (auto pair : resdic_gs)
@@ -137,7 +138,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalGSID()
     return gs_id_set;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
+set<string> ResourceMgr::GetTotalSKMID()
 {
     set<string> skm;
     for (auto pair : resdic_skeletal_mesh)
@@ -147,7 +148,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalSKMID()
     return skm;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalSTMID()
+set<string> ResourceMgr::GetTotalSTMID()
 {
     set<string> stm;
     for (auto pair : resdic_static_mesh)
@@ -157,7 +158,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalSTMID()
     return stm;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
+set<string> ResourceMgr::GetTotalANIMID()
 {
     set<string> anim;
     for (auto pair : resdic_animation)
@@ -167,7 +168,7 @@ set<string> KGCA41B::ResourceMgr::GetTotalANIMID()
     return anim;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalSpriteID()
+set<string> ResourceMgr::GetTotalSpriteID()
 {
     set<string> sprite;
     for (auto pair : resdic_sprite)
@@ -177,7 +178,17 @@ set<string> KGCA41B::ResourceMgr::GetTotalSpriteID()
     return sprite;
 }
 
-set<string> KGCA41B::ResourceMgr::GetTotalMATID()
+set<string> ResourceMgr::GetTotalEffectID()
+{
+    set<string> effect;
+    for (auto pair : resdic_effect)
+    {
+        effect.insert(pair.first);
+    }
+    return effect;
+}
+
+set<string> ResourceMgr::GetTotalMATID()
 {
     set<string> mat;
     for (auto pair : resdic_material)
@@ -188,22 +199,22 @@ set<string> KGCA41B::ResourceMgr::GetTotalMATID()
 }
 
 
-void KGCA41B::ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
+void ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
 {
     resdic_static_mesh.insert({ id, static_mesh });
 }
 
-void KGCA41B::ResourceMgr::PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh)
+void ResourceMgr::PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh)
 {
     resdic_skeletal_mesh.insert({ id, skeletal_mesh });
 }
 
-void KGCA41B::ResourceMgr::PushAnimation(string id, const vector<OutAnimData>& animation)
+void ResourceMgr::PushAnimation(string id, const vector<OutAnimData>& animation)
 {
     resdic_animation.insert({ id, animation });
 }
 
-bool KGCA41B::ResourceMgr::ImportShaders(string filename)
+bool ResourceMgr::ImportShaders(string filename)
 {
 
     if (filename.find("VS") != string::npos)
@@ -263,7 +274,7 @@ bool ResourceMgr::ImportSound(string filename)
     return true;
 }
 
-bool KGCA41B::ResourceMgr::ImportSKM(string filename)
+bool ResourceMgr::ImportSKM(string filename)
 {
     SkeletalMesh skeletal_mesh = FBX->LoadSkeletalMesh(filename);
 
@@ -275,7 +286,7 @@ bool KGCA41B::ResourceMgr::ImportSKM(string filename)
     return false;
 }
 
-bool KGCA41B::ResourceMgr::ImportSTM(string filename)
+bool ResourceMgr::ImportSTM(string filename)
 {
     StaticMesh static_mesh = FBX->LoadStaticMesh(filename);
 
@@ -287,7 +298,7 @@ bool KGCA41B::ResourceMgr::ImportSTM(string filename)
     return false;
 }
 
-bool KGCA41B::ResourceMgr::ImportANIM(string filename)
+bool ResourceMgr::ImportANIM(string filename)
 {
     vector<OutAnimData> animation = FBX->LoadAnimation(filename);
 
@@ -399,14 +410,14 @@ bool ResourceMgr::ImportSprite(string filename)
             tex_sprite.tex_id_list.push_back(texListItem->values[to_string(i + 1)]);
         }
         // 로딩한 스프라이트를 리스트에 넣는다.
-        resdic_sprite.insert({ name, make_shared<TextureSprite>(tex_sprite) });
+        resdic_sprite.insert({ name,  make_shared<TextureSprite>(tex_sprite) });
     } break;
     }
 
     return true;
 }
 
-bool KGCA41B::ResourceMgr::SaveSprite(string name, shared_ptr<Sprite> new_sprite)
+bool ResourceMgr::SaveSprite(string name, shared_ptr<Sprite> new_sprite)
 {
     if (resdic_sprite.find(name) != resdic_sprite.end())
         return false;
@@ -418,7 +429,53 @@ bool KGCA41B::ResourceMgr::SaveSprite(string name, shared_ptr<Sprite> new_sprite
     
 }
 
-bool KGCA41B::ResourceMgr::ImportMaterial(string filename)
+bool ResourceMgr::ImportEffect(string filename)
+{
+    DATA->LoadSheetFile(filename);
+
+    auto strs1 = split(filename, '/');
+    auto name = strs1[max((int)strs1.size() - 1, 0)];
+    auto strs2 = split(name, '.');
+    name = strs2[0];
+
+    auto sheet = DATA->LoadSheet(name);
+
+    if (sheet == NULL)
+        return false;
+
+    Effect effect_data;
+
+    for (auto pair : sheet->resdic_item)
+    {
+        auto item = pair.second;
+
+        if (stoi(item->GetValue("type")) != EMITTER)
+            return false;
+
+        Emitter emitter;
+        ParseEmitter(item.get(), emitter);
+
+        effect_data.emitters.insert({ item->GetValue("Name"), emitter});
+    }
+
+    // resdic_effect 추가
+    resdic_effect.insert({ name, effect_data });
+
+    return true;
+}
+
+bool ResourceMgr::SaveEffect(string name, Effect new_effect)
+{
+    if (resdic_sprite.find(name) != resdic_sprite.end())
+        return false;
+    else
+    {
+        resdic_effect.insert({ name, new_effect });
+        return true;
+    }
+}
+
+bool ResourceMgr::ImportMaterial(string filename)
 {
     Material material;
     material.LoadAndCreate(filename);
@@ -429,4 +486,503 @@ bool KGCA41B::ResourceMgr::ImportMaterial(string filename)
     RESOURCE->PushResource<Material>(id, material);
 
     return true;
+}
+
+
+// 이미터 파싱 메소드
+void ResourceMgr::ParseEmitter(DataItem* emitter_data, Emitter& emitter)
+{
+    // type
+    emitter.type = (E_EffectType)stoi(emitter_data->GetValue("type"));
+
+    // sprite_id
+    emitter.sprite_id = emitter_data->GetValue("sprite_id");
+
+    // emit_type
+    emitter.emit_type = (E_EmitType)stoi(emitter_data->GetValue("emit_type"));
+    // emit_once
+    emitter.emit_once = stoi(emitter_data->GetValue("emit_once"));
+    // emit_per_second
+    emitter.emit_per_second = stoi(emitter_data->GetValue("emit_per_second"));
+    // emit_time
+    emitter.emit_time = stof(emitter_data->GetValue("emit_time"));
+
+
+
+    vector<string> splited_str;
+    vector<string> splited_str2;
+
+    // life_time
+    {
+        splited_str = split(emitter_data->GetValue("life_time"), ' ');
+        if (splited_str.size() < 2)
+            return;
+        emitter.life_time[0] = stof(splited_str[0]);
+        emitter.life_time[1] = stof(splited_str[1]);
+    }
+
+    // SettingType
+    {
+        emitter.color_setting_type = (E_EmitterAttributeType)stoi(emitter_data->GetValue("color_setting_type"));
+        emitter.size_setting_type = (E_EmitterAttributeType)stoi(emitter_data->GetValue("size_setting_type"));
+        emitter.rotation_setting_type = (E_EmitterAttributeType)stoi(emitter_data->GetValue("rotation_setting_type"));
+        emitter.position_setting_type = (E_EmitterAttributeType)stoi(emitter_data->GetValue("position_setting_type"));
+    }
+
+    // COLOR
+    {
+        // initial_color
+        splited_str = split(emitter_data->GetValue("initial_color"), ' ');
+        if (splited_str.size() < 4)
+            return;
+        emitter.initial_color.x = stof(splited_str[0]);
+        emitter.initial_color.y = stof(splited_str[1]);
+        emitter.initial_color.z = stof(splited_str[2]);
+        emitter.initial_color.w = stof(splited_str[3]);
+
+        // color_timeline_map
+        {
+            string str_color_map = emitter_data->GetValue("color_timeline_map");
+            if (str_color_map.size())
+            {
+                splited_str = split(str_color_map, '~');
+                for (auto value : splited_str)
+                {
+                    auto splited_map_value = split(value, '-');
+
+                    if (splited_map_value.size() == 0)
+                        return;
+                    int time = stoi(splited_map_value[0]);
+
+                    auto splited_map_xyzw = split(splited_map_value[1], ' ');
+                    XMFLOAT4 color = { stof(splited_map_xyzw[0]), stof(splited_map_xyzw[1]), stof(splited_map_xyzw[2]), stof(splited_map_xyzw[3]) };
+
+                    emitter.color_timeline_map.insert({ time, color });
+                }
+                ComputeColorTimeline(emitter.color_timeline_map, emitter.color_timeline);
+            }
+        }
+
+    }
+
+    // SIZE
+    {
+        // initial_size
+        {
+            splited_str = split(emitter_data->GetValue("initial_size"), '~');
+            if (splited_str.size() < 2)
+                return;
+            // min
+            splited_str2 = split(splited_str[0], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_size[0].x = stof(splited_str2[0]);
+            emitter.initial_size[0].y = stof(splited_str2[1]);
+            emitter.initial_size[0].z = stof(splited_str2[2]);
+            // max
+            splited_str2 = split(splited_str[1], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_size[1].x = stof(splited_str2[0]);
+            emitter.initial_size[1].y = stof(splited_str2[1]);
+            emitter.initial_size[1].z = stof(splited_str2[2]);
+        }
+        // add_size_per_lifetime
+        {
+            splited_str = split(emitter_data->GetValue("add_size_per_lifetime"), '~');
+            if (splited_str.size() < 2)
+                return;
+            // min
+            splited_str2 = split(splited_str[0], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.add_size_per_lifetime[0].x = stof(splited_str2[0]);
+            emitter.add_size_per_lifetime[0].y = stof(splited_str2[1]);
+            emitter.add_size_per_lifetime[0].z = stof(splited_str2[2]);
+            // max
+            splited_str2 = split(splited_str[1], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.add_size_per_lifetime[1].x = stof(splited_str2[0]);
+            emitter.add_size_per_lifetime[1].y = stof(splited_str2[1]);
+            emitter.add_size_per_lifetime[1].z = stof(splited_str2[2]);
+        }
+        // size_timeline_map
+        {
+            string str_size_map = emitter_data->GetValue("size_timeline_map");
+            if (str_size_map.size())
+            {
+                splited_str = split(str_size_map, '~');
+                for (auto value : splited_str)
+                {
+                    auto splited_map_value = split(value, '-');
+
+                    if (splited_map_value.size() == 0)
+                        return;
+                    int time = stoi(splited_map_value[0]);
+
+                    auto splited_map_xyz = split(splited_map_value[1], ' ');
+                    XMFLOAT3 size = { stof(splited_map_xyz[0]), stof(splited_map_xyz[1]), stof(splited_map_xyz[2]) };
+
+                    emitter.size_timeline_map.insert({ time, size });
+                }
+                ComputeSizeTimeline(emitter.size_timeline_map, emitter.size_timeline);
+            }
+        }
+
+
+    }
+
+    // ROTATION
+    {
+        // initial_rotation
+        {
+            splited_str = split(emitter_data->GetValue("initial_rotation"), ' ');
+            if (splited_str.size() < 2)
+                return;
+            emitter.initial_rotation[0] = stof(splited_str[0]);
+            emitter.initial_rotation[1] = stof(splited_str[1]);
+        }
+        // add_rotation_per_lifetime
+        {
+            splited_str = split(emitter_data->GetValue("add_rotation_per_lifetime"), ' ');
+            if (splited_str.size() < 2)
+                return;
+            emitter.add_rotation_per_lifetime[0] = stof(splited_str[0]);
+            emitter.add_rotation_per_lifetime[1] = stof(splited_str[1]);
+        }
+        // rotation_timeline_map
+        {
+            string str_rot_map = emitter_data->GetValue("rotation_timeline_map");
+            if (str_rot_map.size())
+            {
+                splited_str = split(str_rot_map, '~');
+                for (auto value : splited_str)
+                {
+                    auto splited_map_value = split(value, '-');
+
+                    if (splited_map_value.size() == 0)
+                        return;
+                    int time = stoi(splited_map_value[0]);
+
+                    auto splited_map_xyz = split(splited_map_value[1], ' ');
+                    float rotation = stof(splited_map_xyz[0]);
+
+
+                    emitter.rotation_timeline_map.insert({ time, rotation });
+                }
+                ComputeRotationTimeline(
+                    emitter.rotation_timeline_map, emitter.rotation_timeline);
+            }
+        }
+    }
+
+    // VELOCITY
+    {
+        // initial_position
+        {
+            splited_str = split(emitter_data->GetValue("initial_position"), '~');
+            if (splited_str.size() < 2)
+                return;
+            // min
+            splited_str2 = split(splited_str[0], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_position[0].x = stof(splited_str2[0]);
+            emitter.initial_position[0].y = stof(splited_str2[1]);
+            emitter.initial_position[0].z = stof(splited_str2[2]);
+            // max
+            splited_str2 = split(splited_str[1], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_position[1].x = stof(splited_str2[0]);
+            emitter.initial_position[1].y = stof(splited_str2[1]);
+            emitter.initial_position[1].z = stof(splited_str2[2]);
+        }
+        // initial_velocity
+        {
+            splited_str = split(emitter_data->GetValue("initial_velocity"), '~');
+            if (splited_str.size() < 2)
+                return;
+            // min
+            splited_str2 = split(splited_str[0], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_velocity[0].x = stof(splited_str2[0]);
+            emitter.initial_velocity[0].y = stof(splited_str2[1]);
+            emitter.initial_velocity[0].z = stof(splited_str2[2]);
+            // max
+            splited_str2 = split(splited_str[1], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_velocity[1].x = stof(splited_str2[0]);
+            emitter.initial_velocity[1].y = stof(splited_str2[1]);
+            emitter.initial_velocity[1].z = stof(splited_str2[2]);
+        }
+        // accelation_per_lifetime
+        {
+            splited_str = split(emitter_data->GetValue("accelation_per_lifetime"), '~');
+            if (splited_str.size() < 2)
+                return;
+            // min
+            splited_str2 = split(splited_str[0], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.accelation_per_lifetime[0].x = stof(splited_str2[0]);
+            emitter.accelation_per_lifetime[0].y = stof(splited_str2[1]);
+            emitter.accelation_per_lifetime[0].z = stof(splited_str2[2]);
+            // max
+            splited_str2 = split(splited_str[1], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.accelation_per_lifetime[1].x = stof(splited_str2[0]);
+            emitter.accelation_per_lifetime[1].y = stof(splited_str2[1]);
+            emitter.accelation_per_lifetime[1].z = stof(splited_str2[2]);
+        }
+        // velocity_timeline_map
+        {
+            string str_vel_map = emitter_data->GetValue("velocity_timeline_map");
+            if (str_vel_map.size())
+            {
+                splited_str = split(str_vel_map, '~');
+                for (auto value : splited_str)
+                {
+                    auto splited_map_value = split(value, '-');
+
+                    if (splited_map_value.size() == 0)
+                        return;
+                    int time = stoi(splited_map_value[0]);
+
+                    auto splited_map_xyz = split(splited_map_value[1], ' ');
+                    XMFLOAT3 vel = { stof(splited_map_xyz[0]), stof(splited_map_xyz[1]), stof(splited_map_xyz[2]) };
+
+                    emitter.velocity_timeline_map.insert({ time, vel });
+                }
+                ComputeVelocityTimeline(emitter.velocity_timeline_map, emitter.velocity_timeline);
+            }
+        }
+    }
+
+    // GRAVITY
+    emitter.gravity_on_off = stoi(emitter_data->GetValue("gravity_on_off"));
+
+    // BS
+    emitter.bs_state = (E_EffectBS)stoi(emitter_data->GetValue("BS"));
+
+    // DS
+    emitter.ds_state = (E_EffectDS)stoi(emitter_data->GetValue("DS"));
+
+    emitter.vs_id = emitter_data->GetValue("vs_id");
+    emitter.geo_id = emitter_data->GetValue("geo_id");
+    emitter.mat_id = emitter_data->GetValue("mat_id");
+}
+
+// 타임라인 -> 배열 계산 메소드들
+void ResourceMgr::ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* arr)
+{
+    // 1. 전체 배열을 map의 첫 값으로 초기화
+    for (int i = 0; i < 101; i++)
+    {
+        arr[i] = timeline.begin()->second;
+    }
+
+    // map의 개수가 1개라면 메소드 종료
+    if (timeline.size() == 1)
+        return;
+
+    // 2. 이후의 값들을 보정해서 계산
+    int last_time = -1;
+    for (const auto& pair : timeline)
+    {
+        // 첫 입력이면 last_time에만 저장하고 다음 배열로
+        if (last_time == -1)
+        {
+            last_time = pair.first;
+            continue;
+        }
+
+        // 아니라면 앞의 값과 보정
+        int cur_time = pair.first;
+        int time_dif = cur_time - last_time + 1;
+
+        XMFLOAT4 value_dif_step = {
+            (timeline[cur_time].x - timeline[last_time].x) / time_dif,
+            (timeline[cur_time].y - timeline[last_time].y) / time_dif,
+            (timeline[cur_time].z - timeline[last_time].z) / time_dif,
+            (timeline[cur_time].w - timeline[last_time].w) / time_dif
+        };
+
+        for (int i = 0; i < time_dif; i++)
+        {
+            XMFLOAT4 add_value = { value_dif_step.x * i, value_dif_step.y * i, value_dif_step.z * i, value_dif_step.w * i };
+            arr[last_time + i] = {
+                timeline[last_time].x + add_value.x,
+                timeline[last_time].y + add_value.y,
+                timeline[last_time].z + add_value.z,
+                timeline[last_time].w + add_value.w };
+        }
+
+        last_time = pair.first;
+    }
+
+    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
+    int timeline_last_time = last_time;
+    for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
+    {
+        arr[i] = timeline[last_time];
+    }
+}
+
+void ResourceMgr::ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
+{
+    // 1. 전체 배열을 map의 첫 값으로 초기화
+    for (int i = 0; i < 101; i++)
+    {
+        arr[i] = timeline.begin()->second;
+    }
+
+    // map의 개수가 1개라면 메소드 종료
+    if (timeline.size() == 1)
+        return;
+
+    // 2. 이후의 값들을 보정해서 계산
+    int last_time = -1;
+    for (const auto& pair : timeline)
+    {
+        // 첫 입력이면 last_time에만 저장하고 다음 배열로
+        if (last_time == -1)
+        {
+            last_time = pair.first;
+            continue;
+        }
+
+        // 아니라면 앞의 값과 보정
+        int cur_time = pair.first;
+        int time_dif = cur_time - last_time + 1;
+
+        XMFLOAT3 value_dif_step = {
+            (timeline[cur_time].x - timeline[last_time].x) / time_dif,
+            (timeline[cur_time].y - timeline[last_time].y) / time_dif,
+            (timeline[cur_time].z - timeline[last_time].z) / time_dif
+        };
+
+        for (int i = 0; i < time_dif; i++)
+        {
+            XMFLOAT3 add_value = { value_dif_step.x * i, value_dif_step.y * i, value_dif_step.z * i };
+            arr[last_time + i] = {
+                timeline[last_time].x + add_value.x,
+                timeline[last_time].y + add_value.y,
+                timeline[last_time].z + add_value.z
+            };
+        }
+
+        last_time = pair.first;
+    }
+
+    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
+    int timeline_last_time = last_time;
+    for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
+    {
+        arr[i] = timeline[last_time];
+    }
+}
+
+void ResourceMgr::ComputeRotationTimeline(map<int, float>& timeline, float* arr)
+{
+    // 1. 전체 배열을 map의 첫 값으로 초기화
+    for (int i = 0; i < 101; i++)
+    {
+        arr[i] = timeline.begin()->second;
+    }
+
+    // map의 개수가 1개라면 메소드 종료
+    if (timeline.size() == 1)
+        return;
+
+    // 2. 이후의 값들을 보정해서 계산
+    int last_time = -1;
+    for (const auto& pair : timeline)
+    {
+        // 첫 입력이면 last_time에만 저장하고 다음 배열로
+        if (last_time == -1)
+        {
+            last_time = pair.first;
+            continue;
+        }
+
+        // 아니라면 앞의 값과 보정
+        int cur_time = pair.first;
+        int time_dif = cur_time - last_time + 1;
+
+        float value_dif_step = (timeline[cur_time] - timeline[last_time]) / time_dif;
+
+        for (int i = 0; i < time_dif; i++)
+        {
+            float add_value = value_dif_step * i;
+            arr[last_time + i] = timeline[last_time] + add_value;
+        }
+
+        last_time = pair.first;
+    }
+
+    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
+    int timeline_last_time = last_time;
+    for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
+    {
+        arr[i] = timeline[last_time];
+    }
+}
+
+void ResourceMgr::ComputeVelocityTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
+{
+    // 1. 전체 배열을 map의 첫 값으로 초기화
+    for (int i = 0; i < 101; i++)
+    {
+        arr[i] = timeline.begin()->second;
+    }
+
+    // map의 개수가 1개라면 메소드 종료
+    if (timeline.size() == 1)
+        return;
+
+    // 2. 이후의 값들을 보정해서 계산
+    int last_time = -1;
+    for (const auto& pair : timeline)
+    {
+        // 첫 입력이면 last_time에만 저장하고 다음 배열로
+        if (last_time == -1)
+        {
+            last_time = pair.first;
+            continue;
+        }
+
+        // 아니라면 앞의 값과 보정
+        int cur_time = pair.first;
+        int time_dif = cur_time - last_time + 1;
+
+        XMFLOAT3 value_dif_step = {
+            (timeline[cur_time].x - timeline[last_time].x) / time_dif,
+            (timeline[cur_time].y - timeline[last_time].y) / time_dif,
+            (timeline[cur_time].z - timeline[last_time].z) / time_dif
+        };
+
+        for (int i = 0; i < time_dif; i++)
+        {
+            XMFLOAT3 add_value = { value_dif_step.x * i, value_dif_step.y * i, value_dif_step.z * i };
+            arr[last_time + i] = {
+                timeline[last_time].x + add_value.x,
+                timeline[last_time].y + add_value.y,
+                timeline[last_time].z + add_value.z
+            };
+        }
+
+        last_time = pair.first;
+    }
+
+    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
+    int timeline_last_time = last_time;
+    for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
+    {
+        arr[i] = timeline[last_time];
+    }
 }

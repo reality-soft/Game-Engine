@@ -2,8 +2,9 @@
 #include "DllMacro.h"
 #include "Components.h"
 #include "FbxLoader.h"
+#include "DataMgr.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API ResourceMgr
 	{
@@ -33,15 +34,16 @@ namespace KGCA41B
 
 	public:
 		map<string, string> GetTotalResID();
-		set<string> GetTotalTexID();
 		set<string> GetTotalVSID();
 		set<string> GetTotalPSID();
 		set<string> GetTotalGSID();
 		set<string> GetTotalSKMID();
 		set<string> GetTotalSTMID();
 		set<string> GetTotalANIMID();
-		set<string> GetTotalSpriteID();
+		set<string> GetTotalTexID();
 		set<string> GetTotalMATID();
+		set<string> GetTotalSpriteID();
+		set<string> GetTotalEffectID();
 
 	public:
 		void PushStaticMesh(string id, const StaticMesh& static_mesh);
@@ -61,24 +63,34 @@ namespace KGCA41B
 		map<string, Texture> resdic_texture;
 		map<string, Material> resdic_material;
 
+		// Effect
 		map<string, FMOD::Sound*>	resdic_sound;
 
 		map<string, shared_ptr<Sprite>> resdic_sprite;
+		map<string, Effect>				resdic_effect;
 
 	private:
 		bool ImportShaders(string filename);
 		bool ImportSound(string filename);
 		bool ImportTexture(string filename);
-    bool ImportMaterial(string filename);
+		bool ImportMaterial(string filename);
 		bool ImportSKM(string filename);
 		bool ImportSTM(string filename);
 		bool ImportANIM(string filename);
 	public:
 		bool ImportSprite(string filename);
 		bool SaveSprite(string name, shared_ptr<Sprite> new_sprite);
+		bool ImportEffect(string filename);
+		bool SaveEffect(string name, Effect new_effect);
 
 		bool CreateBuffers(SingleMesh<Vertex>& mesh);
 		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
+
+		void	ParseEmitter(DataItem* emitter_data, Emitter& emitter);
+		void	ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* arr);
+		void	ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr);
+		void	ComputeRotationTimeline(map<int, float>& timeline, float* arr);
+		void	ComputeVelocityTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr);
 
 	};
 
@@ -186,6 +198,14 @@ namespace KGCA41B
 			if (iter != resdic_sprite.end())
 			{
 				return (T*)iter->second.get();
+			}
+		}
+		else if (typeid(T) == typeid(Effect))
+		{
+			auto iter = resdic_effect.find(id);
+			if (iter != resdic_effect.end())
+			{
+				return (T*)(&iter->second);
 			}
 		}
 		return nullptr;

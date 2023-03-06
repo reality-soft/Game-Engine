@@ -4,7 +4,7 @@
 #include "FmodMgr.h"
 #include <io.h>
 
-using namespace KGCA41B;
+using namespace reality;
 
 void SoundSystem::OnUpdate(entt::registry& reg)
 {
@@ -106,7 +106,7 @@ void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, fl
     sound_play_list.push_back(sound_data);
 }
 
-void KGCA41B::SoundSystem::CreateSoundPool()
+void reality::SoundSystem::CreateSoundPool()
 {
     Sound* init_sound_data = new Sound;
     for (int i = 0; i < POOL_SIZE; i++)
@@ -118,7 +118,7 @@ void KGCA41B::SoundSystem::CreateSoundPool()
     delete init_sound_data;
 }
 
-Sound* KGCA41B::SoundSystem::LoadSoundFromPool()
+Sound* reality::SoundSystem::LoadSoundFromPool()
 {
     if (sound_pool.size() == 0)
         CreateSoundPool();

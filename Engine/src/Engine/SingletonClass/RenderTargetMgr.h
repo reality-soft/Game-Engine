@@ -2,7 +2,7 @@
 #include "DllMacro.h"
 #include "Components.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API RenderTarget
 	{

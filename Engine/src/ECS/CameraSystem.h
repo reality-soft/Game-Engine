@@ -1,7 +1,7 @@
 #pragma once
 #include "System.h"
 
-namespace KGCA41B
+namespace reality
 {
 	class DLL_API CameraSystem : public System
 	{
@@ -38,7 +38,8 @@ namespace KGCA41B
 		XMVECTOR right;
 		XMVECTOR up;
 
-		CbViewProj cb_viewproj;
+		CbViewProj		cb_viewproj;
+		CbCameraEffect	cb_effect;
 
 		float speed = 30;
 	};

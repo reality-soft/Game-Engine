@@ -3,7 +3,7 @@
 
 #define POOL_SIZE 10
 
-namespace KGCA41B {
+namespace reality {
 	class DLL_API SoundSystem : public System
 	{
 	private:

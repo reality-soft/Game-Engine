@@ -1,8 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-
-namespace KGCA41B
+namespace reality
 {
 	struct Vertex
 	{
@@ -10,6 +9,15 @@ namespace KGCA41B
 		XMFLOAT3   n;
 		XMFLOAT4   c;
 		XMFLOAT2   t;
+	};
+
+	struct LevelVertex
+	{
+		XMFLOAT3   p;
+		XMFLOAT3   n;
+		XMFLOAT4   c;
+		XMFLOAT2   t;
+		XMFLOAT2   t_layer;
 	};
 
 	struct SkinnedVertex
@@ -151,6 +159,26 @@ namespace KGCA41B
 			XMMATRIX view_matrix;
 			XMMATRIX projection_matrix;
 			XMVECTOR camera_position;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
+	struct CbCameraEffect
+	{
+		CbCameraEffect()
+		{
+			data.main_billboard = XMMatrixIdentity();
+		}
+		CbCameraEffect(const CbCameraEffect& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
+		struct Data
+		{
+			XMMATRIX view_matrix;
+			XMMATRIX projection_matrix;
+			XMMATRIX main_billboard;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -332,16 +360,14 @@ namespace KGCA41B
 
 	struct CbEffect
 	{
-		struct Data
+		__declspec(align(16)) struct Data
 		{
 			XMMATRIX world;
-			XMMATRIX view_proj;
-		}data;
+		} data;
 		ComPtr<ID3D11Buffer> buffer;
-
 	};
 
-	struct CbSprite
+	struct CbEmitter
 	{
 		__declspec(align(16)) struct Data
 		{
@@ -356,7 +382,7 @@ namespace KGCA41B
 			//float end_u[255];
 			//float end_v[255];
 			XMFLOAT4 value2[255];
-			XMMATRIX billboard_matrix;
+			XMMATRIX world;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -414,7 +440,6 @@ namespace KGCA41B
 
 		}
 	};
-
 
 	struct Emitter
 	{
@@ -536,6 +561,11 @@ namespace KGCA41B
 			bs_state = DEFAULT_BS;
 			ds_state = DEFAULT_NONE;
 		}
+	};
+
+	struct Effect
+	{
+		map<string, Emitter> emitters;
 	};
 
 	enum class AxisType

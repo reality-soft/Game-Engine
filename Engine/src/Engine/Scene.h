@@ -4,7 +4,7 @@
 #include "TimeMgr.h"
 #include "InputMgr.h"
 
-namespace KGCA41B {
+namespace reality {
 	class DLL_API Scene
 	{
 	public:

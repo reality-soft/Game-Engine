@@ -2,7 +2,7 @@
 #include "InputMgr.h"
 #include "Engine.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 bool InputMgr::Init()
 {
@@ -101,12 +101,12 @@ bool InputMgr::Update()
 	return true;
 }
 
-KeyState KGCA41B::InputMgr::GetKeyState(DWORD input_key)
+KeyState reality::InputMgr::GetKeyState(DWORD input_key)
 {
 	return prev_keyboard_state[input_key];
 }
 
-KeyState KGCA41B::InputMgr::GetMouseState(MouseButton input_key)
+KeyState reality::InputMgr::GetMouseState(MouseButton input_key)
 {
 	return prev_rgb_buttons[input_key];
 }
@@ -129,17 +129,17 @@ int InputMgr::GetMouseWheel()
 	return mouse_state.lZ;
 }
 
-int KGCA41B::InputMgr::GetDeltaX()
+int reality::InputMgr::GetDeltaX()
 {
 	return mouse_state.lX;
 }
 
-int KGCA41B::InputMgr::GetDeltaY()
+int reality::InputMgr::GetDeltaY()
 {
 	return mouse_state.lY;
 }
 
-void KGCA41B::InputMgr::Active(bool shoud_active)
+void reality::InputMgr::Active(bool shoud_active)
 {
 	is_active = shoud_active;
 }

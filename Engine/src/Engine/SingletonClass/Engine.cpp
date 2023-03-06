@@ -38,7 +38,7 @@ LRESULT CALLBACK WindowProc(
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-namespace KGCA41B {
+namespace reality {
 	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
 	{
 		// À©µµ¿ì ÃÊ±âÈ­

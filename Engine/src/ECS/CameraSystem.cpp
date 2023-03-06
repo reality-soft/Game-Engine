@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "PhysicsMgr.h"
 
-using namespace KGCA41B;
+using namespace reality;
 
 CameraSystem::CameraSystem()
 {
@@ -20,7 +20,7 @@ CameraSystem::~CameraSystem()
 {
 }
 
-void KGCA41B::CameraSystem::TargetTag(entt::registry& reg, string tag)
+void reality::CameraSystem::TargetTag(entt::registry& reg, string tag)
 {
 	auto view = reg.view<C_Camera>();
 	for (auto entity : view)
@@ -73,6 +73,17 @@ void CameraSystem::OnCreate(entt::registry& reg)
 
 	HRESULT hr;
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_viewproj.buffer.GetAddressOf());
+
+	// 빌보드 상수버퍼
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbCameraEffect::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	subdata.pSysMem = cb_effect.buffer.GetAddressOf();
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect.buffer.GetAddressOf());
 }
 
 void CameraSystem::OnUpdate(entt::registry& reg)
@@ -90,6 +101,10 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
 	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, cb_viewproj.buffer.GetAddressOf());
+
+	// 빌보드 상수버퍼 적용
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
+	DX11APP->GetDeviceContext()->GSSetConstantBuffers(0, 1, cb_effect.buffer.GetAddressOf());
 }
 
 MouseRay CameraSystem::CreateMouseRay()
@@ -129,7 +144,7 @@ C_Camera* CameraSystem::GetCamera()
 	return camera;
 }
 
-XMMATRIX KGCA41B::CameraSystem::GetViewProj()  
+XMMATRIX reality::CameraSystem::GetViewProj()  
 {
 	return view_matrix * projection_matrix;
 }
@@ -175,7 +190,8 @@ void CameraSystem::DebugCameraMovement()
 	}
 }
 
-void KGCA41B::CameraSystem::PlayerCameraMovement()
+
+void reality::CameraSystem::PlayerCameraMovement()
 {
 	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
 	{
@@ -189,7 +205,8 @@ void KGCA41B::CameraSystem::PlayerCameraMovement()
 	camera->OnUpdate();
 }
 
-void KGCA41B::CameraSystem::UpdateVectors()
+
+void reality::CameraSystem::UpdateVectors()
 {
 	look = XMVector3Normalize(world_matrix.r[2]);
 	right = XMVector3Normalize(world_matrix.r[0]);
@@ -233,4 +250,14 @@ void CameraSystem::CreateMatrix()
 	look = XMVector3Normalize(w.r[2]);
 	right = XMVector3Normalize(w.r[0]);
 	up = XMVector3Normalize(w.r[1]);
+
+	// 빌보드 상수버퍼 업데이트
+	XMVECTOR vec;
+	cb_effect.data.view_matrix = XMMatrixTranspose(view_matrix);
+	cb_effect.data.projection_matrix = XMMatrixTranspose(projection_matrix);
+	XMMATRIX billboard = XMMatrixInverse(&vec, view_matrix);
+	billboard.r[3].m128_f32[0] = 0.0f;
+	billboard.r[3].m128_f32[1] = 0.0f;
+	billboard.r[3].m128_f32[2] = 0.0f;
+	cb_effect.data.main_billboard = XMMatrixTranspose(billboard);
 }
