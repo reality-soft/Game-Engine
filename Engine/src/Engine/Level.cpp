@@ -289,6 +289,11 @@ reality::Level::~Level()
 	height_field_shape_ = nullptr;
 	height_field_collider_ = nullptr;
 	height_field_body_ = nullptr;
+
+	for (auto inst_obj : inst_objects)
+	{
+		inst_obj.Release();
+	}
 }
 
 bool reality::Level::ImportFromFile(string filepath)
@@ -311,12 +316,11 @@ bool reality::Level::ImportFromFile(string filepath)
 
 	UINT inst_list_size = 0;
 	file_transfer.ReadBinary<UINT>(inst_list_size);
-	//ZeroMemory(inst_objects.data(), sizeof(inst_objects));
+
 	inst_objects.resize(inst_list_size);
 
 	for (auto& inst : inst_objects)
 	{
-		file_transfer.ReadBinary<InstanceData>(inst.instance_list);
 		file_transfer.ReadBinary<string>(inst.mesh_id_);
 		file_transfer.ReadBinary<string>(inst.vs_id_);
 	}
@@ -506,6 +510,41 @@ void Level::Render(bool culling)
 	{
 		DX11APP->GetDeviceContext()->IASetIndexBuffer(level_mesh_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		DX11APP->GetDeviceContext()->DrawIndexed(level_mesh_.indices.size(), 0, 0);
+	}
+}
+
+bool reality::Level::CreateLevelMesh(string ltmesh_file)
+{
+	level_light_mesh = shared_ptr<LightMesh>(RESOURCE->UseResource<LightMesh>(ltmesh_file));
+	if (level_light_mesh.get() == nullptr)
+		return false;
+
+	for (auto& mesh : level_light_mesh.get()->meshes)
+	{
+		total_vertex_buffers.push_back(mesh.vertex_buffer.Get());
+	}
+
+	sky_sphere.CreateSphere();
+
+	return true;
+}
+
+void reality::Level::RenderLevelMesh()
+{
+	VertexShader* vs = RESOURCE->UseResource<VertexShader>(vs_id_);
+	DX11APP->GetDeviceContext()->VSSetShader(vs->Get(), 0, 0);
+
+	for (auto mesh : level_light_mesh.get()->meshes)
+	{
+		reality::Material* material = RESOURCE->UseResource<reality::Material>(mesh.mesh_name + ".mat");
+		if (material)
+			material->Set();
+
+		UINT stride = sizeof(LightVertex);
+		UINT offset = 0;
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);
 	}
 }
 

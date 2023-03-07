@@ -69,7 +69,7 @@ void reality::Material::Create()
 	if (ps)
 		pixel_shader = ps->Get();
 
-	sampler = DX11APP->GetCommonStates()->PointWrap();
+	sampler = DX11APP->GetCommonStates()->LinearClamp();
 }
 
 void reality::Material::Save(string filename)

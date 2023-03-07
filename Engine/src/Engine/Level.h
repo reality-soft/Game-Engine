@@ -63,6 +63,11 @@ namespace reality
 		void Render(bool culling);
 
 	public:
+		bool CreateLevelMesh(string ltmesh_file);
+		void RenderLevelMesh();
+		vector<ID3D11Buffer*> total_vertex_buffers;
+
+	public:
 		// Getter
 		float GetHeightAt(float x, float y);
 		XMVECTOR GetNormalAt(float x, float y);
@@ -86,6 +91,7 @@ namespace reality
 		ID3D11ShaderResourceView* texture_layers[5] = {0,};
 		AlphaTexLayer alpha_layer;
 		vector<InstancedObject> inst_objects;
+
 		SkySphere sky_sphere;
 
 	protected:
@@ -101,6 +107,7 @@ namespace reality
 
 	protected:
 		SingleMesh<LevelVertex> level_mesh_;
+		shared_ptr<LightMesh> level_light_mesh;
 		vector<float> height_list_;
 
 		UINT num_row_vertex_;
