@@ -16,6 +16,7 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename)
 
     StaticMesh res_static_mesh;
     SkeletalMesh res_skeletal_mesh;
+    LightMesh res_light_mesh;
     for (auto out_mesh : fbx_loader.out_mesh_list)
     {
         if (out_mesh->is_skinned)
@@ -36,6 +37,13 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename)
             single_mesh.indices = out_mesh->indices;
 
             res_static_mesh.meshes.push_back(single_mesh);
+
+            SingleMesh<LightVertex> light_single_mesh;
+            light_single_mesh.mesh_name = out_mesh->mesh_name;
+            light_single_mesh.vertices = out_mesh->light_vertices;
+
+            res_light_mesh.meshes.push_back(light_single_mesh);
+
         }
     }
 
@@ -54,6 +62,10 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename)
     {
         CreateBuffers(single_mesh);
     }
+    for (auto& single_mesh : res_light_mesh.meshes)
+    {
+        CreateBuffers(single_mesh);
+    }
 
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
@@ -66,6 +78,12 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename)
     {
         RESOURCE->PushStaticMesh(name + ".stmesh", res_static_mesh);
         SaveStaticMesh(res_static_mesh, name);
+    }
+
+    if (res_light_mesh.meshes.size() > 0)
+    {
+        RESOURCE->PushLightMesh(name + ".ltmesh", res_light_mesh);
+        SaveLightMesh(res_light_mesh, name);
     }
 
     if (res_skeletal_mesh.meshes.size() > 0) 
@@ -83,6 +101,27 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename)
 
     fbx_loader.Destroy();
     return true;
+}
+
+void reality::FbxMgr::SaveLightMesh(const LightMesh& light_mesh, string filename)
+{
+    string file_name = RESOURCE->directory() + "LTM/" + filename + ".ltmesh";
+    FileTransfer file_exporter(file_name, WRITE);
+
+    int num_of_meshes = light_mesh.meshes.size();
+
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_meshes, 1);
+
+    for (int cur_mesh_index = 0; cur_mesh_index < num_of_meshes; cur_mesh_index++) {
+        string mesh_name = light_mesh.meshes[cur_mesh_index].mesh_name;
+        int mesh_name_size = mesh_name.size() + 1;
+        file_exporter.WriteBinaryWithoutSize<int>(&mesh_name_size, 1);
+        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(mesh_name.c_str()), mesh_name_size);
+
+        int num_of_vertices = light_mesh.meshes[cur_mesh_index].vertices.size();
+        file_exporter.WriteBinaryWithoutSize<int>(&num_of_vertices, 1);
+        file_exporter.WriteBinaryWithoutSize<LightVertex>(const_cast<LightVertex*>(light_mesh.meshes[cur_mesh_index].vertices.data()), num_of_vertices);
+    }
 }
 
 void reality::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filename)
@@ -187,6 +226,29 @@ void reality::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string
         UINT end_frame = animation[cur_anim_index].end_frame;
         file_exporter.WriteBinaryWithoutSize<UINT>(&end_frame, 1);
     }
+}
+
+reality::LightMesh reality::FbxMgr::LoadLightMesh(string filename)
+{
+    FileTransfer file_exporter(filename, READ);
+
+    LightMesh light_mesh;
+
+    int num_of_meshes = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+
+    light_mesh.meshes.resize(num_of_meshes);
+
+    for (int cur_mesh_index = 0; cur_mesh_index < num_of_meshes; cur_mesh_index++) {
+        int mesh_name_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        light_mesh.meshes[cur_mesh_index].mesh_name = file_exporter.ReadBinaryWithoutSize<char>(mesh_name_size).data();
+
+        int num_of_vertices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        light_mesh.meshes[cur_mesh_index].vertices = file_exporter.ReadBinaryWithoutSize<LightVertex>(num_of_vertices);
+
+        CreateBuffers(light_mesh.meshes[cur_mesh_index]);
+    }
+
+    return light_mesh;
 }
 
 reality::StaticMesh reality::FbxMgr::LoadStaticMesh(string filename)
@@ -325,6 +387,27 @@ bool reality::FbxMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
         return false;
 
     return true;
+}
+
+bool reality::FbxMgr::CreateBuffers(SingleMesh<LightVertex>& mesh)
+{
+    HRESULT hr;
+
+    // VertexBuffer
+    D3D11_BUFFER_DESC desc;
+    D3D11_SUBRESOURCE_DATA subdata;
+
+    ZeroMemory(&desc, sizeof(desc));
+    ZeroMemory(&subdata, sizeof(subdata));
+
+    desc.ByteWidth = sizeof(LightVertex) * mesh.vertices.size();
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    subdata.pSysMem = mesh.vertices.data();
+
+    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
+    if (FAILED(hr))
+        return false;
 }
 
 bool reality::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
