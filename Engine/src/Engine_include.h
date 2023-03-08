@@ -7,6 +7,7 @@
 #include "Engine/SingletonClass/FmodMgr.h"
 #include "Engine/SingletonClass/GUIMgr.h"
 #include "Engine/SingletonClass/PhysicsMgr.h"
+#include "Engine/SingletonClass/InputEventMgr.h"
 #include "Engine/SingletonClass/DataMgr.h"
 #include "Engine/SingletonClass/RenderTargetMgr.h"
 #include "Engine/SingletonClass/QuadTreeMgr.h"

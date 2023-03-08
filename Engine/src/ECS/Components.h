@@ -229,7 +229,6 @@ namespace reality
 			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
 			cur_transform->world = world;
 			cur_transform->OnUpdate();
-
 			
 			XMVECTOR local_scale, local_rotation, local_translation;
 			XMMatrixDecompose(&local_scale, &local_rotation, &local_translation, cur_transform->local);
@@ -268,6 +267,7 @@ namespace reality
 					return search_result;
 				}
 			}
+
 
 			return nullptr;
 		}
