@@ -1,5 +1,4 @@
 #include "TestGame.h"
-#include "ComponentSystem.h"
 
 void TestGame::OnInit()
 {

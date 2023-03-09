@@ -4,7 +4,7 @@
 #include "DllMacro.h"
 #include "TimeMgr.h"
 #include "InputMgr.h"
-#include "Actor.h"
+#include "../ECS/Actors/Actor.h"
 
 namespace reality {
 	class DLL_API Scene
