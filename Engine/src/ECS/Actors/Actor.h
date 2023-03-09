@@ -13,7 +13,7 @@ namespace reality
 		AABBShape		collision_box_;
 		int				node_num_;
 	public:
-		virtual void OnInit(entt::registry& registry, AABBShape collision_box);
+		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate(entt::registry& registry);
 	public: 
 		entt::entity GetEntityId () {
