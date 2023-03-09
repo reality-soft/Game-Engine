@@ -8,6 +8,6 @@ namespace reality
 	protected:
 		C_Movement*	 movement_component_;
 	public:
-		void		 CharacterInit(entt::registry& registry, AABBShape collision_box);
+		void		 OnInit(entt::registry& registry) override;
 	};
 }

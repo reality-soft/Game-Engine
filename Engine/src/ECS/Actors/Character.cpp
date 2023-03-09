@@ -1,11 +1,9 @@
 #include "stdafx.h"
 #include "Character.h"
 
-void reality::Character::CharacterInit(entt::registry& registry, AABBShape collision_box)
+void reality::Character::OnInit(entt::registry& registry)
 {
-	entity_id_ = registry.create();
+	Actor::OnInit(registry);
 	registry.emplace_or_replace<C_Movement>(entity_id_, &transform_tree_);
 	movement_component_ = registry.try_get<C_Movement>(entity_id_);
-
-	OnInit(registry, collision_box);
 }

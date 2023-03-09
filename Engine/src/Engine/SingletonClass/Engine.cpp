@@ -3,6 +3,8 @@
 #include "ResourceMgr.h"
 #include "GUIMgr.h"
 #include "PhysicsMgr.h"
+#include "EventMgr.h"
+#include "SceneMgr.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -57,10 +59,8 @@ namespace reality {
 		return true;
 	}
 
-	void Engine::Run(Scene* scene)
+	void Engine::Run()
 	{
-		scene->OnInit();
-
 		bool done = false;
 		while (!done)
 		{
@@ -80,17 +80,17 @@ namespace reality {
 			DINPUT->Update();
 			PHYSICS->Update();
 
-			scene->OnUpdate();
+			SCENE_MGR->OnUpdate();
 
+			EVENT->ProcessEvents();
 
 			// Render Here
 			DX11APP->PreRender(true, true, true);
 
-			scene->OnRender();
+			SCENE_MGR->OnRender();
 
 			DX11APP->PostRender(false);
 		}
-		scene->OnRelease();
 	}
 
 	void Engine::OnResized()

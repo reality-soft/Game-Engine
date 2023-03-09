@@ -52,8 +52,8 @@ void CameraSystem::OnCreate(entt::registry& reg)
 		debug_camera_.camera_pos = XMVectorZero();
 		debug_camera_.pitch_yaw = { 0 , 0 };
 		debug_camera_.near_z = 1.f;
-		debug_camera_.far_z = 10000.f;
-		debug_camera_.fov = XMConvertToRadians(45);
+		debug_camera_.far_z = 100000.f;
+		debug_camera_.fov = XMConvertToRadians(90);
 		debug_camera_.tag = "Debug";
 
 		reg.emplace<C_Camera>(debug_entity_, debug_camera_);
@@ -92,7 +92,7 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 
 	if (camera->tag == "Debug")
 		DebugCameraMovement();
-	else
+	else if(camera->tag == "Player")
 		PlayerCameraMovement();
 
 	CameraAction();
@@ -199,6 +199,8 @@ void reality::CameraSystem::PlayerCameraMovement()
 		float pitch = DINPUT->GetDeltaY() * TM_DELTATIME;
 
 		camera->pitch_yaw.x += pitch;
+		camera->pitch_yaw.x = (camera->pitch_yaw.x > 0) ? camera->pitch_yaw.x : 0;
+
 		camera->pitch_yaw.y += yaw;
 	}
 
@@ -235,7 +237,7 @@ void CameraSystem::CreateMatrix()
 		w = DirectX::XMMatrixAffineTransformation(S, O, Q, camera->camera_pos);
 	}
 	else {
-		w = DirectX::XMMatrixAffineTransformation(S, -camera->local_pos * Q, Q, camera->camera_pos);
+		w = DirectX::XMMatrixAffineTransformation(S, (camera->target_pos - camera->local_pos), Q, camera->camera_pos);
 	}
 	v = DirectX::XMMatrixInverse(0, w);
 
