@@ -17,6 +17,7 @@ namespace reality
 		C_Camera* GetCamera();
 		XMMATRIX GetViewProj();
 		void SetSpeed(float speed) { this->speed = speed; };
+		void SetFov(float dgree) { camera->fov = XMConvertToRadians(dgree); };
 		XMFLOAT2 ndc;
 	private:
 		void DebugCameraMovement();

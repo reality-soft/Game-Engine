@@ -11,6 +11,12 @@ namespace reality
 		XMFLOAT2   t;
 	};
 
+	struct LightVertex
+	{
+		XMFLOAT3 p;
+		XMFLOAT2 t;
+	};
+
 	struct LevelVertex
 	{
 		XMFLOAT3   p;
@@ -123,6 +129,19 @@ namespace reality
 		vector<SingleMesh<Vertex>> meshes;
 	};
 
+	struct LightMesh
+	{
+		LightMesh() = default;
+		LightMesh(const LightMesh& other)
+		{
+			meshes.resize(other.meshes.size());
+			meshes = other.meshes;
+		}
+
+		vector<SingleMesh<LightVertex>> meshes;
+	};
+
+
 	struct CbTransform
 	{
 		CbTransform()
@@ -217,40 +236,30 @@ namespace reality
 
 	struct InstanceData
 	{
-		InstanceData()
+		InstanceData(string obj_name, UINT index)
 		{
-			col_transform.identity();
-			index = 0;
+			instance_id = obj_name + "_" + to_string(index);
 
 			S = { 1 ,1, 1 };
 			R = { 0 ,0, 0 };
 			T = { 0 ,0, 0 };
-		}
-		string GetName()
-		{			
-			return obj_name + "_" + to_string(index);
-		}
-		string obj_name;
-		UINT index;
 
+			collision_transform.identity();
+
+			cdata.world_matrix = XMMatrixIdentity();
+		}
+
+		string instance_id;
 		XMFLOAT3 S;
 		XMFLOAT3 R;
 		XMFLOAT3 T;
 
-		reactphysics3d::Transform col_transform;
-		reactphysics3d::BoxShape* box_shape = nullptr;
-		reactphysics3d::Collider* box_collider = nullptr;
-		reactphysics3d::CollisionBody* collision_body = nullptr;
-	};
+		reactphysics3d::Transform collision_transform;
 
-	struct CbInstance
-	{
-		struct Data
+		struct CData
 		{
-			XMMATRIX instance_transform[128];
-		}data;
-
-		ComPtr<ID3D11Buffer> buffer;
+			XMMATRIX world_matrix;
+		} cdata;
 	};
 
 

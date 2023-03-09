@@ -3,6 +3,11 @@
 #include "DllMacro.h"
 
 namespace reality {
+	struct FbxImportOption
+	{
+		float import_scale = 1.0f;
+		FbxVector4 import_rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+	};
 
 	class DLL_API FbxLoader
 	{
@@ -13,6 +18,7 @@ namespace reality {
 	public:
 		vector<OutMeshData*> out_mesh_list;
 		vector<OutAnimData*> out_anim_list;
+		FbxImportOption import_options;
 
 	public:
 		bool LoadFromFbxFile(string filename);
@@ -28,6 +34,7 @@ namespace reality {
 		map<FbxNode*, OutMeshData*> out_mesh_map;
 		map<FbxNode*, UINT> node_id_map;
 		vector<FbxNode*> node_list;
+
 
 	private:
 		void PreProcess(FbxNode* fbx_node);

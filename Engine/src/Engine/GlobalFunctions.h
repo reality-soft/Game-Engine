@@ -118,6 +118,7 @@ static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
 #define randf2(x,off) (off+x*rand()/(float)RAND_MAX)
 #define randstep(fMin,fMax) (fMin+((float)fMax-(float)fMin)*rand()/(float)RAND_MAX)
 #define clamp(x,MinX,MaxX) if (x>MaxX) x=MaxX; else if (x<MinX) x=MinX;
+
 static DirectX::XMFLOAT4 LerpColor(DirectX::XMFLOAT4 start_color, DirectX::XMFLOAT4 end_color, float key)
 {
 	DirectX::XMFLOAT4 lerped_color = start_color;
@@ -128,4 +129,22 @@ static DirectX::XMFLOAT4 LerpColor(DirectX::XMFLOAT4 start_color, DirectX::XMFLO
 	lerped_color.w = 1.0f;
 
 	return lerped_color;
+}
+
+static DirectX::XMMATRIX TransformS(DirectX::XMFLOAT3& sacling)
+{
+	return DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&sacling));
+}
+static DirectX::XMMATRIX TransformR(DirectX::XMFLOAT3& roation)
+{
+	DirectX::XMMATRIX rotation = DirectX::XMMatrixIdentity();
+	rotation *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(roation.x));
+	rotation *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(roation.y));
+	rotation *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(roation.z));
+
+	return rotation;
+}
+static DirectX::XMMATRIX TransformT(DirectX::XMFLOAT3& position)
+{
+	return DirectX::XMMatrixTranslationFromVector(XMLoadFloat3(&position));
 }

@@ -28,4 +28,6 @@
 #include "ECS/Actors/Actor.h"
 #include "ECS/Actors/Character.h"
 #include "Engine/Level.h"
+#include "Engine/SkySphere.h"
+#include "Engine/LightMeshLevel.h"
 #include "Engine/Log.h"

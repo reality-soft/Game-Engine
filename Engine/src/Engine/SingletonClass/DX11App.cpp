@@ -43,6 +43,7 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
 
     D3D_FEATURE_LEVEL feature_levels[] =
     {
+        D3D_FEATURE_LEVEL_11_1,
         D3D_FEATURE_LEVEL_11_0,
     };
 
@@ -62,6 +63,7 @@ bool DX11App::OnInit(POINT buffer_size, HWND hwnd)
     );
     if (FAILED(hr))
         return false;
+
 
     // 스왑체인으로부터 얻어온 텍스처로 렌더타깃 뷰 생성
 
