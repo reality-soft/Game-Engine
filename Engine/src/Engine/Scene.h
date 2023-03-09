@@ -17,6 +17,10 @@ namespace reality {
 		virtual void OnUpdate() = 0;
 		virtual void OnRender() = 0;
 		virtual void OnRelease() = 0;
+	public:
+		entt::registry& GetRegistryRef() {
+			return reg_scene_;
+		}
 	protected:
 		entt::registry reg_scene_;
 	};
