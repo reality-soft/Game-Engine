@@ -83,6 +83,7 @@ namespace reality {
 
 			scene->OnUpdate();
 
+			EVENT->ProcessEvents();
 
 			// Render Here
 			DX11APP->PreRender(true, true, true);
@@ -90,8 +91,6 @@ namespace reality {
 			scene->OnRender();
 
 			DX11APP->PostRender(false);
-
-			EVENT->ProcessEvents();
 		}
 		scene->OnRelease();
 	}

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TimeMgr.h"
 #include "MovementSystem.h"
+#include "EventMgr.h"
 
 void reality::MovementSystem::OnCreate(entt::registry& reg)
 {
@@ -14,8 +15,9 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 	{
 		auto* movement_component = reg.try_get<C_Movement>(entity_id);
 
-		XMMATRIX translation_matrix = XMMatrixTranslationFromVector(movement_component->direction * movement_component->speed * TM_DELTATIME);
+		XMVECTOR movement_vector = movement_component->direction * movement_component->speed * TM_DELTATIME;
 
-		movement_component->actor_transform_tree->root_node->ApplyMovement(reg, entity_id, translation_matrix);
+		MovementEvent movement_event(movement_vector, entity_id);
+		EVENT->PushEvent(movement_event);
 	}
 }
