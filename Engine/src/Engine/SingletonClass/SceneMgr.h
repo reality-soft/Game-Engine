@@ -14,6 +14,10 @@ namespace reality {
             cur_scene->OnInit();
         }
 
+        weak_ptr<Scene> GetCurScene() {
+            return weak_ptr<Scene>(cur_scene);
+        }
+
         virtual void OnInit();
         virtual void OnUpdate();
         virtual void OnRender();
