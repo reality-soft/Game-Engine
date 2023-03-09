@@ -56,12 +56,13 @@ namespace reality {
 
 		fbx_importer->Import(fbx_scene);
 
-		FbxAxisSystem SceneAxisSystem = fbx_scene->GetGlobalSettings().GetAxisSystem();
-		fbx_scene->GetGlobalSettings().GetSystemUnit().GetScaleFactor();
+		FbxAxisSystem axis_system = fbx_scene->GetGlobalSettings().GetAxisSystem();
+		FbxSystemUnit system_uint = fbx_scene->GetGlobalSettings().GetSystemUnit();
 
+		double scale_factor = fbx_scene->GetGlobalSettings().GetSystemUnit().GetScaleFactor();
 		FbxGeometryConverter converter(fbx_manager);
+		
 		converter.Triangulate(fbx_scene, true);
-
 		root_node = fbx_scene->GetRootNode();
 		PreProcess(root_node);
 
@@ -132,6 +133,10 @@ namespace reality {
 		FbxVector4 rot = fbx_node->GetGeometricRotation(FbxNode::eSourcePivot);
 		FbxVector4 scale = fbx_node->GetGeometricScaling(FbxNode::eSourcePivot);
 
+		// 임포트 설정값
+		scale *= import_options.import_scale;
+		rot = import_options.import_rotation;
+
 		geom.SetT(trans);
 		geom.SetR(rot);
 		geom.SetS(scale);
@@ -177,13 +182,15 @@ namespace reality {
 		for (UINT cp = 0; cp < cp_count; ++cp)
 		{
 			control_points[cp].p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[0]);
-			control_points[cp].p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[2]);
-			control_points[cp].p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[1]);
+			control_points[cp].p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[1]);
+			control_points[cp].p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[2]);
 		}
 
 		UINT vertex_counter = 0;
 		UINT uv_index = 0;
 		UINT cn_index = 0;
+
+		LightVertex light_vertex;
 		for (int p = 0; p < poly_count; ++p)
 		{
 			UINT poly_size = fbx_mesh->GetPolygonSize(p);
@@ -212,6 +219,9 @@ namespace reality {
 					}
 
 					out_mesh->indices.push_back(vertex_index);
+					light_vertex.p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[0]);
+					light_vertex.p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[1]);
+					light_vertex.p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[2]);
 
 					if (vertex_color_layer)
 					{
@@ -226,8 +236,12 @@ namespace reality {
 					if (vertex_uv_layer)
 					{
 						FbxVector2 t = ReadUV(fbx_mesh, vertex_uv_layer, vertex_index, uv_index);
+						
 						vertices[vertex_index].t.x = t.mData[0];
 						vertices[vertex_index].t.y = 1.0f - t.mData[1];
+
+						light_vertex.t.x = t.mData[0];
+						light_vertex.t.y = 1.0f - t.mData[1];
 					}
 
 					if (vertex_normal_layer)
@@ -257,8 +271,9 @@ namespace reality {
 
 						skinned_vertices[vertex_index] += vertices[vertex_index];
 					}
-
 					vertex_counter++;
+
+					out_mesh->light_vertices.push_back(light_vertex);
 				}
 			}
 		}

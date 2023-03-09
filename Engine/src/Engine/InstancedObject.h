@@ -17,7 +17,6 @@ namespace reality
 		void Render();
 		void Release();
 
-		vector<InstanceData> instance_list;
 		InstanceData* selected_instance = nullptr;
 		string object_name;
 		string mesh_id_;
@@ -25,22 +24,31 @@ namespace reality
 
 	public:
 		void AddNewInstance();
-		InstanceData* FindAndSelectWithCollision(reactphysics3d::CollisionBody* col_body);
-		XMMATRIX TransformS(XMFLOAT3& sacling);
-		XMMATRIX TransformR(XMFLOAT3& roation);
-		XMMATRIX TransformT(XMFLOAT3& position);
-
-		void UpdateInstance();
 
 	private:
-		void CreateInstanceBuffer();
-
-
-		StaticMesh* static_mesh;
-		VertexShader* vs;
-		CbInstance instancing;
+		bool UpdateInstance();
+		bool CreateInstanceBuffer();
 
 	private:
+		map<string, InstanceData*> instance_pool;
+
+	public:
+		vector<InstanceData::CData> GetCDataArray();
+
+	private:
+		shared_ptr<StaticMesh> static_mesh;
+		shared_ptr<VertexShader> vertex_shader;
+
+		ComPtr<ID3D11Buffer> inst_buffer;
+		ComPtr<ID3D11ShaderResourceView> inst_srv;
+
+	public:
+		StaticMesh* GetStaticMesh() { return static_mesh.get(); }
+		VertexShader* GetVertexShader() { return vertex_shader.get(); }
+
+		ID3D11Buffer* GetInstanceBuffer() { return inst_buffer.Get(); }
+		ID3D11ShaderResourceView* GetInstanceSRV() { return inst_srv.Get(); }
+
 	};
 }
 

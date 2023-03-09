@@ -3,7 +3,7 @@
 #include "Shape.h"
 #include "Level.h"
 #include "../ECS/entt.hpp"
-#include "CameraSystem.h"
+#include "../ECS/Systems/CameraSystem.h"
 
 #define MIN_HEIGHT -1000.f
 #define MAX_HEIGHT  1000.f
