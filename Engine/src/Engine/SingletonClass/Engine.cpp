@@ -60,6 +60,7 @@ namespace reality {
 
 	void Engine::Run(Scene* scene)
 	{
+
 		scene->OnInit();
 
 		bool done = false;
@@ -82,7 +83,6 @@ namespace reality {
 			PHYSICS->Update();
 
 			scene->OnUpdate();
-
 			EVENT->ProcessEvents();
 
 			// Render Here
