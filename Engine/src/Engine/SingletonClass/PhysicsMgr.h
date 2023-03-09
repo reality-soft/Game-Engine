@@ -1,6 +1,7 @@
 #pragma once
 #include "DataTypes.h"
 #include "DllMacro.h"
+#include "entt.hpp"
 
 using namespace reactphysics3d;
 
@@ -31,13 +32,24 @@ namespace reality
         void Release();
 
     public:
-        PhysicsWorld* GetPhysicsWorld() { return physics_world_; }
         EventListener event_listener;
+        PhysicsCommon physics_common_;
 
+        PhysicsWorld* GetPhysicsWorld() { return physics_world_; }
         WorldRayCallback WorldPicking(const MouseRay& mouse_ray);
         bool ObjectPicking(const MouseRay& mouse_ray, CollisionBody* target);
+    
     public:
-        PhysicsCommon physics_common_;
+        void AddSceneDynamic(entt::entity ent);
+        void DestroySceneDynamic(entt::entity ent);
+
+        void AddLevelStatic(const InstanceData& inst_data);
+        void DestroyLevelStatic(string instance_id);
+
+    public:
+        std::map<entt::entity, CollisionBody*> scene_dynamics_;
+        std::map<string, CollisionBody*>       level_statics_;
+        CollisionBody*                         level_terrain_ = nullptr;
 
     private:
         PhysicsWorld* physics_world_;

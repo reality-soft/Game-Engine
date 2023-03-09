@@ -52,8 +52,8 @@ void CameraSystem::OnCreate(entt::registry& reg)
 		debug_camera_.camera_pos = XMVectorZero();
 		debug_camera_.pitch_yaw = { 0 , 0 };
 		debug_camera_.near_z = 1.f;
-		debug_camera_.far_z = 10000.f;
-		debug_camera_.fov = XMConvertToRadians(45);
+		debug_camera_.far_z = 100000.f;
+		debug_camera_.fov = XMConvertToRadians(90);
 		debug_camera_.tag = "Debug";
 
 		reg.emplace<C_Camera>(debug_entity_, debug_camera_);

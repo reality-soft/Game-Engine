@@ -46,6 +46,7 @@ namespace reality
 		set<string> GetTotalEffectID();
 
 	public:
+		void PushLightMesh(string id, const LightMesh& light_mesh);
 		void PushStaticMesh(string id, const StaticMesh& static_mesh);
 		void PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh);
 		void PushAnimation(string id, const vector<OutAnimData>& animation);
@@ -54,6 +55,7 @@ namespace reality
 		string current_id;
 
 		map<string, StaticMesh> resdic_static_mesh;
+		map<string, LightMesh> resdic_light_mesh;
 		map<string, SkeletalMesh> resdic_skeletal_mesh;
 		map<string, vector<OutAnimData>> resdic_animation;
 
@@ -76,6 +78,7 @@ namespace reality
 		bool ImportMaterial(string filename);
 		bool ImportSKM(string filename);
 		bool ImportSTM(string filename);
+		bool ImportLTM(string filename);
 		bool ImportANIM(string filename);
 	public:
 		bool ImportSprite(string filename);
@@ -132,6 +135,14 @@ namespace reality
 		{
 			auto iter = resdic_skeletal_mesh.find(id);
 			if (iter != resdic_skeletal_mesh.end())
+			{
+				return (T*)(&iter->second);
+			}
+		}
+		else if (typeid(T) == typeid(LightMesh))
+		{
+			auto iter = resdic_light_mesh.find(id);
+			if (iter != resdic_light_mesh.end())
 			{
 				return (T*)(&iter->second);
 			}

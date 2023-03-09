@@ -30,7 +30,7 @@ bool PhysicsMgr::Init()
 void PhysicsMgr::Update()
 {
 	// Constant physics time step 
-	const float timestep = 1.0f / 60.0f;
+	float timestep = 1.0f / 60.0f;
 
 	accmulator += TM_DELTATIME;
 
@@ -64,4 +64,31 @@ bool reality::PhysicsMgr::ObjectPicking(const MouseRay& mouse_ray, CollisionBody
 		return true;
 
 	return false;
+}
+
+void reality::PhysicsMgr::AddSceneDynamic(entt::entity ent)
+{
+}
+
+void reality::PhysicsMgr::DestroySceneDynamic(entt::entity ent)
+{
+}
+
+void reality::PhysicsMgr::AddLevelStatic(const InstanceData& inst_data)
+{
+	string instance_id = inst_data.instance_id;
+	CollisionBody* collision_body = nullptr;
+
+
+	//if (level_statics_.find(instance_id) != level_statics_.end())
+	//{
+	//	physics_common_.createBoxShape();
+	//	collision_body =  physics_world_->createCollisionBody(inst_data.collision_transform);
+	//	collision_body->addCollider();
+	//	level_statics_.insert(instance_id);
+	//}
+}
+
+void reality::PhysicsMgr::DestroyLevelStatic(string instance_id)
+{
 }
