@@ -5,19 +5,18 @@ void TestGame::OnInit()
 {
 	reality::RESOURCE->Init("../../Contents/");
 	reality::FMOD_MGR->Init();
-	sys_sound.OnCreate(reg_scene); 
+	sys_sound.OnCreate(reg_scene_); 
   
-	reality::ComponentSystem::GetInst()->OnInit(reg_scene);
+	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
 
-	ent_player = reg_scene.create();
+	ent_player = reg_scene_.create();
 
 
-	sys_render.OnCreate(reg_scene);
-	sys_camera.OnCreate(reg_scene);
-	sys_camera.TargetTag(reg_scene, "Debug");
+	sys_render.OnCreate(reg_scene_);
+	sys_camera.OnCreate(reg_scene_);
+	sys_camera.TargetTag(reg_scene_, "Debug");
 
-	Level level;
-	level.CreateLevel(3, 8, 100, {8, 8});
+	level.CreateLevel(3, 100, 100, {8, 8});
 	QUADTREE->Init(&level);
 }
 
@@ -28,7 +27,7 @@ void TestGame::OnUpdate()
 
 void TestGame::OnRender()
 {
-	sys_render.OnUpdate(reg_scene);
+	sys_render.OnUpdate(reg_scene_);
 }
 
 void TestGame::OnRelease()
