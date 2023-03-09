@@ -252,12 +252,42 @@ void CameraSystem::CreateMatrix()
 	up = XMVector3Normalize(w.r[1]);
 
 	// 빌보드 상수버퍼 업데이트
-	XMVECTOR vec;
+	
+	// 디폴트 빌보드 (뷰 행렬 역행렬)
 	cb_effect.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_effect.data.projection_matrix = XMMatrixTranspose(projection_matrix);
-	XMMATRIX billboard = XMMatrixInverse(&vec, view_matrix);
+	XMMATRIX billboard = XMMatrixInverse(0, view_matrix);
 	billboard.r[3].m128_f32[0] = 0.0f;
 	billboard.r[3].m128_f32[1] = 0.0f;
 	billboard.r[3].m128_f32[2] = 0.0f;
 	cb_effect.data.main_billboard = XMMatrixTranspose(billboard);
+
+	// X축 빌보드
+	Q = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, 0, 0);
+	w = DirectX::XMMatrixAffineTransformation(S, O, Q, camera->camera_pos);
+	billboard = DirectX::XMMatrixInverse(0, w);
+	billboard.r[3].m128_f32[0] = 0.0f;
+	billboard.r[3].m128_f32[1] = 0.0f;
+	billboard.r[3].m128_f32[2] = 0.0f;
+	cb_effect.data.x_billboard = XMMatrixTranspose(billboard);
+
+	// Y축 빌보드
+	XMMATRIX y_only = XMMatrixIdentity();
+	y_only.r[0].m128_f32[0] = view_matrix.r[0].m128_f32[0];
+	y_only.r[0].m128_f32[2] = view_matrix.r[0].m128_f32[2];
+	y_only.r[2].m128_f32[0] = view_matrix.r[2].m128_f32[0];
+	y_only.r[2].m128_f32[2] = view_matrix.r[2].m128_f32[2];
+	billboard = DirectX::XMMatrixInverse(0, y_only);
+	billboard.r[3].m128_f32[0] = 0.0f;
+	billboard.r[3].m128_f32[1] = 0.0f;
+	billboard.r[3].m128_f32[2] = 0.0f;
+	cb_effect.data.y_billboard = XMMatrixTranspose(billboard);
+
+	// Z축 빌보드
+
+	// XY축 빌보드
+
+	// YZ축 빌보드
+
+	// ZX축 빌보드
 }
