@@ -12,10 +12,10 @@ namespace reality
 		TransformTree	transform_tree_;
 		AABBShape		collision_box_;
 		int				node_num_;
-		entt::registry* reg_scene;
+		entt::registry* reg_scene_;
 	public:
 		virtual void OnInit(entt::registry& registry);
-		virtual void OnUpdate(entt::registry& registry);
+		virtual void OnUpdate();
 	public: 
 		entt::entity GetEntityId () {
 			return entity_id_;
