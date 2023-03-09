@@ -9,42 +9,6 @@
 
 namespace reality
 {
-	class DLL_API SkySphere
-	{
-	public:
-		SkySphere();
-		~SkySphere();
-
-	public:
-		bool CreateSphere();
-		void FrameRender(const C_Camera* camera);
-
-		XMFLOAT4 skycolor_afternoon;
-		XMFLOAT4 skycolor_noon;
-		XMFLOAT4 skycolor_night;
-		FLOAT color_strength;
-		CbSkySphere cb_sky;
-
-	private:
-		void FrameBackgroundSky(const C_Camera* camera);
-		void RenderBackgroundSky();
-
-		void FrameSunSky(const C_Camera* camera);
-		void RenderSunSky();
-
-		void FrameStarSky(const C_Camera* camera);
-		void RenderStarSky();
-
-		void FrameCloudSky(const C_Camera* camera);
-		void RenderCloudSky();
-
-	private:
-		shared_ptr<StaticMesh> sphere_mesh;
-		shared_ptr<StaticMesh> cloud_dome;
-		shared_ptr<VertexShader> vs;
-		CbTransform cb_transform;
-	};
-
 	class DLL_API Level
 	{
 	public:
@@ -61,11 +25,6 @@ namespace reality
 		void SetCamera(C_Camera* _camera);
 		void Update();
 		void Render(bool culling);
-
-	public:
-		bool CreateLevelMesh(string ltmesh_file);
-		void RenderLevelMesh();
-		vector<ID3D11Buffer*> total_vertex_buffers;
 
 	public:
 		// Getter
@@ -92,8 +51,6 @@ namespace reality
 		AlphaTexLayer alpha_layer;
 		vector<InstancedObject> inst_objects;
 
-		SkySphere sky_sphere;
-
 	protected:
 		void GenVertexNormal();
 		void GetHeightList();
@@ -103,7 +60,6 @@ namespace reality
 		bool CreateHeightField(float min_height, float max_height);
 
 		void RenderObjects();
-		void RenderSkySphere();
 
 	protected:
 		SingleMesh<LevelVertex> level_mesh_;
