@@ -3,13 +3,14 @@
 #include "FbxLoader.h"
 
 namespace reality {
+
 	class DLL_API FbxMgr
 	{
 		SINGLETON(FbxMgr)
 #define FBX FbxMgr::GetInst()
 
 	public:
-		bool ImportAndSaveFbx(string filename);
+		bool ImportAndSaveFbx(string filename, FbxImportOption options = FbxImportOption());
 
 	private:
 		void SaveLightMesh(const LightMesh& light_mesh, string filename);
