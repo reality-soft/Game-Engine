@@ -15,5 +15,9 @@ namespace reality
 	public:
 		virtual void OnInit(entt::registry& registry, AABBShape collision_box);
 		virtual void OnUpdate(entt::registry& registry);
+	public: 
+		entt::entity GetEntityId () {
+			return entity_id_;
+		}
 	};
 }

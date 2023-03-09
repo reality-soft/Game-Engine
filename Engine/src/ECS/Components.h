@@ -224,6 +224,21 @@ namespace reality
 				child->OnUpdate(registry, entity, world * cur_transform->local);
 			}
 		}
+
+		void ApplyMovement(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
+			cur_transform->world = world;
+			cur_transform->OnUpdate();
+			
+			XMVECTOR local_scale, local_rotation, local_translation;
+			XMMatrixDecompose(&local_scale, &local_rotation, &local_translation, cur_transform->local);
+			
+			XMMATRIX translation_matrix = XMMatrixTranslationFromVector(local_translation);
+			
+			for (auto child : children) {
+				child->ApplyMovement(registry, entity, world * translation_matrix);
+			}
+		}
 	};
 
 	struct TransformTree
@@ -253,10 +268,27 @@ namespace reality
 				}
 			}
 
+
 			return nullptr;
 		}
 	};
 
+	struct C_Movement : public Component
+	{
+		TransformTree* actor_transform_tree;
+
+		XMVECTOR direction = { 0.0f, 0.0f, 0.0f, 0.0f };
+		float speed = 0.0f;
+		float max_speed = 0.0f;
+		float acceleration = 0.0f;
+		float gravity_scale = 0.0f;
+		float rotation = 0.0f;
+		float angular_velocity = 0.0f;
+
+		C_Movement(TransformTree* actor_transform_tree) :
+			actor_transform_tree(actor_transform_tree) {};
+
+	};
 
 	struct C_BoxShape : public C_Transform
 	{
@@ -331,7 +363,8 @@ namespace reality
 
 	struct C_Effect : public C_Transform
 	{
-		vector<shared_ptr<Emitter>> emitters;
+		string effect_id;
+		Effect effect;
 	};
 
 	struct PhysicsCollision : public C_Transform

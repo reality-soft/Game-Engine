@@ -20,6 +20,7 @@
 #include <set>
 #include <string>
 #include <algorithm>
+#include <functional>
 #include <wrl.h>
 
 #include <windows.h>
