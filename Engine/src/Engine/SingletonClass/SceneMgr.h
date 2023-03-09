@@ -17,27 +17,29 @@ namespace reality {
         weak_ptr<Actor> GetPlayer(int player_num);
     public:
         template <typename ActorClass>
-        bool AddActor() {
+        entt::entity AddActor() {
             shared_ptr<Actor> cur_actor = dynamic_pointer_cast<Actor>(make_shared<ActorClass>());
             if (cur_actor == nullptr) {
-                return false;
+                return entt::null;
             }
 
             cur_actor->OnInit(cur_scene_->GetRegistryRef());
-            actor_.insert({ cur_actor->GetEntityId(), move(cur_actor)});
-            return true;
+            entt::entity cur_entity_id = cur_actor->GetEntityId();
+            actor_.insert({ cur_entity_id, move(cur_actor)});
+            return cur_entity_id;
         }
         template <typename ActorClass>
-        bool AddPlayer() {
+        entt::entity AddPlayer() {
             shared_ptr<Actor> player = dynamic_pointer_cast<Actor>(make_shared<ActorClass>());
             if (player == nullptr) {
-                return false;
+                return entt::null;
             }
 
             player->OnInit(cur_scene_->GetRegistryRef());
             players_.push_back(player->GetEntityId());
-            actors_.insert({ player->GetEntityId(), move(player)});
-            return true;
+            entt::entity cur_entity_id = player->GetEntityId();
+            actors_.insert({ cur_entity_id, move(player)});
+            return cur_entity_id;
         }
         template <typename SceneClass>
         void SetScene() {
