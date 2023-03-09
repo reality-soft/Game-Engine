@@ -637,19 +637,43 @@ void ResourceMgr::ParseEmitter(DataItem* emitter_data, Emitter& emitter)
     {
         // initial_rotation
         {
-            splited_str = split(emitter_data->GetValue("initial_rotation"), ' ');
+            splited_str = split(emitter_data->GetValue("initial_rotation"), '~');
             if (splited_str.size() < 2)
                 return;
-            emitter.initial_rotation[0] = stof(splited_str[0]);
-            emitter.initial_rotation[1] = stof(splited_str[1]);
+            // min
+            splited_str2 = split(splited_str[0], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_rotation[0].x = stof(splited_str2[0]);
+            emitter.initial_rotation[0].y = stof(splited_str2[1]);
+            emitter.initial_rotation[0].z = stof(splited_str2[2]);
+            // max
+            splited_str2 = split(splited_str[1], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.initial_rotation[1].x = stof(splited_str2[0]);
+            emitter.initial_rotation[1].y = stof(splited_str2[1]);
+            emitter.initial_rotation[1].z = stof(splited_str2[2]);
         }
         // add_rotation_per_lifetime
         {
-            splited_str = split(emitter_data->GetValue("add_rotation_per_lifetime"), ' ');
+            splited_str = split(emitter_data->GetValue("add_rotation_per_lifetime"), '~');
             if (splited_str.size() < 2)
                 return;
-            emitter.add_rotation_per_lifetime[0] = stof(splited_str[0]);
-            emitter.add_rotation_per_lifetime[1] = stof(splited_str[1]);
+            // min
+            splited_str2 = split(splited_str[0], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.add_rotation_per_lifetime[0].x = stof(splited_str2[0]);
+            emitter.add_rotation_per_lifetime[0].y = stof(splited_str2[1]);
+            emitter.add_rotation_per_lifetime[0].z = stof(splited_str2[2]);
+            // max
+            splited_str2 = split(splited_str[1], ' ');
+            if (splited_str2.size() < 3)
+                return;
+            emitter.add_rotation_per_lifetime[1].x = stof(splited_str2[0]);
+            emitter.add_rotation_per_lifetime[1].y = stof(splited_str2[1]);
+            emitter.add_rotation_per_lifetime[1].z = stof(splited_str2[2]);
         }
         // rotation_timeline_map
         {
@@ -666,8 +690,7 @@ void ResourceMgr::ParseEmitter(DataItem* emitter_data, Emitter& emitter)
                     int time = stoi(splited_map_value[0]);
 
                     auto splited_map_xyz = split(splited_map_value[1], ' ');
-                    float rotation = stof(splited_map_xyz[0]);
-
+                    XMFLOAT3 rotation = { stof(splited_map_xyz[0]), stof(splited_map_xyz[1]), stof(splited_map_xyz[2]) };
 
                     emitter.rotation_timeline_map.insert({ time, rotation });
                 }
@@ -781,7 +804,7 @@ void ResourceMgr::ParseEmitter(DataItem* emitter_data, Emitter& emitter)
 void ResourceMgr::ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* arr)
 {
     // 1. 전체 배열을 map의 첫 값으로 초기화
-    for (int i = 0; i < 101; i++)
+    for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
     }
@@ -836,7 +859,7 @@ void ResourceMgr::ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* a
 void ResourceMgr::ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
 {
     // 1. 전체 배열을 map의 첫 값으로 초기화
-    for (int i = 0; i < 101; i++)
+    for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
     }
@@ -887,10 +910,10 @@ void ResourceMgr::ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* ar
     }
 }
 
-void ResourceMgr::ComputeRotationTimeline(map<int, float>& timeline, float* arr)
+void ResourceMgr::ComputeRotationTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
 {
     // 1. 전체 배열을 map의 첫 값으로 초기화
-    for (int i = 0; i < 101; i++)
+    for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
     }
@@ -911,15 +934,24 @@ void ResourceMgr::ComputeRotationTimeline(map<int, float>& timeline, float* arr)
         }
 
         // 아니라면 앞의 값과 보정
+        
         int cur_time = pair.first;
         int time_dif = cur_time - last_time + 1;
 
-        float value_dif_step = (timeline[cur_time] - timeline[last_time]) / time_dif;
+        XMFLOAT3 value_dif_step = {
+            (timeline[cur_time].x - timeline[last_time].x) / time_dif,
+            (timeline[cur_time].y - timeline[last_time].y) / time_dif,
+            (timeline[cur_time].z - timeline[last_time].z) / time_dif
+        };
 
         for (int i = 0; i < time_dif; i++)
         {
-            float add_value = value_dif_step * i;
-            arr[last_time + i] = timeline[last_time] + add_value;
+            XMFLOAT3 add_value = { value_dif_step.x * i, value_dif_step.y * i, value_dif_step.z * i };
+            arr[last_time + i] = {
+                timeline[last_time].x + add_value.x,
+                timeline[last_time].y + add_value.y,
+                timeline[last_time].z + add_value.z
+            };
         }
 
         last_time = pair.first;
@@ -936,7 +968,7 @@ void ResourceMgr::ComputeRotationTimeline(map<int, float>& timeline, float* arr)
 void ResourceMgr::ComputeVelocityTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
 {
     // 1. 전체 배열을 map의 첫 값으로 초기화
-    for (int i = 0; i < 101; i++)
+    for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
     }

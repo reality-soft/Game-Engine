@@ -89,7 +89,7 @@ namespace reality
 		void	ParseEmitter(DataItem* emitter_data, Emitter& emitter);
 		void	ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* arr);
 		void	ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr);
-		void	ComputeRotationTimeline(map<int, float>& timeline, float* arr);
+		void	ComputeRotationTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr);
 		void	ComputeVelocityTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr);
 
 	};
