@@ -407,7 +407,7 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
 {
-	cb_effect.data.world = world;
+	cb_effect.data.world = XMMatrixTranspose(world);
 
 	device_context->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
 	device_context->GSSetConstantBuffers(1, 1, cb_effect.buffer.GetAddressOf());
