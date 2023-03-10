@@ -12,7 +12,7 @@ public:
 	virtual void OnRelease();
 
 private:
-	entt::registry reg_scene;
+	Level level;
 
 	entt::entity ent_player;
 

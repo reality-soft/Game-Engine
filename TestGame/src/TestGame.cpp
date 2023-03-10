@@ -1,15 +1,14 @@
 #include "TestGame.h"
-#include "ComponentSystem.h"
 
 void TestGame::OnInit()
 {
 	reality::RESOURCE->Init("../../Contents/");
 	reality::FMOD_MGR->Init();
-	sys_sound.OnCreate(reg_scene); 
+	sys_sound.OnCreate(reg_scene_); 
   
-	reality::ComponentSystem::GetInst()->OnInit(reg_scene);
+	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
 
-	ent_player = reg_scene.create();
+	ent_player = reg_scene_.create();
 
 
 	sys_render.OnCreate(reg_scene);

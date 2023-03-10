@@ -6,6 +6,7 @@
 #include "Engine/SingletonClass/FbxMgr.h"
 #include "Engine/SingletonClass/FmodMgr.h"
 #include "Engine/SingletonClass/GUIMgr.h"
+#include "Engine/SingletonClass/SceneMgr.h"
 #include "Engine/SingletonClass/PhysicsMgr.h"
 #include "Engine/SingletonClass/EventMgr.h"
 #include "Engine/SingletonClass/InputEventMgr.h"
