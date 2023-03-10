@@ -10,6 +10,7 @@ namespace reality
 		static ID3D11BlendState*			bs_default();
 		static ID3D11BlendState*			bs_alpha_to_coverage_enable();
 		static ID3D11BlendState*			bs_dual_source_blend();
+		static ID3D11BlendState*			bs_blend_higher_rgb();
 
 
 		static ID3D11DepthStencilState*		ds_defalut();
