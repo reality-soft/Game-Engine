@@ -26,6 +26,8 @@ bool reality::SkySphere::CreateSphere()
 	if (vs.get() == nullptr)
 		return false;
 
+	sun_world = XMMatrixIdentity();
+
 	HRESULT hr;
 
 	D3D11_BUFFER_DESC desc;
@@ -106,32 +108,32 @@ void reality::SkySphere::FrameBackgroundSky(const C_Camera* camera)
 
 	if (cb_sky.data.time.x >= 0)
 	{
-		cb_sky.data.time.x -= TM_DELTATIME * 10;
-		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_noon, (360 - cb_sky.data.time.x) / 360);
+		cb_sky.data.time.x -= TM_DELTATIME;
+		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_noon, (240 - cb_sky.data.time.x) / 240);
 		cb_sky.data.strength.w = cb_sky.data.strength.x;
 
 	}
 	else if (cb_sky.data.time.y >= 0)
 	{
-		cb_sky.data.time.y -= TM_DELTATIME * 10;
-		cb_sky.data.sky_color = LerpColor(skycolor_noon, skycolor_afternoon, (360 - cb_sky.data.time.y) / 360);
+		cb_sky.data.time.y -= TM_DELTATIME;
+		cb_sky.data.sky_color = LerpColor(skycolor_noon, skycolor_afternoon, (480 - cb_sky.data.time.y) / 480);
 		cb_sky.data.strength.w = cb_sky.data.strength.y;
 	}
 	else if (cb_sky.data.time.z >= 0)
 	{
-		cb_sky.data.time.z -= TM_DELTATIME * 10;
-		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_night, (360 - cb_sky.data.time.z) / 360);
-		cb_sky.data.strength.w = cb_sky.data.strength.y + (cb_sky.data.strength.z - cb_sky.data.strength.y) * (360 - cb_sky.data.time.z) / 360;
+		cb_sky.data.time.z -= TM_DELTATIME;
+		cb_sky.data.sky_color = LerpColor(skycolor_afternoon, skycolor_night, (240 - cb_sky.data.time.z) / 240);
+		cb_sky.data.strength.w = cb_sky.data.strength.y + (cb_sky.data.strength.z - cb_sky.data.strength.y) * (240 - cb_sky.data.time.z) / 240;
 	}
 	else if (cb_sky.data.time.w >= 0)
 	{
-		cb_sky.data.time.w -= TM_DELTATIME * 10;
-		cb_sky.data.sky_color = LerpColor(skycolor_night, skycolor_afternoon, (360 - cb_sky.data.time.w) / 360);
-		cb_sky.data.strength.w = cb_sky.data.strength.z + (cb_sky.data.strength.y - cb_sky.data.strength.z) * (360 - cb_sky.data.time.w) / 360;
+		cb_sky.data.time.w -= TM_DELTATIME;
+		cb_sky.data.sky_color = LerpColor(skycolor_night, skycolor_afternoon, (480 - cb_sky.data.time.w) / 480);
+		cb_sky.data.strength.w = cb_sky.data.strength.z + (cb_sky.data.strength.y - cb_sky.data.strength.z) * (480 - cb_sky.data.time.w) / 480;
 	}
 	else
 	{
-		cb_sky.data.time = { 360, 360, 360, 360 };
+		cb_sky.data.time = { 240, 480, 240, 480 };
 	}
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_sky.buffer.Get(), 0, 0, &cb_sky.data, 0, 0);
@@ -143,7 +145,7 @@ void reality::SkySphere::RenderBackgroundSky()
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
-	for (auto mesh : sphere_mesh.get()->meshes)
+	for (auto& mesh : sphere_mesh.get()->meshes)
 	{
 		reality::Material* material = RESOURCE->UseResource<reality::Material>("BackgroundSky.mat");
 		if (material)
@@ -157,11 +159,13 @@ void reality::SkySphere::RenderBackgroundSky()
 
 void reality::SkySphere::FrameSunSky(const C_Camera* camera)
 {
+	sun_world = XMMatrixTranslation(10000, 0, 0) * XMMatrixRotationZ(XMConvertToRadians(TM_GAMETIME));
+
 	XMMATRIX following_camera_matrix =
 		XMMatrixScaling(camera->far_z * 0.8, camera->far_z * 0.8, camera->far_z * 0.8) *
-		XMMatrixTranslationFromVector(camera->camera_pos) *
 		XMMatrixRotationY(XMConvertToRadians(90)) *
-		XMMatrixRotationZ(XMConvertToRadians(TM_GAMETIME));
+		XMMatrixRotationZ(XMConvertToRadians(TM_GAMETIME)) *
+		XMMatrixTranslationFromVector(camera->camera_pos);
 
 	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
 
@@ -179,7 +183,7 @@ void reality::SkySphere::RenderSunSky()
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
-	for (auto mesh : cloud_dome.get()->meshes)
+	for (auto& mesh : cloud_dome.get()->meshes)
 	{
 		reality::Material* material = RESOURCE->UseResource<reality::Material>("SunSky.mat");
 		if (material)
@@ -195,9 +199,9 @@ void reality::SkySphere::FrameStarSky(const C_Camera* camera)
 {
 	XMMATRIX following_camera_matrix =
 		XMMatrixScaling(camera->far_z * 0.8, camera->far_z * 0.8, camera->far_z * 0.8) *
-		XMMatrixTranslationFromVector(camera->camera_pos) *
 		XMMatrixRotationY(XMConvertToRadians(-90)) *
-		XMMatrixRotationZ(XMConvertToRadians(TM_GAMETIME));
+		XMMatrixRotationZ(XMConvertToRadians(TM_GAMETIME)) *
+		XMMatrixTranslationFromVector(camera->camera_pos);
 
 	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
 
@@ -215,7 +219,7 @@ void reality::SkySphere::RenderStarSky()
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
-	for (auto mesh : cloud_dome.get()->meshes)
+	for (auto& mesh : cloud_dome.get()->meshes)
 	{
 		reality::Material* material = RESOURCE->UseResource<reality::Material>("StarSky.mat");
 		if (material)
@@ -230,10 +234,10 @@ void reality::SkySphere::RenderStarSky()
 void reality::SkySphere::FrameCloudSky(const C_Camera* camera)
 {
 	XMMATRIX following_camera_matrix =
-		XMMatrixScaling(camera->far_z * 0.5, camera->far_z * 0.5, camera->far_z * 0.5) *
-		XMMatrixTranslationFromVector(camera->camera_pos) *
+		XMMatrixScaling(camera->far_z * 0.7, camera->far_z * 0.7, camera->far_z * 0.7) *
 		XMMatrixRotationX(XMConvertToRadians(-90)) *
-		XMMatrixRotationY(XMConvertToRadians(TM_GAMETIME));
+		XMMatrixRotationY(XMConvertToRadians(TM_GAMETIME)) * 
+		XMMatrixTranslationFromVector(camera->camera_pos);
 
 	cb_transform.data.world_matrix = XMMatrixTranspose(following_camera_matrix);
 
