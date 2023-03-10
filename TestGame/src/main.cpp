@@ -4,9 +4,8 @@ int WINAPI wWinMain(HINSTANCE hinstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 {
 	ENGINE->OnInit(hinstance, L"Game-Engine", { 1920, 1080 });
 
-	TestGame test_game;
-
-	ENGINE->Run(&test_game);
+	SCENE_MGR->SetScene<TestGame>();
+	ENGINE->Run();
 
 	ENGINE->OnRelease();
 

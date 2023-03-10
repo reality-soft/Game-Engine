@@ -1,5 +1,4 @@
 #include "DX11App.h"
-#include "Scene.h"
 
 namespace reality {
 	class DLL_API Engine
@@ -9,7 +8,7 @@ namespace reality {
 
 	public:
 		bool OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size);
-		void Run(Scene* scene);
+		void Run();
 		void OnResized();
 		void OnRelease();
 

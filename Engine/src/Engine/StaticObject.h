@@ -1,6 +1,5 @@
 #pragma once
 #include "DllMacro.h"
-#include "ComponentSystem.h"
 #include "QuadTreeMgr.h"
 
 namespace reality
