@@ -15,6 +15,8 @@ namespace reality
 		bool CreateSphere();
 		void FrameRender(const C_Camera* camera);
 
+		XMMATRIX sun_world;
+
 		XMFLOAT4 skycolor_afternoon;
 		XMFLOAT4 skycolor_noon;
 		XMFLOAT4 skycolor_night;

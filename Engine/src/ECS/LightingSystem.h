@@ -1,6 +1,6 @@
 #pragma once
 #include "System.h"
-
+#include "SkySphere.h"
 namespace reality
 {
 	struct CbLight
@@ -8,7 +8,7 @@ namespace reality
 		CbLight()
 		{
 			data.direction = { 0, -1, 0, 0 };
-			data.color = {1, 1, 1, 1};
+			data.color = {1.5, 1.5, 1.5, 1.5};
 		}
 		CbLight(const CbLight& other)
 		{
@@ -17,6 +17,7 @@ namespace reality
 		}
 		struct Data
 		{
+			XMFLOAT4 sun_position;
 			XMFLOAT4 direction;
 			XMFLOAT4 color;
 		} data;
@@ -32,6 +33,7 @@ namespace reality
 	public:	
 		void OnCreate(entt::registry& reg) override;
 		void OnUpdate(entt::registry& reg) override;
+		void UpdateSun(SkySphere& sky_shere);
 
 		CbLight global_light;
 	};

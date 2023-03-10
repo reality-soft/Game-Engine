@@ -12,7 +12,7 @@ reality::LightMeshLevel::~LightMeshLevel()
 {
 }
 
-bool reality::LightMeshLevel::Create(string mesh_id, string vs_id)
+bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id)
 {
     level_mesh = shared_ptr<LightMesh>(RESOURCE->UseResource<LightMesh>(mesh_id));
     if (level_mesh.get() == nullptr)
@@ -22,7 +22,11 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id)
     if (vertex_shader.get() == nullptr)
         return false;
 
-    return false;
+    geometry_shader = shared_ptr<GeometryShader>(RESOURCE->UseResource<GeometryShader>(gs_id));
+    if (geometry_shader.get() == nullptr)
+        return false;
+
+    return true;
 }
 
 void reality::LightMeshLevel::Update()
@@ -36,6 +40,7 @@ void reality::LightMeshLevel::Render()
 {
     DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader.get()->InputLayout());
     DX11APP->GetDeviceContext()->VSSetShader(vertex_shader.get()->Get(), nullptr, 0);
+    DX11APP->GetDeviceContext()->GSSetShader(geometry_shader.get()->GetDefaultGS(), nullptr, 0);
 
     for (auto& mesh : level_mesh.get()->meshes)
     {
