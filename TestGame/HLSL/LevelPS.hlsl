@@ -1,23 +1,26 @@
-#include "LevelHeader.hlsli"
+#include "PixelCommon.hlsli"
 
-
-cbuffer cb_light : register(b0)
+struct PS_OUT
 {
-	float4 default_light;
-	float light_bright;
-}
+    float4 p : SV_POSITION;
+    float3 n : NORMAL;
+    float4 c : COLOR;
+    float2 t : TEXTURE0;
+    float2 layer_texel : F2_TEXEL;
+    
+    float lod : COLOR1;
+};
 
 Texture2D    g_txTex			: register(t0);
 SamplerState g_SampleWrap		: register(s0);
 
-float4 PS(VS_OUT output) : SV_Target
+float4 PS(PS_OUT output) : SV_Target
 {
 	// Tex
 	float4 tex_color = g_txTex.Sample(g_SampleWrap, output.t);
 
 	// Light
-	float4 light = default_light * light_bright;
-	float bright = max(0.2f, dot(output.n, -default_light));
+	float bright = max(0.2f, dot(output.n, direction.xyz));
 	float4 normalmap = { bright , bright , bright , 1};
 
     return tex_color * normalmap;

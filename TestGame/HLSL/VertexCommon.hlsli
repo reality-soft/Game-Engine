@@ -3,6 +3,7 @@ cbuffer cb_data : register(b0)
 {
     matrix view_matrix;
     matrix projection_matrix;
+    float4 camera_world;
 };
 
 // Returns View X Projection
@@ -21,4 +22,10 @@ float4x4 IdentityMatrix()
         0.0, 0.0, 0.0, 1.0
     );
 	
+}
+
+float GetLod(float3 vertex)
+{
+    float distance = length(vertex - camera_world.xyz);
+    return (distance / 40) + 4;
 }
