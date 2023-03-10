@@ -3,6 +3,7 @@
 
 reality::LightingSystem::LightingSystem()
 {
+	global_light.data.sun_position = { 0, 0, 0, 0 };
 	global_light.data.direction = { 0, -1, 0, 0 };
 	global_light.data.color = { 1, 1, 1, 1 };
 }
@@ -34,4 +35,12 @@ void reality::LightingSystem::OnCreate(entt::registry& reg)
 void reality::LightingSystem::OnUpdate(entt::registry& reg)
 {
 	DX11APP->GetDeviceContext()->PSSetConstantBuffers(0, 1, global_light.buffer.GetAddressOf());
+}
+
+void reality::LightingSystem::UpdateSun(SkySphere& sky_shere)
+{
+	XMStoreFloat4(&global_light.data.sun_position, sky_shere.sun_world.r[3]);
+	XMStoreFloat4(&global_light.data.direction, XMVector4Normalize(sky_shere.sun_world.r[3]));
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(global_light.buffer.Get(), 0, 0, &global_light.data, 0, 0);
 }

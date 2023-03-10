@@ -470,7 +470,7 @@ void RenderSystem::SetShaderAndMaterial(Emitter& emitter)
 
 	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter.geo_id);
 	if (gs)
-		device_context->GSSetShader(gs->Get(), 0, 0);
+		device_context->GSSetShader(gs->GetDefaultGS(), 0, 0);
 
 	Material* material = RESOURCE->UseResource<Material>(emitter.mat_id);
 

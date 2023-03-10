@@ -14,7 +14,7 @@ namespace reality
 		~LightMeshLevel();
 
 	public:
-		bool Create(string mesh_id, string vs_id);
+		bool Create(string mesh_id, string vs_id, string gs_id);
 		void Update();
 		void Render();
 		void Destroy();
@@ -25,6 +25,7 @@ namespace reality
 	public:
 		shared_ptr<LightMesh> level_mesh;
 		shared_ptr<VertexShader> vertex_shader;
+		shared_ptr<GeometryShader> geometry_shader;
 	};
 }
 

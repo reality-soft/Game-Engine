@@ -221,7 +221,7 @@ namespace reality
 	{
 		CbSkySphere()
 		{
-			data.time      = { 360, 360, 360, 360 };
+			data.time      = { 240, 480, 240, 480 };
 			data.sky_color = { 1.0f,  1.0f,   1.0f,  1.0f };
 		}
 		struct Data
