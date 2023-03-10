@@ -16,12 +16,14 @@ void EffectSystem::OnUpdate(entt::registry& reg)
 	auto view_effect = reg.view<C_Effect>();
 	for (auto& entity : view_effect)
 	{
-		auto& effect = reg.get<C_Effect>(entity);
-		for (auto& emitter : effect.emitters)
+		auto& effect_comp = reg.get<C_Effect>(entity);
+		auto& effect = effect_comp.effect;
+		for (auto& pair : effect.emitters)
 		{
-			UpdateParticles(emitter.get());
+			auto& emitter = pair.second;
+			UpdateParticles(&emitter);
 
-			EmitParticles(emitter.get());
+			EmitParticles(&emitter);
 		}
 	}
 	

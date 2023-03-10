@@ -450,7 +450,6 @@ namespace reality
 		}
 	};
 
-
 	struct Emitter
 	{
 		float		timer;
@@ -571,6 +570,11 @@ namespace reality
 			bs_state = DEFAULT_BS;
 			ds_state = DEFAULT_NONE;
 		}
+	};
+
+	struct Effect
+	{
+		map<string, Emitter> emitters;
 	};
 
 	enum class AxisType
