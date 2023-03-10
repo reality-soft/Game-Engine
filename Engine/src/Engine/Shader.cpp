@@ -104,7 +104,6 @@ ID3D11PixelShader* PixelShader::Get()
 bool GeometryShader::LoadCompiled(wstring _csoFIle)
 {
     HRESULT hr = S_OK;
-
     ID3DBlob* blob = nullptr;
     hr = D3DReadFileToBlob(_csoFIle.c_str(), &blob);
 
@@ -118,7 +117,9 @@ bool GeometryShader::LoadCompiled(wstring _csoFIle)
         { 0, "TEXCOORD",    1, 0, 2, 0 },
     };
 
-    hr = DX11APP->GetDevice()->CreateGeometryShaderWithStreamOutput(blob->GetBufferPointer(), blob->GetBufferSize(), ied, ARRAYSIZE(ied), 0, 0, 0, 0, gs.GetAddressOf());
+    hr = DX11APP->GetDevice()->CreateGeometryShaderWithStreamOutput(blob->GetBufferPointer(), blob->GetBufferSize(), ied, ARRAYSIZE(ied), 0, 0, 0, 0, stream_out_gs.GetAddressOf());
+
+    hr = DX11APP->GetDevice()->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, default_gs.GetAddressOf());
 
     blob->Release();
     blob = nullptr;
@@ -126,7 +127,12 @@ bool GeometryShader::LoadCompiled(wstring _csoFIle)
     return true;
 }
 
-ID3D11GeometryShader* GeometryShader::Get()
+ID3D11GeometryShader* GeometryShader::GetStreamOutGS()
 {
-    return gs.Get();
+    return stream_out_gs.Get();
+}
+
+ID3D11GeometryShader* GeometryShader::GetDefaultGS()
+{
+    return default_gs.Get();
 }
