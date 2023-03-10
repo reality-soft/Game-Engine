@@ -15,19 +15,20 @@ void TestGame::OnInit()
 	sys_render.OnCreate(reg_scene);
 	sys_camera.OnCreate(reg_scene);
 	sys_camera.TargetTag(reg_scene, "Debug");
-
-	Level level;
-	level.CreateLevel(3, 8, 100, {8, 8});
+	level.ImportFromFile("../../Contents/BinaryPackage/Levels/jason.lv");
 	QUADTREE->Init(&level);
 }
 
 void TestGame::OnUpdate()
 {
+	sys_camera.OnUpdate(reg_scene);
+	QUADTREE->Frame(&sys_camera);
 	reality::Material mat1;
 }
 
 void TestGame::OnRender()
 {
+	QUADTREE->Render();
 	sys_render.OnUpdate(reg_scene);
 }
 

@@ -1,6 +1,7 @@
 // Global Directional Lighting
 cbuffer cb_light : register(b0)
 {
+    float4 sun_position;
     float4 direction;
     float4 color;
 }

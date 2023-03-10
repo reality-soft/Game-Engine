@@ -21,5 +21,6 @@ private:
 	reality::SoundSystem sys_sound;
 
 	StaticObject test_object;
+	Level level;
 };
 

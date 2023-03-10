@@ -1,15 +1,24 @@
-#include "LevelHeader.hlsli"
+#include "VertexCommon.hlsli"
 
-cbuffer cb_data : register(b0)
+struct VS_IN
 {
-	matrix g_matWorld;
+    float3 p : F3_POSITION;
+    float3 n : F3_NORMAL;
+    float4 c : F4_COLOR;
+    float2 t : F2_TEXTURE;
+    float2 layer_texel : F2_TEXEL;
 };
 
-cbuffer cb_viewproj : register(b1)
+struct VS_OUT
 {
-	matrix g_matView;
-	matrix g_matProj;
-}
+    float4 p : SV_POSITION;
+    float3 n : NORMAL;
+    float4 c : COLOR;
+    float2 t : TEXTURE0;
+    float2 layer_texel : F2_TEXEL;
+    
+    float lod : COLOR1;
+};
 
 VS_OUT VS(VS_IN input)
 {
@@ -17,10 +26,9 @@ VS_OUT VS(VS_IN input)
 
 	float4 vLocal = float4(input.p, 1.0f);
 	float4 vWorld = mul(vLocal, IdentityMatrix());
-	float4 vView = mul(vWorld, g_matView);
-	float4 vProj = mul(vView, g_matProj);
+    float4 view_proj = mul(vWorld, ViewProjection());
 
-	output.p = vProj;
+    output.p = view_proj;
 	output.n = input.n;
 	output.t = input.t;
 

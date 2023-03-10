@@ -33,6 +33,8 @@ project "Engine"
 	{
 		"%{prj.name}/src/Engine",
 		"%{prj.name}/src/ECS",
+		"%{prj.name}/src/ECS/Actors",
+		"%{prj.name}/src/ECS/Systems",
 		"%{prj.name}/src/GUI",
 		"%{prj.name}/src/Engine/SingletonClass",
 		"%{prj.name}/src/Engine/SpacePartition",
@@ -120,6 +122,8 @@ project "TestGame"
 		"Engine/src",
 		"Engine/src/Engine",
 		"Engine/src/ECS",
+		"Engine/src/ECS/Actors",
+		"Engine/src/ECS/Systems",
 		"Engine/src/Engine/SingletonClass",
 		"Engine/src/Engine/SpacePartition",
 		"../SDK/DirectXTK/include",
@@ -179,7 +183,6 @@ project "TestGame"
 		postbuildcommands
 		{
 			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
-			"copy \"..\\..\\output\\bin\\Release-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\""
 		}
 
 	filter "configurations:Debug"
