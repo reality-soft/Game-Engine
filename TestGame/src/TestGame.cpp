@@ -11,22 +11,24 @@ void TestGame::OnInit()
 	ent_player = reg_scene_.create();
 
 
-	sys_render.OnCreate(reg_scene_);
-	sys_camera.OnCreate(reg_scene_);
-	sys_camera.TargetTag(reg_scene_, "Debug");
-
-	level.CreateLevel(3, 100, 100, {8, 8});
+	sys_render.OnCreate(reg_scene);
+	sys_camera.OnCreate(reg_scene);
+	sys_camera.TargetTag(reg_scene, "Debug");
+	level.ImportFromFile("../../Contents/BinaryPackage/Levels/jason.lv");
 	QUADTREE->Init(&level);
 }
 
 void TestGame::OnUpdate()
 {
+	sys_camera.OnUpdate(reg_scene);
+	QUADTREE->Frame(&sys_camera);
 	reality::Material mat1;
 }
 
 void TestGame::OnRender()
 {
-	sys_render.OnUpdate(reg_scene_);
+	QUADTREE->Render();
+	sys_render.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRelease()
