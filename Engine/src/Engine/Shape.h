@@ -118,17 +118,17 @@ namespace reality {
             tip = XMVectorZero();
             radius = 0.0f;
         }
-        CapsuleShape(const XMVECTOR& a, const XMVECTOR& b, const float& _radius)
+        CapsuleShape(float _min, float _max, float _radius)
         {
-            line_a = a;
-            line_b = b;
+            base = XMVectorSet(0, _min, 0, 0);
+            tip = XMVectorSet(0, _max, 0, 0);
             radius = _radius;
-
-            XMVECTOR dir_to_base = XMVector3Normalize(line_a - line_b);
-            XMVECTOR dir_to_tip = XMVector3Normalize(line_b - line_a);
-
-            base = line_a + dir_to_base * radius;
-            tip = line_b + dir_to_tip * radius;
+        }
+        CapsuleShape(const XMVECTOR& _base, const XMVECTOR& _tip, const float& _radius)
+        {
+            base = _base;
+            tip = _tip;
+            radius = _radius;
         }
         CapsuleShape(const AABBShape& _aabb)
         {
@@ -137,11 +137,6 @@ namespace reality {
             XMVECTOR extend = _aabb.max - _aabb.min;
             extend.m128_f32[1] = 0;
             radius = XMVectorGetX(XMVector3Length(extend));
-
-            XMVECTOR dir_to_a = XMVector3Normalize(tip - base);
-            XMVECTOR dir_to_b = XMVector3Normalize(base - tip);
-            line_a = base + dir_to_a * radius;
-            line_b = tip + dir_to_b * radius;
         }
         vector<XMVECTOR> GetAB()
         {
@@ -154,7 +149,6 @@ namespace reality {
         }
 
         XMVECTOR base, tip;
-        XMVECTOR line_a, line_b;
         float radius;
     };
 
