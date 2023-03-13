@@ -48,6 +48,20 @@ namespace reality
 		virtual void OnConstruct() override {};
 	};
 
+	struct C_CapsuleCollision : public C_Transform
+	{
+		reality::CapsuleShape capsule;
+
+		virtual void OnUpdate() override
+		{
+			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
+			world = translation;
+
+			capsule.base = XMVector3TransformCoord(capsule.base, translation);
+			capsule.tip = XMVector3TransformCoord(capsule.tip, translation);
+		}
+	};
+
 	struct C_Camera : public C_Transform
 	{
 		XMVECTOR camera_pos = { 0, 0, 0, 0 };
@@ -67,6 +81,16 @@ namespace reality
 			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
 			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, local * world);
 		}
+		void SetLocalFrom(C_CapsuleCollision& capsule_collision, float arm_length)
+		{
+			local_pos = XMVectorSet(0, 1, -1, 0) * arm_length;
+			target_pos = capsule_collision.capsule.GetCenter();
+			pitch_yaw = { 45, 0 };
+			near_z = 1.f;
+			far_z = 100000.f;
+			fov = XMConvertToRadians(90);
+			tag = "Player";
+		}
 	};
 
 	struct C_Animation : public Component
@@ -84,20 +108,6 @@ namespace reality
 	struct C_SoundGenerator : public C_Transform
 	{
 		queue<SoundQueue> sound_queue_list;
-	};
-
-	struct C_CapsuleCollision : public C_Transform
-	{
-		CapsuleShape capsule;
-
-		virtual void OnUpdate() override
-		{
-			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
-			world = translation;
-
-			capsule.base = XMVector3TransformCoord(capsule.base, translation);
-			capsule.tip = XMVector3TransformCoord(capsule.tip, translation);		
-		}
 	};
 
 	struct C_BoundingBox : public C_Transform
