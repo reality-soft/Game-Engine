@@ -60,7 +60,7 @@ void UIBase::CreateRenderData()
 	subResourse.SysMemPitch;
 	subResourse.SysMemSlicePitch;
 
-	DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &render_data_.vertex_buffer);
+	DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, render_data_.vertex_buffer.GetAddressOf());
 
 	// 인덱스 작성
 
@@ -86,7 +86,7 @@ void UIBase::CreateRenderData()
 	subResourse.SysMemPitch;
 	subResourse.SysMemSlicePitch;
 
-	DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &render_data_.index_buffer);
+	DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, render_data_.index_buffer.GetAddressOf());
 }
 
 void UIBase::UpdateThisUI()
@@ -94,7 +94,7 @@ void UIBase::UpdateThisUI()
 	float scale_x = ui_rect_.width / ENGINE->GetWindowSize().x;
 	float scale_y = ui_rect_.height / ENGINE->GetWindowSize().y;
 	float pos_x = ui_rect_.center.x / ENGINE->GetWindowSize().x;
-	float pos_y = ui_rect_.center.y / ENGINE->GetWindowSize().x;
+	float pos_y = ui_rect_.center.y / ENGINE->GetWindowSize().y;
 
 	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
 	XMMATRIX r = XMMatrixRotationZ(0.0f);
@@ -120,7 +120,7 @@ void UIBase::RenderThisUI()
 	// Set Vertex Buffer
 	UINT stride = sizeof(UIVertex);
 	UINT offset = 0;
-	DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, &render_data_.vertex_buffer, &stride, &offset);
+	DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, render_data_.vertex_buffer.GetAddressOf(), &stride, &offset);
 
 	// Set Index Buffer
 	DX11APP->GetDeviceContext()->IASetIndexBuffer(render_data_.index_buffer.Get(), DXGI_FORMAT_R32_UINT, offset);
@@ -151,7 +151,7 @@ void UIBase::RenderThisUI()
 		return;
 
 	// Set Texture
-	DX11APP->GetDeviceContext()->PSSetShaderResources(0, 1, &texture->srv);
+	DX11APP->GetDeviceContext()->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 
 	// Draw Indexed
 	DX11APP->GetDeviceContext()->DrawIndexed(render_data_.index_list.size(), 0, 0);

@@ -4,40 +4,7 @@
 
 namespace reality
 {
-	enum class E_UIState
-	{
-		UI_NORMAL = 0,
-		UI_HOVER = 1,
-		UI_PUSH = 2,
-		UI_SELECT = 3,
-		UI_DISABLED = 4,
-	};
-
-	struct UIRect
-	{
-		XMFLOAT2	min;
-		XMFLOAT2	max;
-		XMFLOAT2	center;
-		float		width;
-		float		height;
-	};
-
-	struct Transform2D
-	{
-		XMMATRIX local;
-		XMMATRIX world;
-	};
-
-	struct UIRenderData
-	{
-		string vs_id;
-		string ps_id;
-		string tex_id;
-		vector<UIVertex>		vertex_list;
-		ComPtr<ID3D11Buffer>	vertex_buffer;
-		vector<DWORD>			index_list;
-		ComPtr<ID3D11Buffer>	index_buffer;
-	};
+	
 
 	class DLL_API UIBase
 	{
@@ -45,10 +12,10 @@ namespace reality
 		E_UIState					current_state_;
 		shared_ptr<UIBase>			parent_ui_;
 		vector<shared_ptr<UIBase>>	child_ui_list_;
-	protected:
+	public:
 		Transform2D		ui_transform_;
-		UIRect			ui_rect_;
-		UIRenderData	render_data_;
+		Rect			ui_rect_;
+		RectRenderData	render_data_;
 	protected:
 		virtual void Init();
 	public:

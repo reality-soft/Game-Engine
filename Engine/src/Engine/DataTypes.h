@@ -586,6 +586,53 @@ namespace reality
 		map<string, Emitter> emitters;
 	};
 
+	// UI
+	enum class E_UIState
+	{
+		UI_NORMAL = 0,
+		UI_HOVER = 1,
+		UI_PUSH = 2,
+		UI_SELECT = 3,
+		UI_DISABLED = 4,
+	};
+
+	struct Rect
+	{
+		XMFLOAT2	min;
+		XMFLOAT2	max;
+		XMFLOAT2	center;
+		float		width;
+		float		height;
+	};
+
+	struct CbUI
+	{
+		__declspec(align(16)) struct Data
+		{
+			XMMATRIX world;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
+	struct Transform2D
+	{
+		XMMATRIX local;
+		XMMATRIX world;
+	};
+
+	struct RectRenderData
+	{
+		string vs_id;
+		string ps_id;
+		string tex_id;
+		vector<UIVertex>		vertex_list;
+		ComPtr<ID3D11Buffer>	vertex_buffer;
+		vector<DWORD>			index_list;
+		ComPtr<ID3D11Buffer>	index_buffer;
+	};
+
+	
+
 	enum class AxisType
 	{
 		FROWARD,
