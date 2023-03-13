@@ -407,7 +407,7 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
 {
-	cb_effect.data.world = world;
+	cb_effect.data.world = XMMatrixTranspose(world);
 
 	device_context->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
 	device_context->GSSetConstantBuffers(1, 1, cb_effect.buffer.GetAddressOf());
@@ -495,6 +495,10 @@ void RenderSystem::SetStates(Emitter& emitter)
 	case DUALSOURCE_BLEND:
 		device_context->OMSetBlendState(DXStates::bs_dual_source_blend(), nullptr, -1);
 		break;
+	case HIGHER_RGB:
+		device_context->OMSetBlendState(DXStates::bs_blend_higher_rgb(), nullptr, -1);
+		break;
+
 	}
 
 	// DS 설정
@@ -518,9 +522,14 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	cb_particle_.data.values.x	= particle.timer;
 	cb_particle_.data.values.y	= particle.frame_ratio;
 
+	//particle.rotation.z = XMConvertToRadians(particle.rotation.z);
+
 	XMMATRIX s = XMMatrixScalingFromVector(XMLoadFloat3(&particle.scale));
-	auto q = XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&particle.rotation));;
+	XMVECTOR rot_vec = { XMConvertToRadians(particle.rotation.x), XMConvertToRadians(particle.rotation.y), XMConvertToRadians(particle.rotation.z) };
+	auto q = XMQuaternionRotationRollPitchYawFromVector(rot_vec);
+	//auto q = XMQuaternionRotationRollPitchYaw(particle.rotation.x, particle.rotation.y, particle.rotation.z);
 	XMMATRIX r = XMMatrixRotationQuaternion(q);
+	//XMMATRIX r = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&particle.rotation));
 	XMMATRIX t = XMMatrixTranslationFromVector(XMLoadFloat3(&particle.position));
 	XMMATRIX sr = XMMatrixMultiply(s, r);
 	XMMATRIX srt = XMMatrixMultiply(sr, t);

@@ -358,10 +358,10 @@ XMFLOAT2 reality::Level::GetMinMaxHeight()
 	float min = 0;
 	float max = 0;
 
-	for (auto vertex : level_mesh_.vertices)
+	for (auto& vertex : level_mesh_.vertices)
 	{
 		min = std::min(min, vertex.p.y);
-		max = std::max(min, vertex.p.y);
+		max = std::max(max, vertex.p.y);
 	}
 
 	return XMFLOAT2(min, max);

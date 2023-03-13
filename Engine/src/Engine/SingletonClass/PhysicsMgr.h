@@ -13,12 +13,14 @@ namespace reality
 
         virtual decimal notifyRaycastHit(const RaycastInfo& info)
         {
-            hitpoint = info.worldPoint;
-            body = info.body;
+            hitpoint    = info.worldPoint;
+            body        = info.body;
+            hitnormal   = info.worldNormal;
             return decimal(0.0);
         }
 
         Vector3 hitpoint;
+        Vector3 hitnormal;
         CollisionBody* body; 
     };
 
