@@ -72,7 +72,6 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 	for (auto ent : view_stm)
 	{
-
 		auto* static_mesh = reg.try_get<C_StaticMesh>(ent);
 		RenderStaticMesh(static_mesh);
 	}

@@ -223,7 +223,7 @@ void CameraSystem::CreateMatrix()
 	camera->aspect = viewport->Width / viewport->Height;
 	projection_matrix = XMMatrixPerspectiveFovLH(camera->fov, camera->aspect, camera->near_z, camera->far_z);
 
-	XMMATRIX rotation_matrix, v;
+	XMMATRIX rotation_matrix;
 	XMVECTOR scale_vector, rotation_center, rotation_quaternion;
 
 	XMVECTOR up_vector = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
