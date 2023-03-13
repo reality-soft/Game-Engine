@@ -30,6 +30,8 @@ namespace reality
 		ID3D11RenderTargetView* old_rtv_;
 		ID3D11DepthStencilView* old_dsv_;
 	public:
+		XMFLOAT4	clear_color_;
+	public:
 		bool		Init() { return false; };
 		bool		Frame() { return false; };
 		bool		Render() { return false; };
@@ -37,6 +39,7 @@ namespace reality
 	public:
 		bool		Create(float rtWidth, float rtHeight);
 		void		SetViewPort();
+		void		SetClearColor(XMFLOAT4 color);
 		HRESULT		CreateRenderTargetView();
 		HRESULT		CreateDepthStencilView();
 	public:
@@ -50,7 +53,7 @@ namespace reality
 	private:
 		map<string, shared_ptr<RenderTarget>> resdic_render_target_;
 	public:
-		void Init(string back_buffer_name);
+		void Init();
 	public:
 		shared_ptr<RenderTarget> MakeRT(std::string rtname, float rtWidth, float rtHeight);
 		shared_ptr<RenderTarget> LoadRT(std::string rtname);

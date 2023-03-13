@@ -3,7 +3,7 @@
 
 using namespace reality;
 
-bool reality::RenderTarget::Create(float width, float height)
+bool RenderTarget::Create(float width, float height)
 {
 	HRESULT hr;
 
@@ -18,10 +18,12 @@ bool reality::RenderTarget::Create(float width, float height)
 	if (FAILED(hr = CreateDepthStencilView()))
 		return hr;
 
+	clear_color_ = { 0.0f, 0.0f, 0.0f, 1.0f };
+
 	return false;
 }
 
-void reality::RenderTarget::SetViewPort()
+void RenderTarget::SetViewPort()
 {
 	view_port_.Width = width_;
 	view_port_.Height = height_;
@@ -31,7 +33,12 @@ void reality::RenderTarget::SetViewPort()
 	view_port_.MaxDepth = 1.0f;
 }
 
-HRESULT reality::RenderTarget::CreateRenderTargetView()
+void reality::RenderTarget::SetClearColor(XMFLOAT4 color)
+{
+	clear_color_ = color;
+}
+
+HRESULT RenderTarget::CreateRenderTargetView()
 {
 	HRESULT hr;
 
@@ -59,7 +66,7 @@ HRESULT reality::RenderTarget::CreateRenderTargetView()
 	return hr;
 }
 
-HRESULT reality::RenderTarget::CreateDepthStencilView()
+HRESULT RenderTarget::CreateDepthStencilView()
 {
 	HRESULT hr;
 	texture_desc_.Format = DXGI_FORMAT_R24G8_TYPELESS;
@@ -88,7 +95,7 @@ HRESULT reality::RenderTarget::CreateDepthStencilView()
 	return hr;
 }
 
-bool reality::RenderTarget::SetRenderTarget()
+bool RenderTarget::SetRenderTarget()
 {
 	UINT numViewPorts = 1;
 
@@ -96,8 +103,7 @@ bool reality::RenderTarget::SetRenderTarget()
 	ID3D11DepthStencilView* pNullDSV = NULL;
 	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &pNullRTV, pNullDSV);
 	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &render_target_view_, depth_stencil_view_);
-	const FLOAT color[] = { 0, 0, 0, 1 };
-	DX11APP->GetDeviceContext()->ClearRenderTargetView(render_target_view_, color);
+	DX11APP->GetDeviceContext()->ClearRenderTargetView(render_target_view_, (FLOAT*)&clear_color_);
 	DX11APP->GetDeviceContext()->ClearDepthStencilView(depth_stencil_view_, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	DX11APP->GetDeviceContext()->RSSetViewports(1, &view_port_);
 
@@ -105,19 +111,12 @@ bool reality::RenderTarget::SetRenderTarget()
 }
 
 
-void reality::RenderTargetMgr::Init(string back_buffer_name)
+void RenderTargetMgr::Init()
 {
-	shared_ptr<RenderTarget> back_buffer = make_shared<RenderTarget>();
 
-	UINT numViewPorts = 1;
-	back_buffer->view_port_ = DX11APP->GetViewPort();
-	back_buffer->render_target_view_ = DX11APP->GetRenderTargetView();
-	back_buffer->depth_stencil_view_ = DX11APP->GetDepthStencilView();
-
-	resdic_render_target_.insert({ back_buffer_name, back_buffer });
 }
 
-shared_ptr<RenderTarget> reality::RenderTargetMgr::MakeRT(std::string rtname, float rtWidth, float rtHeight)
+shared_ptr<RenderTarget> RenderTargetMgr::MakeRT(std::string rtname, float rtWidth, float rtHeight)
 {
 	if (resdic_render_target_.find(rtname) != resdic_render_target_.end())
 		return LoadRT(rtname);
@@ -129,7 +128,7 @@ shared_ptr<RenderTarget> reality::RenderTargetMgr::MakeRT(std::string rtname, fl
 	return newRT;
 }
 
-shared_ptr<RenderTarget> reality::RenderTargetMgr::LoadRT(std::string rtname)
+shared_ptr<RenderTarget> RenderTargetMgr::LoadRT(std::string rtname)
 {
 	auto iter = resdic_render_target_.find(rtname);
 	if (iter != resdic_render_target_.end())
@@ -142,10 +141,10 @@ shared_ptr<RenderTarget> reality::RenderTargetMgr::LoadRT(std::string rtname)
 	}
 }
 
-void reality::RenderTargetMgr::DeletingRT()
+void RenderTargetMgr::DeletingRT()
 {
 }
 
-void reality::RenderTargetMgr::ResettingRT()
+void RenderTargetMgr::ResettingRT()
 {
 }
