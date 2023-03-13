@@ -251,9 +251,6 @@ reality::LightMesh reality::FbxMgr::LoadLightMesh(string filename)
         int num_of_vertices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
         light_mesh.meshes[cur_mesh_index].vertices = file_exporter.ReadBinaryWithoutSize<LightVertex>(num_of_vertices);
 
-        int num_of_indices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        light_mesh.meshes[cur_mesh_index].indices = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_indices);
-
         CreateBuffers(light_mesh.meshes[cur_mesh_index]);
     }
 
