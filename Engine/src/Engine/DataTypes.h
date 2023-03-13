@@ -52,6 +52,12 @@ namespace reality
 		XMFLOAT2   t;
 	};
 
+	struct UIVertex
+	{
+		XMFLOAT2 p;
+		XMFLOAT2 t;
+	};
+
 	struct Skeleton
 	{
 		Skeleton() = default;

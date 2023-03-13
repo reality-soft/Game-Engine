@@ -24,6 +24,7 @@
 #include "ECS/Actors/Character.h"
 #include "ECS/Actors/FX_BaseEffectActor.h"
 #include "ECS/Actors/FX_Effect.h"
+#include "ECS/Actors/UIActor.h"
 
 #include "Engine/Scene.h"
 #include "Engine/FbxLoader.h"
@@ -32,3 +33,5 @@
 #include "Engine/SkySphere.h"
 #include "Engine/LightMeshLevel.h"
 #include "Engine/Log.h"
+#include "Engine/UIBase.h"
+#include "Engine/UI_Image.h"
