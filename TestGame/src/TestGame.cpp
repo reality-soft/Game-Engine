@@ -5,58 +5,33 @@ void TestGame::OnInit()
 	GUI->AddWidget("test_window", &test_window_);
 
 	reality::RESOURCE->Init("../../Contents/");
-	reality::FMOD_MGR->Init();
-	PHYSICS->Init();
-	sys_sound.OnCreate(reg_scene_); 
-  
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
 
-	ent_player = reg_scene_.create();
+	sys_render.OnCreate(reg_scene);
+	sys_camera.OnCreate(reg_scene);
+	sys_camera.TargetTag(reg_scene, "Debug");
+	sys_camera.SetSpeed(1000);
+	sys_light.OnCreate(reg_scene);
 
-	sys_render.OnCreate(reg_scene_);
-	sys_camera.OnCreate(reg_scene_);
-	sys_effect.OnCreate(reg_scene_);
-	sys_camera.TargetTag(reg_scene_, "Debug");
-	level.ImportFromFile("../../Contents/BinaryPackage/Levels/jason.lv");
-	//QUADTREE->Init(&level);
-
-	effect_.OnInit(reg_scene_, "sample_effect");
+	sky_sphere.CreateSphere();
+	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso");
 }
 
 void TestGame::OnUpdate()
 {
-	sys_camera.OnUpdate(reg_scene_);
-	sys_effect.OnUpdate(reg_scene_);
-	//QUADTREE->Frame(&sys_camera);
-	level.Update();
-	PHYSICS->Update();
+	sys_light.UpdateSun(sky_sphere);
+	sys_camera.OnUpdate(reg_scene);
+	sys_light.OnUpdate(reg_scene);
 
-	
-	reality::MouseRay current_ray = sys_camera.CreateMouseRay();
-	callback = PHYSICS->WorldPicking(current_ray);
-	XMVECTOR current_point;
-	XMVECTOR current_normal;
-	RPtoXM(callback.hitpoint, current_point);
-	RPtoXM(callback.hitnormal, current_normal);
-	XMVECTOR S = { 1.0f, 1.0f, 1.0f, 0.0f };
-	XMVECTOR O = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMVECTOR R = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	//XMVECTOR R = XMQuaternionRotationRollPitchYawFromVector(current_normal);
-	XMVECTOR T = current_point;
-
-	test_window_.SetPickingVector(current_point);
-
-	if (DINPUT->GetMouseState(L_BUTTON) == KEY_HOLD)
-		CreateEffectFromRay(current_point);
-	
+	sys_camera.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRender()
 {
-	//QUADTREE->Render();
-	level.Render(false);
-	sys_render.OnUpdate(reg_scene_);
-	GUI->RenderWidgets();
+	sky_sphere.FrameRender(sys_camera.GetCamera());
+	level.Update();
+	level.Render();
+	sys_render.OnUpdate(reg_scene);
 }
 
 void TestGame::OnRelease()
