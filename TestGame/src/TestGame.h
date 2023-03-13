@@ -12,15 +12,13 @@ public:
 	virtual void OnRelease();
 
 private:
-	Level level;
+	SkySphere sky_sphere;
+	LightMeshLevel level;
 
-	entt::entity ent_player;
+	entt::registry reg_scene;
 
+	reality::LightingSystem sys_light;
 	reality::RenderSystem sys_render;
 	reality::CameraSystem sys_camera;
-	reality::SoundSystem sys_sound;
-
-	StaticObject test_object;
-	Level level;
 };
 

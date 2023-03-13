@@ -1,36 +1,34 @@
-#include "VertexCommon.hlsli"
+#include "include/VertexCommon.hlsli"
 
 struct VS_IN
 {
     float3 p : F3_POSITION;
-    float3 n : F3_NORMAL;
-    float4 c : F4_COLOR;
     float2 t : F2_TEXTURE;
-    float2 layer_texel : F2_TEXEL;
 };
 
 struct VS_OUT
 {
-    float4 p : SV_POSITION;
-    float3 n : NORMAL;
-    float4 c : COLOR;
-    float2 t : TEXTURE0;
-    float2 layer_texel : F2_TEXEL;
+    float4 p : SV_POSITION;  
+    float2 t : TEXCOORD;
+    float lod : TEXCOORD1;
     
-    float lod : COLOR1;
+    float3 view_dir : TEXCOORD2;
+    matrix view_proj : TEXCOORD3;
 };
 
 VS_OUT VS(VS_IN input)
 {
-	VS_OUT output = (VS_OUT)0;
+    VS_OUT output = (VS_OUT) 0;
+    
+    float4 local = float4(input.p, 1.0f);    
+    float4 world = mul(local, IdentityMatrix());
 
-	float4 vLocal = float4(input.p, 1.0f);
-	float4 vWorld = mul(vLocal, IdentityMatrix());
-    float4 view_proj = mul(vWorld, ViewProjection());
+    output.p = world;
+    output.t = input.t;
+    output.lod = GetLod(input.p);
+    
+    output.view_proj = ViewProjection();
+    output.view_dir = (camera_world - world).xyz;
 
-    output.p = view_proj;
-	output.n = input.n;
-	output.t = input.t;
-
-	return output;
+    return output;
 }
