@@ -13,17 +13,24 @@ InstancedObject::~InstancedObject()
 {
 }
 
-void InstancedObject::Init(string stmesh_id, string vs_id)
+bool InstancedObject::Init(string stmesh_id, string vs_id, string mat_id)
 {
-	mesh_id_ = stmesh_id;
-	vs_id_ = vs_id;
-
 	static_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>(stmesh_id));
 	vertex_shader = shared_ptr<VertexShader>(RESOURCE->UseResource<VertexShader>(vs_id));
+	material = shared_ptr<Material>(RESOURCE->UseResource<Material>(mat_id));
 
-	//DX11APP->GetDeviceContext()->UpdateSubresource(instancing.buffer.Get(), 0, 0, &instancing.data, 0, 0);
+	if (static_mesh.get() == nullptr)
+		return false;
+
+	if (vertex_shader.get() == nullptr)
+		return false;
+
+	if (material.get() == nullptr)
+		return false;
 
 	object_name = split(stmesh_id, '.')[0];
+
+	return true;
 }
 
 void InstancedObject::Frame()
@@ -36,9 +43,6 @@ void InstancedObject::Frame()
 	DX11APP->GetDeviceContext()->VSSetShader(nullptr, 0, 0);
 	DX11APP->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
 	DX11APP->GetDeviceContext()->PSSetShader(nullptr, 0, 0);
-
-	//DX11APP->GetDeviceContext()->UpdateSubresource(instancing.buffer.Get(), 0, 0, &instancing.data, 0, 0);
-	//DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, instancing.buffer.GetAddressOf());
 	DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader.get()->InputLayout());
 	DX11APP->GetDeviceContext()->VSSetShader(vertex_shader.get()->Get(), 0, 0);
 
@@ -54,11 +58,9 @@ void InstancedObject::Render()
 	unsigned int stride = sizeof(Vertex);
 	unsigned int offset = 0;
 
-	for (auto mesh : static_mesh->meshes)
+	for (auto& mesh : static_mesh->meshes)
 	{
-		reality::Material* material = RESOURCE->UseResource<reality::Material>(mesh.mesh_name + ".mat");
-		if (material)
-			material->Set();
+		material->Set();
 
 		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		DX11APP->GetDeviceContext()->IASetIndexBuffer(mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -68,7 +70,7 @@ void InstancedObject::Render()
 
 void InstancedObject::Release()
 {
-	for (auto inst : instance_pool)
+	for (auto& inst : instance_pool)
 	{
 		delete inst.second;
 		inst.second = nullptr;
@@ -127,9 +129,24 @@ vector<InstanceData::CData> reality::InstancedObject::GetCDataArray()
 	return data_array;
 }
 
-void InstancedObject::AddNewInstance()
+void reality::InstancedObject::SetInstanceScale(string name, XMFLOAT3 S)
 {
-	InstanceData* data = new InstanceData(object_name, instance_pool.size());
+	instance_pool.find(name)->second->S = S;
+}
+
+void reality::InstancedObject::SetInstanceRotation(string name, XMFLOAT3 R)
+{
+	instance_pool.find(name)->second->R = R;
+}
+
+void reality::InstancedObject::SetInstanceTranslation(string name, XMFLOAT3 T)
+{
+	instance_pool.find(name)->second->T = T;
+}
+
+InstanceData* InstancedObject::AddNewInstance(string name)
+{
+	InstanceData* data = new InstanceData(name, instance_pool.size());
 
 	instance_pool.insert(make_pair(data->instance_id, data));
 
@@ -137,6 +154,8 @@ void InstancedObject::AddNewInstance()
 	selected_instance = current;
 
 	CreateInstanceBuffer();
+
+	return data;
 }
 
 bool reality::InstancedObject::UpdateInstance()

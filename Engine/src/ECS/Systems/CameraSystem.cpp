@@ -199,8 +199,6 @@ void reality::CameraSystem::PlayerCameraMovement()
 		float pitch = DINPUT->GetDeltaY() * TM_DELTATIME;
 
 		camera->pitch_yaw.x += pitch;
-		camera->pitch_yaw.x = (camera->pitch_yaw.x > 0) ? camera->pitch_yaw.x : 0;
-
 		camera->pitch_yaw.y += yaw;
 	}
 
@@ -225,33 +223,41 @@ void CameraSystem::CreateMatrix()
 	camera->aspect = viewport->Width / viewport->Height;
 	projection_matrix = XMMatrixPerspectiveFovLH(camera->fov, camera->aspect, camera->near_z, camera->far_z);
 
-	XMMATRIX w, v;
-	XMVECTOR S, O, Q, T;
+	XMMATRIX rotation_matrix, view_matrix;
+	XMVECTOR scale_vector, rotation_center, rotation_quaternion;
+
+	XMVECTOR up_vector = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	camera->camera_pos.m128_f32[3] = 0;
 
-	S = XMVectorReplicate(1.0f);
-	O = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	Q = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, 0);
+	scale_vector = XMVectorReplicate(1.0f);
+	rotation_center = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, 0);
 	if (camera->tag == "Debug") {
-		w = DirectX::XMMatrixAffineTransformation(S, O, Q, camera->camera_pos);
+		XMVECTOR target_pos = camera->camera_pos;
+		target_pos.m128_f32[2] += 1;
+		view_matrix = XMMatrixLookAtLH(camera->camera_pos, target_pos, up_vector);
+		rotation_center = camera->camera_pos;
+		rotation_matrix = DirectX::XMMatrixAffineTransformation(scale_vector, XMVectorZero(), rotation_quaternion, rotation_center);
+		view_matrix = XMMatrixInverse(0, rotation_matrix);
+		camera->camera_pos = rotation_matrix.r[3];
 	}
 	else {
-		w = DirectX::XMMatrixAffineTransformation(S, (camera->target_pos - camera->local_pos), Q, camera->camera_pos);
+		rotation_center = camera->target_pos;
+		view_matrix = XMMatrixLookAtLH(camera->camera_pos, camera->target_pos, up_vector);
+		rotation_matrix = DirectX::XMMatrixAffineTransformation(scale_vector, rotation_center, rotation_quaternion, XMVectorZero());
+		rotation_matrix = XMMatrixInverse(0, rotation_matrix);
+		view_matrix = XMMatrixMultiply(rotation_matrix, view_matrix);
 	}
-	v = DirectX::XMMatrixInverse(0, w);
-
-	view_matrix = v;
-	camera->camera_pos = w.r[3];
 
 	cb_viewproj.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_viewproj.data.projection_matrix = XMMatrixTranspose(projection_matrix);
 	cb_viewproj.data.camera_position = camera->camera_pos;
 	cb_viewproj.data.camera_position.m128_f32[3] = camera->far_z;
 
-	look = XMVector3Normalize(w.r[2]);
-	right = XMVector3Normalize(w.r[0]);
-	up = XMVector3Normalize(w.r[1]);
+	look = XMVector3Normalize(rotation_matrix.r[2]);
+	right = XMVector3Normalize(rotation_matrix.r[0]);
+	up = XMVector3Normalize(rotation_matrix.r[1]);
 
 	// 빌보드 상수버퍼 업데이트
 	

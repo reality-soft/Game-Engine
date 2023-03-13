@@ -64,24 +64,20 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 
 void RenderSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_stm = reg.view<C_StaticMesh, C_Transform>();
-	auto view_skm = reg.view<C_SkeletalMesh, C_Transform>();
+	DX11APP->GetDeviceContext()->GSSetShader(nullptr, nullptr, 0);
+
+	auto view_stm = reg.view<C_StaticMesh>();
+	auto view_skm = reg.view<C_SkeletalMesh>();
 	auto view_bb = reg.view<C_BoundingBox>();
 
 	for (auto ent : view_stm)
 	{
-		auto* transform = reg.try_get<C_Transform>(ent);
-		SetCbTransform(transform);
-
 		auto* static_mesh = reg.try_get<C_StaticMesh>(ent);
 		RenderStaticMesh(static_mesh);
 	}
 
 	for (auto ent : view_skm)
 	{
-		auto* transform = reg.try_get<C_Transform>(ent);
-		SetCbTransform(transform);
-
 		auto* skeletal_mesh = reg.try_get<C_SkeletalMesh>(ent);
 		auto* animation = reg.try_get<C_Animation>(ent);
 		if (skeletal_mesh == nullptr || animation == nullptr) {
@@ -108,7 +104,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 void RenderSystem::SetCbTransform(const C_Transform* const transform)
 {
-	cb_transform.data.world_matrix = XMMatrixTranspose(transform->world * transform->local);
+	cb_transform.data.world_matrix = XMMatrixTranspose(transform->local * transform->world);
 
 	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
 	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
@@ -407,7 +403,7 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
 {
-	cb_effect.data.world = world;
+	cb_effect.data.world = XMMatrixTranspose(world);
 
 	device_context->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
 	device_context->GSSetConstantBuffers(1, 1, cb_effect.buffer.GetAddressOf());

@@ -22,6 +22,8 @@
 #include "ECS/Systems/MovementSystem.h"
 #include "ECS/Actors/Actor.h"
 #include "ECS/Actors/Character.h"
+#include "ECS/Actors/FX_BaseEffectActor.h"
+#include "ECS/Actors/FX_Effect.h"
 
 #include "Engine/Scene.h"
 #include "Engine/FbxLoader.h"

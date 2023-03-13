@@ -3,7 +3,7 @@
 #include "DataTypes.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "Shape.h"
+#include "Collision.h"
 #include "Material.h"
 
 
@@ -21,8 +21,8 @@ namespace reality
 
 	struct C_Transform : public Component
 	{
-		XMMATRIX local;
-		XMMATRIX world;
+		XMMATRIX local = XMMatrixIdentity();
+		XMMATRIX world = XMMatrixIdentity();
 
 		virtual void OnConstruct() override
 		{
@@ -63,8 +63,9 @@ namespace reality
 			XMVECTOR local_translation, local_rotation, local_scale;
 			XMVECTOR camera_translation, camera_rotation, camera_scale;
 			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
+			target_pos.m128_f32[1] += 20;
 			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
-			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, world * local);
+			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, local * world);
 		}
 	};
 
@@ -83,6 +84,20 @@ namespace reality
 	struct C_SoundGenerator : public C_Transform
 	{
 		queue<SoundQueue> sound_queue_list;
+	};
+
+	struct C_CapsuleCollision : public C_Transform
+	{
+		CapsuleShape capsule;
+
+		virtual void OnUpdate() override
+		{
+			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
+			world = translation;
+
+			capsule.base = XMVector3TransformCoord(capsule.base, translation);
+			capsule.tip = XMVector3TransformCoord(capsule.tip, translation);		
+		}
 	};
 
 	struct C_BoundingBox : public C_Transform

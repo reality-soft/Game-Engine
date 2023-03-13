@@ -1,13 +1,77 @@
 #pragma once
 #include"stdafx.h"
+#define EPSILON 0.00001f
 
 namespace reality {
 
-    enum class OverlapType
+    struct RayShape
     {
-        OUTSIDE,
-        INTERSECT,
-        INSIDE,
+        RayShape()
+        {
+            start = XMVectorZero();
+            end = XMVectorZero();
+        }
+        RayShape(const XMVECTOR& _start, const XMVECTOR& _end)
+        {
+            start = _start;
+            end = _end;
+        }
+        XMVECTOR start, end;
+    };
+
+    struct TriangleShape
+    {
+        TriangleShape() 
+        {
+            vertex0 = XMVectorZero();
+            vertex1 = XMVectorZero();
+            vertex2 = XMVectorZero();
+        }
+        TriangleShape(const XMVECTOR& v0, const XMVECTOR& v1, const XMVECTOR& v2)
+        {
+            vertex0 = v0;
+            vertex1 = v1;
+            vertex2 = v2;
+
+            XMVECTOR edge1 = vertex1 - vertex0;
+            XMVECTOR edge2 = vertex2 - vertex0;
+
+            normal = XMVector3Normalize(XMVector3Cross(edge1, edge2));
+        }
+        TriangleShape(const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2)
+        {
+            vertex0 = XMLoadFloat3(&v0);
+            vertex1 = XMLoadFloat3(&v1);
+            vertex2 = XMLoadFloat3(&v2);
+            
+            XMVECTOR edge1 = vertex1 - vertex0;
+            XMVECTOR edge2 = vertex2 - vertex0;
+
+            normal = XMVector3Normalize(XMVector3Cross(edge1, edge2));
+        }
+        bool SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b)
+        {
+            XMVECTOR cp1 = XMVector3Cross(b - a, p1 - a);
+            XMVECTOR cp2 = XMVector3Cross(b - a, p2 - a);
+            if (XMVectorGetX(XMVector3Dot(cp1, cp2)) >= 0)
+                return true;
+            else
+                return false;
+        }
+        pair<bool, XMVECTOR> RayIntersection(const RayShape& _ray)
+        {
+            XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(vertex0, vertex1, vertex2), _ray.start, _ray.end);
+            
+            if (SameSide(P, vertex0, vertex1, vertex2) && SameSide(P, vertex1, vertex0, vertex2) && SameSide(P, vertex2, vertex0, vertex1))
+                return make_pair(true, P);
+
+            else
+                return make_pair(false, XMVectorZero());
+
+        }
+
+        XMVECTOR vertex0, vertex1, vertex2;
+        XMVECTOR normal;
     };
 
     struct AABBShape
@@ -24,23 +88,6 @@ namespace reality {
             center = _center;
             min = center - XMVectorSet(scale / 2, scale / 2, scale / 2, 0);
             max = center + XMVectorSet(scale / 2, scale / 2, scale / 2, 0);
-        }
-        OverlapType AABBOverlap(const AABBShape& other)
-        {
-            for (int i = 0; i < 3; i++) 
-            {
-                bool overlap = max.m128_f32[i] >= other.min.m128_f32[i] && min.m128_f32[i] <= other.max.m128_f32[i];
-                if (!overlap)
-                    return OverlapType::OUTSIDE;
-            }
-
-            bool aabb1_inside = DirectX::XMVector3GreaterOrEqual(max, other.max) && DirectX::XMVector3LessOrEqual(min, other.max);
-            bool aabb2_inside = DirectX::XMVector3GreaterOrEqual(other.max, max) && DirectX::XMVector3LessOrEqual(other.max, min);
-
-            if (aabb1_inside || aabb2_inside)
-                return OverlapType::INSIDE;
-
-            return OverlapType::INTERSECT;            
         }
         XMVECTOR min, max, center;
     };
@@ -63,13 +110,59 @@ namespace reality {
         FLOAT radius;
     };
 
+    struct CapsuleShape
+    {
+        CapsuleShape()
+        {
+            base = XMVectorZero();
+            tip = XMVectorZero();
+            radius = 0.0f;
+        }
+        CapsuleShape(float _min, float _max, float _radius)
+        {
+            base = XMVectorSet(0, _min, 0, 0);
+            tip = XMVectorSet(0, _max, 0, 0);
+            radius = _radius;
+        }
+        CapsuleShape(const XMVECTOR& _base, const XMVECTOR& _tip, const float& _radius)
+        {
+            base = _base;
+            tip = _tip;
+            radius = _radius;
+        }
+        CapsuleShape(const AABBShape& _aabb)
+        {
+            base = _aabb.center + XMVectorSet(0, XMVectorGetY(_aabb.min), 0, 0);
+            tip = _aabb.center + XMVectorSet(0, XMVectorGetY(_aabb.max), 0, 0);
+            XMVECTOR extend = _aabb.max - _aabb.min;
+            extend.m128_f32[1] = 0;
+            radius = XMVectorGetX(XMVector3Length(extend));
+        }
+        vector<XMVECTOR> GetAB()
+        {
+            XMVECTOR normal = XMVector3Normalize(tip - base);
+            XMVECTOR lineend = normal * radius;
+            XMVECTOR A = base + lineend;
+            XMVECTOR B = tip - lineend;
+
+            return { A, B };
+        }
+
+        XMVECTOR base, tip;
+        float radius;
+    };
+
     struct PlaneShape
     {
         PlaneShape() {}
         PlaneShape(XMVECTOR vec0, XMVECTOR vec1, XMVECTOR vec2)
         {
-            XMVECTOR plane = XMPlaneFromPoints(vec0, vec1, vec2);
+            XMVECTOR e1 = vec1 - vec0;
+            XMVECTOR e2 = vec2 - vec0;
+            normal = XMVector3Normalize(XMVector3Cross(e1, e2));
 
+            XMVECTOR plane = XMPlaneFromPoints(vec0, vec1, vec2);
+  
             a = plane.m128_f32[0];
             b = plane.m128_f32[1];
             c = plane.m128_f32[2];
@@ -85,6 +178,7 @@ namespace reality {
 
             return distance;
         }
+
         FLOAT a, b, c, d;
         XMVECTOR normal;
     };
@@ -121,49 +215,49 @@ namespace reality {
             frustum_plane[5] = PlaneShape(frustum_vertex[5], frustum_vertex[6], frustum_vertex[4]);
         }
 
-        OverlapType AABBOverlap(const AABBShape& other) // map culling
-        {
-            int in_corner = 0;
-            int out_corner = 0;
+        //OverlapType AABBOverlap(const AABBShape& other) // map culling
+        //{
+        //    int in_corner = 0;
+        //    int out_corner = 0;
 
-            XMVECTOR corners[12];
-            corners[0] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.min), 1);
-            corners[1] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.max), 1);
-            corners[2] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
-            corners[3] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.max), XMVectorGetZ(other.max), 1);
-            corners[4] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.min), XMVectorGetZ(other.min), 1);
-            corners[5] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.min), XMVectorGetZ(other.max), 1);
-            corners[6] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
-            corners[7] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.max), 1);
+        //    XMVECTOR corners[12];
+        //    corners[0] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.min), 1);
+        //    corners[1] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.max), 1);
+        //    corners[2] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
+        //    corners[3] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.max), XMVectorGetZ(other.max), 1);
+        //    corners[4] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.min), XMVectorGetZ(other.min), 1);
+        //    corners[5] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.min), XMVectorGetZ(other.max), 1);
+        //    corners[6] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
+        //    corners[7] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.max), 1);
 
-            float plane_from_center = 0;
+        //    float plane_from_center = 0;
 
-            for (int i = 0; i < 6; ++i)
-            {
-                plane_from_center += frustum_plane[i].DotFromPoint(other.center);
+        //    for (int i = 0; i < 6; ++i)
+        //    {
+        //        plane_from_center += frustum_plane[i].DotFromPoint(other.center);
 
-                float dot = 0;
-                for (int j = 0; j < 8; ++j)
-                {
-                    dot = frustum_plane[i].DotFromPoint(corners[j]);
+        //        float dot = 0;
+        //        for (int j = 0; j < 8; ++j)
+        //        {
+        //            dot = frustum_plane[i].DotFromPoint(corners[j]);
 
-                    if (dot < 0) out_corner++;
-                    else in_corner++;
-                }
+        //            if (dot < 0) out_corner++;
+        //            else in_corner++;
+        //        }
 
-                if (in_corner == 0)
-                {
-                    return OverlapType::OUTSIDE;
-                }
-                if (out_corner == 0)
-                {
-                    return OverlapType::INSIDE;
-                }
+        //        if (in_corner == 0)
+        //        {
+        //            return OverlapType::OUTSIDE;
+        //        }
+        //        if (out_corner == 0)
+        //        {
+        //            return OverlapType::INSIDE;
+        //        }
 
-            }
-            plane_from_center;
-            return OverlapType::INTERSECT;
-        }
+        //    }
+        //    plane_from_center;
+        //    return OverlapType::INTERSECT;
+        //}
 
         XMVECTOR frustum_vertex[8];
         PlaneShape  frustum_plane[6];
