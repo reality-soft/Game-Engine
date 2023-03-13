@@ -77,9 +77,9 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 		}
 
 		// 크기는 현재 x값으로만 계산
-		particle.scale.x = particle.scale.x;
-		particle.scale.y = particle.scale.x;
-		particle.scale.z = particle.scale.x;
+		//particle.scale.x = particle.scale.x;
+		//particle.scale.y = particle.scale.x;
+		//particle.scale.z = particle.scale.x;
 
 		// ROTATION
 		switch (emitter->rotation_setting_type)
@@ -88,10 +88,10 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 			particle.rotation = particle.rotation;
 			break;
 		case ADD_PER_LIFETIME:
-			particle.rotation.z += TIMER->GetDeltaTime() * particle.add_rotation;
+			XMStoreFloat3(&particle.rotation, XMVectorAdd(XMLoadFloat3(&particle.rotation), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.add_rotation)));
 			break;
 		case SET_PER_LIFETIME:
-			particle.rotation.z = emitter->rotation_timeline[frame_percentage];
+			particle.rotation = emitter->rotation_timeline[frame_percentage];
 			break;
 		}
 
@@ -182,7 +182,10 @@ void EffectSystem::EmitParticle(Emitter* emitter)
 		randstep(emitter->initial_position[0].x, emitter->initial_position[1].x),
 		randstep(emitter->initial_position[0].y, emitter->initial_position[1].y),
 		randstep(emitter->initial_position[0].z, emitter->initial_position[1].z) };
-	particle.rotation = { 0, 0, randstep(emitter->initial_rotation[0], emitter->initial_rotation[1]) };
+	particle.rotation = { 
+		randstep(emitter->initial_rotation[0].x, emitter->initial_rotation[1].x),
+		randstep(emitter->initial_rotation[0].y, emitter->initial_rotation[1].y),
+		randstep(emitter->initial_rotation[0].z, emitter->initial_rotation[1].z) };
 	particle.scale = {
 		randstep(emitter->initial_size[0].x, emitter->initial_size[1].x),
 		randstep(emitter->initial_size[0].y, emitter->initial_size[1].y),
@@ -198,7 +201,10 @@ void EffectSystem::EmitParticle(Emitter* emitter)
 		randstep(emitter->add_size_per_lifetime[0].y, emitter->add_size_per_lifetime[1].y),
 		randstep(emitter->add_size_per_lifetime[0].z, emitter->add_size_per_lifetime[1].z) };
 
-	particle.add_rotation = randstep(emitter->add_rotation_per_lifetime[0], emitter->add_rotation_per_lifetime[1]);
+	particle.add_rotation = { 
+		randstep(emitter->add_rotation_per_lifetime[0].x, emitter->add_rotation_per_lifetime[1].x),
+		randstep(emitter->add_rotation_per_lifetime[0].y, emitter->add_rotation_per_lifetime[1].y),
+		randstep(emitter->add_rotation_per_lifetime[0].z, emitter->add_rotation_per_lifetime[1].z) };
 
 	particle.accelation = {
 		randstep(emitter->accelation_per_lifetime[0].x, emitter->accelation_per_lifetime[1].x),

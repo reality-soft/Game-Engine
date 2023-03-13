@@ -2,8 +2,9 @@
 
 void TestGame::OnInit()
 {
-	reality::RESOURCE->Init("../../Contents/");
+	GUI->AddWidget("test_window", &test_window_);
 
+	reality::RESOURCE->Init("../../Contents/");
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
 
 	sys_render.OnCreate(reg_scene);
@@ -35,6 +36,18 @@ void TestGame::OnRender()
 
 void TestGame::OnRelease()
 {
+	PHYSICS->Release();
 	reality::RESOURCE->Release();
+}
+
+void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
+{
+	C_Effect& effect = reg_scene_.get<C_Effect>(effect_.GetEntityId());
+	
+	
+	
+	
+	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
+	effect.world = XMMatrixTranslationFromVector(hitpoint);
 }
 
