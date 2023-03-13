@@ -20,6 +20,7 @@
 #include "ECS/Systems/LightingSystem.h"
 #include "ECS/Systems/EffectSystem.h"
 #include "ECS/Systems/MovementSystem.h"
+#include "ECS/Systems/UISystem.h"
 #include "ECS/Actors/Actor.h"
 #include "ECS/Actors/Character.h"
 #include "ECS/Actors/FX_BaseEffectActor.h"
