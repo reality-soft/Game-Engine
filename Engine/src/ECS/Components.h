@@ -3,7 +3,7 @@
 #include "DataTypes.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "Shape.h"
+#include "Collision.h"
 #include "Material.h"
 
 
@@ -84,6 +84,20 @@ namespace reality
 	struct C_SoundGenerator : public C_Transform
 	{
 		queue<SoundQueue> sound_queue_list;
+	};
+
+	struct C_CapsuleCollision : public C_Transform
+	{
+		CapsuleShape capsule;
+
+		virtual void OnUpdate() override
+		{
+			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
+			world = translation;
+
+			capsule.base = XMVector3TransformCoord(capsule.base, translation);
+			capsule.tip = XMVector3TransformCoord(capsule.tip, translation);		
+		}
 	};
 
 	struct C_BoundingBox : public C_Transform
