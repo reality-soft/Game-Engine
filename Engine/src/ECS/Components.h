@@ -21,8 +21,8 @@ namespace reality
 
 	struct C_Transform : public Component
 	{
-		XMMATRIX local;
-		XMMATRIX world;
+		XMMATRIX local = XMMatrixIdentity();
+		XMMATRIX world = XMMatrixIdentity();
 
 		virtual void OnConstruct() override
 		{
@@ -63,8 +63,9 @@ namespace reality
 			XMVECTOR local_translation, local_rotation, local_scale;
 			XMVECTOR camera_translation, camera_rotation, camera_scale;
 			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
+			target_pos.m128_f32[1] += 20;
 			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
-			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, world * local);
+			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, local * world);
 		}
 	};
 
