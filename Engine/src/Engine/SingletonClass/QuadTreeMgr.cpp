@@ -59,7 +59,8 @@ SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z,
 	{
 		new_node->is_leaf = true;
 		SetStaticTriangles(new_node);
-		leaf_nodes_.push_back(new_node);
+		if (new_node->static_triangles.size() > 0)
+			leaf_nodes_.push_back(new_node);
 	}
 
 	if (depth < max_depth)
@@ -82,7 +83,7 @@ void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
 	{
 		CollideType result = AABBToTriagnle(node->area, tri);
 		if (result != CollideType::OUTSIDE)
-			node->static_triangles.push_back(&tri);
+			node->static_triangles.push_back(tri);
 	}
 
 }
@@ -174,13 +175,45 @@ void reality::QuadTreeMgr::UpdatePhysics(float time_step)
 	if (delta < time_step)
 		return;
 
-
-
-
 	delta = 0.0f;
+}
+
+void reality::QuadTreeMgr::NodeCulling(SpaceNode* node)
+{
+
 }
 
 void reality::QuadTreeMgr::ObjectCulling()
 {
 
+}
+
+RayCallback reality::QuadTreeMgr::Raycast(RayShape& ray)
+{
+	map<float, RayCallback> callback_list;
+
+	for (auto& nodes : leaf_nodes_)
+	{
+		int calculated = 0;
+		if (RayToAABB(ray, nodes->area))
+		{
+			for (auto& tri : nodes->static_triangles)
+			{
+				calculated++;
+				auto& callback = RayToTriangle(ray, tri);
+				if (callback.success)
+				{
+					callback_list.insert(make_pair(callback.distance, callback));
+				}
+			}
+		}
+		calculated = 0;
+	}
+
+
+
+	if (callback_list.begin() == callback_list.end())
+		return RayCallback();
+
+	return callback_list.begin()->second;
 }

@@ -12,25 +12,41 @@ namespace reality {
         void OnRender();
         void OnRelease();
     public:
+        entt::registry& GetRegistry();
         weak_ptr<Scene> GetCurScene();
-        weak_ptr<Actor> GetActor(entt::entity actor_id);
-        weak_ptr<Actor> GetPlayer(int player_num);
+
     public:
+        template<typename ActorClass>
+        ActorClass* GetActor(entt::entity actor_id)
+        {
+            return dynamic_cast<ActorClass*>(weak_ptr(actors_.at(actor_id)).lock().get());
+        }
         template <typename ActorClass>
         entt::entity AddActor() {
-            shared_ptr<Actor> cur_actor = dynamic_pointer_cast<Actor>(make_shared<ActorClass>());
+            shared_ptr<Actor> cur_actor = dynamic_pointer_cast<Actor>(make_shared<ActorClass>(ActorClass()));
             if (cur_actor == nullptr) {
                 return entt::null;
             }
 
             cur_actor->OnInit(cur_scene_->GetRegistryRef());
             entt::entity cur_entity_id = cur_actor->GetEntityId();
-            actor_.insert({ cur_entity_id, move(cur_actor)});
+            actors_.insert({ cur_entity_id, move(cur_actor)});
+
             return cur_entity_id;
+        }
+
+        template<typename ActorClass>
+        ActorClass* GetPlayer(int player_num)
+        {
+            if (player_num >= players_.size()) {
+                return nullptr;
+            }
+
+            return dynamic_cast<ActorClass*>(weak_ptr(actors_.at(players_[player_num])).lock().get());
         }
         template <typename ActorClass>
         entt::entity AddPlayer() {
-            shared_ptr<Actor> player = dynamic_pointer_cast<Actor>(make_shared<ActorClass>());
+            shared_ptr<Actor> player = dynamic_pointer_cast<Actor>(make_shared<ActorClass>(ActorClass()));
             if (player == nullptr) {
                 return entt::null;
             }
