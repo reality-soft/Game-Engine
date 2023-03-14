@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "Event.h"
+#include "Events.h"
 
 namespace reality {
 	class DLL_API EventMgr
@@ -10,8 +10,13 @@ namespace reality {
 		queue<shared_ptr<Event>> event_queue_;
 
 	public:
-		void PushEvent(const Event& event);
 		void ProcessEvents();
+	public:
+		template <typename EventType, typename... Args>
+		void PushEvent(Args&&...args)
+		{
+			event_queue_.push(make_shared<EventType>(args...));
+		}
 	};
 }
 
