@@ -2,12 +2,62 @@
 #include "Shape.h"
 
 namespace reality {
+    struct RayCallback
+    {
+        RayCallback()
+        {
+            success = false;
+            distance = 0.0f;
+            point = XMVectorZero();
+            normal = XMVectorZero();
+        }
+        bool success;
+        float distance;
+        XMVECTOR point;
+        XMVECTOR normal;
+    };
+
 	enum class CollideType
 	{
 		OUTSIDE,
 		INTERSECT,
 		INSIDE,
 	};
+
+    static RayCallback RayToTriangle(RayShape& ray, TriangleShape& tri)
+    {
+        RayCallback callback;
+        XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri.vertex0, tri.vertex1, tri.vertex2), ray.start, ray.end);
+
+        if (tri.SameSide(P, tri.vertex0, tri.vertex1, tri.vertex2) &&
+            tri.SameSide(P, tri.vertex1, tri.vertex0, tri.vertex2) &&
+            tri.SameSide(P, tri.vertex2, tri.vertex0, tri.vertex1))
+        {
+            callback.success = true;
+            callback.distance = XMVectorGetX(XMVector3Length(P - ray.start));
+            callback.point = P;
+            callback.normal = tri.normal;
+        }
+
+
+        return callback;
+    }
+
+    static bool RayToAABB(RayShape& ray, AABBShape& aabb)
+    {
+        for (int i = 0; i < 12; ++i)
+        {
+            auto& callback = RayToTriangle(ray, aabb.triangle[i]);
+            if (callback.success)
+                return true;
+        }
+        return false;
+    }
+
+    static CollideType FrustumToAABB(Frustum& frustum, AABBShape& aabb)
+    {
+
+    }
 
 	static CollideType AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2)
 	{
@@ -104,8 +154,8 @@ namespace reality {
         if (distance < radius)
             return CollideType::INTERSECT;
 
-        if (triangle.RayIntersection(RayShape(cap_ab[0], cap_ab[1])).first == true)
-            return CollideType::INSIDE;
+        //if (triangle.RayIntersection(RayShape(cap_ab[0], cap_ab[1])).first == true)
+        //    return CollideType::INSIDE;
 
         return CollideType::OUTSIDE;
     }

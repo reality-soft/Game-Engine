@@ -107,9 +107,9 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 	DX11APP->GetDeviceContext()->GSSetConstantBuffers(0, 1, cb_effect.buffer.GetAddressOf());
 }
 
-MouseRay CameraSystem::CreateMouseRay()
+RayShape CameraSystem::CreateMouseRay()
 {
-	MouseRay mouse_ray;
+	RayShape mouse_ray;
 	POINT cursor_pos;
 	GetCursorPos(&cursor_pos);
 	ScreenToClient(ENGINE->GetWindowHandle(), &cursor_pos);
@@ -133,8 +133,8 @@ MouseRay CameraSystem::CreateMouseRay()
 	ray_dir = XMVector3TransformNormal({ndc_x, ndc_y, 1.0f, 0}, inv_view);
 	ray_dir = XMVector3Normalize(ray_dir);
 
-	XMtoRP(ray_origin, mouse_ray.start_point);
-	XMtoRP(ray_dir * camera->far_z * 10, mouse_ray.end_point);
+	mouse_ray.start = ray_origin;
+	mouse_ray.end = ray_dir * camera->far_z * 10;
 
 	return mouse_ray;
 }
@@ -233,6 +233,7 @@ void CameraSystem::CreateMatrix()
 	scale_vector = XMVectorReplicate(1.0f);
 	rotation_center = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, 0);
+	
 	if (camera->tag == "Debug") {
 		XMVECTOR target_pos = camera->camera_pos;
 		target_pos.m128_f32[2] += 1;
@@ -249,6 +250,9 @@ void CameraSystem::CreateMatrix()
 		rotation_matrix = XMMatrixInverse(0, rotation_matrix);
 		view_matrix = XMMatrixMultiply(rotation_matrix, view_matrix);
 	}
+
+	this->view_matrix = view_matrix;
+	this->world_matrix = rotation_matrix;
 
 	cb_viewproj.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_viewproj.data.projection_matrix = XMMatrixTranspose(projection_matrix);

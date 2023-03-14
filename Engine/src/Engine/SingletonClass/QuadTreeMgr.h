@@ -27,7 +27,7 @@ namespace reality {
 		AABBShape area;
 		SpaceNode* child_node_[4] = { 0, };
 		std::unordered_set<entt::entity> object_list;
-		vector<TriangleShape*> static_triangles;
+		vector<TriangleShape> static_triangles;
 	};
 
 	class DLL_API QuadTreeMgr
@@ -41,7 +41,9 @@ namespace reality {
 
 	public:
 		void UpdatePhysics(float time_step);
+		void NodeCulling(SpaceNode* node);
 		void ObjectCulling();
+		RayCallback Raycast(RayShape& ray);
 
 	private:
 		UINT max_depth;
@@ -49,6 +51,7 @@ namespace reality {
 
 		vector<SpaceNode*> total_nodes_;
 		vector<SpaceNode*> leaf_nodes_;
+		set<SpaceNode*> visible_leaves;
 		SpaceNode* root_node_ = nullptr;
 
 

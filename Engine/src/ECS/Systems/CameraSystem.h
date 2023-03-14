@@ -13,7 +13,7 @@ namespace reality
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
-		MouseRay CreateMouseRay();
+		RayShape CreateMouseRay();
 		C_Camera* GetCamera();
 		XMMATRIX GetViewProj();
 		void SetSpeed(float speed) { this->speed = speed; };

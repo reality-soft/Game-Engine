@@ -33,9 +33,7 @@ namespace reality {
 			// check the other character & npc data
 
 			//movement_component->actor_transform_tree->root_node->ApplyMovement(reg, entity_id, translation_matrix);
-			shared_ptr<Actor> cur_actor = SCENE_MGR->GetActor(actor_id_).lock();
-
-			cur_actor->ApplyMovement(XMMatrixTranslationFromVector(movement_vector_));
+			SCENE_MGR->GetActor<Actor>(actor_id_)->ApplyMovement(XMMatrixTranslationFromVector(movement_vector_));
 		};
 	private:
 		XMVECTOR movement_vector_;
