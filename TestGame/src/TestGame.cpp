@@ -17,10 +17,28 @@ void TestGame::OnInit()
 	sys_camera.OnCreate(reg_scene_);
 	sys_effect.OnCreate(reg_scene_);
 	sys_camera.TargetTag(reg_scene_, "Debug");
+	sys_ui.OnCreate(reg_scene_);
 	level.ImportFromFile("../../Contents/BinaryPackage/Levels/jason.lv");
 	//QUADTREE->Init(&level);
-
+	
 	effect_.OnInit(reg_scene_, "sample_effect");
+
+	// 테스트 UI
+	test_ui_.OnInit(reg_scene_);
+	C_UI& ui_comp = reg_scene_.get<C_UI>(test_ui_.GetEntityId());
+	// 이미지 만들기
+	shared_ptr<UI_Image> image = make_shared<UI_Image>();
+	image->InitImage("Ground.png");
+	image->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
+	// 이미지 아래에 버튼 만들기
+	shared_ptr<UI_Button> button = make_shared<UI_Button>(); 
+	//image->AddChildUI(button);
+	button->InitButton("Button Normal.png", "Button Hover.png", "Button Normal.png");
+	//button->SetLocalRectByCenter({ image->rect_transform_.local_rect.width / 2.0f, image->rect_transform_.local_rect.height / 2.0f }, 100.0f, 100.0f);
+	button->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
+	
+	ui_comp.ui_list.insert({ "Test Image", button });
+
 }
 
 void TestGame::OnUpdate()
@@ -56,6 +74,7 @@ void TestGame::OnRender()
 	//QUADTREE->Render();
 	level.Render(false);
 	sys_render.OnUpdate(reg_scene_);
+	sys_ui.OnUpdate(reg_scene_);
 	GUI->RenderWidgets();
 }
 

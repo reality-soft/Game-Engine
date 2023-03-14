@@ -13,14 +13,16 @@ public:
 	virtual void OnRelease();
 
 private:
-	Level level;
+	Level	level;
+	UIActor test_ui_;
 
 	entt::entity ent_player;
 
-	reality::RenderSystem sys_render;
-	reality::CameraSystem sys_camera;
-	reality::SoundSystem sys_sound;
-	reality::EffectSystem sys_effect;
+	RenderSystem	sys_render;
+	CameraSystem	sys_camera;
+	SoundSystem		sys_sound;
+	EffectSystem	sys_effect;
+	UISystem		sys_ui;
 
 	StaticObject test_object;
 
