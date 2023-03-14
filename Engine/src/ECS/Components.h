@@ -77,15 +77,14 @@ namespace reality
 			XMVECTOR local_translation, local_rotation, local_scale;
 			XMVECTOR camera_translation, camera_rotation, camera_scale;
 			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
-			target_pos.m128_f32[1] += 20;
 			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
 			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, local * world);
 		}
 		void SetLocalFrom(C_CapsuleCollision& capsule_collision, float arm_length)
 		{
-			local_pos = XMVectorSet(0, 1, -1, 0) * arm_length;
+			local = XMMatrixTranslationFromVector(XMVectorSet(0, 1, -1, 0) * arm_length);
 			target_pos = capsule_collision.capsule.GetCenter();
-			pitch_yaw = { 45, 0 };
+			pitch_yaw = { 0, 0};
 			near_z = 1.f;
 			far_z = 100000.f;
 			fov = XMConvertToRadians(90);
