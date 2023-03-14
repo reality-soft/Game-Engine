@@ -21,6 +21,7 @@ private:
 	reality::CameraSystem sys_camera;
 	reality::SoundSystem sys_sound;
 	reality::EffectSystem sys_effect;
+	reality::MovementSystem  sys_movement;
 
 	StaticObject test_object;
 

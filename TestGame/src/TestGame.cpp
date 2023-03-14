@@ -45,8 +45,7 @@ void TestGame::OnUpdate()
 	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
-
-	sys_camera.OnUpdate(reg_scene_);
+	sys_movement.OnUpdate(reg_scene_);
 }
 
 void TestGame::OnRender()

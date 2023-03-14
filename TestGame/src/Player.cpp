@@ -6,7 +6,7 @@ void Player::OnInit(entt::registry& registry)
 {
 	Character::OnInit(registry);
 
-	movement_component_->speed = 100;
+	movement_component_->speed = 150;
 
 	SetCharacterAnimation("A_TP_CH_Breathing_Anim.anim");
 
@@ -18,23 +18,26 @@ void Player::OnInit(entt::registry& registry)
 	auto& meshes = RESOURCE->UseResource<SkeletalMesh>(skm.skeletal_mesh_id)->meshes;
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
-	//reality::C_CapsuleCollision bounding_box;
-	//bounding_box.local = XMMatrixIdentity();
-	//bounding_box.world = XMMatrixIdentity();
-	//registry.emplace<reality::C_BoundingBox>(entity_id_, bounding_box);
+	reality::C_CapsuleCollision capsule;
+	capsule.capsule.base = { 0, 0, 0, 0 };
+	capsule.capsule.radius = 5;
+	capsule.capsule.tip = { 0, 18, 0, 0 };
+	capsule.local = XMMatrixIdentity();
+	capsule.world = XMMatrixIdentity();
+	registry.emplace<reality::C_CapsuleCollision>(entity_id_, capsule);
 
 	C_Camera camera;
-	camera.local = XMMatrixTranslationFromVector({ 0, 70, -90, 0 });
-	camera.near_z = 1.f;
-	camera.far_z = 10000.f;
-	camera.fov = XMConvertToRadians(45);
-	camera.tag = "Player";
+	camera.SetLocalFrom(capsule, 100);
 	registry.emplace<C_Camera>(entity_id_, camera);
 
-	transform_tree_.root_node = make_shared<TransformTreeNode>(TYPE_ID(reality::C_SkeletalMesh));
-	transform_tree_.AddNodeToNode(TYPE_ID(C_SkeletalMesh), TYPE_ID(C_Camera));
+	transform_tree_.root_node = make_shared<TransformTreeNode>(TYPE_ID(reality::C_CapsuleCollision));
+	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_SkeletalMesh));
+	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_Camera));
 
 	transform_tree_.root_node->OnUpdate(registry, entity_id_, transform_matrix_);
+
+	reality::C_SkeletalMesh* skm_ptr = registry.try_get<C_SkeletalMesh>(entity_id_);
+	skm_ptr->local = XMMatrixRotationY(XMConvertToRadians(180)) * XMMatrixScalingFromVector({ 0.3, 0.3, 0.3, 0.0 });
 }
 
 void Player::OnUpdate()
