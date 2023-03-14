@@ -6,7 +6,6 @@
 #include "Collision.h"
 #include "Material.h"
 
-
 namespace reality
 {
 #define TYPE_ID(type) entt::type_hash<type>().value()
@@ -68,6 +67,7 @@ namespace reality
 		XMVECTOR target_pos;
 		XMVECTOR local_pos;
 		XMFLOAT2 pitch_yaw = { 0, 0 };
+		XMVECTOR look, right, up;
 		float near_z, far_z, fov, aspect;
 
 		virtual void OnConstruct() override {};
@@ -250,9 +250,31 @@ namespace reality
 			}
 		}
 
-		void ApplyMovement(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+		void Rotate(entt::registry& registry, entt::entity entity, XMVECTOR rotation_center, XMMATRIX rotation_matrix = XMMatrixIdentity()) {
 			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
-			cur_transform->world = world;
+			XMVECTOR world_scale, world_rotation, world_translation;
+			XMMatrixDecompose(&world_scale, &world_rotation, &world_translation, cur_transform->world);
+			
+			if (id_type != TYPE_ID(C_Camera)) {
+				cur_transform->world *= XMMatrixTranslationFromVector(-rotation_center);
+				cur_transform->world *= XMMatrixInverse(0, XMMatrixRotationQuaternion(world_rotation));
+				cur_transform->world *= rotation_matrix;
+				cur_transform->world *= XMMatrixTranslationFromVector(rotation_center);
+			}
+
+			for (auto child : children) {
+				child->Rotate(registry, entity, rotation_center, rotation_matrix);
+			}
+		}
+
+		void Translate(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
+			XMVECTOR world_scale, world_rotation, world_translation;
+			XMMatrixDecompose(&world_scale, &world_rotation, &world_translation, cur_transform->world);
+			
+			cur_transform->world *= XMMatrixTranslationFromVector(-world_translation);
+			cur_transform->world *= world;
+			
 			cur_transform->OnUpdate();
 			
 			XMVECTOR local_scale, local_rotation, local_translation;
@@ -261,7 +283,7 @@ namespace reality
 			XMMATRIX translation_matrix = XMMatrixTranslationFromVector(local_translation);
 			
 			for (auto child : children) {
-				child->ApplyMovement(registry, entity, world * translation_matrix);
+				child->Translate(registry, entity, world * translation_matrix);
 			}
 		}
 	};

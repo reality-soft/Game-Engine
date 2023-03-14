@@ -151,9 +151,9 @@ XMMATRIX reality::CameraSystem::GetViewProj()
 
 void CameraSystem::DebugCameraMovement()
 {
-	XMVECTOR front_dir = look * speed * TM_DELTATIME;
-	XMVECTOR right_dir = right * speed * TM_DELTATIME;
-	XMVECTOR up_dir = up * speed * TM_DELTATIME;
+	XMVECTOR front_dir = camera->look *speed* TM_DELTATIME;
+	XMVECTOR right_dir = camera->right * speed * TM_DELTATIME;
+	XMVECTOR up_dir = camera->up * speed * TM_DELTATIME;
 
 	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
 	{
@@ -205,14 +205,6 @@ void reality::CameraSystem::PlayerCameraMovement()
 	camera->OnUpdate();
 }
 
-
-void reality::CameraSystem::UpdateVectors()
-{
-	look = XMVector3Normalize(world_matrix.r[2]);
-	right = XMVector3Normalize(world_matrix.r[0]);
-	up = XMVector3Normalize(world_matrix.r[1]);
-}
-
 void CameraSystem::CameraAction()
 {
 
@@ -259,9 +251,9 @@ void CameraSystem::CreateMatrix()
 	cb_viewproj.data.camera_position = camera->camera_pos;
 	cb_viewproj.data.camera_position.m128_f32[3] = camera->far_z;
 
-	look = XMVector3Normalize(rotation_matrix.r[2]);
-	right = XMVector3Normalize(rotation_matrix.r[0]);
-	up = XMVector3Normalize(rotation_matrix.r[1]);
+	camera->look = XMVector3Normalize(rotation_matrix.r[2]);
+	camera->right = XMVector3Normalize(rotation_matrix.r[0]);
+	camera->up = XMVector3Normalize(rotation_matrix.r[1]);
 
 	// 빌보드 상수버퍼 업데이트
 	
