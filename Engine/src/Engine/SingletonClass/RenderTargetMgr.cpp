@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RenderTargetMgr.h"
 #include "ResourceMgr.h"
+#include "Engine.h"
 
 using namespace reality;
 
@@ -28,8 +29,10 @@ bool RenderTarget::Create(float width, float height)
 
 void RenderTarget::CreateRenderData()
 {
+	rect_.SetRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, ENGINE->GetWindowSize().x, ENGINE->GetWindowSize().y);
+
 	// 쉐이더 이름 입력
-	render_data_.vs_id = "RenderTargetVS.cso";
+	render_data_.vs_id = "UIVS.cso";
 	render_data_.ps_id = "UIPS.cso";
 
 	// 정점 작성
