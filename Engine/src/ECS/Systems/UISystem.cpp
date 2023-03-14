@@ -4,6 +4,8 @@
 
 using namespace reality;
 
+CbUI UISystem::cb_UI = {};
+
 void UISystem::OnCreate(entt::registry& reg)
 {
 	render_target_ = RENDER_TARGET->MakeRT("UI", ENGINE->GetWindowSize().x, ENGINE->GetWindowSize().y);
@@ -49,20 +51,26 @@ void UISystem::OnUpdate(entt::registry& reg)
 
 		for (auto& pair : ui_comp.ui_list)
 		{
-			cb_UI.data.world = XMMatrixTranspose(pair.second->ui_transform_.world);
-			SetCbData();
 			pair.second->Render();
 		}
 	}
 
 	// 백버퍼에 UI 랜더타겟 랜더링
-	cb_UI.data.world = XMMatrixIdentity();
-	SetCbData();
+	float scale_x = render_target_->rect_.width / ENGINE->GetWindowSize().x;
+	float scale_y = render_target_->rect_.height / ENGINE->GetWindowSize().y;
+	float pos_x = render_target_->rect_.center.x / ENGINE->GetWindowSize().x;
+	float pos_y = render_target_->rect_.center.y / ENGINE->GetWindowSize().y;
+
+	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
+	XMMATRIX r = XMMatrixRotationZ(0.0f);
+	XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
+	SetCbData(XMMatrixTranspose(s * r * t));
 	render_target_->RenderingRT();
 }
 
-void UISystem::SetCbData()
+void UISystem::SetCbData(XMMATRIX world)
 {
+	cb_UI.data.world = world;
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_UI.buffer.Get(), 0, nullptr, &cb_UI.data, 0, 0);
 	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_UI.buffer.GetAddressOf());
 }
