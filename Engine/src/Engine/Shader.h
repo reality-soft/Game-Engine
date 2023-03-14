@@ -27,9 +27,11 @@ namespace reality
 	{
 	public:
 		bool LoadCompiled(wstring _csoFIle);
-		ID3D11GeometryShader* Get();
+		ID3D11GeometryShader* GetStreamOutGS();
+		ID3D11GeometryShader* GetDefaultGS();
 	private:
-		ComPtr<ID3D11GeometryShader> gs;
+		ComPtr<ID3D11GeometryShader> stream_out_gs;
+		ComPtr<ID3D11GeometryShader> default_gs;
 	};
 }
 

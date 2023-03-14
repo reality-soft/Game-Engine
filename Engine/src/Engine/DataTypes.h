@@ -198,6 +198,8 @@ namespace reality
 			XMMATRIX view_matrix;
 			XMMATRIX projection_matrix;
 			XMMATRIX main_billboard;
+			XMMATRIX x_billboard;
+			XMMATRIX y_billboard;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -221,7 +223,7 @@ namespace reality
 	{
 		CbSkySphere()
 		{
-			data.time      = { 360, 360, 360, 360 };
+			data.time      = { 240, 480, 240, 480 };
 			data.sky_color = { 1.0f,  1.0f,   1.0f,  1.0f };
 		}
 		struct Data
@@ -326,6 +328,7 @@ namespace reality
 		NO_BLEND			= 1,
 		ALPHA_BLEND			= 2,
 		DUALSOURCE_BLEND	= 3,
+		HIGHER_RGB			= 4,
 	};
 
 	enum E_EffectDS
@@ -425,7 +428,7 @@ namespace reality
 		XMFLOAT3	scale;
 
 		XMFLOAT3	add_size;
-		float		add_rotation;
+		XMFLOAT3		add_rotation;
 		XMFLOAT3	accelation;
 
 		Particle()
@@ -438,14 +441,14 @@ namespace reality
 
 			color = { 1.0, 1.0f, 1.0f, 1.0f };
 
-			position = { 0, 0, 0 };
-			rotation = { 0, 0, 0 };
-			scale = { 0, 0, 0 };
-			velocity = { 0, 0, 0 };
+			position	= { 0, 0, 0 };
+			rotation	= { 0, 0, 0 };
+			scale		= { 0, 0, 0 };
+			velocity	= { 0, 0, 0 };
 
-			add_size = { 0, 0, 0 };
-			add_rotation = 0;
-			accelation = { 0, 0, 0 };
+			add_size		= { 0, 0, 0 };
+			add_rotation	= { 0, 0, 0 };
+			accelation		= { 0, 0, 0 };
 
 		}
 	};
@@ -474,7 +477,7 @@ namespace reality
 			// INITIAL_SET
 			XMFLOAT4	initial_color;
 			// SET_PER_LIFETIME
-			XMFLOAT4				color_timeline[EFFECT_TIMELINE_SIZE];
+			XMFLOAT4			color_timeline[EFFECT_TIMELINE_SIZE];
 			map<int, XMFLOAT4>	color_timeline_map;
 
 		// SIZE
@@ -483,17 +486,17 @@ namespace reality
 			// ADD_PER_LIFETIME
 			XMFLOAT3	add_size_per_lifetime[2];
 			// SET_PER_LIFETIME
-			XMFLOAT3				size_timeline[EFFECT_TIMELINE_SIZE];
+			XMFLOAT3			size_timeline[EFFECT_TIMELINE_SIZE];
 			map<int, XMFLOAT3>	size_timeline_map;
 
 		// ROTATION
 			// INITIAL_SET	
-			float		initial_rotation[2];
+			XMFLOAT3			initial_rotation[2];
 			// ADD_PER_LIFETIME
-			float		add_rotation_per_lifetime[2];
+			XMFLOAT3			add_rotation_per_lifetime[2];
 			// SET_PER_LIFETIME
-			float				rotation_timeline[EFFECT_TIMELINE_SIZE];
-			map<int, float>	rotation_timeline_map;
+			XMFLOAT3			rotation_timeline[EFFECT_TIMELINE_SIZE];
+			map<int, XMFLOAT3>	rotation_timeline_map;
 
 		// POSITION
 			// INITIAL_SET
@@ -550,9 +553,9 @@ namespace reality
 			ZeroMemory(size_timeline,			sizeof(XMFLOAT3) * EFFECT_TIMELINE_SIZE);
 
 			// ROTATION
-			ZeroMemory(initial_rotation,			sizeof(float) * 2);
-			ZeroMemory(add_rotation_per_lifetime,	sizeof(float) * 2);
-			ZeroMemory(rotation_timeline,			sizeof(float) * EFFECT_TIMELINE_SIZE);
+			ZeroMemory(initial_rotation,			sizeof(XMFLOAT3) * 2);
+			ZeroMemory(add_rotation_per_lifetime,	sizeof(XMFLOAT3) * 2);
+			ZeroMemory(rotation_timeline,			sizeof(XMFLOAT3) * EFFECT_TIMELINE_SIZE);
 
 			// POSITION
 			ZeroMemory(initial_position,		sizeof(XMFLOAT3) * 2);

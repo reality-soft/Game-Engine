@@ -1,23 +1,16 @@
 #pragma once
 #include "DllMacro.h"
-#include "Shape.h"
-#include "Level.h"
+#include "Collision.h"
+#include "LightMeshLevel.h"
 #include "../ECS/entt.hpp"
 #include "../ECS/Systems/CameraSystem.h"
 
-#define MIN_HEIGHT -1000.f
-#define MAX_HEIGHT  1000.f
+#define MIN_HEIGHT -10000.f
+#define MAX_HEIGHT  10000.f
+#define TIMESTEP_30FPS 1.0f / 30.0f
+#define TIMESTEP_60FPS 1.0f / 60.0f
 
 namespace reality {
-
-	class LODCell
-	{
-	public:
-		LODCell(UINT max_lod);
-		bool Create(const UINT corners[4], UINT num_col);
-		vector<vector<UINT>> lod_index_list;
-		vector<ComPtr<ID3D11Buffer>> lod_index_buffer;
-	};
 
 	class DLL_API SpaceNode 
 	{
@@ -25,18 +18,16 @@ namespace reality {
 		SpaceNode(UINT num, UINT depth);
 		~SpaceNode();
 
+	public:
+		void SetNode(float min_x, float min_z, float max_x, float max_z);
 
 	public:
-		void SetNode(Level* level);
-		void Render();
-	public:
+		bool is_leaf = false;
 		UINT node_num, node_depth;
 		AABBShape area;
 		SpaceNode* child_node_[4] = { 0, };
 		std::unordered_set<entt::entity> object_list;
-		UINT coner_index[4];
-		LODCell* lod_cell = nullptr;
-		UINT current_lod = 0;
+		vector<TriangleShape> static_triangles;
 	};
 
 	class DLL_API QuadTreeMgr
@@ -44,37 +35,37 @@ namespace reality {
 		SINGLETON(QuadTreeMgr)
 #define QUADTREE QuadTreeMgr::GetInst()
 	public:
-		void Init(Level* level_to_devide);
+		void Init(LightMeshLevel* level_to_devide, int max_depth = 5);
 		void Frame(CameraSystem* applied_camera);
-		void Render();
 		void Release();
 
 	public:
-		void UpdateLOD(XMVECTOR camera_pos);
-		void MapCulling(Frustum& frustum, SpaceNode* node);
+		void UpdatePhysics(float time_step);
+		void NodeCulling(SpaceNode* node);
 		void ObjectCulling();
+		RayCallback Raycast(RayShape& ray);
+
 	private:
-		XMINT2 world_size_;
 		UINT max_depth;
 		UINT node_count = 0;
-		UINT max_lod;
 
 		vector<SpaceNode*> total_nodes_;
 		vector<SpaceNode*> leaf_nodes_;
-
+		set<SpaceNode*> visible_leaves;
 		SpaceNode* root_node_ = nullptr;
 
 
+
 	private:
-		SpaceNode* BuildTree(UINT depth, int row1, int row2, int col1, int col2);
-		void RenderNode(SpaceNode* node_to_render);
+		SpaceNode* BuildTree(UINT depth, float row1, float col1, float row2, float col2);
+		void SetStaticTriangles(SpaceNode* node);
 
 	public:
 		int									UpdateNodeObjectBelongs(int node_num, const AABBShape& object_area, entt::entity object_id);
 		std::vector<int>					FindCollisionSearchNode(int node_num);
 		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
 
-		Level* deviding_level_ = nullptr;
+		LightMeshLevel* deviding_level_ = nullptr;
 		Frustum camera_frustum_;
 
 		bool wire_frame = false;

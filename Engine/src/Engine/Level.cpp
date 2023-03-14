@@ -53,14 +53,6 @@ bool reality::Level::ImportFromFile(string filepath)
 	UINT inst_list_size = 0;
 	file_transfer.ReadBinary<UINT>(inst_list_size);
 
-	inst_objects.resize(inst_list_size);
-
-	for (auto& inst : inst_objects)
-	{
-		file_transfer.ReadBinary<string>(inst.mesh_id_);
-		file_transfer.ReadBinary<string>(inst.vs_id_);
-	}
-
 	file_transfer.Close();
 
 	vs_id_ = "LevelVS.cso";
@@ -73,11 +65,6 @@ bool reality::Level::ImportFromFile(string filepath)
 
 	if (CreateHeightField(minmax_height.x, minmax_height.y) == false)
 		return false;
-
-	for (auto& inst : inst_objects)
-	{
-		inst.Init(inst.mesh_id_, inst.vs_id_);
-	}
 
 	return true;
 }
@@ -371,10 +358,10 @@ XMFLOAT2 reality::Level::GetMinMaxHeight()
 	float min = 0;
 	float max = 0;
 
-	for (auto vertex : level_mesh_.vertices)
+	for (auto& vertex : level_mesh_.vertices)
 	{
 		min = std::min(min, vertex.p.y);
-		max = std::max(min, vertex.p.y);
+		max = std::max(max, vertex.p.y);
 	}
 
 	return XMFLOAT2(min, max);

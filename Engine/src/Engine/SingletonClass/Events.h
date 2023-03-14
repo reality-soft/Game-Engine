@@ -1,6 +1,8 @@
 #pragma once
 #include "DllMacro.h"
 #include "entt.hpp"
+#include "SceneMgr.h"
+#include "../ECS/Actors/Character.h"
 
 namespace reality {
 	enum EVENT_TYPE {
@@ -22,7 +24,7 @@ namespace reality {
 	public:
 		MovementEvent(XMVECTOR movement_vector, entt::entity actor_id) : Event(MOVEMENT) {
 			movement_vector_ = movement_vector;
-			actor_id_ = actor_id_;
+			actor_id_ = actor_id;
 		}
 
 		virtual void Process() override {
@@ -31,6 +33,7 @@ namespace reality {
 			// check the other character & npc data
 
 			//movement_component->actor_transform_tree->root_node->ApplyMovement(reg, entity_id, translation_matrix);
+			SCENE_MGR->GetActor<Actor>(actor_id_)->ApplyMovement(XMMatrixTranslationFromVector(movement_vector_));
 		};
 	private:
 		XMVECTOR movement_vector_;

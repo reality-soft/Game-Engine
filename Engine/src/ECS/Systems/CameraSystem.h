@@ -13,7 +13,7 @@ namespace reality
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
-		MouseRay CreateMouseRay();
+		RayShape CreateMouseRay();
 		C_Camera* GetCamera();
 		XMMATRIX GetViewProj();
 		void SetSpeed(float speed) { this->speed = speed; };
@@ -23,7 +23,6 @@ namespace reality
 		void DebugCameraMovement();
 		void PlayerCameraMovement();
 
-		void UpdateVectors();
 		void CameraAction();
 		void CreateMatrix();
 
@@ -34,10 +33,6 @@ namespace reality
 		XMMATRIX world_matrix;
 		XMMATRIX view_matrix;
 		XMMATRIX projection_matrix;
-
-		XMVECTOR look;
-		XMVECTOR right;
-		XMVECTOR up;
 
 		CbViewProj		cb_viewproj;
 		CbCameraEffect	cb_effect;

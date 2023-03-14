@@ -1,28 +1,34 @@
-#include "LevelHeader.hlsli"
+#include "include/VertexCommon.hlsli"
 
-cbuffer cb_data : register(b0)
+struct VS_IN
 {
-	matrix g_matWorld;
+    float3 p : F3_POSITION;
+    float2 t : F2_TEXTURE;
 };
 
-cbuffer cb_viewproj : register(b1)
+struct VS_OUT
 {
-	matrix g_matView;
-	matrix g_matProj;
-}
+    float4 p : SV_POSITION;  
+    float2 t : TEXCOORD;
+    float lod : TEXCOORD1;
+    
+    float3 view_dir : TEXCOORD2;
+    matrix view_proj : TEXCOORD3;
+};
 
 VS_OUT VS(VS_IN input)
 {
-	VS_OUT output = (VS_OUT)0;
+    VS_OUT output = (VS_OUT) 0;
+    
+    float4 local = float4(input.p, 1.0f);    
+    float4 world = mul(local, IdentityMatrix());
 
-	float4 vLocal = float4(input.p, 1.0f);
-	float4 vWorld = mul(vLocal, IdentityMatrix());
-	float4 vView = mul(vWorld, g_matView);
-	float4 vProj = mul(vView, g_matProj);
+    output.p = world;
+    output.t = input.t;
+    output.lod = GetLod(input.p);
+    
+    output.view_proj = ViewProjection();
+    output.view_dir = (camera_world - world).xyz;
 
-	output.p = vProj;
-	output.n = input.n;
-	output.t = input.t;
-
-	return output;
+    return output;
 }
