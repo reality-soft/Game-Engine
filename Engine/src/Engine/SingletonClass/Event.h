@@ -31,6 +31,7 @@ namespace reality {
 			// check the other character & npc data
 
 			//movement_component->actor_transform_tree->root_node->ApplyMovement(reg, entity_id, translation_matrix);
+			SCENE_MGR->GetActor<Actor>(actor_id_)->ApplyMovement(XMMatrixTranslationFromVector(movement_vector_));
 		};
 	private:
 		XMVECTOR movement_vector_;
