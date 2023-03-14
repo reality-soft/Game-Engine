@@ -168,6 +168,14 @@ namespace reality {
 
             return { A, B };
         }
+        XMVECTOR GetCenter()
+        {
+            float x = (XMVectorGetX(base) + XMVectorGetX(tip)) / 2;
+            float y = (XMVectorGetY(base) + XMVectorGetY(tip)) / 2;
+            float z = (XMVectorGetZ(base) + XMVectorGetZ(tip)) / 2;
+
+            return XMVectorSet(x, y, z, 0);
+        }
 
         XMVECTOR base, tip;
         float radius;
