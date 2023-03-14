@@ -3,11 +3,14 @@
 #include "Engine.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"
+#include "UISystem.h"
 
 using namespace reality;
 
 void UIBase::Init()
 {
+	current_state_ = E_UIState::UI_NORMAL;
+
 	CreateRenderData();
 }
 
@@ -91,29 +94,14 @@ void UIBase::CreateRenderData()
 
 void UIBase::UpdateThisUI()
 {
-	float scale_x = ui_rect_.width / ENGINE->GetWindowSize().x;
-	float scale_y = ui_rect_.height / ENGINE->GetWindowSize().y;
-	float pos_x = ui_rect_.center.x / ENGINE->GetWindowSize().x;
-	float pos_y = ui_rect_.center.y / ENGINE->GetWindowSize().y;
-
-	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
-	XMMATRIX r = XMMatrixRotationZ(0.0f);
-	XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
-
-	ui_transform_.local =  s * r * t;
-
-	if (parent_ui_ != NULL)
-	{
-		ui_transform_.world = parent_ui_->ui_transform_.world * ui_transform_.local;
-	}
-	else
-	{
-		ui_transform_.world = ui_transform_.local;
-	}
+	UpdateRectTransform();
 }
 
 void UIBase::RenderThisUI()
 {
+	// Set Constant Buffer
+	UISystem::SetCbData(XMMatrixTranspose(rect_transform_.world_matrix));
+
 	// Set Topology
 	DX11APP->GetDeviceContext()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -157,38 +145,104 @@ void UIBase::RenderThisUI()
 	DX11APP->GetDeviceContext()->DrawIndexed(render_data_.index_list.size(), 0, 0);
 }
 
-void UIBase::SetRectByMin(XMFLOAT2 min, float width, float height)
+void UIBase::UpdateRectTransform()
 {
-	ui_rect_.min = min;
-	ui_rect_.width = width;
-	ui_rect_.height = height;
-	ui_rect_.max = { min.x + width, min.y + height };
-	ui_rect_.center = { min.x + width / 2.0f, min.y + height / 2.0f };
+	float scale_x = rect_transform_.local_rect.width / ENGINE->GetWindowSize().x;
+	float scale_y = rect_transform_.local_rect.height / ENGINE->GetWindowSize().y;
+	float pos_x = rect_transform_.local_rect.center.x / ENGINE->GetWindowSize().x;
+	float pos_y = rect_transform_.local_rect.center.y / ENGINE->GetWindowSize().y;
+
+	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
+	XMMATRIX r = XMMatrixRotationZ(0.0f);
+	XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
+
+	rect_transform_.local_matrix = s * r * t;
+
+	// 부모 UI가 있으면 부모 UI의 좌표계에서 계산
+	if (parent_ui_ != NULL)
+	{
+		// World Rect 만들기
+		// 0 ~ 1
+		XMFLOAT2 center = { rect_transform_.local_rect.center.x / parent_ui_->rect_transform_.world_rect.width,
+							rect_transform_.local_rect.center.y / parent_ui_->rect_transform_.world_rect.height };
+
+		XMVECTOR center_world = XMVector4Transform(XMLoadFloat2(&center), parent_ui_->rect_transform_.world_matrix);
+		float width_world = rect_transform_.local_rect.width / parent_ui_->rect_transform_.world_rect.width;
+		float height_world = rect_transform_.local_rect.height / parent_ui_->rect_transform_.world_rect.height;
+
+		// 0 ~ WindowSize
+		center_world.m128_f32[0] *= ENGINE->GetWindowSize().x;
+		center_world.m128_f32[1] *= ENGINE->GetWindowSize().y;
+		XMFLOAT2 world_rect_center;
+		XMStoreFloat2(&world_rect_center, center_world);
+		width_world *= ENGINE->GetWindowSize().x;
+		height_world *= ENGINE->GetWindowSize().y;
+		rect_transform_.world_rect.SetRectByCenter(world_rect_center, width_world, height_world);
+		//XMStoreFloat2(&rect_transform_.world_rect.min, min_world);
+		//rect_transform_.world_rect.min.x *= ENGINE->GetWindowSize().x;
+		//rect_transform_.world_rect.min.y *= ENGINE->GetWindowSize().y;
+		//XMStoreFloat2(&rect_transform_.world_rect.max, max_world);
+		//rect_transform_.world_rect.max.x *= ENGINE->GetWindowSize().x;
+		//rect_transform_.world_rect.max.y *= ENGINE->GetWindowSize().y;
+		//XMStoreFloat2(&rect_transform_.world_rect.center, center_world);
+		//rect_transform_.world_rect.center.x *= ENGINE->GetWindowSize().x;
+		//rect_transform_.world_rect.center.y *= ENGINE->GetWindowSize().y;
+
+		rect_transform_.world_matrix = parent_ui_->rect_transform_.world_matrix * rect_transform_.local_matrix;
+	}
+	else
+	{
+		rect_transform_.world_rect = rect_transform_.local_rect;
+		rect_transform_.world_matrix = rect_transform_.local_matrix;
+	}
 }
 
-void UIBase::SetRectByMax(XMFLOAT2 max, float width, float height)
+void UIBase::AddChildUI(shared_ptr<UIBase> child_ui)
 {
-	ui_rect_.max = max;
-	ui_rect_.width = width;
-	ui_rect_.height = height;
-	ui_rect_.min = { max.x - width, max.y - height };
-	ui_rect_.center = { max.x - width / 2.0f, max.y - height / 2.0f };
+	child_ui_list_.push_back(child_ui);
+	child_ui->parent_ui_ = this;
 }
 
-void UIBase::SetRectByCenter(XMFLOAT2 center, float width, float height)
+void UIBase::SetLocalRectByMin(XMFLOAT2 min, float width, float height)
 {
-	ui_rect_.center = center;
-	ui_rect_.width = width;
-	ui_rect_.height = height;
-	ui_rect_.min = { center.x - width / 2.0f, center.y - width / 2.0f };
-	ui_rect_.max = { center.x + width / 2.0f, center.y + width / 2.0f };
+	rect_transform_.local_rect.min = min;
+	rect_transform_.local_rect.width = width;
+	rect_transform_.local_rect.height = height;
+	rect_transform_.local_rect.max = { min.x + width, min.y + height };
+	rect_transform_.local_rect.center = { min.x + width / 2.0f, min.y + height / 2.0f };
+
+	UpdateRectTransform();
 }
 
-void UIBase::SetRectByMinMax(XMFLOAT2 min, XMFLOAT2 max)
+void UIBase::SetLocalRectByMax(XMFLOAT2 max, float width, float height)
 {
-	ui_rect_.min = min;
-	ui_rect_.max = max;
-	ui_rect_.width = max.x - min.x;
-	ui_rect_.height = max.y - min.y;
-	ui_rect_.center = { min.x + (ui_rect_.width / 2.0f), min.y + (ui_rect_.height / 2.0f) };
+	rect_transform_.local_rect.max = max;
+	rect_transform_.local_rect.width = width;
+	rect_transform_.local_rect.height = height;
+	rect_transform_.local_rect.min = { max.x - width, max.y - height };
+	rect_transform_.local_rect.center = { max.x - width / 2.0f, max.y - height / 2.0f };
+
+	UpdateRectTransform();
+}
+
+void UIBase::SetLocalRectByCenter(XMFLOAT2 center, float width, float height)
+{
+	rect_transform_.local_rect.center = center;
+	rect_transform_.local_rect.width = width;
+	rect_transform_.local_rect.height = height;
+	rect_transform_.local_rect.min = { center.x - width / 2.0f, center.y - height / 2.0f };
+	rect_transform_.local_rect.max = { center.x + width / 2.0f, center.y + height / 2.0f };
+
+	UpdateRectTransform();
+}
+
+void UIBase::SetLocalRectByMinMax(XMFLOAT2 min, XMFLOAT2 max)
+{
+	rect_transform_.local_rect.min = min;
+	rect_transform_.local_rect.max = max;
+	rect_transform_.local_rect.width = max.x - min.x;
+	rect_transform_.local_rect.height = max.y - min.y;
+	rect_transform_.local_rect.center = { min.x + (rect_transform_.local_rect.width / 2.0f), min.y + (rect_transform_.local_rect.height / 2.0f) };
+
+	UpdateRectTransform();
 }

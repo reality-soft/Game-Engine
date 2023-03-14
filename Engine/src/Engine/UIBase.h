@@ -4,17 +4,15 @@
 
 namespace reality
 {
-	
-
 	class DLL_API UIBase
 	{
-	private:
+	protected:
 		E_UIState					current_state_;
-		shared_ptr<UIBase>			parent_ui_;
+	public:
+		UIBase*						parent_ui_;
 		vector<shared_ptr<UIBase>>	child_ui_list_;
 	public:
-		Transform2D		ui_transform_;
-		Rect			ui_rect_;
+		RectTransform	rect_transform_;
 		RectRenderData	render_data_;
 	protected:
 		virtual void Init();
@@ -26,11 +24,14 @@ namespace reality
 	private:
 		virtual void UpdateThisUI();
 		virtual void RenderThisUI();
+		void UpdateRectTransform();
 	public:
-		void SetRectByMin(XMFLOAT2 min, float width, float height);
-		void SetRectByMax(XMFLOAT2 max, float width, float height);
-		void SetRectByCenter(XMFLOAT2 center, float width, float height);
-		void SetRectByMinMax(XMFLOAT2 min, XMFLOAT2 max);
+		void AddChildUI(shared_ptr<UIBase> child_ui);
+	public:
+		void SetLocalRectByMin(XMFLOAT2 min, float width, float height);
+		void SetLocalRectByMax(XMFLOAT2 max, float width, float height);
+		void SetLocalRectByCenter(XMFLOAT2 center, float width, float height);
+		void SetLocalRectByMinMax(XMFLOAT2 min, XMFLOAT2 max);
 	};
 }
 
