@@ -21,13 +21,13 @@ void Player::OnInit(entt::registry& registry)
 	reality::C_CapsuleCollision capsule;
 	capsule.capsule.base = { 0, 0, 0, 0 };
 	capsule.capsule.radius = 5;
-	capsule.capsule.tip = { 0, 18, 0, 0 };
+	capsule.capsule.tip = { 0, 50, 0, 0 };
 	capsule.local = XMMatrixIdentity();
 	capsule.world = XMMatrixIdentity();
 	registry.emplace<reality::C_CapsuleCollision>(entity_id_, capsule);
 
 	C_Camera camera;
-	camera.SetLocalFrom(capsule, 100);
+	camera.SetLocalFrom(capsule, 50);
 	registry.emplace<C_Camera>(entity_id_, camera);
 
 	transform_tree_.root_node = make_shared<TransformTreeNode>(TYPE_ID(reality::C_CapsuleCollision));

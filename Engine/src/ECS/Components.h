@@ -51,6 +51,13 @@ namespace reality
 	{
 		reality::CapsuleShape capsule;
 
+		void SetCapsuleData(XMVECTOR base, XMVECTOR tip, float radius) {
+			capsule.base = base;
+			capsule.tip = tip;
+			capsule.radius = radius;
+
+			local = XMMatrixTranslationFromVector(capsule.tip);
+		}
 		virtual void OnUpdate() override
 		{
 			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
@@ -65,6 +72,7 @@ namespace reality
 	{
 		XMVECTOR camera_pos = { 0, 0, 0, 0 };
 		XMVECTOR target_pos;
+		float target_height = 0.0f;
 		XMVECTOR local_pos;
 		XMFLOAT2 pitch_yaw = { 0, 0 };
 		XMVECTOR look, right, up;
@@ -77,13 +85,14 @@ namespace reality
 			XMVECTOR local_translation, local_rotation, local_scale;
 			XMVECTOR camera_translation, camera_rotation, camera_scale;
 			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
+			target_pos.m128_f32[1] += target_height;
 			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
 			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, local * world);
 		}
 		void SetLocalFrom(C_CapsuleCollision& capsule_collision, float arm_length)
 		{
 			local = XMMatrixTranslationFromVector(XMVectorSet(0, 1, -1, 0) * arm_length);
-			target_pos = capsule_collision.capsule.GetCenter();
+			target_height = capsule_collision.capsule.tip.m128_f32[1];
 			pitch_yaw = { 0, 0};
 			near_z = 1.f;
 			far_z = 100000.f;
