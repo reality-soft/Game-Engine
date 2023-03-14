@@ -201,8 +201,6 @@ void reality::CameraSystem::PlayerCameraMovement()
 		camera->pitch_yaw.x += pitch;
 		camera->pitch_yaw.y += yaw;
 	}
-
-	camera->OnUpdate();
 }
 
 void CameraSystem::CameraAction()
