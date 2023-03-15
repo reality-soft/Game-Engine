@@ -27,6 +27,7 @@ private:
 
 private:
 	TestWidget	test_window_;
+	PropertyWidget gw_property_;
 	FX_Effect	effect_;
 	reality::WorldRayCallback callback;
 	void CreateEffectFromRay(XMVECTOR hitpoint);
