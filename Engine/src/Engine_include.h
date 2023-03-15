@@ -13,6 +13,7 @@
 #include "Engine/SingletonClass/DataMgr.h"
 #include "Engine/SingletonClass/RenderTargetMgr.h"
 #include "Engine/SingletonClass/QuadTreeMgr.h"
+#include "Engine/SingletonClass/WriteMgr.h"
 
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/CameraSystem.h"
