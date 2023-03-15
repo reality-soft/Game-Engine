@@ -147,51 +147,41 @@ void UIBase::RenderThisUI()
 
 void UIBase::UpdateRectTransform()
 {
-	float scale_x = rect_transform_.local_rect.width / ENGINE->GetWindowSize().x;
-	float scale_y = rect_transform_.local_rect.height / ENGINE->GetWindowSize().y;
-	float pos_x = rect_transform_.local_rect.center.x / ENGINE->GetWindowSize().x;
-	float pos_y = rect_transform_.local_rect.center.y / ENGINE->GetWindowSize().y;
-
-	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
-	XMMATRIX r = XMMatrixRotationZ(0.0f);
-	XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
-
-	rect_transform_.local_matrix = s * r * t;
-
 	// 부모 UI가 있으면 부모 UI의 좌표계에서 계산
 	if (parent_ui_ != NULL)
 	{
-		// World Rect 만들기
-		// 0 ~ 1
-		XMFLOAT2 center = { rect_transform_.local_rect.center.x / parent_ui_->rect_transform_.world_rect.width,
-							rect_transform_.local_rect.center.y / parent_ui_->rect_transform_.world_rect.height };
+		// 0.5 0.5가 나왔으니 부모에서 얼마에 해당하는지만 알면 된다.
+		XMFLOAT2 world_min = {
+			rect_transform_.local_rect.min.x + parent_ui_->rect_transform_.world_rect.min.x,
+			rect_transform_.local_rect.min.y + parent_ui_->rect_transform_.world_rect.min.y,
+		};
 
-		XMVECTOR center_world = XMVector4Transform(XMLoadFloat2(&center), parent_ui_->rect_transform_.world_matrix);
-		float width_world = rect_transform_.local_rect.width / parent_ui_->rect_transform_.world_rect.width;
-		float height_world = rect_transform_.local_rect.height / parent_ui_->rect_transform_.world_rect.height;
+		rect_transform_.world_rect.SetRectByMin(world_min, rect_transform_.local_rect.width, rect_transform_.local_rect.height);
 
-		// 0 ~ WindowSize
-		center_world.m128_f32[0] *= ENGINE->GetWindowSize().x;
-		center_world.m128_f32[1] *= ENGINE->GetWindowSize().y;
-		XMFLOAT2 world_rect_center;
-		XMStoreFloat2(&world_rect_center, center_world);
-		width_world *= ENGINE->GetWindowSize().x;
-		height_world *= ENGINE->GetWindowSize().y;
-		rect_transform_.world_rect.SetRectByCenter(world_rect_center, width_world, height_world);
-		//XMStoreFloat2(&rect_transform_.world_rect.min, min_world);
-		//rect_transform_.world_rect.min.x *= ENGINE->GetWindowSize().x;
-		//rect_transform_.world_rect.min.y *= ENGINE->GetWindowSize().y;
-		//XMStoreFloat2(&rect_transform_.world_rect.max, max_world);
-		//rect_transform_.world_rect.max.x *= ENGINE->GetWindowSize().x;
-		//rect_transform_.world_rect.max.y *= ENGINE->GetWindowSize().y;
-		//XMStoreFloat2(&rect_transform_.world_rect.center, center_world);
-		//rect_transform_.world_rect.center.x *= ENGINE->GetWindowSize().x;
-		//rect_transform_.world_rect.center.y *= ENGINE->GetWindowSize().y;
+		float scale_x = rect_transform_.world_rect.width / ENGINE->GetWindowSize().x;
+		float scale_y = rect_transform_.world_rect.height / ENGINE->GetWindowSize().y;
+		float pos_x = rect_transform_.world_rect.center.x / ENGINE->GetWindowSize().x;
+		float pos_y = rect_transform_.world_rect.center.y / ENGINE->GetWindowSize().y;
 
-		rect_transform_.world_matrix = parent_ui_->rect_transform_.world_matrix * rect_transform_.local_matrix;
+		XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
+		XMMATRIX r = XMMatrixRotationZ(0.0f);
+		XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
+
+		rect_transform_.world_matrix = s * r * t;
 	}
 	else
 	{
+		float scale_x = rect_transform_.local_rect.width / ENGINE->GetWindowSize().x;
+		float scale_y = rect_transform_.local_rect.height / ENGINE->GetWindowSize().y;
+		float pos_x = rect_transform_.local_rect.center.x / ENGINE->GetWindowSize().x;
+		float pos_y = rect_transform_.local_rect.center.y / ENGINE->GetWindowSize().y;
+
+		XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
+		XMMATRIX r = XMMatrixRotationZ(0.0f);
+		XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
+
+		rect_transform_.local_matrix = s * r * t;
+
 		rect_transform_.world_rect = rect_transform_.local_rect;
 		rect_transform_.world_matrix = rect_transform_.local_matrix;
 	}
