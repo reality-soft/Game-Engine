@@ -150,7 +150,6 @@ void UIBase::UpdateRectTransform()
 	// 부모 UI가 있으면 부모 UI의 좌표계에서 계산
 	if (parent_ui_ != NULL)
 	{
-		// 0.5 0.5가 나왔으니 부모에서 얼마에 해당하는지만 알면 된다.
 		XMFLOAT2 world_min = {
 			rect_transform_.local_rect.min.x + parent_ui_->rect_transform_.world_rect.min.x,
 			rect_transform_.local_rect.min.y + parent_ui_->rect_transform_.world_rect.min.y,

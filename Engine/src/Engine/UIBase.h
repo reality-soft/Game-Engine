@@ -21,7 +21,7 @@ namespace reality
 		virtual void Render();
 	private:
 		void CreateRenderData();
-	private:
+	protected:
 		virtual void UpdateThisUI();
 		virtual void RenderThisUI();
 		void UpdateRectTransform();
