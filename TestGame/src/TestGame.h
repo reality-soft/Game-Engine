@@ -13,6 +13,7 @@ public:
 	virtual void OnRelease();
 
 private:
+  
 	SkySphere sky_sphere;
 	LightMeshLevel level;
 
@@ -22,13 +23,16 @@ private:
 	reality::SoundSystem sys_sound;
 	reality::EffectSystem sys_effect;
 	reality::MovementSystem  sys_movement;
+	reality::UISystem		sys_ui;
 
 	StaticObject test_object;
 
 private:
 	TestWidget	test_window_;
 	FX_Effect	effect_;
+	UIActor test_ui_;
 	reality::WorldRayCallback callback;
 	void CreateEffectFromRay(XMVECTOR hitpoint);
+	void CreateTestUI();
 };
 

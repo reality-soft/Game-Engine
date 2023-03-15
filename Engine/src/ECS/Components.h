@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Collision.h"
 #include "Material.h"
+#include "UIBase.h"
 
 namespace reality
 {
@@ -427,5 +428,10 @@ namespace reality
 		reactphysics3d::CollisionShape* shape = nullptr;
 		reactphysics3d::Collider* collider = nullptr;
 		reactphysics3d::CollisionBody* body = nullptr;
+	};
+
+	struct C_UI : public Component
+	{
+		map<string, shared_ptr<UIBase>> ui_list;
 	};
 }
