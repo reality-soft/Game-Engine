@@ -14,6 +14,7 @@ namespace reality
 		virtual void OnUpdate(entt::registry& reg);
 
 		RayShape CreateMouseRay();
+		RayShape CreateFrontRay();
 		C_Camera* GetCamera();
 		XMMATRIX GetViewProj();
 		void SetSpeed(float speed) { this->speed = speed; };
