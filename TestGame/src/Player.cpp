@@ -19,11 +19,7 @@ void Player::OnInit(entt::registry& registry)
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
 	reality::C_CapsuleCollision capsule;
-	capsule.capsule.base = { 0, 0, 0, 0 };
-	capsule.capsule.radius = 5;
-	capsule.capsule.tip = { 0, 50, 0, 0 };
-	capsule.local = XMMatrixIdentity();
-	capsule.world = XMMatrixIdentity();
+	capsule.SetCapsuleData(XMVectorZero(), 50, 5);
 	registry.emplace<reality::C_CapsuleCollision>(entity_id_, capsule);
 
 	C_Camera camera;

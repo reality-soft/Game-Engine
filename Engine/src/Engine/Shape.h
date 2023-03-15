@@ -158,48 +158,28 @@ namespace reality {
         CapsuleShape()
         {
             base = XMVectorZero();
-            tip = XMVectorZero();
+            height = 0.0f;
             radius = 0.0f;
         }
-        CapsuleShape(float _min, float _max, float _radius)
-        {
-            base = XMVectorSet(0, _min, 0, 0);
-            tip = XMVectorSet(0, _max, 0, 0);
-            radius = _radius;
-        }
-        CapsuleShape(const XMVECTOR& _base, const XMVECTOR& _tip, const float& _radius)
+        CapsuleShape(const XMVECTOR& _base, const float& _height, const float& _radius)
         {
             base = _base;
-            tip = _tip;
+            height = _height;
             radius = _radius;
         }
-        CapsuleShape(const AABBShape& _aabb)
+        array<XMVECTOR, 4> GetTipBaseAB()
         {
-            base = _aabb.center + XMVectorSet(0, XMVectorGetY(_aabb.min), 0, 0);
-            tip = _aabb.center + XMVectorSet(0, XMVectorGetY(_aabb.max), 0, 0);
-            XMVECTOR extend = _aabb.max - _aabb.min;
-            extend.m128_f32[1] = 0;
-            radius = XMVectorGetX(XMVector3Length(extend));
-        }
-        vector<XMVECTOR> GetAB()
-        {
+            XMVECTOR tip = base + XMVectorSet(0, height, 0, 0);
+
             XMVECTOR normal = XMVector3Normalize(tip - base);
             XMVECTOR lineend = normal * radius;
             XMVECTOR A = base + lineend;
             XMVECTOR B = tip - lineend;
 
-            return { A, B };
+            return { tip, base, A, B };
         }
-        XMVECTOR GetCenter()
-        {
-            float x = (XMVectorGetX(base) + XMVectorGetX(tip)) / 2;
-            float y = (XMVectorGetY(base) + XMVectorGetY(tip)) / 2;
-            float z = (XMVectorGetZ(base) + XMVectorGetZ(tip)) / 2;
-
-            return XMVectorSet(x, y, z, 0);
-        }
-
-        XMVECTOR base, tip;
+        XMVECTOR base;
+        float height;
         float radius;
     };
 

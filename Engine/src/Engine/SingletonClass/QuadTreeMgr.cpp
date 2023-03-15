@@ -48,22 +48,6 @@ void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
 	root_node_ = BuildTree(0, min_x, min_z, max_x, max_z);
 }
 
-
-void reality::QuadTreeMgr::InsertAllLeaves(SpaceNode* node)
-{
-	if (node->is_leaf)
-	{
-		visible_leaves.insert(node);
-	}
-	else
-	{
-		InsertAllLeaves(node->child_node_[0]);
-		InsertAllLeaves(node->child_node_[1]);
-		InsertAllLeaves(node->child_node_[2]);
-		InsertAllLeaves(node->child_node_[3]);
-	}
-}
-
 SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
 {
 	SpaceNode* new_node = new SpaceNode(node_count++, depth);
@@ -104,43 +88,6 @@ void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
 
 }
 
-int reality::QuadTreeMgr::UpdateNodeObjectBelongs(int cur_node_num, const AABBShape& object_area, entt::entity object_id)
-{
-	SpaceNode* parent_node = root_node_;
-	int new_node_num = 0;
-
-	for (int i = 0; i < 4; ++i)
-	{
-		SpaceNode* child_node = parent_node->child_node_[i];
-
-		//if (child_node->area.AABBOverlap(object_area) == OverlapType::INSIDE)
-		//{
-		//	if (child_node->node_depth == max_depth)
-		//	{
-		//		new_node_num = child_node->node_num;
-		//		break;
-		//	}
-
-		//	i = -1;
-		//	parent_node = child_node;
-		//}
-		//else if (child_node->area.AABBOverlap(object_area) == OverlapType::INTERSECT)
-		//{
-		//	new_node_num = parent_node->node_num;
-		//	break;
-		//}
-	}
-	if (new_node_num == cur_node_num)
-	{
-		return cur_node_num;
-	}
-
-	total_nodes_[cur_node_num]->object_list.erase(object_id);
-	total_nodes_[new_node_num]->object_list.insert(object_id);
-
-	return new_node_num;
-}
-
 std::vector<int> reality::QuadTreeMgr::FindCollisionSearchNode(int node_num)
 {
 	std::vector<int> node_to_search;
@@ -168,21 +115,12 @@ std::unordered_set<entt::entity> reality::QuadTreeMgr::GetObjectListInNode(int n
 
 void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
-	const float ts = 1.0f / 20.0f;
-	static float acc = 0.0f;
-	acc += TM_DELTATIME;
-	if (acc < ts)
-		return;
-
-	acc = 0.0f;
-
-
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
 
 	casted_nodes_.clear();
 	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
-	//visible_leaves.clear();
-	//NodeCulling(root_node_);
+	ray_casted_nodes = casted_nodes_.size();
+	UpdatePhysics();
 }
 
 void reality::QuadTreeMgr::Release()
@@ -196,37 +134,42 @@ void reality::QuadTreeMgr::Release()
 	leaf_nodes_.clear();
 }
 
-void reality::QuadTreeMgr::UpdatePhysics(float time_step)
+void reality::QuadTreeMgr::UpdatePhysics()
 {
-	static float delta = 0;
+	static double delta = 0;
 	delta += TM_DELTATIME;
-	if (delta < time_step)
+	if (delta < physics_timestep)
 		return;
 
 	delta = 0.0f;
-}
 
-void reality::QuadTreeMgr::NodeCulling(SpaceNode* node)
-{
-	CollideType result = FrustumToAABB(camera_frustum_, node->area);
+	if (!dynamic_capsule_list.empty())
+		player_capsule_pos = dynamic_capsule_list.begin()->second->capsule.base;
 
-	if (result == CollideType::INTERSECT)
+	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
-		if (node->is_leaf)
+		int cal = 0;
+		vector<SpaceNode*> nodes;
+		ObjectQueryByCapsule(dynamic_capsule.second->capsule, root_node_, nodes);
+		including_nodes_num.clear();
+
+		if (nodes.empty())
+			break;
+
+		for (auto node : nodes)
 		{
-			visible_leaves.insert(node);
+			including_nodes_num.insert(node->node_num);
+			for (auto& tri : node->static_triangles)
+			{
+				cal++;
+				if (PointInTriangle(dynamic_capsule.second->capsule.base, tri))
+				{
+					int a = 0;
+					dynamic_capsule.second->capsule.base.m128_f32[1];
+				}
+			}
 		}
-		else
-		{
-			NodeCulling(node->child_node_[0]);
-			NodeCulling(node->child_node_[1]);
-			NodeCulling(node->child_node_[2]);
-			NodeCulling(node->child_node_[3]);
-		}
-	}
-	if (result == CollideType::INSIDE)
-	{
-		InsertAllLeaves(node);
+		calculating_triagnles = cal;
 	}
 }
 
@@ -237,23 +180,40 @@ void reality::QuadTreeMgr::NodeCasting(RayShape& ray, SpaceNode* node)
 
 	if (RayToAABB(ray, node->area))
 	{
-		if (node->is_leaf)
+		if (node->is_leaf && node->static_triangles.size() > 0)
 		{
 			float dist = Distance(node->area.center, ray.start);
 			casted_nodes_.insert(make_pair(dist, node));
 			return;
 		}
-
-		NodeCasting(ray, node->child_node_[0]);
-		NodeCasting(ray, node->child_node_[1]);
-		NodeCasting(ray, node->child_node_[2]);
-		NodeCasting(ray, node->child_node_[3]);
+		if (!node->is_leaf)
+		{
+			NodeCasting(ray, node->child_node_[0]);
+			NodeCasting(ray, node->child_node_[1]);
+			NodeCasting(ray, node->child_node_[2]);
+			NodeCasting(ray, node->child_node_[3]);
+		}
 	}
 }
 
-void reality::QuadTreeMgr::ObjectCulling()
+void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode* node, vector<SpaceNode*>& node_list)
 {
-
+	auto result = AABBToCapsule(node->area, capsule);
+	if (result)
+	{
+		if (node->is_leaf && node->static_triangles.size() > 0)
+		{
+			node_list.push_back(node);
+			return;			
+		}
+		if (!node->is_leaf)
+		{
+			ObjectQueryByCapsule(capsule, node->child_node_[0], node_list);
+			ObjectQueryByCapsule(capsule, node->child_node_[1], node_list);
+			ObjectQueryByCapsule(capsule, node->child_node_[2], node_list);
+			ObjectQueryByCapsule(capsule, node->child_node_[3], node_list);
+		}
+	} 
 }
 
 RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
@@ -292,7 +252,14 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_di
 	return callback_list.begin()->second;
 }
 
-int reality::QuadTreeMgr::GetVisibleLeafCount()
-{
-	return visible_leaves.size();
+void reality::QuadTreeMgr::RegisterDynamicCapsule(entt::entity ent)
+{	
+	if (dynamic_capsule_list.find(ent) != dynamic_capsule_list.end())
+		return;
+
+	C_CapsuleCollision* actor_capsule = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(ent);
+	if (actor_capsule)
+	{
+		dynamic_capsule_list.insert(make_pair(ent, actor_capsule));
+	}
 }

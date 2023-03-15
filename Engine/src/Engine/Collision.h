@@ -24,14 +24,25 @@ namespace reality {
 		INSIDE,
 	};
 
+    static bool PointInTriangle(XMVECTOR& p, TriangleShape& tri)
+    {
+        if (tri.SameSide(p, tri.vertex0, tri.vertex1, tri.vertex2) &&
+            tri.SameSide(p, tri.vertex1, tri.vertex0, tri.vertex2) &&
+            tri.SameSide(p, tri.vertex2, tri.vertex0, tri.vertex1))
+        {
+            XMVECTOR cross = XMVector3Cross(tri.vertex0 - p, tri.vertex1 - p);
+            if (IsParallelVector(cross, tri.normal))
+                return true;
+        }
+        return false;
+    }
+
     static RayCallback RayToTriangle(RayShape& ray, TriangleShape& tri)
     {
         RayCallback callback;
         XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri.vertex0, tri.vertex1, tri.vertex2), ray.start, ray.end);
 
-        if (tri.SameSide(P, tri.vertex0, tri.vertex1, tri.vertex2) &&
-            tri.SameSide(P, tri.vertex1, tri.vertex0, tri.vertex2) &&
-            tri.SameSide(P, tri.vertex2, tri.vertex0, tri.vertex1))
+        if (PointInTriangle(P, tri))
         {
             float distance = XMVectorGetX(XMVector3Length(P - ray.start));
             if (distance <= XMVectorGetX(XMVector3Length(ray.end - ray.start)))
@@ -87,43 +98,27 @@ namespace reality {
             return CollideType::INSIDE;
         }
         return CollideType::INTERSECT;
+    }
 
-        //int in_corner = 0;
-        //int out_corner = 0;
+    static bool AABBToCapsule(AABBShape& aabb, CapsuleShape& capsule)
+    {
+        // 1. π⁄Ω∫->ƒ∏Ω∂ ∑π¿Ã
+        RayShape box_to_capsule_ray(aabb.center, capsule.base);
+        box_to_capsule_ray.start.m128_f32[1] = 0.0f;
+        box_to_capsule_ray.end.m128_f32[1] = 0.0f;
 
-        //XMVECTOR corners[8];
-        //corners[0] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.min), 1);
-        //corners[1] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.max), 1);
-        //corners[2] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.min), 1);
-        //corners[3] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.max), 1);
-        //corners[4] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.min), 1);
-        //corners[5] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.max), 1);
-        //corners[6] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.min), 1);
-        //corners[7] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.max), 1);
+        // 1. π⁄Ω∫->ƒ∏Ω∂ ∞≈∏Æ
+        float box_to_capsule_distance = Distance(box_to_capsule_ray.start, box_to_capsule_ray.end) - capsule.radius;
+        
+        // 2. π⁄Ω∫->Ω«∏∞¥ı»≠ π›∞Ê
+        XMVECTOR center_to_corner = aabb.max - aabb.center;
+        center_to_corner.m128_f32[1] = 0.0f;
+        float box_radius = XMVectorGetX(XMVector3Length(center_to_corner));
 
-        //for (int i = 0; i < 6; ++i)
-        //{
-        //    float dot = 0;
-        //    for (int j = 0; j < 8; ++j)
-        //    {
-        //        dot = frustum.frustum_plane[i].DotFromPoint(corners[j]);
+        if (box_to_capsule_distance <= box_radius)
+            return true;
 
-        //        if (dot < 0) out_corner++;
-        //        else in_corner++;
-        //    }
-
-        //    if (in_corner == 0)
-        //    {
-        //        return CollideType::OUTSIDE;
-        //    }
-
-        //    if (out_corner == 0)
-        //    {
-        //        return CollideType::INSIDE;
-        //    }
-
-        //}
-        //return CollideType::INTERSECT;
+        return false;
     }
 
 	static CollideType AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2)
@@ -150,8 +145,8 @@ namespace reality {
 
     static CollideType CapsuleToCapsule(CapsuleShape& cap1, CapsuleShape& cap2)
     {
-        vector<XMVECTOR> cap1_ab = cap1.GetAB();
-        vector<XMVECTOR> cap2_ab = cap2.GetAB();
+        vector<XMVECTOR> cap1_ab = { cap1.GetTipBaseAB()[3], cap1.GetTipBaseAB()[4] };
+        vector<XMVECTOR> cap2_ab = { cap2.GetTipBaseAB()[3], cap2.GetTipBaseAB()[4] };
 
         float distance = 0;
         float radius = cap1.radius + cap2.radius;
@@ -203,7 +198,7 @@ namespace reality {
 
     static CollideType CapsuleToTriangle(CapsuleShape& cap, TriangleShape& triangle)
     {
-        vector<XMVECTOR> cap_ab = cap.GetAB();
+        vector<XMVECTOR> cap_ab = { cap.GetTipBaseAB()[3], cap.GetTipBaseAB()[4] };
 
         float distance = 0;
         float radius = cap.radius;
