@@ -42,8 +42,11 @@ namespace reality {
 	public:
 		void UpdatePhysics(float time_step);
 		void NodeCulling(SpaceNode* node);
+		void NodeCasting(RayShape& ray, SpaceNode* node);
 		void ObjectCulling();
-		RayCallback Raycast(RayShape& ray);
+		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
+		RayCallback RaycastAdjustActor(RayShape& ray);
+		int GetVisibleLeafCount();
 
 	private:
 		UINT max_depth;
@@ -52,11 +55,14 @@ namespace reality {
 		vector<SpaceNode*> total_nodes_;
 		vector<SpaceNode*> leaf_nodes_;
 		set<SpaceNode*> visible_leaves;
+		map<float, SpaceNode*> casted_nodes_;
+
 		SpaceNode* root_node_ = nullptr;
 
 
 
 	private:
+		void InsertAllLeaves(SpaceNode* node);
 		SpaceNode* BuildTree(UINT depth, float row1, float col1, float row2, float col2);
 		void SetStaticTriangles(SpaceNode* node);
 
