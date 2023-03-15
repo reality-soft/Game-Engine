@@ -13,22 +13,24 @@ public:
 	virtual void OnRelease();
 
 private:
-	Level	level;
-	UIActor test_ui_;
+  
+	SkySphere sky_sphere;
+	LightMeshLevel level;
 
-	entt::entity ent_player;
-
-	RenderSystem	sys_render;
-	CameraSystem	sys_camera;
-	SoundSystem		sys_sound;
-	EffectSystem	sys_effect;
-	UISystem		sys_ui;
+	reality::LightingSystem sys_light;
+	reality::RenderSystem sys_render;
+	reality::CameraSystem sys_camera;
+	reality::SoundSystem sys_sound;
+	reality::EffectSystem sys_effect;
+	reality::MovementSystem  sys_movement;
+	reality::UISystem		sys_ui;
 
 	StaticObject test_object;
 
 private:
 	TestWidget	test_window_;
 	FX_Effect	effect_;
+	UIActor test_ui_;
 	reality::WorldRayCallback callback;
 	void CreateEffectFromRay(XMVECTOR hitpoint);
 	void CreateTestUI();

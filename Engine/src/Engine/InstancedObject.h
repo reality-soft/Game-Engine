@@ -1,7 +1,7 @@
 #pragma once
 #include "DllMacro.h"
 #include "DataTypes.h"
-#include "Shader.h"
+#include "Material.h"
 
 namespace reality
 {
@@ -12,32 +12,31 @@ namespace reality
 		~InstancedObject();
 
 	public:
-		void Init(string mesh_id, string vs_id);
+		bool Init(string mesh_id, string vs_id, string mat_id);
 		void Frame();
 		void Render();
 		void Release();
 
 		InstanceData* selected_instance = nullptr;
+		map<string, InstanceData*> instance_pool;
 		string object_name;
-		string mesh_id_;
-		string vs_id_;
 
 	public:
-		void AddNewInstance();
+		InstanceData* AddNewInstance(string name);
+		vector<InstanceData::CData> GetCDataArray();
+		void SetInstanceScale(string name, XMFLOAT3 S);
+		void SetInstanceRotation(string name, XMFLOAT3 R);
+		void SetInstanceTranslation(string name, XMFLOAT3 T);
 
 	private:
 		bool UpdateInstance();
 		bool CreateInstanceBuffer();
 
-	private:
-		map<string, InstanceData*> instance_pool;
-
-	public:
-		vector<InstanceData::CData> GetCDataArray();
 
 	private:
 		shared_ptr<StaticMesh> static_mesh;
 		shared_ptr<VertexShader> vertex_shader;
+		shared_ptr<Material> material;
 
 		ComPtr<ID3D11Buffer> inst_buffer;
 		ComPtr<ID3D11ShaderResourceView> inst_srv;

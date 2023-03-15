@@ -111,7 +111,20 @@ static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
 {
 	// Subtract the 'from' point from the 'to' point to get the vector
 	DirectX::XMVECTOR vector = DirectX::XMVectorSubtract(p1, p2);	
-	return DirectX::XMVector3Length(vector).m128_f32[0];
+	return DirectX::XMVector3Length(vector).m128_f32[0]; 
+}
+
+static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
+{
+	// 정규화된 벡터를 사용하여 평행 여부를 확인합니다.
+	DirectX::XMVECTOR normalized1 = DirectX::XMVector3Normalize(vector1);
+	DirectX::XMVECTOR normalized2 = DirectX::XMVector3Normalize(vector2);
+
+	// 두 벡터의 내적(dot product)을 계산합니다.
+	float dot = DirectX::XMVectorGetX(DirectX::XMVector3Dot(normalized1, normalized2));
+
+	// 내적이 1 또는 -1에 근접하면 두 벡터는 평행합니다.
+	return DirectX::XMScalarNearEqual(dot, 1.f, 0.001f) || DirectX::XMScalarNearEqual(dot, -1.f, 0.001f);
 }
 
 #define randf(x) (x*rand()/(float)RAND_MAX)

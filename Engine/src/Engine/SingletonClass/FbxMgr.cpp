@@ -42,7 +42,6 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
             SingleMesh<LightVertex> light_single_mesh;
             light_single_mesh.mesh_name = out_mesh->mesh_name;
             light_single_mesh.vertices = out_mesh->light_vertices;
-            light_single_mesh.indices = out_mesh->indices;
 
             res_light_mesh.meshes.push_back(light_single_mesh);
 
@@ -123,10 +122,6 @@ void reality::FbxMgr::SaveLightMesh(const LightMesh& light_mesh, string filename
         int num_of_vertices = light_mesh.meshes[cur_mesh_index].vertices.size();
         file_exporter.WriteBinaryWithoutSize<int>(&num_of_vertices, 1);
         file_exporter.WriteBinaryWithoutSize<LightVertex>(const_cast<LightVertex*>(light_mesh.meshes[cur_mesh_index].vertices.data()), num_of_vertices);
-    
-        int num_of_indices = light_mesh.meshes[cur_mesh_index].indices.size();
-        file_exporter.WriteBinaryWithoutSize<int>(&num_of_indices, 1);
-        file_exporter.WriteBinaryWithoutSize<UINT>(const_cast<UINT*>(light_mesh.meshes[cur_mesh_index].indices.data()), num_of_indices);
     }
 }
 
@@ -412,20 +407,6 @@ bool reality::FbxMgr::CreateBuffers(SingleMesh<LightVertex>& mesh)
     subdata.pSysMem = mesh.vertices.data();
 
     hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-
-    // IndexBuffer
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    subdata.pSysMem = mesh.indices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
     if (FAILED(hr))
         return false;
 }

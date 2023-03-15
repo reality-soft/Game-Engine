@@ -8,6 +8,7 @@ namespace reality
 	class DLL_API Actor
 	{
 	protected:
+		XMMATRIX		transform_matrix_ = XMMatrixIdentity();
 		entt::entity	entity_id_;
 		TransformTree	transform_tree_;
 		AABBShape		collision_box_;
@@ -17,8 +18,7 @@ namespace reality
 		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate();
 	public: 
-		entt::entity GetEntityId () {
-			return entity_id_;
-		}
+		entt::entity GetEntityId();
+		void ApplyMovement(XMMATRIX movement_matrix);
 	};
 }

@@ -15,9 +15,12 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 	{
 		auto* movement_component = reg.try_get<C_Movement>(entity_id);
 
+		movement_component->direction = XMVector3Normalize(movement_component->direction);
 		XMVECTOR movement_vector = movement_component->direction * movement_component->speed * TM_DELTATIME;
+		if (!XMVector4Equal(movement_vector, XMVectorZero())) {
+			EVENT->PushEvent<MovementEvent>(movement_vector, entity_id);
+		}
 
-		MovementEvent movement_event(movement_vector, entity_id);
-		EVENT->PushEvent(movement_event);
+		movement_component->direction = XMVectorZero();
 	}
 }

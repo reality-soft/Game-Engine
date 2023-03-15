@@ -4,6 +4,7 @@
 #include "GUIMgr.h"
 #include "PhysicsMgr.h"
 #include "EventMgr.h"
+#include "InputEventMgr.h"
 #include "SceneMgr.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -79,6 +80,8 @@ namespace reality {
 			TIMER->Update();
 			DINPUT->Update();
 			PHYSICS->Update();
+
+			INPUT_EVENT->PollEvents();
 
 			SCENE_MGR->OnUpdate();
 

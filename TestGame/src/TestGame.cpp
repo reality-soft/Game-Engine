@@ -1,70 +1,66 @@
 #include "TestGame.h"
+#include "Player.h"
 
 void TestGame::OnInit()
 {
 	GUI->AddWidget("test_window", &test_window_);
 
 	reality::RESOURCE->Init("../../Contents/");
-	reality::FMOD_MGR->Init();
-	PHYSICS->Init();
 
 	WRITER->Init();
-
-	sys_sound.OnCreate(reg_scene_); 
-  
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
-
-	ent_player = reg_scene_.create();
 
 	sys_render.OnCreate(reg_scene_);
 	sys_camera.OnCreate(reg_scene_);
-	sys_effect.OnCreate(reg_scene_);
-	sys_camera.TargetTag(reg_scene_, "Debug");
-	sys_ui.OnCreate(reg_scene_);
-	level.ImportFromFile("../../Contents/BinaryPackage/Levels/jason.lv");
-	//QUADTREE->Init(&level);
-	
-	effect_.OnInit(reg_scene_, "sample_effect");
 
-	// Å×½ºÆ® UI
+// ï¿½×½ï¿½Æ® UI
 	test_ui_.OnInit(reg_scene_);
 	CreateTestUI();
-	
+	sys_ui.OnCreate(reg_scene_);
+  
+	sys_camera.SetSpeed(1000);
+	sys_light.OnCreate(reg_scene_);
 
+	SCENE_MGR->AddPlayer<Player>();
+	sys_camera.TargetTag(reg_scene_, "Player");
+
+	auto character_actor = SCENE_MGR->GetPlayer<Player>(0);
+	// Key Settings
+	INPUT_EVENT->Subscribe({ DIK_D }, std::bind(&Player::MoveRight, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_W, DIK_D }, std::bind(&Player::MoveRightForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_S, DIK_D }, std::bind(&Player::MoveRightBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_A }, std::bind(&Player::MoveLeft, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_W, DIK_A }, std::bind(&Player::MoveLeftForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_S, DIK_A }, std::bind(&Player::MoveLeftBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_W }, std::bind(&Player::MoveForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_S }, std::bind(&Player::MoveBack, character_actor), KEY_HOLD);
+
+	std::function<void()> idle = std::bind(&Player::Idle, character_actor);
+	INPUT_EVENT->Subscribe({ DIK_D }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_S }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_W }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_A }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_SPACE }, idle, KEY_UP);
+
+	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
+
+	sky_sphere.CreateSphere();
+	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso");
 }
 
 void TestGame::OnUpdate()
 {
+	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
-	sys_effect.OnUpdate(reg_scene_);
-	//QUADTREE->Frame(&sys_camera);
-	level.Update();
-	PHYSICS->Update();
-
-	
-	reality::MouseRay current_ray = sys_camera.CreateMouseRay();
-	callback = PHYSICS->WorldPicking(current_ray);
-	XMVECTOR current_point;
-	XMVECTOR current_normal;
-	RPtoXM(callback.hitpoint, current_point);
-	RPtoXM(callback.hitnormal, current_normal);
-	XMVECTOR S = { 1.0f, 1.0f, 1.0f, 0.0f };
-	XMVECTOR O = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMVECTOR R = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	//XMVECTOR R = XMQuaternionRotationRollPitchYawFromVector(current_normal);
-	XMVECTOR T = current_point;
-
-	test_window_.SetPickingVector(current_point);
-
-	if (DINPUT->GetMouseState(L_BUTTON) == KEY_HOLD)
-		CreateEffectFromRay(current_point);
-	
+	sys_light.OnUpdate(reg_scene_);
+	sys_movement.OnUpdate(reg_scene_);
 }
 
 void TestGame::OnRender()
 {
-	//QUADTREE->Render();
-	level.Render(false);
+	sky_sphere.FrameRender(sys_camera.GetCamera());
+	level.Update();
+	level.Render();
 	sys_render.OnUpdate(reg_scene_);
 	sys_ui.OnUpdate(reg_scene_);
 	GUI->RenderWidgets();
@@ -87,16 +83,16 @@ void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
 void TestGame::CreateTestUI()
 {
 	C_UI& ui_comp = reg_scene_.get<C_UI>(test_ui_.GetEntityId());
-	// ÀÌ¹ÌÁö ¸¸µé±â
+	// ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 	shared_ptr<UI_Image> image = make_shared<UI_Image>();
 	image->InitImage("Ground.png");
 	image->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
-	// ÀÌ¹ÌÁö ¾Æ·¡¿¡ ¹öÆ° ¸¸µé±â
+	// ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½Æ·ï¿½ï¿½ï¿½ ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½
 	shared_ptr<UI_Button> button = make_shared<UI_Button>();
 	image->AddChildUI(button);
 	button->InitButton("Button Normal.png", "Button Hover.png", "Button Normal.png");
 	button->SetLocalRectByCenter({ image->rect_transform_.local_rect.width / 2.0f, image->rect_transform_.local_rect.height / 2.0f }, 200.0f, 100.0f);
-	// ¹öÆ° ¾Æ·¡¿¡ ÅØ½ºÆ® ¸¸µé±â
+	// ï¿½ï¿½Æ° ï¿½Æ·ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½
 	shared_ptr<UI_Text> text = make_shared<UI_Text>();
 	button->AddChildUI(text);
 	text->InitText("Button", { button->rect_transform_.world_rect.width / 4.0f, button->rect_transform_.world_rect.height / 4.0f }, 0.2f);
