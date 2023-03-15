@@ -31,5 +31,6 @@ private:
 	FX_Effect	effect_;
 	reality::WorldRayCallback callback;
 	void CreateEffectFromRay(XMVECTOR hitpoint);
+	void CreateTestUI();
 };
 

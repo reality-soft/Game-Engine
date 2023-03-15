@@ -7,6 +7,9 @@ void TestGame::OnInit()
 	reality::RESOURCE->Init("../../Contents/");
 	reality::FMOD_MGR->Init();
 	PHYSICS->Init();
+
+	WRITER->Init();
+
 	sys_sound.OnCreate(reg_scene_); 
   
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -25,19 +28,8 @@ void TestGame::OnInit()
 
 	// 테스트 UI
 	test_ui_.OnInit(reg_scene_);
-	C_UI& ui_comp = reg_scene_.get<C_UI>(test_ui_.GetEntityId());
-	// 이미지 만들기
-	shared_ptr<UI_Image> image = make_shared<UI_Image>();
-	image->InitImage("Ground.png");
-	image->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
-	// 이미지 아래에 버튼 만들기
-	shared_ptr<UI_Button> button = make_shared<UI_Button>(); 
-	//image->AddChildUI(button);
-	button->InitButton("Button Normal.png", "Button Hover.png", "Button Normal.png");
-	//button->SetLocalRectByCenter({ image->rect_transform_.local_rect.width / 2.0f, image->rect_transform_.local_rect.height / 2.0f }, 100.0f, 100.0f);
-	button->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
+	CreateTestUI();
 	
-	ui_comp.ui_list.insert({ "Test Image", button });
 
 }
 
@@ -88,10 +80,27 @@ void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
 {
 	C_Effect& effect = reg_scene_.get<C_Effect>(effect_.GetEntityId());
 	
-	
-	
-	
 	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
 	effect.world = XMMatrixTranslationFromVector(hitpoint);
+}
+
+void TestGame::CreateTestUI()
+{
+	C_UI& ui_comp = reg_scene_.get<C_UI>(test_ui_.GetEntityId());
+	// 이미지 만들기
+	shared_ptr<UI_Image> image = make_shared<UI_Image>();
+	image->InitImage("Ground.png");
+	image->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
+	// 이미지 아래에 버튼 만들기
+	shared_ptr<UI_Button> button = make_shared<UI_Button>();
+	image->AddChildUI(button);
+	button->InitButton("Button Normal.png", "Button Hover.png", "Button Normal.png");
+	button->SetLocalRectByCenter({ image->rect_transform_.local_rect.width / 2.0f, image->rect_transform_.local_rect.height / 2.0f }, 200.0f, 100.0f);
+	// 버튼 아래에 텍스트 만들기
+	shared_ptr<UI_Text> text = make_shared<UI_Text>();
+	button->AddChildUI(text);
+	text->InitText("Button", { button->rect_transform_.world_rect.width / 4.0f, button->rect_transform_.world_rect.height / 4.0f }, 0.2f);
+
+	ui_comp.ui_list.insert({ "Test Image", image });
 }
 
