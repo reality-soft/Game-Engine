@@ -28,11 +28,6 @@ namespace reality
 		shared_ptr<LightMesh> level_mesh;
 		shared_ptr<VertexShader> vertex_shader;
 		shared_ptr<GeometryShader> geometry_shader;
-
-		//reactphysics3d::TriangleMesh* shape_mesh = nullptr;
-		//reactphysics3d::ConcaveMeshShape* level_shape = nullptr;
-		//reactphysics3d::Collider* level_collider = nullptr;
-		//reactphysics3d::CollisionBody* level_body = nullptr;
 	};
 }
 
