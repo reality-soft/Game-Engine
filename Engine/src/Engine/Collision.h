@@ -33,10 +33,14 @@ namespace reality {
             tri.SameSide(P, tri.vertex1, tri.vertex0, tri.vertex2) &&
             tri.SameSide(P, tri.vertex2, tri.vertex0, tri.vertex1))
         {
-            callback.success = true;
-            callback.distance = XMVectorGetX(XMVector3Length(P - ray.start));
-            callback.point = P;
-            callback.normal = tri.normal;
+            float distance = XMVectorGetX(XMVector3Length(P - ray.start));
+            if (distance <= XMVectorGetX(XMVector3Length(ray.end - ray.start)))
+            {
+                callback.success = true;
+                callback.distance = distance;
+                callback.point = P;
+                callback.normal = tri.normal;
+            }
         }
 
 
@@ -51,12 +55,75 @@ namespace reality {
             if (callback.success)
                 return true;
         }
+
         return false;
     }
 
     static CollideType FrustumToAABB(Frustum& frustum, AABBShape& aabb)
     {
+        int in_axies = 0;
+        int out_axies = 0;
 
+        for (int i = 0; i < 4; ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                bool success = RayToTriangle(aabb.vertical_ray[i], frustum.topbottom_tries[j]).success;
+
+                if (success)
+                    in_axies++;
+                else
+                    out_axies++;
+            }
+        }
+
+        if (in_axies == 0)
+        {
+            return CollideType::OUTSIDE;
+        }
+
+        if (out_axies == 0)
+        {
+            return CollideType::INSIDE;
+        }
+        return CollideType::INTERSECT;
+
+        //int in_corner = 0;
+        //int out_corner = 0;
+
+        //XMVECTOR corners[8];
+        //corners[0] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.min), 1);
+        //corners[1] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.max), 1);
+        //corners[2] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.min), 1);
+        //corners[3] = XMVectorSet(XMVectorGetX(aabb.min), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.max), 1);
+        //corners[4] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.min), 1);
+        //corners[5] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.min), XMVectorGetZ(aabb.max), 1);
+        //corners[6] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.min), 1);
+        //corners[7] = XMVectorSet(XMVectorGetX(aabb.max), XMVectorGetY(aabb.max), XMVectorGetZ(aabb.max), 1);
+
+        //for (int i = 0; i < 6; ++i)
+        //{
+        //    float dot = 0;
+        //    for (int j = 0; j < 8; ++j)
+        //    {
+        //        dot = frustum.frustum_plane[i].DotFromPoint(corners[j]);
+
+        //        if (dot < 0) out_corner++;
+        //        else in_corner++;
+        //    }
+
+        //    if (in_corner == 0)
+        //    {
+        //        return CollideType::OUTSIDE;
+        //    }
+
+        //    if (out_corner == 0)
+        //    {
+        //        return CollideType::INSIDE;
+        //    }
+
+        //}
+        //return CollideType::INTERSECT;
     }
 
 	static CollideType AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2)

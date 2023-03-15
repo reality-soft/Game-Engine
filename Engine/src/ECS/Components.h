@@ -91,16 +91,6 @@ namespace reality
 			fov = XMConvertToRadians(90);
 			tag = "Player";
 		}
-		void SetLocalFrom(C_CapsuleCollision& capsule_collision, float arm_length)
-		{
-			local_pos = XMVector3Normalize(XMVectorSet(0, 1, -1, 0)) * arm_length;
-			target_pos = capsule_collision.capsule.GetCenter();
-			pitch_yaw = { XMConvertToRadians(45), 0 };
-			near_z = 1.f;
-			far_z = 100000.f;
-			fov = XMConvertToRadians(90);
-			tag = "Player";
-		}
 	};
 
 	struct C_Animation : public Component

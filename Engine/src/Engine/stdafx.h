@@ -21,6 +21,7 @@
 #include <string>
 #include <algorithm>
 #include <functional>
+#include <array>
 #include <wrl.h>
 
 #include <windows.h>
