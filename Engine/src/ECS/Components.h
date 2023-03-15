@@ -6,7 +6,6 @@
 #include "Collision.h"
 #include "Material.h"
 
-
 namespace reality
 {
 #define TYPE_ID(type) entt::type_hash<type>().value()
@@ -52,6 +51,13 @@ namespace reality
 	{
 		reality::CapsuleShape capsule;
 
+		void SetCapsuleData(XMVECTOR base, XMVECTOR tip, float radius) {
+			capsule.base = base;
+			capsule.tip = tip;
+			capsule.radius = radius;
+
+			local = XMMatrixTranslationFromVector(capsule.tip);
+		}
 		virtual void OnUpdate() override
 		{
 			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
@@ -66,8 +72,10 @@ namespace reality
 	{
 		XMVECTOR camera_pos = { 0, 0, 0, 0 };
 		XMVECTOR target_pos;
+		float target_height = 0.0f;
 		XMVECTOR local_pos;
 		XMFLOAT2 pitch_yaw = { 0, 0 };
+		XMVECTOR look, right, up;
 		float near_z, far_z, fov, aspect;
 
 		virtual void OnConstruct() override {};
@@ -77,15 +85,15 @@ namespace reality
 			XMVECTOR local_translation, local_rotation, local_scale;
 			XMVECTOR camera_translation, camera_rotation, camera_scale;
 			XMMatrixDecompose(&target_scale, &target_rotation, &target_pos, world);
-			target_pos.m128_f32[1] += 20;
+			target_pos.m128_f32[1] += target_height;
 			XMMatrixDecompose(&local_scale, &local_rotation, &local_pos, local);
 			XMMatrixDecompose(&camera_scale, &camera_rotation, &camera_pos, local * world);
 		}
 		void SetLocalFrom(C_CapsuleCollision& capsule_collision, float arm_length)
 		{
-			local_pos = XMVectorSet(0, 1, -1, 0) * arm_length;
-			target_pos = capsule_collision.capsule.GetCenter();
-			pitch_yaw = { 45, 0 };
+			local = XMMatrixTranslationFromVector(XMVectorSet(0, 1, -1, 0) * arm_length);
+			target_height = capsule_collision.capsule.tip.m128_f32[1];
+			pitch_yaw = { 0, 0};
 			near_z = 1.f;
 			far_z = 100000.f;
 			fov = XMConvertToRadians(90);
@@ -250,9 +258,31 @@ namespace reality
 			}
 		}
 
-		void ApplyMovement(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+		void Rotate(entt::registry& registry, entt::entity entity, XMVECTOR rotation_center, XMMATRIX rotation_matrix = XMMatrixIdentity()) {
 			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
-			cur_transform->world = world;
+			XMVECTOR world_scale, world_rotation, world_translation;
+			XMMatrixDecompose(&world_scale, &world_rotation, &world_translation, cur_transform->world);
+			
+			if (id_type != TYPE_ID(C_Camera)) {
+				cur_transform->world *= XMMatrixTranslationFromVector(-rotation_center);
+				cur_transform->world *= XMMatrixInverse(0, XMMatrixRotationQuaternion(world_rotation));
+				cur_transform->world *= rotation_matrix;
+				cur_transform->world *= XMMatrixTranslationFromVector(rotation_center);
+			}
+
+			for (auto child : children) {
+				child->Rotate(registry, entity, rotation_center, rotation_matrix);
+			}
+		}
+
+		void Translate(entt::registry& registry, entt::entity entity, XMMATRIX world = XMMatrixIdentity()) {
+			C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
+			XMVECTOR world_scale, world_rotation, world_translation;
+			XMMatrixDecompose(&world_scale, &world_rotation, &world_translation, cur_transform->world);
+			
+			cur_transform->world *= XMMatrixTranslationFromVector(-world_translation);
+			cur_transform->world *= world;
+			
 			cur_transform->OnUpdate();
 			
 			XMVECTOR local_scale, local_rotation, local_translation;
@@ -261,7 +291,7 @@ namespace reality
 			XMMATRIX translation_matrix = XMMatrixTranslationFromVector(local_translation);
 			
 			for (auto child : children) {
-				child->ApplyMovement(registry, entity, world * translation_matrix);
+				child->Translate(registry, entity, world * translation_matrix);
 			}
 		}
 	};

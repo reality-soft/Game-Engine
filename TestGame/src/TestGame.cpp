@@ -1,4 +1,5 @@
 #include "TestGame.h"
+#include "Player.h"
 
 void TestGame::OnInit()
 {
@@ -7,11 +8,33 @@ void TestGame::OnInit()
 	reality::RESOURCE->Init("../../Contents/");
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
 
-	sys_render.OnCreate(reg_scene);
-	sys_camera.OnCreate(reg_scene);
-	sys_camera.TargetTag(reg_scene, "Debug");
+	sys_render.OnCreate(reg_scene_);
+	sys_camera.OnCreate(reg_scene_);
 	sys_camera.SetSpeed(1000);
-	sys_light.OnCreate(reg_scene);
+	sys_light.OnCreate(reg_scene_);
+
+	SCENE_MGR->AddPlayer<Player>();
+	sys_camera.TargetTag(reg_scene_, "Player");
+
+	auto character_actor = SCENE_MGR->GetPlayer<Player>(0);
+	// Key Settings
+	INPUT_EVENT->Subscribe({ DIK_D }, std::bind(&Player::MoveRight, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_W, DIK_D }, std::bind(&Player::MoveRightForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_S, DIK_D }, std::bind(&Player::MoveRightBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_A }, std::bind(&Player::MoveLeft, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_W, DIK_A }, std::bind(&Player::MoveLeftForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_S, DIK_A }, std::bind(&Player::MoveLeftBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_W }, std::bind(&Player::MoveForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_S }, std::bind(&Player::MoveBack, character_actor), KEY_HOLD);
+
+	std::function<void()> idle = std::bind(&Player::Idle, character_actor);
+	INPUT_EVENT->Subscribe({ DIK_D }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_S }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_W }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_A }, idle, KEY_UP);
+	INPUT_EVENT->Subscribe({ DIK_SPACE }, idle, KEY_UP);
+
+	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
 
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso");
@@ -20,10 +43,9 @@ void TestGame::OnInit()
 void TestGame::OnUpdate()
 {
 	sys_light.UpdateSun(sky_sphere);
-	sys_camera.OnUpdate(reg_scene);
-	sys_light.OnUpdate(reg_scene);
-
-	sys_camera.OnUpdate(reg_scene);
+	sys_camera.OnUpdate(reg_scene_);
+	sys_light.OnUpdate(reg_scene_);
+	sys_movement.OnUpdate(reg_scene_);
 }
 
 void TestGame::OnRender()
@@ -31,7 +53,7 @@ void TestGame::OnRender()
 	sky_sphere.FrameRender(sys_camera.GetCamera());
 	level.Update();
 	level.Render();
-	sys_render.OnUpdate(reg_scene);
+	sys_render.OnUpdate(reg_scene_);
 }
 
 void TestGame::OnRelease()
@@ -43,9 +65,6 @@ void TestGame::OnRelease()
 void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
 {
 	C_Effect& effect = reg_scene_.get<C_Effect>(effect_.GetEntityId());
-	
-	
-	
 	
 	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
 	effect.world = XMMatrixTranslationFromVector(hitpoint);

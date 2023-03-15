@@ -16,13 +16,12 @@ private:
 	SkySphere sky_sphere;
 	LightMeshLevel level;
 
-	entt::registry reg_scene;
-
 	reality::LightingSystem sys_light;
 	reality::RenderSystem sys_render;
 	reality::CameraSystem sys_camera;
 	reality::SoundSystem sys_sound;
 	reality::EffectSystem sys_effect;
+	reality::MovementSystem  sys_movement;
 
 	StaticObject test_object;
 
