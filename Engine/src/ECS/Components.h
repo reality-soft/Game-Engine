@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Collision.h"
 #include "Material.h"
+#include "UIBase.h"
 
 namespace reality
 {
@@ -414,5 +415,10 @@ namespace reality
 	{
 		string effect_id;
 		Effect effect;
+	};
+  
+	struct C_UI : public Component
+	{
+		map<string, shared_ptr<UIBase>> ui_list;
 	};
 }

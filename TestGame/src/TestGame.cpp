@@ -6,10 +6,18 @@ void TestGame::OnInit()
 	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
+
+	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
 
 	sys_render.OnCreate(reg_scene_);
 	sys_camera.OnCreate(reg_scene_);
+
+// �׽�Ʈ UI
+	test_ui_.OnInit(reg_scene_);
+	CreateTestUI();
+	sys_ui.OnCreate(reg_scene_);
+  
 	sys_camera.SetSpeed(1000);
 	sys_light.OnCreate(reg_scene_);
 
@@ -63,6 +71,7 @@ void TestGame::OnRender()
 	level.Update();
 	level.Render();
 	sys_render.OnUpdate(reg_scene_);
+	sys_ui.OnUpdate(reg_scene_);
 
 	GUI->RenderWidgets();
 }
@@ -80,5 +89,25 @@ void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
 	
 	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
 	effect.world = XMMatrixTranslationFromVector(hitpoint);
+}
+
+void TestGame::CreateTestUI()
+{
+	C_UI& ui_comp = reg_scene_.get<C_UI>(test_ui_.GetEntityId());
+	// �̹��� �����
+	shared_ptr<UI_Image> image = make_shared<UI_Image>();
+	image->InitImage("Ground.png");
+	image->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
+	// �̹��� �Ʒ��� ��ư �����
+	shared_ptr<UI_Button> button = make_shared<UI_Button>();
+	image->AddChildUI(button);
+	button->InitButton("Button Normal.png", "Button Hover.png", "Button Normal.png");
+	button->SetLocalRectByCenter({ image->rect_transform_.local_rect.width / 2.0f, image->rect_transform_.local_rect.height / 2.0f }, 200.0f, 100.0f);
+	// ��ư �Ʒ��� �ؽ�Ʈ �����
+	shared_ptr<UI_Text> text = make_shared<UI_Text>();
+	button->AddChildUI(text);
+	text->InitText("Button", { button->rect_transform_.world_rect.width / 4.0f, button->rect_transform_.world_rect.height / 4.0f }, 0.2f);
+
+	ui_comp.ui_list.insert({ "Test Image", image });
 }
 
