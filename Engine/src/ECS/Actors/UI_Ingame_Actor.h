@@ -16,6 +16,7 @@ namespace reality
 		shared_ptr<UI_Image> minimap_ui;
 		shared_ptr<UI_Image> status_ui;
 		shared_ptr<UI_Image> objective_ui_;
+		shared_ptr<UI_Image> time_ui_;
 	};
 
 }
