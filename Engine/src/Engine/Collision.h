@@ -60,12 +60,23 @@ namespace reality {
 
     static bool RayToAABB(RayShape& ray, AABBShape& aabb)
     {
-        for (int i = 0; i < 12; ++i)
-        {
-            auto& callback = RayToTriangle(ray, aabb.triangle[i]);
-            if (callback.success)
-                return true;
-        }
+        XMVECTOR center_to_corner = aabb.max - aabb.center;
+        center_to_corner.m128_f32[1] = 0.0f;
+        float box_radius = XMVectorGetX(XMVector3Length(center_to_corner));
+
+        XMVECTOR line1 = ray.start; line1.m128_f32[1] = aabb.center.m128_f32[1];
+        XMVECTOR line2 = ray.end; line2.m128_f32[1] = aabb.center.m128_f32[1];
+        float box_to_line = XMVectorGetX(XMVector3LinePointDistance(line1, line2, aabb.center));
+
+        if (box_to_line <= box_radius)
+            return true;
+
+        //for (int i = 0; i < 12; ++i)
+        //{
+        //    auto& callback = RayToTriangle(ray, aabb.triangle[i]);
+        //    if (callback.success)
+        //        return true;
+        //}
 
         return false;
     }
