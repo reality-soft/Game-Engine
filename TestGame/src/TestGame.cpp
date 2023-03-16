@@ -83,20 +83,49 @@ void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
 void TestGame::CreateTestUI()
 {
 	C_UI& ui_comp = reg_scene_.get<C_UI>(test_ui_.GetEntityId());
-	// �̹��� �����
-	shared_ptr<UI_Image> image = make_shared<UI_Image>();
-	image->InitImage("Ground.png");
-	image->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 1000.0f, 500.0f);
-	// �̹��� �Ʒ��� ��ư �����
-	shared_ptr<UI_Button> button = make_shared<UI_Button>();
-	image->AddChildUI(button);
-	button->InitButton("Button Normal.png", "Button Hover.png", "Button Normal.png");
-	button->SetLocalRectByCenter({ image->rect_transform_.local_rect.width / 2.0f, image->rect_transform_.local_rect.height / 2.0f }, 200.0f, 100.0f);
-	// ��ư �Ʒ��� �ؽ�Ʈ �����
-	shared_ptr<UI_Text> text = make_shared<UI_Text>();
-	button->AddChildUI(text);
-	text->InitText("Button", { button->rect_transform_.world_rect.width / 4.0f, button->rect_transform_.world_rect.height / 4.0f }, 0.2f);
+	// 무기 UI
+	shared_ptr<UI_Image> weapon_image = make_shared<UI_Image>();
+	weapon_image->InitImage("AR_01.png");
+	weapon_image->SetLocalRectByMin({ 0, ENGINE->GetWindowSize().y * 5.0f / 6.0f }, 512.0f, 179.0f);
+	shared_ptr<UI_Text> weapon_text = make_shared<UI_Text>();
+	weapon_image->AddChildUI(weapon_text);
+	weapon_text->InitText("AR_01", { weapon_image->rect_transform_.world_rect.width / 2.0f, weapon_image->rect_transform_.world_rect.height / 3.0f }, 0.2f);
+	shared_ptr<UI_Text> ammo_text = make_shared<UI_Text>();
+	weapon_image->AddChildUI(ammo_text);
+	ammo_text->InitText("30/30", { weapon_image->rect_transform_.world_rect.width / 2.0f, weapon_image->rect_transform_.world_rect.height / 2.0f }, 0.2f);
+	ui_comp.ui_list.insert({ "Weapon UI", weapon_image });
 
-	ui_comp.ui_list.insert({ "Test Image", image });
+	// 미니맵 UI
+	shared_ptr<UI_Image> minimap_image = make_shared<UI_Image>();
+	minimap_image->InitImage("PreviewMinimap.png");
+	//minimap_image->InitImage("Minimap_Border.png");
+	minimap_image->SetLocalRectByMin({ ENGINE->GetWindowSize().x * 5.0f / 6.0f, ENGINE->GetWindowSize().y * 1.0f / 10.0f }, 248.0f, 245.0f);
+	ui_comp.ui_list.insert({ "Minimap UI", minimap_image });
+
+	// 플레이어 UI
+	shared_ptr<UI_Image> player_image = make_shared<UI_Image>();
+	player_image->InitImage("PreviewChr.png");
+	player_image->SetLocalRectByMin({ 0, ENGINE->GetWindowSize().y * 1.0f / 10.0f }, 432.0f, 153.0f);
+	//shared_ptr<UI_Image> player_image = make_shared<UI_Image>();
+	//player_image->InitImage("PlayerBorder.png");
+	//player_image->SetLocalRectByMin({ 0, ENGINE->GetWindowSize().y * 1.0f / 10.0f }, 432.0f, 153.0f);
+	//
+	//shared_ptr<UI_Image> hp_image = make_shared<UI_Image>();
+	//player_image->AddChildUI(hp_image);
+	//hp_image->InitImage("BarHealth.png");
+	//hp_image->SetLocalRectByMin({ 170.0f, 47.0f }, 200.0f, 20.0f );
+	//
+	//shared_ptr<UI_Image> bq_image = make_shared<UI_Image>();
+	//player_image->AddChildUI(bq_image);
+	//bq_image->InitImage("BqBar.png");
+	//bq_image->SetLocalRectByMin({ 170.0f, 80.0f }, 200.0f, 20.0f);
+	ui_comp.ui_list.insert({ "Player UI", player_image });
+
+	// Objective UI
+	shared_ptr<UI_Image> obj_image = make_shared<UI_Image>();
+	obj_image->InitImage("PreviewObj.png");
+	obj_image->SetLocalRectByMin({ ENGINE->GetWindowSize().x * 5.0f / 6.0f, ENGINE->GetWindowSize().y * 4.0f / 10.0f }, 350.0f, 413.0f);
+
+	ui_comp.ui_list.insert({ "Objective UI", obj_image });
 }
 
