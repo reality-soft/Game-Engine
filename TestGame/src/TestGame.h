@@ -31,9 +31,8 @@ private:
 	TestWidget	test_window_;
 	PropertyWidget gw_property_;
 	FX_Effect	effect_;
-	UIActor test_ui_;
+	UI_Ingame_Actor ingame_ui;
 	reality::WorldRayCallback callback;
 	void CreateEffectFromRay(XMVECTOR hitpoint);
-	void CreateTestUI();
 };
 
