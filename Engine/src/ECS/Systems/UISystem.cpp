@@ -33,6 +33,7 @@ void UISystem::OnCreate(entt::registry& reg)
 
 		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_UI.buffer.GetAddressOf());
 	}
+	
 }
 
 void UISystem::OnUpdate(entt::registry& reg)
@@ -61,12 +62,15 @@ void UISystem::OnUpdate(entt::registry& reg)
 	float pos_x = render_target_->rect_.center.x / ENGINE->GetWindowSize().x;
 	float pos_y = render_target_->rect_.center.y / ENGINE->GetWindowSize().y;
 
+	
 	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
 	XMMATRIX r = XMMatrixRotationZ(0.0f);
 	XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
 	SetCbData(XMMatrixTranspose(s * r * t));
 	render_target_->RenderingRT();
+
 }
+
 
 void UISystem::SetCbData(XMMATRIX world)
 {

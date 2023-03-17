@@ -11,10 +11,11 @@ namespace reality
 	public:
 		static void SetCbData(XMMATRIX world);
 	public:
-		shared_ptr<RenderTarget> render_target_;
+		shared_ptr<RenderTarget> render_target_; 
 	public:
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
+	
 	};
 }
 

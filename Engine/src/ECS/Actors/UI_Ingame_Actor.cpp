@@ -8,10 +8,20 @@ void UI_Ingame_Actor::OnInit(entt::registry& registry)
 {
 	UIActor::OnInit(registry);
 
+	CreateUI();
+
+}
+
+void UI_Ingame_Actor::OnUpdate()
+{
+}
+
+void UI_Ingame_Actor::CreateUI()
+{
 	C_UI& ui_comp = reg_scene_->get<C_UI>(GetEntityId());
 
 	// 무기 UI
-	weapon_ui_ = make_shared<UI_Image>(); 
+	weapon_ui_ = make_shared<UI_Image>();
 	weapon_ui_->InitImage("T_AR_01.png");
 	weapon_ui_->SetLocalRectByMin({ 100.0f, ENGINE->GetWindowSize().y - 200.0f }, 512.0f, 179.0f);
 	ui_comp.ui_list.insert({ "Weapon UI", weapon_ui_ });
@@ -28,9 +38,14 @@ void UI_Ingame_Actor::OnInit(entt::registry& registry)
 	ui_comp.ui_list.insert({ "Status UI", status_ui });
 
 	// 미니맵 UI
-	minimap_ui = make_shared<UI_Image>();
-	minimap_ui->InitImage("T_Minimap_Border.png");
+	minimap_ui = make_shared<UI_Minimap>();
+	minimap_ui->InitMinimap("T_Minimap.png");
 	minimap_ui->SetLocalRectByMin({ ENGINE->GetWindowSize().x * 4.0f / 5.0f, ENGINE->GetWindowSize().y * 1.0f / 10.0f }, 300.0f, 300.0f);
+
+	auto border_image = make_shared<UI_Image>();
+	minimap_ui->AddChildUI(border_image);
+	border_image->InitImage("T_Minimap_Border.png");
+	border_image->SetLocalRectByMin({ 0,0 }, 300.0f, 300.0f);
 	ui_comp.ui_list.insert({ "Minimap UI", minimap_ui });
 
 	// 시간 UI
@@ -47,6 +62,3 @@ void UI_Ingame_Actor::OnInit(entt::registry& registry)
 	ui_comp.ui_list.insert({ "Objective UI", objective_ui_ });
 }
 
-void UI_Ingame_Actor::OnUpdate()
-{
-}
