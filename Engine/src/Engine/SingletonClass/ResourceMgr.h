@@ -16,7 +16,7 @@ namespace reality
 		string directory() { return directory_; }
 		void set_directory(string dir) { directory_ = dir; }
 	public:
-		bool Init(LPCWSTR packagefile); // 통합 패키지 파일을 불러오고 없으면 빈 값
+		bool Init(LPCWSTR packagefile);
 		bool Init(string directory); 
 		void Release();
 

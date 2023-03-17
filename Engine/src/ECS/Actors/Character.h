@@ -16,8 +16,9 @@ namespace reality
 		CapsuleCallback capsule_callback;
 		void		 OnInit(entt::registry& registry) override;
 		void ApplyMovement(XMMATRIX movement_matrix) override;
-		C_Movement* GetMovementComponent() { return movement_component_; };
+		C_Movement* GetMovementComponent() { return movement_component_; }
 		void GravityFall(float _gravity);
+		XMMATRIX transform_matrix() { return transform_matrix_; }
 
 	protected:
 		void FastenAtFloor(XMMATRIX& movement_matrix);

@@ -425,7 +425,6 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 
 		UVSprite* uv_sprite = (UVSprite*)sprite;
 
-		// SRV ���
 		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite->tex_id);
 		if (texture != nullptr)
 			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());

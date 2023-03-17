@@ -509,8 +509,6 @@ bool ResourceMgr::ImportMaterial(string filename)
     return true;
 }
 
-
-// 이미터 파싱 메소드
 void ResourceMgr::ParseEmitter(DataItem* emitter_data, Emitter& emitter)
 {
     // type
@@ -824,7 +822,7 @@ void ResourceMgr::ParseEmitter(DataItem* emitter_data, Emitter& emitter)
 // 타임라인 -> 배열 계산 메소드들
 void ResourceMgr::ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* arr)
 {
-    // 1. 전체 배열을 map의 첫 값으로 초기화
+
     for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
@@ -869,7 +867,6 @@ void ResourceMgr::ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* a
         last_time = pair.first;
     }
 
-    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
     int timeline_last_time = last_time;
     for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
     {
@@ -879,28 +876,25 @@ void ResourceMgr::ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* a
 
 void ResourceMgr::ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
 {
-    // 1. 전체 배열을 map의 첫 값으로 초기화
+
     for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
     }
 
-    // map의 개수가 1개라면 메소드 종료
     if (timeline.size() == 1)
         return;
 
-    // 2. 이후의 값들을 보정해서 계산
     int last_time = -1;
     for (const auto& pair : timeline)
     {
-        // 첫 입력이면 last_time에만 저장하고 다음 배열로
+
         if (last_time == -1)
         {
             last_time = pair.first;
             continue;
         }
 
-        // 아니라면 앞의 값과 보정
         int cur_time = pair.first;
         int time_dif = cur_time - last_time + 1;
 
@@ -923,7 +917,6 @@ void ResourceMgr::ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* ar
         last_time = pair.first;
     }
 
-    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
     int timeline_last_time = last_time;
     for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
     {
@@ -933,28 +926,25 @@ void ResourceMgr::ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* ar
 
 void ResourceMgr::ComputeRotationTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
 {
-    // 1. 전체 배열을 map의 첫 값으로 초기화
+
     for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
     }
 
-    // map의 개수가 1개라면 메소드 종료
     if (timeline.size() == 1)
         return;
 
-    // 2. 이후의 값들을 보정해서 계산
     int last_time = -1;
     for (const auto& pair : timeline)
     {
-        // 첫 입력이면 last_time에만 저장하고 다음 배열로
+
         if (last_time == -1)
         {
             last_time = pair.first;
             continue;
         }
 
-        // 아니라면 앞의 값과 보정
         
         int cur_time = pair.first;
         int time_dif = cur_time - last_time + 1;
@@ -978,7 +968,6 @@ void ResourceMgr::ComputeRotationTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3
         last_time = pair.first;
     }
 
-    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
     int timeline_last_time = last_time;
     for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
     {
@@ -988,28 +977,25 @@ void ResourceMgr::ComputeRotationTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3
 
 void ResourceMgr::ComputeVelocityTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr)
 {
-    // 1. 전체 배열을 map의 첫 값으로 초기화
+
     for (int i = 0; i < EFFECT_TIMELINE_SIZE; i++)
     {
         arr[i] = timeline.begin()->second;
     }
 
-    // map의 개수가 1개라면 메소드 종료
     if (timeline.size() == 1)
         return;
 
-    // 2. 이후의 값들을 보정해서 계산
     int last_time = -1;
     for (const auto& pair : timeline)
     {
-        // 첫 입력이면 last_time에만 저장하고 다음 배열로
+
         if (last_time == -1)
         {
             last_time = pair.first;
             continue;
         }
 
-        // 아니라면 앞의 값과 보정
         int cur_time = pair.first;
         int time_dif = cur_time - last_time + 1;
 
@@ -1032,7 +1018,6 @@ void ResourceMgr::ComputeVelocityTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3
         last_time = pair.first;
     }
 
-    // 3. 마지막 값 이후에 값들은 마지막 값으로 초기화
     int timeline_last_time = last_time;
     for (int i = timeline_last_time; i < EFFECT_TIMELINE_SIZE; i++)
     {

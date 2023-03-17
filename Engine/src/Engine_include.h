@@ -35,7 +35,6 @@
 #include "Engine/Level.h"
 #include "Engine/SkySphere.h"
 #include "Engine/LightMeshLevel.h"
-#include "Engine/Log.h"
 #include "Engine/UIBase.h"
 #include "Engine/UI_Image.h"
 #include "Engine/UI_Button.h"
