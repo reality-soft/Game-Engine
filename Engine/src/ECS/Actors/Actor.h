@@ -20,5 +20,7 @@ namespace reality
 	public: 
 		entt::entity GetEntityId();
 		void ApplyMovement(XMMATRIX movement_matrix);
+	public:
+		XMMATRIX transform_matrix() { return transform_matrix_; }
 	};
 }
