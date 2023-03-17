@@ -7,6 +7,7 @@ void Player::OnInit(entt::registry& registry)
 	Character::OnInit(registry);
 
 	movement_component_->speed = 150;
+	max_hp_ = cur_hp_ = 100;
 
 	SetCharacterAnimation("A_TP_CH_Breathing_Anim.anim");
 
@@ -114,4 +115,19 @@ void Player::Idle()
 void Player::Fire()
 {
 	SetCharacterAnimation("A_TP_CH_Handgun_Fire_Anim.anim");
+}
+
+int Player::GetMaxHp() const
+{
+	return max_hp_;
+}
+
+void Player::SetCurHp(int hp)
+{
+	cur_hp_ = hp;
+}
+
+int Player::GetCurHp() const
+{
+	return cur_hp_;
 }
