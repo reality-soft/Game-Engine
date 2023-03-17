@@ -66,6 +66,20 @@ namespace reality {
 		root_node = fbx_scene->GetRootNode();
 		PreProcess(root_node);
 
+		// 초기 행렬 저장
+
+		// 임포트 설정값
+		FbxVector4 scale = { 1.0, 1.0, 1.0, 1.0 };
+		scale *= import_options.import_scale;
+		FbxVector4 rot = import_options.import_rotation;
+
+		import_transform.SetS(scale);
+		import_transform.SetR(rot);
+
+		FbxAMatrix local_matrix = import_transform;
+		local_matrix = local_matrix.Inverse();
+		local_matrix = local_matrix.Transpose();
+
 		int ID = 0;
 		for (auto node : node_list)
 		{
@@ -184,8 +198,8 @@ namespace reality {
 		for (UINT cp = 0; cp < cp_count; ++cp)
 		{
 			control_points[cp].p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[0]);
-			control_points[cp].p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[1]);
-			control_points[cp].p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[2]);
+			control_points[cp].p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[2]);
+			control_points[cp].p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(cp)).mData[1]);
 		}
 
 		UINT vertex_counter = 0;
@@ -454,21 +468,10 @@ namespace reality {
 					AnimTrack track;
 					track.frame = t;
 					FbxAMatrix fbxMatrix = bone.first->EvaluateGlobalTransform(time);
+
+					//fbxMatrix *= import_transform;
+
 					track.anim_mat = FbxToDxConvert(fbxMatrix);
-
-					// 설정 값에 따라 회전, 스케일 적용
-					XMVECTOR scale, rotation, translation;
-					XMMatrixDecompose(&scale, &rotation, &translation, track.anim_mat);
-
-					scale *= import_options.import_scale;
-					XMVECTOR imported_rotation = XMVectorSet(XMConvertToRadians(import_options.import_rotation[0]),
-						XMConvertToRadians(import_options.import_rotation[1]),
-						XMConvertToRadians(import_options.import_rotation[2]),
-						1.0f);
-
-					track.anim_mat = XMMatrixScalingFromVector(scale) *
-						XMMatrixRotationQuaternion(rotation) * XMMatrixRotationQuaternion(imported_rotation) *
-						XMMatrixTranslationFromVector(translation);
 
 					XMMatrixDecompose(&track.scaling_vec, &track.rotation_vec, &track.translation_vec, track.anim_mat);
 					keyframes.push_back(track.anim_mat);
@@ -542,9 +545,10 @@ namespace reality {
 			fbx_cluster->GetTransformMatrix(cluster_link_transform);
 
 			FbxAMatrix bind_pose = cluster_link_transform.Inverse() * cluster_transform;
+			
+			//bind_pose *= import_transform;
 
 			XMMATRIX bind_pose_matrix = FbxToDxConvert(bind_pose);
-
 
 			// 설정 값에 따라 회전, 스케일 적용
 			XMVECTOR scale, rotation, translation;
