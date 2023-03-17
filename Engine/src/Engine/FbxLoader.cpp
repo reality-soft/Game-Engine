@@ -61,7 +61,6 @@ namespace reality {
 
 		double scale_factor = fbx_scene->GetGlobalSettings().GetSystemUnit().GetScaleFactor();
 		FbxGeometryConverter converter(fbx_manager);
-		
 		converter.Triangulate(fbx_scene, true);
 		root_node = fbx_scene->GetRootNode();
 		PreProcess(root_node);

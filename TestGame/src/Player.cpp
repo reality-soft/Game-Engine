@@ -20,7 +20,7 @@ void Player::OnInit(entt::registry& registry)
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
 	reality::C_CapsuleCollision capsule;
-	capsule.SetCapsuleData(XMVectorZero(), 50, 5);
+	capsule.SetCapsuleData(XMVectorZero(), 50, 10);
 	registry.emplace<reality::C_CapsuleCollision>(entity_id_, capsule);
 
 	C_Camera camera;
@@ -31,6 +31,8 @@ void Player::OnInit(entt::registry& registry)
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_SkeletalMesh));
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_Camera));
 
+	// player start;
+	transform_matrix_ = XMMatrixTranslation(0, 100, 0);
 	transform_tree_.root_node->OnUpdate(registry, entity_id_, transform_matrix_);
 
 	reality::C_SkeletalMesh* skm_ptr = registry.try_get<C_SkeletalMesh>(entity_id_);
@@ -105,6 +107,11 @@ void Player::MoveBack()
 {
 	SetCharacterAnimation("A_TP_CH_Jog_B_Anim.anim");
 	movement_component_->direction -= front_;
+}
+
+void Player::Jump()
+{
+	movement_component_->jump_scale = 300.0f;
 }
 
 void Player::Idle()

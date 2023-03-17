@@ -15,8 +15,19 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 	{
 		auto* movement_component = reg.try_get<C_Movement>(entity_id);
 
+		XMVECTOR jump_vector = XMVectorSet(0, 1, 0, 0) * movement_component->jump_scale * TM_DELTATIME;
+		movement_component->jump_scale -= XMVectorGetX(XMVector3Length(jump_vector));
+		if (movement_component->jump_scale < 0.0f)
+			movement_component->jump_scale = 0.0f;
+
 		movement_component->direction = XMVector3Normalize(movement_component->direction);
 		XMVECTOR movement_vector = movement_component->direction * movement_component->speed * TM_DELTATIME;
+		movement_vector += movement_component->gravity;
+		movement_vector += jump_vector;
+		
+
+
+
 		if (!XMVector4Equal(movement_vector, XMVectorZero())) {
 			EVENT->PushEvent<MovementEvent>(movement_vector, entity_id);
 		}

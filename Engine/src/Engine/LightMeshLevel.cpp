@@ -13,7 +13,7 @@ reality::LightMeshLevel::~LightMeshLevel()
 {
 }
 
-bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id)
+bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id, string collision_ltmesh)
 {
     level_mesh = shared_ptr<LightMesh>(RESOURCE->UseResource<LightMesh>(mesh_id));
     if (level_mesh.get() == nullptr)
@@ -27,8 +27,12 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id)
     if (geometry_shader.get() == nullptr)
         return false;
 
+    LightMesh* collision_mesh = RESOURCE->UseResource<LightMesh>(collision_ltmesh);
+    if (collision_mesh == nullptr)
+        return false;
+
     // Create Collision
-    for (auto& mesh : level_mesh.get()->meshes)
+    for (auto& mesh : collision_mesh->meshes)
     {
         if (mesh.mesh_name != "Level_BackGround")
         {
@@ -47,7 +51,7 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id)
             }
         }
     }
-
+    collision_mesh = nullptr;
 
     return true;
 }

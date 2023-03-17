@@ -6,6 +6,10 @@ void TestGame::OnInit()
 	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
+	//FbxImportOption option;
+	//option.import_rotation = {90, 0, 180, 0};
+	//option.import_scale = 10.0f;
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision.fbx", option);
 
 	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -34,17 +38,19 @@ void TestGame::OnInit()
 	INPUT_EVENT->Subscribe({ DIK_W }, std::bind(&Player::MoveForward, character_actor), KEY_HOLD);
 	INPUT_EVENT->Subscribe({ DIK_S }, std::bind(&Player::MoveBack, character_actor), KEY_HOLD);
 
+	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Jump, character_actor), KEY_PUSH);
+
 	std::function<void()> idle = std::bind(&Player::Idle, character_actor);
 	INPUT_EVENT->Subscribe({ DIK_D }, idle, KEY_UP);
 	INPUT_EVENT->Subscribe({ DIK_S }, idle, KEY_UP);
 	INPUT_EVENT->Subscribe({ DIK_W }, idle, KEY_UP);
 	INPUT_EVENT->Subscribe({ DIK_A }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_SPACE }, idle, KEY_UP);
+	//INPUT_EVENT->Subscribe({ DIK_SPACE }, idle, KEY_UP);
 
-	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
+	//INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
 
 	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso");
+	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
 	QUADTREE->Init(&level);
 	QUADTREE->RegisterDynamicCapsule(player_entity);
 

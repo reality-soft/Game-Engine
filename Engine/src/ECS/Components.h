@@ -289,6 +289,12 @@ namespace reality
 				child->Translate(registry, entity, world * translation_matrix);
 			}
 		}
+
+		void FastenAtFloor(entt::registry& registry, entt::entity ent, XMVECTOR floor_pos)
+		{
+			XMMATRIX floor = XMMatrixTranslationFromVector(floor_pos);
+			this->Translate(registry, ent, floor);
+		}
 	};
 
 	struct TransformTree
@@ -326,14 +332,15 @@ namespace reality
 	struct C_Movement : public Component
 	{
 		TransformTree* actor_transform_tree;
-
+		
 		XMVECTOR direction = { 0.0f, 0.0f, 0.0f, 0.0f };
+		XMVECTOR gravity = { 0.0f, 0.0f, 0.0f, 0.0f };
 		float speed = 0.0f;
 		float max_speed = 0.0f;
 		float acceleration = 0.0f;
-		float gravity_scale = 0.0f;
 		float rotation = 0.0f;
 		float angular_velocity = 0.0f;
+		float jump_scale = 0.0f;
 
 		C_Movement(TransformTree* actor_transform_tree) :
 			actor_transform_tree(actor_transform_tree) {};

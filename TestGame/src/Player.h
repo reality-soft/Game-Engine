@@ -16,6 +16,7 @@ public:
 	void MoveLeftBack();
 	void MoveForward();
 	void MoveBack();
+	void Jump();
 	void Idle();
 	void Fire();
 public:

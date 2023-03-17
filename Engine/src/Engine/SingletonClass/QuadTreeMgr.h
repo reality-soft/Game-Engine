@@ -55,7 +55,7 @@ namespace reality {
 	private:
 		UINT max_depth;
 		UINT node_count = 0;
-		float physics_timestep = 1.0f / 30.0f;
+		float physics_timestep = 1.0f / 60.0f;
 
 		SpaceNode* root_node_ = nullptr;
 		vector<SpaceNode*> total_nodes_;

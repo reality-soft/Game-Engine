@@ -2,6 +2,7 @@
 #include "QuadTreeMgr.h"
 #include "TimeMgr.h"
 #include "SceneMgr.h"
+#include "Character.h"
 
 using namespace reality;
 
@@ -118,7 +119,7 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
 
 	casted_nodes_.clear();
-	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
+	//NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
 }
@@ -136,12 +137,15 @@ void reality::QuadTreeMgr::Release()
 
 void reality::QuadTreeMgr::UpdatePhysics()
 {
-	static double delta = 0;
-	delta += TM_DELTATIME;
-	if (delta < physics_timestep)
+	if (TM_DELTATIME > physics_timestep)
 		return;
 
-	delta = 0.0f;
+	//static double delta = 0;
+	//delta += TM_DELTATIME;
+	//if (delta < physics_timestep)
+	//	return;
+
+	//delta = 0.0f;
 
 	if (!dynamic_capsule_list.empty())
 		player_capsule_pos = dynamic_capsule_list.begin()->second->capsule.base;
@@ -151,24 +155,28 @@ void reality::QuadTreeMgr::UpdatePhysics()
 		int cal = 0;
 		vector<SpaceNode*> nodes;
 		ObjectQueryByCapsule(dynamic_capsule.second->capsule, root_node_, nodes);
-		including_nodes_num.clear();
 
 		if (nodes.empty())
 			break;
 
+		CapsuleCallback result;
 		for (auto node : nodes)
 		{
-			including_nodes_num.insert(node->node_num);
 			for (auto& tri : node->static_triangles)
 			{
 				cal++;
-				if (PointInTriangle(dynamic_capsule.second->capsule.base, tri))
-				{
-					int a = 0;
-					dynamic_capsule.second->capsule.base.m128_f32[1];
-				}
+				result = CapsuleToTriangle(dynamic_capsule.second->capsule, tri);
+				if (result.reaction != CapsuleCallback::NONE)
+					break;
 			}
-		}
+			if (result.reaction != CapsuleCallback::NONE)
+				break;
+		}		
+		SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->capsule_callback = result;
+
+		if (result.reaction == CapsuleCallback::NONE)
+			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GravityFall(9.81f);
+
 		calculating_triagnles = cal;
 	}
 }
@@ -177,7 +185,7 @@ void reality::QuadTreeMgr::NodeCasting(RayShape& ray, SpaceNode* node)
 {
 	if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
 		return;
-
+	
 	if (RayToAABB(ray, node->area))
 	{
 		if (node->is_leaf && node->static_triangles.size() > 0)

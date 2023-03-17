@@ -44,8 +44,9 @@ namespace reality {
 
         if (PointInTriangle(P, tri))
         {
-            float distance = XMVectorGetX(XMVector3Length(P - ray.start));
-            if (distance <= XMVectorGetX(XMVector3Length(ray.end - ray.start)))
+            float distance = Distance(P, ray.start);
+            float ray_length = Distance(ray.end, ray.start);
+            if (distance <= ray_length)
             {
                 callback.success = true;
                 callback.distance = distance;
@@ -207,29 +208,53 @@ namespace reality {
         return CollideType::OUTSIDE;
     }
 
-    static CollideType CapsuleToTriangle(CapsuleShape& cap, TriangleShape& triangle)
+    struct CapsuleCallback
     {
-        vector<XMVECTOR> cap_ab = { cap.GetTipBaseAB()[3], cap.GetTipBaseAB()[4] };
+        CapsuleCallback()
+        {
+            reaction = NONE;
+            floor_pos = XMVectorZero();
+        }
+        enum
+        {
+            FLOOR,
+            WALL,
+            NONE
+        } reaction;
+        XMVECTOR floor_pos;
 
-        float distance = 0;
-        float radius = cap.radius;
+    };
 
-        // cap1 to cap2_A
-        distance = XMVectorGetX(XMVector3LinePointDistance(cap_ab[0], cap_ab[1], triangle.vertex0));
-        if (distance < radius)
-            return CollideType::INTERSECT;
+    static CapsuleCallback CapsuleToTriangle(CapsuleShape& cap, TriangleShape& triangle)
+    {
+        CapsuleCallback result;
+        RayShape a_to_base(cap.GetTipBaseAB()[2], cap.GetTipBaseAB()[1]);
 
-        distance = XMVectorGetX(XMVector3LinePointDistance(cap_ab[0], cap_ab[1], triangle.vertex1));
-        if (distance < radius)
-            return CollideType::INTERSECT;
+        auto raycallback = RayToTriangle(a_to_base, triangle);
+        if (raycallback.success)
+        {
+            if (XMVectorGetY(raycallback.point) > XMVectorGetY(a_to_base.end))
+            {
+                float angle = XMConvertToDegrees(
+                              XMVector3AngleBetweenVectors(
+                              a_to_base.end - a_to_base.start, triangle.normal).m128_f32[0]);
 
-        distance = XMVectorGetX(XMVector3LinePointDistance(cap_ab[0], cap_ab[1], triangle.vertex2));
-        if (distance < radius)
-            return CollideType::INTERSECT;
+                if (157.5 <= angle && angle <= 202.5f)
+                {
+                    result.reaction = CapsuleCallback::FLOOR;
+                    result.floor_pos = raycallback.point;
+                }
+                else
+                    result.reaction = CapsuleCallback::WALL;
 
-        //if (triangle.RayIntersection(RayShape(cap_ab[0], cap_ab[1])).first == true)
-        //    return CollideType::INSIDE;
+            }
+        }
+        else
+        {
+            result.reaction = CapsuleCallback::NONE;
+            result.floor_pos = cap.base;
+        }
 
-        return CollideType::OUTSIDE;
+        return result;
     }
 }

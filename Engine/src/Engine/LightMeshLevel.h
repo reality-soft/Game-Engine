@@ -14,7 +14,7 @@ namespace reality
 		~LightMeshLevel();
 
 	public:
-		bool Create(string mesh_id, string vs_id, string gs_id);
+		bool Create(string mesh_id, string vs_id, string gs_id, string collision_ltmesh);
 		void Update();
 		void Render();
 		void Destroy();
