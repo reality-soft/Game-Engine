@@ -69,6 +69,8 @@ namespace reality {
 		int ID = 0;
 		for (auto node : node_list)
 		{
+			string name = node->GetName();
+			skeleton_id_map.insert({ ID, name });
 			node_id_map.insert(make_pair(node, ID++));
 		}
 		for (auto node : node_list)
@@ -137,9 +139,9 @@ namespace reality {
 		scale *= import_options.import_scale;
 		rot = import_options.import_rotation;
 
-		geom.SetT(trans);
-		geom.SetR(rot);
 		geom.SetS(scale);
+		geom.SetR(rot);
+		geom.SetT(trans);
 
 		FbxAMatrix local_matrix = geom;
 		local_matrix = local_matrix.Inverse();
@@ -454,6 +456,20 @@ namespace reality {
 					FbxAMatrix fbxMatrix = bone.first->EvaluateGlobalTransform(time);
 					track.anim_mat = FbxToDxConvert(fbxMatrix);
 
+					// 설정 값에 따라 회전, 스케일 적용
+					XMVECTOR scale, rotation, translation;
+					XMMatrixDecompose(&scale, &rotation, &translation, track.anim_mat);
+
+					scale *= import_options.import_scale;
+					XMVECTOR imported_rotation = XMVectorSet(XMConvertToRadians(import_options.import_rotation[0]),
+						XMConvertToRadians(import_options.import_rotation[1]),
+						XMConvertToRadians(import_options.import_rotation[2]),
+						1.0f);
+
+					track.anim_mat = XMMatrixScalingFromVector(scale) *
+						XMMatrixRotationQuaternion(rotation) * XMMatrixRotationQuaternion(imported_rotation) *
+						XMMatrixTranslationFromVector(translation);
+
 					XMMatrixDecompose(&track.scaling_vec, &track.rotation_vec, &track.translation_vec, track.anim_mat);
 					keyframes.push_back(track.anim_mat);
 				}
@@ -528,10 +544,26 @@ namespace reality {
 			FbxAMatrix bind_pose = cluster_link_transform.Inverse() * cluster_transform;
 
 			XMMATRIX bind_pose_matrix = FbxToDxConvert(bind_pose);
+
+
+			// 설정 값에 따라 회전, 스케일 적용
+			XMVECTOR scale, rotation, translation;
+			XMMatrixDecompose(&scale, &rotation, &translation, bind_pose_matrix);
+
+			scale *= import_options.import_scale;
+			XMVECTOR imported_rotation = XMVectorSet(XMConvertToRadians(import_options.import_rotation[0]),
+				XMConvertToRadians(import_options.import_rotation[1]),
+				XMConvertToRadians(import_options.import_rotation[2]),
+				1.0f);
+
+			bind_pose_matrix = XMMatrixScalingFromVector(scale) *
+				XMMatrixRotationQuaternion(rotation) * XMMatrixRotationQuaternion(imported_rotation) *
+				XMMatrixTranslationFromVector(translation);
+
 			XMVECTOR det;
 			bind_pose_matrix = XMMatrixInverse(&det, bind_pose_matrix);
 			out_mesh->bind_poses.insert(std::make_pair(bone_ID, bind_pose_matrix));
-
+			out_mesh->skelton_id_map.insert(std::make_pair(skeleton_id_map[bone_ID], bone_ID));
 
 			// 임의의 1개 정점에 영향을 미치는 뼈대의 개수
 			int index_weight_count = fbx_cluster->GetControlPointIndicesCount();

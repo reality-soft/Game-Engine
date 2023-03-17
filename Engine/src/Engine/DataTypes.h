@@ -67,6 +67,7 @@ namespace reality
 		}
 
 		map<UINT, XMMATRIX> bind_pose_matrices;
+		map<string, UINT> skeleton_id_map;
 	};
 
 	template <typename VertexType>
