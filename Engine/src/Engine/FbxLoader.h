@@ -32,10 +32,12 @@ namespace reality {
 		FbxNode* root_node = nullptr;
 
 		map<FbxNode*, OutMeshData*> out_mesh_map;
+		unordered_map<int, string> skeleton_id_map;
 		map<FbxNode*, UINT> node_id_map;
 		vector<FbxNode*> node_list;
 
-
+		FbxAMatrix import_transform;
+		FbxAMatrix local_matrix;
 	private:
 		void PreProcess(FbxNode* fbx_node);
 		void ParseMesh(FbxMesh* fbx_mesh, OutMeshData* out_mesh);

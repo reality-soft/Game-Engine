@@ -38,6 +38,7 @@ namespace reality
 		std::vector<UINT>   indices;
 		std::vector<IndexWeight> index_weight;
 		std::map<UINT, XMMATRIX> bind_poses;
+		std::map<string, UINT> skelton_id_map;
 	};
 
 	struct OutAnimData
