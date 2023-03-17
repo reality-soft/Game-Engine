@@ -45,6 +45,8 @@ public:
 
     void CreatePreProcess();
 
+    void SetBackBufferRTV();
+
 private:
     //=======================================================디바이스
     ComPtr<IDXGIFactory>           dxgi_factory;

@@ -3,17 +3,24 @@
 
 void TestGame::OnInit()
 {
-	GUI->AddWidget("test_window", &test_window_);
+	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
+
+	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
 
 	sys_render.OnCreate(reg_scene_);
 	sys_camera.OnCreate(reg_scene_);
+
+// �׽�Ʈ UI
+	ingame_ui.OnInit(reg_scene_);
+	sys_ui.OnCreate(reg_scene_);
+  
 	sys_camera.SetSpeed(1000);
 	sys_light.OnCreate(reg_scene_);
 
-	SCENE_MGR->AddPlayer<Player>();
+	auto player_entity = SCENE_MGR->AddPlayer<Player>();
 	sys_camera.TargetTag(reg_scene_, "Player");
 
 	auto character_actor = SCENE_MGR->GetPlayer<Player>(0);
@@ -38,6 +45,14 @@ void TestGame::OnInit()
 
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso");
+	QUADTREE->Init(&level);
+	QUADTREE->RegisterDynamicCapsule(player_entity);
+
+	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
+	gw_property_.AddProperty<int>("raycasted nodes", &QUADTREE->ray_casted_nodes);
+	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
+	gw_property_.AddProperty<XMVECTOR>("player pos", &QUADTREE->player_capsule_pos);
+	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
 }
 
 void TestGame::OnUpdate()
@@ -46,6 +61,7 @@ void TestGame::OnUpdate()
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
+	QUADTREE->Frame(&sys_camera);
 }
 
 void TestGame::OnRender()
@@ -54,10 +70,14 @@ void TestGame::OnRender()
 	level.Update();
 	level.Render();
 	sys_render.OnUpdate(reg_scene_);
+	sys_ui.OnUpdate(reg_scene_);
+
+	GUI->RenderWidgets();
 }
 
 void TestGame::OnRelease()
 {
+	QUADTREE->Release();
 	PHYSICS->Release();
 	reality::RESOURCE->Release();
 }
@@ -69,4 +89,5 @@ void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
 	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
 	effect.world = XMMatrixTranslationFromVector(hitpoint);
 }
+
 

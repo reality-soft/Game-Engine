@@ -241,3 +241,14 @@ void DX11App::CreatePreProcess()
 
 
 }
+
+void DX11App::SetBackBufferRTV()
+{
+    UINT numViewPorts = 1;
+
+    ID3D11RenderTargetView* pNullRTV = NULL;
+    ID3D11DepthStencilView* pNullDSV = NULL;
+    DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &pNullRTV, pNullDSV);
+    DX11APP->GetDeviceContext()->OMSetRenderTargets(1, dx11_rtview.GetAddressOf(), dx11_dsview.Get());
+    DX11APP->GetDeviceContext()->RSSetViewports(1, &GetViewPort());
+}

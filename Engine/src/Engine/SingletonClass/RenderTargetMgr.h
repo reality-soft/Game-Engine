@@ -27,20 +27,25 @@ namespace reality
 		// Old RenderTarget Info
 		D3D11_VIEWPORT						old_view_port_;
 		UINT								view_ports_count_;
-		ID3D11RenderTargetView* old_rtv_;
-		ID3D11DepthStencilView* old_dsv_;
+		ID3D11RenderTargetView*				old_rtv_;
+		ID3D11DepthStencilView*				old_dsv_;
 	public:
-		bool		Init() { return false; };
-		bool		Frame() { return false; };
-		bool		Render() { return false; };
-		bool		Release() { return false; };
+		XMFLOAT4	clear_color_;
+	// RT 랜더링 데이터
+	public:
+		Rect			rect_;
+		RectRenderData	render_data_;
 	public:
 		bool		Create(float rtWidth, float rtHeight);
 		void		SetViewPort();
+		void		SetClearColor(XMFLOAT4 color);
 		HRESULT		CreateRenderTargetView();
 		HRESULT		CreateDepthStencilView();
 	public:
 		bool		SetRenderTarget();
+		void		RenderingRT();
+	private:
+		void		CreateRenderData();
 	};
 
 	class DLL_API RenderTargetMgr
@@ -50,7 +55,7 @@ namespace reality
 	private:
 		map<string, shared_ptr<RenderTarget>> resdic_render_target_;
 	public:
-		void Init(string back_buffer_name);
+		void Init();
 	public:
 		shared_ptr<RenderTarget> MakeRT(std::string rtname, float rtWidth, float rtHeight);
 		shared_ptr<RenderTarget> LoadRT(std::string rtname);

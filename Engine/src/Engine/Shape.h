@@ -70,18 +70,22 @@ namespace reality {
             min = _min;
             max = _max;
             center = (min + max) / 2;
-            ConvertTries();
+            corner = GetCorners();
+            triangle = GetTriangles();
+            vertical_ray = GetYAxisRay();
         }
         AABBShape(const XMVECTOR& _center, const float& scale)
         {
             center = _center;
             min = center - XMVectorSet(scale / 2, scale / 2, scale / 2, 0);
             max = center + XMVectorSet(scale / 2, scale / 2, scale / 2, 0);
-            ConvertTries();
+            corner = GetCorners();
+            triangle = GetTriangles();
+            vertical_ray = GetYAxisRay();
         }
-        void ConvertTries()
+        array<XMVECTOR, 8> GetCorners()
         {
-            XMVECTOR corners[8];
+            array<XMVECTOR, 8> corners;
             corners[0] = XMVectorSet(XMVectorGetX(min), XMVectorGetY(min), XMVectorGetZ(min), 1);
             corners[1] = XMVectorSet(XMVectorGetX(min), XMVectorGetY(min), XMVectorGetZ(max), 1);
             corners[2] = XMVectorSet(XMVectorGetX(min), XMVectorGetY(max), XMVectorGetZ(min), 1);
@@ -90,27 +94,45 @@ namespace reality {
             corners[5] = XMVectorSet(XMVectorGetX(max), XMVectorGetY(min), XMVectorGetZ(max), 1);
             corners[6] = XMVectorSet(XMVectorGetX(max), XMVectorGetY(max), XMVectorGetZ(min), 1);
             corners[7] = XMVectorSet(XMVectorGetX(max), XMVectorGetY(max), XMVectorGetZ(max), 1);
-
-            triangle[0]  = TriangleShape(corners[0], corners[1], corners[2]);
-            triangle[1]  = TriangleShape(corners[2], corners[3], corners[0]);
-
-            triangle[2]  = TriangleShape(corners[7], corners[6], corners[5]);
-            triangle[3]  = TriangleShape(corners[5], corners[4], corners[7]);
-
-            triangle[4]  = TriangleShape(corners[1], corners[5], corners[6]);
-            triangle[5]  = TriangleShape(corners[6], corners[2], corners[1]);
-
-            triangle[6]  = TriangleShape(corners[4], corners[0], corners[3]);
-            triangle[7]  = TriangleShape(corners[3], corners[7], corners[4]);
-
-            triangle[8]  = TriangleShape(corners[4], corners[5], corners[1]);
-            triangle[9]  = TriangleShape(corners[1], corners[0], corners[4]);
-
-            triangle[10] = TriangleShape(corners[3], corners[2], corners[6]);
-            triangle[11] = TriangleShape(corners[6], corners[7], corners[3]);
+        
+            return corners;
         }
-        XMVECTOR min, max, center;
-        TriangleShape triangle[12];
+        array<TriangleShape, 12> GetTriangles()
+        {
+            XMVECTOR* corners = GetCorners().data();
+            array<TriangleShape, 12> triangles;
+
+            triangles[0] = TriangleShape(corners[0], corners[1], corners[2]);
+            triangles[1] = TriangleShape(corners[2], corners[3], corners[0]);
+            triangles[2] = TriangleShape(corners[7], corners[6], corners[5]);
+            triangles[3] = TriangleShape(corners[5], corners[4], corners[7]);
+            triangles[4] = TriangleShape(corners[1], corners[5], corners[6]);
+            triangles[5] = TriangleShape(corners[6], corners[2], corners[1]);
+            triangles[6] = TriangleShape(corners[4], corners[0], corners[3]);
+            triangles[7] = TriangleShape(corners[3], corners[7], corners[4]);
+            triangles[8] = TriangleShape(corners[4], corners[5], corners[1]);
+            triangles[9] = TriangleShape(corners[1], corners[0], corners[4]);
+            triangles[10] = TriangleShape(corners[3], corners[2], corners[6]);
+            triangles[11] = TriangleShape(corners[6], corners[7], corners[3]);
+
+            return triangles;
+        }
+        array<RayShape, 4> GetYAxisRay()
+        {
+            XMVECTOR* corners = GetCorners().data();
+            array<RayShape, 4> y_ray;
+            y_ray[0] = RayShape(corners[2], corners[0]);
+            y_ray[1] = RayShape(corners[6], corners[4]);
+            y_ray[2] = RayShape(corners[3], corners[1]);
+            y_ray[3] = RayShape(corners[7], corners[5]);
+
+            return y_ray;
+        }
+
+        XMVECTOR min, max, center;  
+        array<XMVECTOR, 8>       corner;
+        array<TriangleShape, 12> triangle;
+        array<RayShape, 4>       vertical_ray;
     };
 
     struct SphereShape
@@ -136,48 +158,28 @@ namespace reality {
         CapsuleShape()
         {
             base = XMVectorZero();
-            tip = XMVectorZero();
+            height = 0.0f;
             radius = 0.0f;
         }
-        CapsuleShape(float _min, float _max, float _radius)
-        {
-            base = XMVectorSet(0, _min, 0, 0);
-            tip = XMVectorSet(0, _max, 0, 0);
-            radius = _radius;
-        }
-        CapsuleShape(const XMVECTOR& _base, const XMVECTOR& _tip, const float& _radius)
+        CapsuleShape(const XMVECTOR& _base, const float& _height, const float& _radius)
         {
             base = _base;
-            tip = _tip;
+            height = _height;
             radius = _radius;
         }
-        CapsuleShape(const AABBShape& _aabb)
+        array<XMVECTOR, 4> GetTipBaseAB()
         {
-            base = _aabb.center + XMVectorSet(0, XMVectorGetY(_aabb.min), 0, 0);
-            tip = _aabb.center + XMVectorSet(0, XMVectorGetY(_aabb.max), 0, 0);
-            XMVECTOR extend = _aabb.max - _aabb.min;
-            extend.m128_f32[1] = 0;
-            radius = XMVectorGetX(XMVector3Length(extend));
-        }
-        vector<XMVECTOR> GetAB()
-        {
+            XMVECTOR tip = base + XMVectorSet(0, height, 0, 0);
+
             XMVECTOR normal = XMVector3Normalize(tip - base);
             XMVECTOR lineend = normal * radius;
             XMVECTOR A = base + lineend;
             XMVECTOR B = tip - lineend;
 
-            return { A, B };
+            return { tip, base, A, B };
         }
-        XMVECTOR GetCenter()
-        {
-            float x = (XMVectorGetX(base) + XMVectorGetX(tip)) / 2;
-            float y = (XMVectorGetY(base) + XMVectorGetY(tip)) / 2;
-            float z = (XMVectorGetZ(base) + XMVectorGetZ(tip)) / 2;
-
-            return XMVectorSet(x, y, z, 0);
-        }
-
-        XMVECTOR base, tip;
+        XMVECTOR base;
+        float height;
         float radius;
     };
 
@@ -240,56 +242,18 @@ namespace reality {
             frustum_plane[1] = PlaneShape(frustum_vertex[3], frustum_vertex[6], frustum_vertex[2]);
             frustum_plane[2] = PlaneShape(frustum_vertex[5], frustum_vertex[2], frustum_vertex[6]);
             frustum_plane[3] = PlaneShape(frustum_vertex[0], frustum_vertex[7], frustum_vertex[3]);
-            frustum_plane[4] = PlaneShape(frustum_vertex[2], frustum_vertex[1], frustum_vertex[0]);
-            frustum_plane[5] = PlaneShape(frustum_vertex[5], frustum_vertex[6], frustum_vertex[4]);
+            frustum_plane[4] = PlaneShape(frustum_vertex[1], frustum_vertex[3], frustum_vertex[2]);
+            frustum_plane[5] = PlaneShape(frustum_vertex[6], frustum_vertex[4], frustum_vertex[5]);
+
+            topbottom_tries[0] = TriangleShape(frustum_vertex[5], frustum_vertex[6], frustum_vertex[1]);
+            topbottom_tries[1] = TriangleShape(frustum_vertex[1], frustum_vertex[6], frustum_vertex[2]);
+            topbottom_tries[2] = TriangleShape(frustum_vertex[0], frustum_vertex[3], frustum_vertex[4]);
+            topbottom_tries[3] = TriangleShape(frustum_vertex[4], frustum_vertex[3], frustum_vertex[7]);
         }
-
-        //OverlapType AABBOverlap(const AABBShape& other) // map culling
-        //{
-        //    int in_corner = 0;
-        //    int out_corner = 0;
-
-        //    XMVECTOR corners[12];
-        //    corners[0] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.min), 1);
-        //    corners[1] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.min), XMVectorGetZ(other.max), 1);
-        //    corners[2] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
-        //    corners[3] = XMVectorSet(XMVectorGetX(other.min), XMVectorGetY(other.max), XMVectorGetZ(other.max), 1);
-        //    corners[4] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.min), XMVectorGetZ(other.min), 1);
-        //    corners[5] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.min), XMVectorGetZ(other.max), 1);
-        //    corners[6] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.min), 1);
-        //    corners[7] = XMVectorSet(XMVectorGetX(other.max), XMVectorGetY(other.max), XMVectorGetZ(other.max), 1);
-
-        //    float plane_from_center = 0;
-
-        //    for (int i = 0; i < 6; ++i)
-        //    {
-        //        plane_from_center += frustum_plane[i].DotFromPoint(other.center);
-
-        //        float dot = 0;
-        //        for (int j = 0; j < 8; ++j)
-        //        {
-        //            dot = frustum_plane[i].DotFromPoint(corners[j]);
-
-        //            if (dot < 0) out_corner++;
-        //            else in_corner++;
-        //        }
-
-        //        if (in_corner == 0)
-        //        {
-        //            return OverlapType::OUTSIDE;
-        //        }
-        //        if (out_corner == 0)
-        //        {
-        //            return OverlapType::INSIDE;
-        //        }
-
-        //    }
-        //    plane_from_center;
-        //    return OverlapType::INTERSECT;
-        //}
 
         XMVECTOR frustum_vertex[8];
         PlaneShape  frustum_plane[6];
+        TriangleShape topbottom_tries[4];
     };
 
 }

@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Collision.h"
 #include "Material.h"
+#include "UIBase.h"
 
 namespace reality
 {
@@ -51,20 +52,14 @@ namespace reality
 	{
 		reality::CapsuleShape capsule;
 
-		void SetCapsuleData(XMVECTOR base, XMVECTOR tip, float radius) {
-			capsule.base = base;
-			capsule.tip = tip;
-			capsule.radius = radius;
-
-			local = XMMatrixTranslationFromVector(capsule.tip);
+		void SetCapsuleData(XMVECTOR offset, float height, float radius) {
+			capsule = reality::CapsuleShape(offset, height, radius);
+			local = XMMatrixTranslationFromVector(capsule.base);
+			world = world * local;
 		}
 		virtual void OnUpdate() override
 		{
-			XMMATRIX translation = XMMatrixTranslationFromVector(world.r[3]);
-			world = translation;
-
-			capsule.base = XMVector3TransformCoord(capsule.base, translation);
-			capsule.tip = XMVector3TransformCoord(capsule.tip, translation);
+			capsule.base = world.r[3];
 		}
 	};
 
@@ -92,7 +87,7 @@ namespace reality
 		void SetLocalFrom(C_CapsuleCollision& capsule_collision, float arm_length)
 		{
 			local = XMMatrixTranslationFromVector(XMVectorSet(0, 1, -1, 0) * arm_length);
-			target_height = capsule_collision.capsule.tip.m128_f32[1];
+			target_height = capsule_collision.capsule.GetTipBaseAB()[0].m128_f32[1];
 			pitch_yaw = { 0, 0};
 			near_z = 1.f;
 			far_z = 100000.f;
@@ -421,11 +416,9 @@ namespace reality
 		string effect_id;
 		Effect effect;
 	};
-
-	struct PhysicsCollision : public C_Transform
+  
+	struct C_UI : public Component
 	{
-		reactphysics3d::CollisionShape* shape = nullptr;
-		reactphysics3d::Collider* collider = nullptr;
-		reactphysics3d::CollisionBody* body = nullptr;
+		map<string, shared_ptr<UIBase>> ui_list;
 	};
 }

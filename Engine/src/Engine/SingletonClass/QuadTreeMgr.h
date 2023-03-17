@@ -40,28 +40,37 @@ namespace reality {
 		void Release();
 
 	public:
-		void UpdatePhysics(float time_step);
-		void NodeCulling(SpaceNode* node);
-		void ObjectCulling();
-		RayCallback Raycast(RayShape& ray);
+		void UpdatePhysics();
+		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
+		RayCallback RaycastAdjustActor(RayShape& ray);
+
+		void RegisterDynamicCapsule(entt::entity ent);
+
+	public:
+		int calculating_triagnles;
+		int ray_casted_nodes;
+		set<UINT> including_nodes_num;
+		XMVECTOR player_capsule_pos;
 
 	private:
 		UINT max_depth;
 		UINT node_count = 0;
+		float physics_timestep = 1.0f / 30.0f;
 
+		SpaceNode* root_node_ = nullptr;
 		vector<SpaceNode*> total_nodes_;
 		vector<SpaceNode*> leaf_nodes_;
-		set<SpaceNode*> visible_leaves;
-		SpaceNode* root_node_ = nullptr;
+		map<float, SpaceNode*> casted_nodes_;
 
-
+		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
 
 	private:
+		void NodeCasting(RayShape& ray, SpaceNode* node);
+		void ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode* node, vector<SpaceNode*>& node_list);
 		SpaceNode* BuildTree(UINT depth, float row1, float col1, float row2, float col2);
 		void SetStaticTriangles(SpaceNode* node);
 
 	public:
-		int									UpdateNodeObjectBelongs(int node_num, const AABBShape& object_area, entt::entity object_id);
 		std::vector<int>					FindCollisionSearchNode(int node_num);
 		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
 
