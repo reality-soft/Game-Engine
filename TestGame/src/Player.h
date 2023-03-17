@@ -18,5 +18,12 @@ public:
 	void MoveBack();
 	void Idle();
 	void Fire();
+public:
+	int GetMaxHp() const;
+	void SetCurHp(int hp);
+	int GetCurHp() const;
+private:
+	int max_hp_;
+	int cur_hp_;
 };
 
