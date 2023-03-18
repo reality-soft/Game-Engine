@@ -84,7 +84,6 @@ void TestGame::OnRender()
 void TestGame::OnRelease()
 {
 	QUADTREE->Release();
-	PHYSICS->Release();
 	reality::RESOURCE->Release();
 }
 

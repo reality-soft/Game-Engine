@@ -32,7 +32,6 @@ private:
 	PropertyWidget gw_property_;
 	FX_Effect	effect_;
 	UI_Ingame_Actor ingame_ui;
-	reality::WorldRayCallback callback;
 	void CreateEffectFromRay(XMVECTOR hitpoint);
 };
 
