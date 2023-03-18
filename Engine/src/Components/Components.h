@@ -337,13 +337,14 @@ namespace reality
 		TransformTree* actor_transform_tree;
 		
 		XMVECTOR direction = { 0.0f, 0.0f, 0.0f, 0.0f };
-		XMVECTOR gravity = { 0.0f, 0.0f, 0.0f, 0.0f };
 		float speed = 0.0f;
 		float max_speed = 0.0f;
 		float acceleration = 0.0f;
 		float rotation = 0.0f;
 		float angular_velocity = 0.0f;
+
 		float jump_scale = 0.0f;
+		float gravity = 0.0f;
 
 		C_Movement(TransformTree* actor_transform_tree) :
 			actor_transform_tree(actor_transform_tree) {};

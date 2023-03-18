@@ -26,12 +26,12 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id,
     if (geometry_shader.get() == nullptr)
         return false;
 
-    LightMesh* collision_mesh = RESOURCE->UseResource<LightMesh>(collision_ltmesh);
-    if (collision_mesh == nullptr)
+    collision_mesh = shared_ptr<LightMesh>(RESOURCE->UseResource<LightMesh>(collision_ltmesh));
+    if (collision_mesh.get() == nullptr)
         return false;
 
     // Create Collision
-    for (auto& mesh : collision_mesh->meshes)
+    for (auto& mesh : collision_mesh.get()->meshes)
     {
         if (mesh.mesh_name != "Level_BackGround")
         {
@@ -45,12 +45,13 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id,
                     mesh.vertices[index + 2].p
                 );
 
+                tri_plane.index = t;
+
                 level_triangles.push_back(tri_plane);
                 index += 3;
             }
         }
     }
-    collision_mesh = nullptr;
 
     return true;
 }
@@ -81,8 +82,29 @@ void reality::LightMeshLevel::Render()
         DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);
     }
 
+    RenderCollisionMesh();
 }
 
 void reality::LightMeshLevel::Destroy()
 {
+}
+
+void reality::LightMeshLevel::RenderCollisionMesh()
+{
+    DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->Wireframe());
+
+    for (auto& mesh : collision_mesh.get()->meshes)
+    {
+        Material* material = RESOURCE->UseResource<Material>(mesh.mesh_name + ".mat");
+        if (material)
+            material->Set();
+
+        UINT stride = sizeof(LightVertex);
+        UINT offset = 0;
+
+        DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+        DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);        
+    }
+
+    DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }

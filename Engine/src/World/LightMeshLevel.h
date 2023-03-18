@@ -17,6 +17,7 @@ namespace reality
 		void Render();
 		void Destroy();
 
+		void RenderCollisionMesh();
 
 	public:
 		CbTransform level_transform;
@@ -24,6 +25,7 @@ namespace reality
 
 	private:
 		shared_ptr<LightMesh> level_mesh;
+		shared_ptr<LightMesh> collision_mesh;
 		shared_ptr<VertexShader> vertex_shader;
 		shared_ptr<GeometryShader> geometry_shader;
 	};

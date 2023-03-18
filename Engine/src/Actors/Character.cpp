@@ -17,25 +17,22 @@ void reality::Character::ApplyMovement(XMMATRIX movement_matrix)
 	switch (capsule_callback.reaction)
 	{
 	case CapsuleCallback::FLOOR:
-		FastenAtFloor(transform_matrix_);
+		FastenAtFloor();
 		break;
 	case CapsuleCallback::WALL:
-		FastenAtFloor(transform_matrix_);
-		break;
-	case CapsuleCallback::NONE:
+		FastenAtFloor();
 		break;
 	}
 
 	transform_tree_.root_node->Translate(*reg_scene_, entity_id_, transform_matrix_);
 }
 
-void reality::Character::FastenAtFloor(XMMATRIX& movement_matrix)
+void reality::Character::FastenAtFloor()
 {
-	movement_component_->gravity = XMVectorZero();
-	movement_matrix.r[3].m128_f32[1] = capsule_callback.floor_pos.m128_f32[1];
+	transform_matrix_.r[3].m128_f32[1] = capsule_callback.floor_pos.m128_f32[1];
 }
 
 void reality::Character::GravityFall(float _gravity)
 {
-	movement_component_->gravity += XMVectorSet(0, -1, 0, 0) * _gravity * TM_DELTATIME;
+	movement_component_->gravity += _gravity;
 }
