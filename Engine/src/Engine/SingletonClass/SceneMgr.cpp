@@ -15,6 +15,7 @@ namespace reality{
 		if (cur_scene_.get() != nullptr) {
 			cur_scene_->OnInit();
 		}
+		COMPONENT->OnInit(cur_scene_->GetRegistryRef());
 	}
 
 	void SceneMgr::OnUpdate()

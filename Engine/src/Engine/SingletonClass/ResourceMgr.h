@@ -86,9 +86,6 @@ namespace reality
 		bool ImportEffect(string filename);
 		bool SaveEffect(string name, Effect new_effect);
 
-		bool CreateBuffers(SingleMesh<Vertex>& mesh);
-		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
-
 		void	ParseEmitter(DataItem* emitter_data, Emitter& emitter);
 		void	ComputeColorTimeline(map<int, XMFLOAT4>& timeline, XMFLOAT4* arr);
 		void	ComputeSizeTimeline(map<int, XMFLOAT3>& timeline, XMFLOAT3* arr);
