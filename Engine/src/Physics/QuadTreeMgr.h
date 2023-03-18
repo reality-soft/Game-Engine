@@ -26,6 +26,7 @@ namespace reality {
 		SpaceNode* child_node_[4] = { 0, };
 		std::unordered_set<entt::entity> object_list;
 		vector<TriangleShape> static_triangles;
+
 	};
 
 	class DLL_API QuadTreeMgr

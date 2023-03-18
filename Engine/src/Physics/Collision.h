@@ -202,6 +202,30 @@ namespace reality {
         if (tri_vertices > 0)
             return CollideType::INTERSECT;
 
+        // Chect if 3 vertices are out of aabb but aabb corner intersecs with triangle.
+        // it also can detect if aabb is completely inside of triangle 
+        for (int i = 0; i < 4; ++i)
+        {
+            bool success = RayToTriangle(aabb.vertical_ray[i], triangle).success;
+
+            if (success)
+                return CollideType::INTERSECT;
+        }
+
+        // Check if 3 vertices are out of aabb and vertical rays are not intersect with triangle,
+        // but edges of triangles intersect with aabb plane
+        auto edge_rays = triangle.GetEdgeRays();
+        auto aabb_tries = aabb.GetTriangles();
+
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < 12; ++j)
+            {
+                bool success = RayToTriangle(edge_rays[i], aabb_tries[j]).success;
+                if (success)
+                    return CollideType::INTERSECT;
+            }
+        }
 
         return CollideType::OUTSIDE;
     }
@@ -231,21 +255,8 @@ namespace reality {
         auto raycallback = RayToTriangle(a_to_base, triangle);
         if (raycallback.success)
         {
-            if (XMVectorGetY(raycallback.point) > XMVectorGetY(a_to_base.end))
-            {
-                float angle = XMConvertToDegrees(
-                              XMVector3AngleBetweenVectors(
-                              a_to_base.end - a_to_base.start, triangle.normal).m128_f32[0]);
-
-                if (157.5 <= angle && angle <= 202.5f)
-                {
-                    result.reaction = CapsuleCallback::FLOOR;
-                    result.floor_pos = raycallback.point;
-                }
-                else
-                    result.reaction = CapsuleCallback::WALL;
-
-            }
+            result.reaction = CapsuleCallback::FLOOR;
+            result.floor_pos = raycallback.point;
         }
         else
         {

@@ -140,18 +140,17 @@ void reality::QuadTreeMgr::UpdatePhysics()
 	if (TM_DELTATIME > physics_timestep)
 		return;
 
-	//static double delta = 0;
-	//delta += TM_DELTATIME;
-	//if (delta < physics_timestep)
-	//	return;
+	static double delta = 0;
+	delta += TM_DELTATIME;
+	if (delta < physics_timestep)
+		return;
 
-	//delta = 0.0f;
-
-	if (!dynamic_capsule_list.empty())
-		player_capsule_pos = dynamic_capsule_list.begin()->second->capsule.base;
+	delta = 0.0f;
 
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
+		player_capsule_pos = dynamic_capsule.second->capsule.base;
+
 		int cal = 0;
 		vector<SpaceNode*> nodes;
 		ObjectQueryByCapsule(dynamic_capsule.second->capsule, root_node_, nodes);
@@ -159,25 +158,39 @@ void reality::QuadTreeMgr::UpdatePhysics()
 		if (nodes.empty())
 			break;
 
+		including_nodes_num.clear();
+
 		CapsuleCallback result;
 		for (auto node : nodes)
 		{
+			including_nodes_num.insert(node->node_num);
 			for (auto& tri : node->static_triangles)
 			{
 				cal++;
 				result = CapsuleToTriangle(dynamic_capsule.second->capsule, tri);
+			
 				if (result.reaction != CapsuleCallback::NONE)
+				{
+					standing_triangle_index = tri.index;
 					break;
+				}
 			}
 			if (result.reaction != CapsuleCallback::NONE)
 				break;
 		}		
+		if (result.reaction == CapsuleCallback::NONE)
+		{
+			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GravityFall(9.81f);
+		}
+		else
+		{
+			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GetMovementComponent()->gravity = 0.0f;
+		}
+
 		SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->capsule_callback = result;
 
-		if (result.reaction == CapsuleCallback::NONE)
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GravityFall(9.81f);
-
 		calculating_triagnles = cal;
+		nodes.clear();
 	}
 }
 
@@ -209,7 +222,7 @@ void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode
 	auto result = AABBToCapsule(node->area, capsule);
 	if (result)
 	{
-		if (node->is_leaf && node->static_triangles.size() > 0)
+		if (node->is_leaf)
 		{
 			node_list.push_back(node);
 			return;			

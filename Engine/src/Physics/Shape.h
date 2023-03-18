@@ -58,8 +58,17 @@ namespace reality {
             else
                 return false;
         }
+        array<RayShape, 3> GetEdgeRays()
+        {
+            RayShape edge0(vertex0, vertex1);
+            RayShape edge1(vertex1, vertex2);
+            RayShape edge2(vertex2, vertex0);
+
+            return { edge0, edge1, edge2 };
+        }
         XMVECTOR vertex0, vertex1, vertex2;
         XMVECTOR normal;
+        UINT index;
     };
 
     struct AABBShape

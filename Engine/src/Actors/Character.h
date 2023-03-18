@@ -21,6 +21,6 @@ namespace reality
 		XMMATRIX transform_matrix() { return transform_matrix_; }
 
 	protected:
-		void FastenAtFloor(XMMATRIX& movement_matrix);
+		void FastenAtFloor();
 	};
 }
