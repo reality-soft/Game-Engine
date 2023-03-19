@@ -46,6 +46,7 @@ project "Engine"
 		"%{prj.name}/src/Scene",
 		"%{prj.name}/src/Sound",
 		"%{prj.name}/src/Input",
+		"%{prj.name}/src/Managers",
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
@@ -139,7 +140,7 @@ project "TestGame"
 		"Engine/src/Scene",
 		"Engine/src/Sound",
 		"Engine/src/Input",
-
+		"Engine/src/Managers",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",

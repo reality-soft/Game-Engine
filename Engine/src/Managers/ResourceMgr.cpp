@@ -3,7 +3,6 @@
 #include "FmodMgr.h"
 #include "FbxMgr.h"
 #include <io.h>
-#include "DataMgr.h"
 
 using namespace reality;
 

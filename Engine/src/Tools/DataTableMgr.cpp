@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DataMgr.h"
+#include "DataTableMgr.h"
 #include <fstream>
 #include <io.h>
 #include "ResourceMgr.h"

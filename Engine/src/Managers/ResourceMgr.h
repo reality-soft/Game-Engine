@@ -1,7 +1,7 @@
 #pragma once
 #include "Components.h"
 #include "FbxLoader.h"
-#include "DataMgr.h"
+#include "DataTableMgr.h"
 #include "Mesh.h"
 #include "Effect.h"
 

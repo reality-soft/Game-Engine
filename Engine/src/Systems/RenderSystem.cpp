@@ -2,7 +2,7 @@
 #include "RenderSystem.h"
 #include "ResourceMgr.h"
 #include "TimeMgr.h"
-#include "DataMgr.h"
+#include "DataTableMgr.h"
 #include "DXStates.h"
 
 using namespace reality;

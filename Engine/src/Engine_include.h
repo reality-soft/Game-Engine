@@ -1,9 +1,9 @@
 #pragma once
 
-//#include "Core/Engine.h"
-//#include "Core/TimeMgr.h"
-#include "Core/ResourceMgr.h"
-//#include "Core/FmodMgr.h"
+#include "Managers/ResourceMgr.h"
+#include "Managers/RenderTargetMgr.h"
+#include "Managers/TimeMgr.h"
+
 #include "Scene/SceneMgr.h"
 #include "Event/EventMgr.h"
 #include "Input/InputEventMgr.h"
@@ -32,9 +32,4 @@
 #include "World/SkySphere.h"
 #include "World/LightMeshLevel.h"
 
-//#include "UI/UIBase.h"
-//#include "UI/UI_Image.h"
-//#include "UI/UI_Button.h"
-//#include "UI/UI_Text.h"
 #include "UI/WriteMgr.h"
-#include "UI/RenderTargetMgr.h"
