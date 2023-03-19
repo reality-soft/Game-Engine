@@ -10,24 +10,24 @@ using std::fstream;
 using std::stringstream;
 using std::ios;
 
-bool DataMgr::Init(string directory)
+bool DataTableMgr::Init(string directory)
 {
 	set_directory(directory);
 	LoadAllData();
 	return true;
 }
 
-void DataMgr::Release()
+void DataTableMgr::Release()
 {
 	SaveAll();
 }
 
-shared_ptr<DataSheet> reality::DataMgr::AddNewSheet(string sheet_name)
+shared_ptr<DataTable> reality::DataTableMgr::AddNewSheet(string sheet_name)
 {
 	if (resdic_sheet.find(sheet_name) != resdic_sheet.end())
 		return resdic_sheet[sheet_name];
 
-	shared_ptr<DataSheet> newSheet = std::make_shared<DataSheet>();
+	shared_ptr<DataTable> newSheet = std::make_shared<DataTable>();
 	newSheet->sheet_name = sheet_name;
 
 	newSheet->AddCategory("Name");
@@ -36,7 +36,7 @@ shared_ptr<DataSheet> reality::DataMgr::AddNewSheet(string sheet_name)
 
 	return newSheet;
 }
-shared_ptr<DataSheet> reality::DataMgr::LoadSheet(string sheet_name)
+shared_ptr<DataTable> reality::DataTableMgr::LoadSheet(string sheet_name)
 {
 	if (resdic_sheet.find(sheet_name) != resdic_sheet.end())
 		return resdic_sheet[sheet_name];
@@ -45,7 +45,7 @@ shared_ptr<DataSheet> reality::DataMgr::LoadSheet(string sheet_name)
 }
 
 
-std::vector<string> reality::DataMgr::GetAllDataSheetID()
+std::vector<string> reality::DataTableMgr::GetAllDataSheetID()
 {
 	vector<string> id_set;
 	for (auto pair : resdic_sheet)
@@ -53,12 +53,12 @@ std::vector<string> reality::DataMgr::GetAllDataSheetID()
 	return id_set;
 }
 
-void DataMgr::LoadAllData()
+void DataTableMgr::LoadAllData()
 {
 	LoadDir(directory_);
 }
 
-void DataMgr::LoadDir(string path)
+void DataTableMgr::LoadDir(string path)
 {
 	string tempAdd = path + "/" + "*.*";
 	intptr_t handle;
@@ -79,14 +79,14 @@ void DataMgr::LoadDir(string path)
 	} while (_findnext(handle, &fd) == 0);
 }
 
-void DataMgr::LoadSheetFile(string path)
+void DataTableMgr::LoadSheetFile(string path)
 {
 	fstream fs;
 	fs.open(path, ios::in);
 	if (fs.fail())
 		return;
 
-	shared_ptr<DataSheet> newSheet = std::make_shared<DataSheet>();
+	shared_ptr<DataTable> newSheet = std::make_shared<DataTable>();
 	auto splited_str = split(path, '/');
 	auto strs2 = split(splited_str[max((int)splited_str.size() - 1, 0)], '.');
 
@@ -120,7 +120,7 @@ void DataMgr::LoadSheetFile(string path)
 	resdic_sheet.insert({ newSheet->sheet_name , newSheet });
 	fs.close();
 }
-void DataMgr::SaveSheetFile(string sheetName)
+void DataTableMgr::SaveSheetFile(string sheetName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -150,7 +150,6 @@ void DataMgr::SaveSheetFile(string sheetName)
 		fs.write(line.c_str(), line.size());
 	}
 
-
 	for (auto& pair : sheet->resdic_item)
 	{
 		auto data = pair.second;
@@ -172,7 +171,7 @@ void DataMgr::SaveSheetFile(string sheetName)
 
 	fs.close();
 }
-void DataMgr::SaveSheetFileAs(string sheetName, string fileName)
+void DataTableMgr::SaveSheetFileAs(string sheetName, string fileName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -196,14 +195,12 @@ void DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 			string str = category + ',';
 			fs.write(str.c_str(), str.size());
 		}
-
 	}
 
 	if (fs.is_open())
 	{
 		fs.write(line.c_str(), line.size());
 	}
-
 
 	for (auto& pair : sheet->resdic_item)
 	{
@@ -227,7 +224,7 @@ void DataMgr::SaveSheetFileAs(string sheetName, string fileName)
 	fs.close();
 }
 
-void DataMgr::SaveSprite(string sheetName)
+void DataTableMgr::SaveSprite(string sheetName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -249,14 +246,12 @@ void DataMgr::SaveSprite(string sheetName)
 			string str = category + ',';
 			fs.write(str.c_str(), str.size());
 		}
-
 	}
 
 	if (fs.is_open())
 	{
 		fs.write(line.c_str(), line.size());
 	}
-
 
 	for (auto& pair : sheet->resdic_item)
 	{
@@ -280,7 +275,7 @@ void DataMgr::SaveSprite(string sheetName)
 	fs.close();
 }
 
-void DataMgr::SaveEffect(string sheetName)
+void DataTableMgr::SaveEffect(string sheetName)
 {
 	if (resdic_sheet.find(sheetName) == resdic_sheet.end())
 		return;
@@ -302,14 +297,12 @@ void DataMgr::SaveEffect(string sheetName)
 			string str = category + ',';
 			fs.write(str.c_str(), str.size());
 		}
-
 	}
 
 	if (fs.is_open())
 	{
 		fs.write(line.c_str(), line.size());
 	}
-
 
 	for (auto& pair : sheet->resdic_item)
 	{
@@ -333,7 +326,7 @@ void DataMgr::SaveEffect(string sheetName)
 	fs.close();
 }
 
-void DataMgr::SaveAll()
+void DataTableMgr::SaveAll()
 {
 	for (auto sheet : resdic_sheet)
 	{

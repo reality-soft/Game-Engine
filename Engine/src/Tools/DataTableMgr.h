@@ -25,7 +25,7 @@ namespace reality
 		}
 	};
 
-	struct DataSheet
+	struct DataTable
 	{
 	public:
 		string sheet_name;
@@ -85,23 +85,23 @@ namespace reality
 
 	
 
-	class DLL_API DataMgr
+	class DLL_API DataTableMgr
 	{
-		SINGLETON(DataMgr)
-#define DATA DataMgr::GetInst()
+		SINGLETON(DataTableMgr)
+#define DATA DataTableMgr::GetInst()
 	private:
 		string directory_;
 	public:
 		string directory() { return directory_; }
 		void set_directory(string dir) { directory_ = dir; }
 	private:
-		std::map<std::string, shared_ptr<DataSheet>> resdic_sheet;
+		std::map<std::string, shared_ptr<DataTable>> resdic_sheet;
 	public:
 		bool Init(string directory);
 		void Release();
 	public:
-		shared_ptr<DataSheet> AddNewSheet(string sheet_name);
-		shared_ptr<DataSheet> LoadSheet(string sheet_name);
+		shared_ptr<DataTable> AddNewSheet(string sheet_name);
+		shared_ptr<DataTable> LoadSheet(string sheet_name);
 	public:
 		std::vector<string> GetAllDataSheetID();
 	public:
