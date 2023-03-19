@@ -3,6 +3,14 @@
 
 namespace reality
 {
+	enum class MovementState
+	{
+		STAND_ON_FLOOR,
+		JUMP,
+		GRAVITY_FALL,
+		BLOCK_BY_WALL,
+	};
+
 	class DLL_API Character : public Actor
 	{
 	protected:
@@ -13,8 +21,11 @@ namespace reality
 		XMVECTOR	 jump_ =  { 0, 1, 0, 0 };
 
 	public:
-		CapsuleCallback capsule_callback;
-		void		 OnInit(entt::registry& registry) override;
+		float floor_height = 0.0f;
+		MovementState movement_state_;
+
+		void OnInit(entt::registry& registry) override;
+		void OnUpdate() override;
 		void ApplyMovement(XMMATRIX movement_matrix) override;
 		C_Movement* GetMovementComponent() { return movement_component_; }
 		void GravityFall(float _gravity);
