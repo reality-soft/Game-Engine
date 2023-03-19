@@ -111,7 +111,7 @@ void Player::MoveBack()
 
 void Player::Jump()
 {
-	movement_component_->jump_scale = 300.0f;
+	movement_component_->jump_scale = 10000.0f;
 }
 
 void Player::Idle()

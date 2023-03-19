@@ -35,6 +35,17 @@ void reality::PropertyWidget::Render()
 	{
 		ImGui::Text(string("\n[" + name + "]\n").c_str());
 
+		if (prop.type == typeid(bool).hash_code())
+		{
+			bool casted_val = *static_cast<bool*>(prop.value);
+
+			if (casted_val)
+				ImGui::Text("true");
+
+			else
+				ImGui::Text("false");
+		}
+
 		if (prop.type == typeid(float).hash_code() || prop.type == typeid(double).hash_code())
 		{
 			float casted_val = *static_cast<float*>(prop.value);
@@ -44,6 +55,12 @@ void reality::PropertyWidget::Render()
 		if (prop.type == typeid(int).hash_code())
 		{
 			int casted_val = *static_cast<int*>(prop.value);
+			ImGui::Text(to_string(casted_val).c_str());
+		}
+
+		if (prop.type == typeid(UINT).hash_code())
+		{
+			UINT casted_val = *static_cast<UINT*>(prop.value);
 			ImGui::Text(to_string(casted_val).c_str());
 		}
 

@@ -51,13 +51,13 @@ void TestGame::OnInit()
 
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
-	QUADTREE->Init(&level);
+	QUADTREE->Init(&level, 4);
 	QUADTREE->RegisterDynamicCapsule(player_entity);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
 	gw_property_.AddProperty<int>("raycasted nodes", &QUADTREE->ray_casted_nodes);
 	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
-	gw_property_.AddProperty<XMVECTOR>("player pos", &QUADTREE->player_capsule_pos);
+	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
 }
 
@@ -84,7 +84,6 @@ void TestGame::OnRender()
 void TestGame::OnRelease()
 {
 	QUADTREE->Release();
-	PHYSICS->Release();
 	reality::RESOURCE->Release();
 }
 
