@@ -169,11 +169,9 @@ void reality::QuadTreeMgr::UpdatePhysics()
 				cal++;
 				result = CapsuleToTriangle(dynamic_capsule.second->capsule, tri);
 			
-				if (result.reaction != CapsuleCallback::NONE)
-				{
-					standing_triangle_index = tri.index;
+				if (result.reaction != CapsuleCallback::NONE)				
 					break;
-				}
+				
 			}
 			if (result.reaction != CapsuleCallback::NONE)
 				break;

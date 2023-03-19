@@ -4,9 +4,10 @@
 //#include "Core/TimeMgr.h"
 #include "Core/ResourceMgr.h"
 //#include "Core/FmodMgr.h"
-#include "Core/SceneMgr.h"
-#include "Core/EventMgr.h"
-#include "Core/InputEventMgr.h"
+#include "Scene/SceneMgr.h"
+#include "Event/EventMgr.h"
+#include "Input/InputEventMgr.h"
+#include "Input/InputMgr.h"
 #include "Core/Engine.h"
 
 #include "Systems/RenderSystem.h"
