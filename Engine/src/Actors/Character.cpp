@@ -10,17 +10,35 @@ void reality::Character::OnInit(entt::registry& registry)
 	movement_component_ = registry.try_get<C_Movement>(entity_id_);
 }
 
+void reality::Character::OnUpdate()
+{
+
+}
+
 void reality::Character::ApplyMovement(XMMATRIX movement_matrix)
 {
 	transform_matrix_ *= movement_matrix;
 
-	switch (capsule_callback.reaction)
+	//switch (capsule_callback.reaction)
+	//{
+	//case CapsuleCallback::FLOOR:
+	//	FastenAtFloor();
+	//	break;
+	//case CapsuleCallback::WALL:
+	//	FastenAtFloor();
+	//	break;
+	//}
+
+	switch (movement_state_)
 	{
-	case CapsuleCallback::FLOOR:
+	case MovementState::STAND_ON_FLOOR:
 		FastenAtFloor();
 		break;
-	case CapsuleCallback::WALL:
-		FastenAtFloor();
+	case MovementState::JUMP:
+		break;
+	case MovementState::GRAVITY_FALL:
+		break;
+	case MovementState::BLOCK_BY_WALL:
 		break;
 	}
 
@@ -29,7 +47,7 @@ void reality::Character::ApplyMovement(XMMATRIX movement_matrix)
 
 void reality::Character::FastenAtFloor()
 {
-	transform_matrix_.r[3].m128_f32[1] = capsule_callback.floor_pos.m128_f32[1];
+	transform_matrix_.r[3].m128_f32[1] = floor_height;
 }
 
 void reality::Character::GravityFall(float _gravity)
