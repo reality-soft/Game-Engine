@@ -9,7 +9,7 @@ void Player::OnInit(entt::registry& registry)
 	movement_component_->speed = 150;
 	max_hp_ = cur_hp_ = 100;
 
-	SetCharacterAnimation("A_TP_CH_Breathing_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");
 
 	reality::C_SkeletalMesh skm;
 	skm.local = XMMatrixIdentity();
@@ -52,6 +52,10 @@ void Player::OnUpdate()
 
 void Player::SetCharacterAnimation(string anim_id)
 {
+	C_Animation* prev_animation = reg_scene_->try_get<reality::C_Animation>(entity_id_);
+	if (prev_animation != nullptr && prev_animation->anim_id == anim_id) {
+		return;
+	}
 	C_Animation animation;
 	animation.anim_id = anim_id;
 	reg_scene_->emplace_or_replace<reality::C_Animation>(entity_id_, animation);
@@ -59,53 +63,53 @@ void Player::SetCharacterAnimation(string anim_id)
 
 void Player::MoveRight()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim_Unreal Take.anim");
 	movement_component_->direction += right_;
 }
 
 void Player::MoveRightForward()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim_Unreal Take.anim");
 	movement_component_->direction += front_;
 	movement_component_->direction += right_;
 }
 
 void Player::MoveRightBack()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_RB_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_RB_Anim_Unreal Take.anim");
 	movement_component_->direction -= front_;
 	movement_component_->direction += right_;
 }
 
 void Player::MoveLeft()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim_Unreal Take.anim");
 	movement_component_->direction -= right_;
 }
 
 void Player::MoveLeftForward()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim_Unreal Take.anim");
 	movement_component_->direction += front_;
 	movement_component_->direction -= right_;
 }
 
 void Player::MoveLeftBack()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_LB_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_LB_Anim_Unreal Take.anim");
 	movement_component_->direction -= front_;
 	movement_component_->direction -= right_;
 }
 
 void Player::MoveForward()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_F_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_F_Anim_Unreal Take.anim");
 	movement_component_->direction += front_;
 }
 
 void Player::MoveBack()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_B_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_B_Anim_Unreal Take.anim");
 	movement_component_->direction -= front_;
 }
 
@@ -116,12 +120,12 @@ void Player::Jump()
 
 void Player::Idle()
 {
-	SetCharacterAnimation("A_TP_CH_Breathing_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");
 }
 
 void Player::Fire()
 {
-	SetCharacterAnimation("A_TP_CH_Handgun_Fire_Anim.anim");
+	SetCharacterAnimation("A_TP_CH_Handgun_Fire_Anim_Unreal Take.anim");
 }
 
 int Player::GetMaxHp() const
