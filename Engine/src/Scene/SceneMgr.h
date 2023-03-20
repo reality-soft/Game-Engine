@@ -60,7 +60,7 @@ namespace reality {
         template <typename SceneClass>
         void SetScene() {
             cur_scene_ = make_shared<SceneClass>();
-            cur_scene_->OnInit();
+            OnInit();
         }
 
     private:

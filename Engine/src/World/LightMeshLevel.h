@@ -1,5 +1,4 @@
 #pragma once
-#include "Components.h"
 #include "ResourceMgr.h"
 #include "ConstantBuffer.h"
 

@@ -44,17 +44,17 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
             light_single_mesh.vertices = out_mesh->light_vertices;
 
             res_light_mesh.meshes.push_back(light_single_mesh);
-
         }
     }
 
-    fbx_loader.LoadAnimation(FbxTime::eFrames60);
-    vector<OutAnimData> res_anim_list;
-    for (auto out_anim : fbx_loader.out_anim_list)
-    {
-        res_anim_list.push_back(*out_anim);
-    }
+    auto strs = split(filename, '/');
+    string id = strs[strs.size() - 1];
+    strs = split(id, '\\');
+    id = strs[strs.size() - 1];
+    strs = split(id, '.');
+    string name = strs[0];
 
+    fbx_loader.LoadAnimation(FbxTime::eFrames60, name);
     for (auto& single_mesh : res_static_mesh.meshes)
     {
         CreateBuffers(single_mesh);
@@ -67,13 +67,6 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
     {
         CreateBuffers(single_mesh);
     }
-
-    auto strs = split(filename, '/');
-    string id = strs[strs.size() - 1];
-    strs = split(id, '\\');
-    id = strs[strs.size() - 1];
-    strs = split(id, '.');
-    string name = strs[0];
 
     if (res_static_mesh.meshes.size() > 0) 
     {
@@ -89,15 +82,14 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
 
     if (res_skeletal_mesh.meshes.size() > 0) 
     {
-
         RESOURCE->PushSkeletalMesh(name + ".skmesh", res_skeletal_mesh);
         SaveSkeletalMesh(res_skeletal_mesh, name);
     }
 
-    if (res_anim_list.size() > 0) 
+    if (fbx_loader.out_anim_map.size() > 0)
     {
-        RESOURCE->PushAnimation(name + ".anim", res_anim_list);
-        SaveAnimation(res_anim_list, name);
+        RESOURCE->PushAnimation(fbx_loader.out_anim_map);
+        SaveAnimation(fbx_loader.out_anim_map);
     }
 
     fbx_loader.Destroy();
@@ -211,20 +203,17 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
     file_exporter.WriteBinaryWithoutSize<UINT>(skeleton_ids.data(), num_of_ids);
 }
 
-void reality::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string filename)
+void reality::FbxMgr::SaveAnimation(const map<string, OutAnimData>& animation)
 {
-    string file_name = RESOURCE->directory() + "ANIM/" + filename + ".anim";
-    FileTransfer file_exporter(file_name, WRITE);
+    for (const auto& cur_anim : animation)
+    {
+        string file_name = RESOURCE->directory() + "ANIM/" + cur_anim.first;
+        FileTransfer file_exporter(file_name, WRITE);
 
-    int num_of_anim = animation.size();
-
-    file_exporter.WriteBinaryWithoutSize<int>(&num_of_anim, 1);
-
-    for (int cur_anim_index = 0;cur_anim_index < num_of_anim;cur_anim_index++) {
         vector<UINT> keys;
         vector<vector<XMMATRIX>> animation_matrices;
 
-        for (const auto& cur_pair : animation[cur_anim_index].animations) {
+        for (const auto& cur_pair : cur_anim.second.animations) {
             keys.push_back(cur_pair.first);
             animation_matrices.push_back(cur_pair.second);
         }
@@ -242,9 +231,9 @@ void reality::FbxMgr::SaveAnimation(const vector<OutAnimData>& animation, string
             file_exporter.WriteBinaryWithoutSize<XMMATRIX>(animation_matrices[cur_animation_index].data(), num_of_matrices);
         }
 
-        UINT start_frame = animation[cur_anim_index].start_frame;
+        UINT start_frame = cur_anim.second.start_frame;
         file_exporter.WriteBinaryWithoutSize<UINT>(&start_frame, 1);
-        UINT end_frame = animation[cur_anim_index].end_frame;
+        UINT end_frame = cur_anim.second.end_frame;
         file_exporter.WriteBinaryWithoutSize<UINT>(&end_frame, 1);
     }
 }
@@ -354,39 +343,34 @@ reality::SkeletalMesh reality::FbxMgr::LoadSkeletalMesh(string filename)
     return skeletal_mesh;
 }
 
-vector<reality::OutAnimData> reality::FbxMgr::LoadAnimation(string filename)
+reality::OutAnimData reality::FbxMgr::LoadAnimation(string filename)
 {
-    vector<OutAnimData> animation_data;
+    OutAnimData animation_data;
 
     FileTransfer file_exporter(filename, READ);
 
-    int num_of_anim = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-    animation_data.resize(num_of_anim);
+    vector<UINT> keys;
+    vector<vector<XMMATRIX>> animation_matrices;
 
-    for (int cur_anim_index = 0;cur_anim_index < num_of_anim;cur_anim_index++) {
-        vector<UINT> keys;
-        vector<vector<XMMATRIX>> animation_matrices;
+    int num_of_keys = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    keys.resize(num_of_keys);
+    keys = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_keys);
 
-        int num_of_keys = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        keys.resize(num_of_keys);
-        keys = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_keys);
+    int num_of_animation = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    animation_matrices.resize(num_of_animation);
 
-        int num_of_animation = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        animation_matrices.resize(num_of_animation);
-
-        for (int cur_animation_index = 0;cur_animation_index < num_of_animation;cur_animation_index++) {
-            int num_of_matrices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-            animation_matrices[cur_animation_index].resize(num_of_matrices);
-            animation_matrices[cur_animation_index] = file_exporter.ReadBinaryWithoutSize<XMMATRIX>(num_of_matrices);
-        }
-
-        for (int i = 0;i < num_of_keys;i++) {
-            animation_data[cur_anim_index].animations.insert({ keys[i], animation_matrices[i] });
-        }
-
-        animation_data[cur_anim_index].start_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
-        animation_data[cur_anim_index].end_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
+    for (int cur_animation_index = 0;cur_animation_index < num_of_animation;cur_animation_index++) {
+        int num_of_matrices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        animation_matrices[cur_animation_index].resize(num_of_matrices);
+        animation_matrices[cur_animation_index] = file_exporter.ReadBinaryWithoutSize<XMMATRIX>(num_of_matrices);
     }
+
+    for (int i = 0;i < num_of_keys;i++) {
+        animation_data.animations.insert({ keys[i], animation_matrices[i] });
+    }
+
+    animation_data.start_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
+    animation_data.end_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
 
     return animation_data;
 }
