@@ -16,7 +16,6 @@ namespace reality
 		void AddNode(XMVECTOR node_pos);
 		void DeleteNode(UINT index);
 
-	private:
 		map<UINT, XMVECTOR> line_nodes;
 		vector<XMVECTOR> line_vectors;
 	};

@@ -119,7 +119,7 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
 
 	casted_nodes_.clear();
-	//NodeCasting(applied_camera->CreateFrontRay(), root_node_);
+	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
 }
@@ -236,14 +236,6 @@ void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode
 
 RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
 {
-	const float ts = 1.0f / 20.0f;
-	static float acc = 0.0f;
-	acc += TM_DELTATIME;
-	if (acc < ts)
-		return RayCallback();
-
-	acc = 0.0f;
-
 	map<float, RayCallback> callback_list;
 
 	int cal = 0;
