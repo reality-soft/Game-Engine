@@ -22,7 +22,6 @@
 #include "Actors/Actor.h"
 #include "Actors/Character.h"
 #include "Actors/FX_BaseEffectActor.h"
-#include "Actors/FX_Effect.h"
 #include "Actors/UIActor.h"
 #include "Actors/StaticObject.h"
 
