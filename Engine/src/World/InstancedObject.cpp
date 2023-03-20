@@ -128,19 +128,41 @@ vector<InstanceData::CData> reality::InstancedObject::GetCDataArray()
 	return data_array;
 }
 
+InstanceData* reality::InstancedObject::SelectInstance(string name)
+{
+	auto& found = instance_pool.find(name);
+	if (found == instance_pool.end())
+		return nullptr;
+
+	selected_instance = found->second;
+	return selected_instance;
+}
+
 void reality::InstancedObject::SetInstanceScale(string name, XMFLOAT3 S)
 {
-	instance_pool.find(name)->second->S = S;
+	auto found = instance_pool.find(name);
+	if (found != instance_pool.end())
+	{
+		found->second->S = S;
+	}
 }
 
 void reality::InstancedObject::SetInstanceRotation(string name, XMFLOAT3 R)
 {
-	instance_pool.find(name)->second->R = R;
+	auto found = instance_pool.find(name);
+	if (found != instance_pool.end())
+	{
+		found->second->R = R;
+	}
 }
 
 void reality::InstancedObject::SetInstanceTranslation(string name, XMFLOAT3 T)
 {
-	instance_pool.find(name)->second->T = T;
+	auto found = instance_pool.find(name);
+	if (found != instance_pool.end())
+	{
+		found->second->T = T;
+	}
 }
 
 InstanceData* InstancedObject::AddNewInstance(string name)
