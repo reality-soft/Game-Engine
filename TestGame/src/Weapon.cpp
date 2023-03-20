@@ -9,7 +9,7 @@ void Weapon::OnInit(entt::registry& registry)
 	reality::C_StaticMesh stm;
 	stm.local = XMMatrixIdentity();
 	stm.world = XMMatrixIdentity();
-	stm.static_mesh_id = "";
+	stm.static_mesh_id = "SK_Handgun_01.stmesh";
 	stm.vertex_shader_id = "StaticMeshVS.cso";
 	registry.emplace_or_replace<reality::C_StaticMesh>(entity_id_, stm);
 
@@ -21,7 +21,7 @@ void Weapon::OnInit(entt::registry& registry)
 
 void Weapon::OnUpdate()
 {
-	Character* owner_character = SCENE_MGR->GetActor<Character>(entity_id_);
+	Character* owner_character = SCENE_MGR->GetActor<Character>(owner_id_);
 
 	if (owner_character == nullptr) {
 		return;
@@ -33,19 +33,25 @@ void Weapon::OnUpdate()
 	if (animation_component != nullptr && socket_id_ != -1) {
 		OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(animation_component->anim_id);
 		
-		animation_matrix_ = anim_data->animations[socket_id_][animation_component->cur_frame];
+		if (animation_component->cur_frame < anim_data->end_frame) {
+			animation_matrix_ = anim_data->animations[socket_id_][animation_component->cur_frame];
+		}
 	}
 
-
-	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_, socket_offset_ * animation_matrix_ * transform_matrix_);
+	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_, socket_offset_ * animation_matrix_ * owner_transform_ * transform_matrix_);
 }
 
 void Weapon::SetOwnerId(entt::entity owner_id)
 {
-	owner_ = owner_id;
+	owner_id_ = owner_id;
 }
 
 void Weapon::SetSocket(int socket_id)
 {
 	socket_id_ = socket_id;
+}
+
+void Weapon::SetOwnerTransform(XMMATRIX owner_transform)
+{
+	owner_transform_ = owner_transform;
 }
