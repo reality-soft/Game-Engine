@@ -13,12 +13,7 @@ namespace reality {
 		}
 		out_mesh_list.clear();
 
-		for (auto out_anim : out_anim_list)
-		{
-			delete out_anim;
-			out_anim = nullptr;
-		}
-		out_anim_list.clear();
+		out_anim_map.clear();
 
 		for (auto node : node_list)
 		{
@@ -414,7 +409,7 @@ namespace reality {
 		return normal;
 	}
 
-	AnimFrame FbxLoader::InitAnimation(int stack_index, FbxTime::EMode time_mode)
+	AnimFrame FbxLoader::InitAnimation(int stack_index, FbxTime::EMode time_mode, string &anim_name)
 	{
 		FbxLongLong s = 0;
 		FbxLongLong n = 0;
@@ -428,8 +423,12 @@ namespace reality {
 		{
 			fbx_scene->SetCurrentAnimationStack(anim_stack);
 
-			FbxString anim_name = anim_stack->GetName();
-			FbxTakeInfo* take = fbx_scene->GetTakeInfo(anim_name);
+			FbxString anim_name_fbx = anim_stack->GetName();
+			FbxTakeInfo* take = fbx_scene->GetTakeInfo(anim_name_fbx);
+
+			anim_name = anim_name_fbx;
+			vector<string> strs = split(anim_name, '|');
+			anim_name = strs[strs.size() - 1];
 
 			FbxTimeSpan localTimeSpan = take->mLocalTimeSpan;
 			FbxTime start = localTimeSpan.GetStart();
@@ -445,16 +444,21 @@ namespace reality {
 		return frame;
 	}
 
-	void FbxLoader::LoadAnimation(FbxTime::EMode time_mode)
+	void FbxLoader::LoadAnimation(FbxTime::EMode time_mode, const string& filename)
 	{
 		// animation
 		int anim_count = fbx_scene->GetSrcObjectCount<FbxAnimStack>();
 
 		for (int i = 0; i < anim_count; ++i)
 		{
-			AnimFrame anim_frame = InitAnimation(i, time_mode);
+			string anim_name = "";
+			AnimFrame anim_frame = InitAnimation(i, time_mode, anim_name);
+			anim_name = filename + '_' + anim_name + ".anim";
 
-			OutAnimData* out_anim = new OutAnimData;
+			OutAnimData out_anim;
+			out_anim_map.insert({ anim_name, out_anim });
+			out_anim_map[anim_name].start_frame = anim_frame.start;
+			out_anim_map[anim_name].end_frame = anim_frame.end;
 
 			for (auto bone : node_id_map)
 			{
@@ -476,12 +480,8 @@ namespace reality {
 					keyframes.push_back(track.anim_mat);
 				}
 
-				out_anim->animations.insert(make_pair(bone.second, keyframes));
+				out_anim_map[anim_name].animations.insert(make_pair(bone.second, keyframes));
 			}
-
-			out_anim->start_frame = anim_frame.start;
-			out_anim->end_frame = anim_frame.end;
-			out_anim_list.push_back(out_anim);
 		}
 	}
 

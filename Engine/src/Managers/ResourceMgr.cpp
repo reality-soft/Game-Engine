@@ -3,7 +3,6 @@
 #include "FmodMgr.h"
 #include "FbxMgr.h"
 #include <io.h>
-#include "DataMgr.h"
 
 using namespace reality;
 
@@ -218,9 +217,9 @@ void ResourceMgr::PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh)
     resdic_skeletal_mesh.insert({ id, skeletal_mesh });
 }
 
-void ResourceMgr::PushAnimation(string id, const vector<OutAnimData>& animation)
+void ResourceMgr::PushAnimation(const map<string, OutAnimData>& animation)
 {
-    resdic_animation.insert({ id, animation });
+    resdic_animation.insert(animation.begin(), animation.end());
 }
 
 bool ResourceMgr::ImportShaders(string filename)
@@ -321,7 +320,7 @@ bool reality::ResourceMgr::ImportLTM(string filename)
 
 bool ResourceMgr::ImportANIM(string filename)
 {
-    vector<OutAnimData> animation = FBX->LoadAnimation(filename);
+    OutAnimData animation = FBX->LoadAnimation(filename);
 
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];

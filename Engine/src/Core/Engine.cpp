@@ -77,11 +77,8 @@ namespace reality {
 			// Updates
 			TIMER->Update();
 			DINPUT->Update();
-
 			INPUT_EVENT->PollEvents();
-
 			SCENE_MGR->OnUpdate();
-
 			EVENT->ProcessEvents();
 
 			// Render Here
