@@ -17,12 +17,12 @@ namespace reality {
     public:
         template<typename ActorClass>
         ActorClass* GetActor(entt::entity actor_id);
-        template <typename ActorClass>
-        entt::entity AddActor();
+        template <typename ActorClass, typename... Args>
+        entt::entity AddActor(Args&&...args);
         template<typename ActorClass>
         ActorClass* GetPlayer(int player_num);
-        template <typename ActorClass>
-        entt::entity AddPlayer();
+        template <typename ActorClass, typename... Args>
+        entt::entity AddPlayer(Args&&...args);
         template <typename SceneClass>
         void SetScene();
     private:
@@ -38,10 +38,10 @@ namespace reality {
         return dynamic_cast<ActorClass*>(weak_ptr(actors_.at(actor_id)).lock().get());
     }
 
-    template<typename ActorClass>
-    inline entt::entity SceneMgr::AddActor()
+    template<typename ActorClass, typename... Args>
+    inline entt::entity SceneMgr::AddActor(Args&&...args)
     {
-        shared_ptr<Actor> cur_actor = dynamic_pointer_cast<Actor>(make_shared<ActorClass>(ActorClass()));
+        shared_ptr<Actor> cur_actor = dynamic_pointer_cast<Actor>(make_shared<ActorClass>(args...));
         if (cur_actor == nullptr) {
             return entt::null;
         }
@@ -62,10 +62,10 @@ namespace reality {
 
         return dynamic_cast<ActorClass*>(weak_ptr(actors_.at(players_[player_num])).lock().get());
     }
-    template<typename ActorClass>
-    inline entt::entity SceneMgr::AddPlayer()
+    template<typename ActorClass, typename... Args>
+    inline entt::entity SceneMgr::AddPlayer(Args&&...args)
     {
-        shared_ptr<Actor> player = dynamic_pointer_cast<Actor>(make_shared<ActorClass>(ActorClass()));
+        shared_ptr<Actor> player = dynamic_pointer_cast<Actor>(make_shared<ActorClass>(args...));
         if (player == nullptr) {
             return entt::null;
         }
