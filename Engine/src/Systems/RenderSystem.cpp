@@ -413,6 +413,12 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	// Sprite 정보 입력
 	Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
 
+	// gravity
+	if (emitter.gravity_on_off)
+		cb_emitter.data.value.w = 1;
+	else
+		cb_emitter.data.value.w = 0;
+
 	switch (sprite->type)
 	{
 		// UV
@@ -420,7 +426,6 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	{
 		// type
 		cb_emitter.data.value.x = 0;
-
 
 		UVSprite* uv_sprite = (UVSprite*)sprite;
 

@@ -110,13 +110,6 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 			particle.velocity = emitter->velocity_timeline[frame_percentage];
 			break;
 		}
-
-		// GRAVITY
-		if (emitter->gravity_on_off)
-		{
-			XMVECTOR gravity = { 0.0f, -9.8f, 0.0f, 0.0f };
-			XMStoreFloat3(&particle.velocity, XMVectorAdd(XMLoadFloat3(&particle.velocity), TIMER->GetDeltaTime() * gravity));
-		}
 		
 		XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.velocity)));
 	}
