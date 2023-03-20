@@ -68,6 +68,8 @@ void TestGame::OnUpdate()
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
+
+	ingame_ui.OnUpdate();
 }
 
 void TestGame::OnRender()
