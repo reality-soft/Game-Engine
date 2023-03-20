@@ -3,6 +3,7 @@
 #include "DX11App.h"
 #include "FileTransfer.h"
 #include "TimeMgr.h"
+#include "ResourceMgr.h"
 
 using namespace reality;
 

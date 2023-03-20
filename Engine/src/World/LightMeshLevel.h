@@ -1,5 +1,6 @@
 #pragma once
-#include "ResourceMgr.h"
+#include "Components.h"
+#include "Mesh.h"
 #include "ConstantBuffer.h"
 
 namespace reality
