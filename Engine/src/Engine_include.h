@@ -24,7 +24,6 @@
 #include "Actors/FX_BaseEffectActor.h"
 #include "Actors/FX_Effect.h"
 #include "Actors/UIActor.h"
-#include "Actors/UI_Ingame_Actor.h"
 #include "Actors/StaticObject.h"
 
 #include "World/Level.h"
