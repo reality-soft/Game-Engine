@@ -1,5 +1,5 @@
 #pragma once
-#include "ResourceMgr.h"
+#include "Components.h"
 #include "InstancedObject.h"
 
 #define LerpByTan(start, end, tan) (start - (start * tan) + (end * tan))

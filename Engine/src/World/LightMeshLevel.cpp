@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "LightMeshLevel.h"
-#include "ResourceMgr.h"
-#include "FileTransfer.h"
+#include "Components.h"
 
 using namespace reality;
 

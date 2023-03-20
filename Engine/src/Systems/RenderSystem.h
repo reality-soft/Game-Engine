@@ -18,9 +18,9 @@ namespace reality
 		virtual void OnUpdate(entt::registry& reg);
 
 		void SetCbTransform(const C_Transform* const transform);
-		void PlayAnimation(const Skeleton& skeleton, const OutAnimData& res_animation);
+		void PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component);
 		void RenderStaticMesh(const C_StaticMesh* const static_mesh);
-		void RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, const C_Animation* const animation_component);
+		void RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, C_Animation* const animation_component);
 		
 		// Effect Rendering
 		void CreateEffectCB();

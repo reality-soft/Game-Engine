@@ -47,7 +47,7 @@ void TestGame::OnInit()
 	INPUT_EVENT->Subscribe({ DIK_A }, idle, KEY_UP);
 	//INPUT_EVENT->Subscribe({ DIK_SPACE }, idle, KEY_UP);
 
-	//INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
 
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
