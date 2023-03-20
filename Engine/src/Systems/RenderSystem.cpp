@@ -109,16 +109,16 @@ void RenderSystem::SetCbTransform(const C_Transform* const transform)
 	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 }
 
-void RenderSystem::PlayAnimation(const Skeleton& skeleton, const vector<OutAnimData>& res_animation)
+void RenderSystem::PlayAnimation(const Skeleton& skeleton, const OutAnimData& res_animation)
 {
-	static float keyframe = res_animation.begin()->start_frame;
+	static float keyframe = res_animation.start_frame;
 
-	if (keyframe >= res_animation.begin()->end_frame)
-		keyframe = res_animation.begin()->start_frame;
+	if (keyframe >= res_animation.end_frame)
+		keyframe = res_animation.start_frame;
 
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
-		XMMATRIX anim_matrix = bp.second * res_animation.begin()->animations.find(bp.first)->second[keyframe];
+		XMMATRIX anim_matrix = bp.second * res_animation.animations.find(bp.first)->second[keyframe];
 		cb_skeleton.data.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
 	}
 
@@ -159,7 +159,7 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components->skeletal_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components->vertex_shader_id);
-	vector<OutAnimData>* res_animation = RESOURCE->UseResource<vector<OutAnimData>>(animation_component->anim_id);
+	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component->anim_id);
 	if (res_animation != nullptr) {
 		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
 	}

@@ -1,5 +1,4 @@
 #pragma once
-#include "DllMacro.h"
 #include "Components.h"
 
 namespace reality

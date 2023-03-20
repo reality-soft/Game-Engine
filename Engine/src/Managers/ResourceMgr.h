@@ -50,27 +50,27 @@ namespace reality
 		void PushLightMesh(string id, const LightMesh& light_mesh);
 		void PushStaticMesh(string id, const StaticMesh& static_mesh);
 		void PushSkeletalMesh(string id, const SkeletalMesh& skeletal_mesh);
-		void PushAnimation(string id, const vector<OutAnimData>& animation);
+		void PushAnimation(const map<string, OutAnimData>& animation);
 
 	private:
 		string current_id;
 
-		map<string, StaticMesh> resdic_static_mesh;
-		map<string, LightMesh> resdic_light_mesh;
-		map<string, SkeletalMesh> resdic_skeletal_mesh;
-		map<string, vector<OutAnimData>> resdic_animation;
+		unordered_map<string, StaticMesh>			resdic_static_mesh;
+		unordered_map<string, LightMesh>			resdic_light_mesh;
+		unordered_map<string, SkeletalMesh>			resdic_skeletal_mesh;
+		unordered_map<string, OutAnimData>			resdic_animation;
 
-		map<string, VertexShader> resdic_vs;
-		map<string, PixelShader>  resdic_ps;
-		map<string, GeometryShader> resdic_gs;
-		map<string, Texture> resdic_texture;
-		map<string, Material> resdic_material;
+		unordered_map<string, VertexShader>			resdic_vs;
+		unordered_map<string, PixelShader>			resdic_ps;
+		unordered_map<string, GeometryShader>		resdic_gs;
+		unordered_map<string, Texture>				resdic_texture;
+		unordered_map<string, Material>				resdic_material;
 
 		// Effect
-		map<string, FMOD::Sound*>	resdic_sound;
+		unordered_map<string, FMOD::Sound*>			resdic_sound;
 
-		map<string, shared_ptr<Sprite>> resdic_sprite;
-		map<string, Effect>				resdic_effect;
+		unordered_map<string, shared_ptr<Sprite>>	resdic_sprite;
+		unordered_map<string, Effect>				resdic_effect;
 
 	private:
 		bool ImportShaders(string filename);
@@ -145,7 +145,7 @@ namespace reality
 				return (T*)(&iter->second);
 			}
 		}
-		else if (typeid(T) == typeid(vector<OutAnimData>))
+		else if (typeid(T) == typeid(OutAnimData))
 		{
 			auto iter = resdic_animation.find(id);
 			if (iter != resdic_animation.end())

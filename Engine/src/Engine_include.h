@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Managers/ResourceMgr.h"
-#include "Managers/RenderTargetMgr.h"
-#include "Managers/TimeMgr.h"
 
 #include "Scene/SceneMgr.h"
 #include "Event/EventMgr.h"

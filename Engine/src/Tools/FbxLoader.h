@@ -17,12 +17,12 @@ namespace reality {
 
 	public:
 		vector<OutMeshData*> out_mesh_list;
-		vector<OutAnimData*> out_anim_list;
+		map<string, OutAnimData> out_anim_map;
 		FbxImportOption import_options;
 
 	public:
 		bool LoadFromFbxFile(string filename);
-		void LoadAnimation(FbxTime::EMode time_mode);
+		void LoadAnimation(FbxTime::EMode time_mode, const string& filename);
 		void Destroy();
 
 	private:
@@ -42,7 +42,7 @@ namespace reality {
 		void PreProcess(FbxNode* fbx_node);
 		void ParseMesh(FbxMesh* fbx_mesh, OutMeshData* out_mesh);
 		bool ParseMeshSkinning(FbxMesh* fbx_mesh, OutMeshData* out_mesh);
-		AnimFrame InitAnimation(int stack_index, FbxTime::EMode time_mode);
+		AnimFrame InitAnimation(int stack_index, FbxTime::EMode time_mode, string& anim_name);
 
 		FbxVector2 ReadUV(FbxMesh* fbx_mesh, FbxLayerElementUV* vertex_uv_set, int pos_index, int uv_index);
 		FbxColor ReadColor(FbxMesh* fbx_mesh, FbxLayerElementVertexColor* vertex_color_set, int pos_index, int color_index);
