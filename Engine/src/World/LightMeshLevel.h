@@ -1,6 +1,7 @@
 #pragma once
 #include "ResourceMgr.h"
 #include "ConstantBuffer.h"
+#include "GuideLine.h"
 
 namespace reality
 {
@@ -27,6 +28,14 @@ namespace reality
 		shared_ptr<LightMesh> collision_mesh;
 		shared_ptr<VertexShader> vertex_shader;
 		shared_ptr<GeometryShader> geometry_shader;
+
+	public:
+		void ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type);
+		vector<GuideLine>* GetGuideLines();
+
+	private:
+		vector<GuideLine> guide_lines;
+
 	};
 }
 

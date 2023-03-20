@@ -51,6 +51,7 @@ void TestGame::OnInit()
 
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
+	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 	QUADTREE->Init(&level, 4);
 	QUADTREE->RegisterDynamicCapsule(player_entity);
 

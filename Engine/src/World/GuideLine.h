@@ -15,6 +15,7 @@ namespace reality
 		void Init(GuideType guide_type);
 		void AddNode(XMVECTOR node_pos);
 		void DeleteNode(UINT index);
+		void UpdateLines();
 
 		map<UINT, XMVECTOR> line_nodes;
 		vector<XMVECTOR> line_vectors;

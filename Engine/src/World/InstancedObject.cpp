@@ -167,6 +167,9 @@ void reality::InstancedObject::SetInstanceTranslation(string name, XMFLOAT3 T)
 
 InstanceData* InstancedObject::AddNewInstance(string name)
 {
+	if (instance_pool.find(name) != instance_pool.end())
+		return nullptr;
+
 	InstanceData* data = new InstanceData(name, instance_pool.size());
 
 	instance_pool.insert(make_pair(data->instance_id, data));
