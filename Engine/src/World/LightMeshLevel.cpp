@@ -108,3 +108,36 @@ void reality::LightMeshLevel::RenderCollisionMesh()
 
     DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
+
+void reality::LightMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type)
+{
+    FileTransfer out_mapdata(mapdat_file, READ);
+
+    UINT num_guide_lines = 0;
+    out_mapdata.ReadBinary<UINT>(num_guide_lines);
+    for (UINT i = 0; i < num_guide_lines; ++i)
+    {
+        GuideLine new_guide_line;
+        new_guide_line.guide_type_ = guide_type;
+
+        UINT num_nodes = 0;
+        out_mapdata.ReadBinary<UINT>(num_nodes);
+
+        for (UINT j = 0; j < num_nodes; ++j)
+        {
+            UINT node_number;
+            XMVECTOR node_pos;
+            out_mapdata.ReadBinary<UINT>(node_number);
+            out_mapdata.ReadBinary<XMVECTOR>(node_pos);
+
+            new_guide_line.AddNode(node_pos);
+        }
+
+        guide_lines.push_back(new_guide_line);
+    }
+}
+
+vector<GuideLine>* reality::LightMeshLevel::GetGuideLines()
+{
+    return &guide_lines;
+}

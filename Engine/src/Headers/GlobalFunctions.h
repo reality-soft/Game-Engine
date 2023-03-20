@@ -23,31 +23,25 @@ static std::vector<std::string> split(std::string input, char delimiter) {
 	return answer;
 }
 
-//static void XMtoRP(DirectX::XMVECTOR& xmv, reactphysics3d::Vector3& rpv)
-//{
-//	rpv.x = xmv.m128_f32[0];
-//	rpv.y = xmv.m128_f32[1];
-//	rpv.z = xmv.m128_f32[2];
-//}
-//
-//static void XMtoRP(DirectX::XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
-//{
-//	rpv.x = xmv.m128_f32[0];
-//	rpv.y = xmv.m128_f32[1];
-//}
-//
-//static void RPtoXM(reactphysics3d::Vector3& rpv, DirectX::XMVECTOR& xmv)
-//{
-//	xmv.m128_f32[0] = rpv.x;
-//	xmv.m128_f32[1] = rpv.y;
-//	xmv.m128_f32[2] = rpv.z;
-//}
-//
-//static void RPtoXM(reactphysics3d::Vector2& rpv, DirectX::XMVECTOR& xmv)
-//{
-//	xmv.m128_f32[0] = rpv.x;
-//	xmv.m128_f32[1] = rpv.y;
-//}
+static std::string VectorToString(DirectX::XMVECTOR& arg)
+{
+	std::string str;
+	str =  "\nX : " + std::to_string(DirectX::XMVectorGetX(arg));
+	str += "\nY : " + std::to_string(DirectX::XMVectorGetY(arg));
+	str += "\nZ : " + std::to_string(DirectX::XMVectorGetZ(arg));
+
+	return str;
+}
+
+static std::string VectorToString(DirectX::XMFLOAT3& arg)
+{
+	std::string str;
+	str =  "\nX : " + std::to_string(arg.x);
+	str += "\nY : " + std::to_string(arg.y);
+	str += "\nZ : " + std::to_string(arg.z);
+	
+	return str;
+}
 
 static float RandomFloat()
 {

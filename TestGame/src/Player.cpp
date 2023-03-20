@@ -122,7 +122,8 @@ void Player::MoveBack()
 
 void Player::Jump()
 {
-	movement_component_->jump_scale = 10000.0f;
+	movement_component_->jump_scale = 1000.0f;
+	movement_state_ = MovementState::GRAVITY_FALL;
 }
 
 void Player::Idle()

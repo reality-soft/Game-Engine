@@ -119,7 +119,7 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
 
 	casted_nodes_.clear();
-	//NodeCasting(applied_camera->CreateFrontRay(), root_node_);
+	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
 }
@@ -160,32 +160,31 @@ void reality::QuadTreeMgr::UpdatePhysics()
 
 		including_nodes_num.clear();
 
-		CapsuleCallback result;
+		map<float, CapsuleCallback> result_list;
 		for (auto node : nodes)
 		{
 			including_nodes_num.insert(node->node_num);
 			for (auto& tri : node->static_triangles)
 			{
 				cal++;
-				result = CapsuleToTriangle(dynamic_capsule.second->capsule, tri);
-			
-				if (result.reaction != CapsuleCallback::NONE)				
-					break;
-				
+				auto result = CapsuleToTriangle(dynamic_capsule.second->capsule, tri);
+				if (result.reaction != CapsuleCallback::NONE)
+					result_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));				
 			}
-			if (result.reaction != CapsuleCallback::NONE)
-				break;
-		}		
-		if (result.reaction == CapsuleCallback::NONE)
+		}
+
+		if (result_list.empty())
 		{
 			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GravityFall(9.81f);
+			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->movement_state_ = MovementState::GRAVITY_FALL;
+			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->floor_height = dynamic_capsule.second->capsule.base.m128_f32[1];
 		}
 		else
 		{
 			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GetMovementComponent()->gravity = 0.0f;
+			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->movement_state_ = MovementState::STAND_ON_FLOOR;
+			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->floor_height = result_list.rbegin()->first;
 		}
-
-		SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->capsule_callback = result;
 
 		calculating_triagnles = cal;
 		nodes.clear();
@@ -237,14 +236,6 @@ void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode
 
 RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
 {
-	const float ts = 1.0f / 20.0f;
-	static float acc = 0.0f;
-	acc += TM_DELTATIME;
-	if (acc < ts)
-		return RayCallback();
-
-	acc = 0.0f;
-
 	map<float, RayCallback> callback_list;
 
 	int cal = 0;

@@ -47,6 +47,7 @@ namespace reality
 	public:
 		InstanceData* AddNewInstance(string name);
 		vector<InstanceData::CData> GetCDataArray();
+		InstanceData* SelectInstance(string name);
 		void SetInstanceScale(string name, XMFLOAT3 S);
 		void SetInstanceRotation(string name, XMFLOAT3 R);
 		void SetInstanceTranslation(string name, XMFLOAT3 T);
