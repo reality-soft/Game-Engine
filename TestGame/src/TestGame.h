@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine_Include.h"
 #include "TestWidget.h"
+#include "UI_Ingame_Actor.h"
 
 using namespace reality;
 
