@@ -29,6 +29,7 @@
 #include "Actors/UI_Ingame_Actor.h"
 #include "Actors/StaticObject.h"
 
+#include "World/Level.h"
 #include "World/SkySphere.h"
 #include "World/LightMeshLevel.h"
 
