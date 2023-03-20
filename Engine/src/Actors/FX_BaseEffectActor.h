@@ -7,10 +7,10 @@ namespace reality
 	{
 	public:
 		virtual void OnInit(entt::registry& registry) override;
-		virtual void OnInit(entt::registry& registry, string effect_id);
 		virtual void OnUpdate() override;
 	public:
 		void AddEffect(map<string, Emitter>& emitter_list);
+		void Spawn(XMVECTOR pos, XMVECTOR rotation_q);
 		void ResetEmitter();
 	};
 }
