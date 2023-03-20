@@ -14,13 +14,17 @@ namespace reality
 
 	public:
 		CapsuleCallback capsule_callback;
-		void		 OnInit(entt::registry& registry) override;
-		void ApplyMovement(XMMATRIX movement_matrix) override;
+
+	public:
+		void		OnInit(entt::registry& registry) override;
+		void		ApplyMovement(XMMATRIX movement_matrix) override;
+	
+	public:
 		C_Movement* GetMovementComponent() { return movement_component_; }
-		void GravityFall(float _gravity);
-		XMMATRIX transform_matrix() { return transform_matrix_; }
+		void		GravityFall(float _gravity);
+		XMMATRIX	transform_matrix() { return transform_matrix_; }
 
 	protected:
-		void FastenAtFloor();
+		void		FastenAtFloor();
 	};
 }

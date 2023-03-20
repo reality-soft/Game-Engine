@@ -17,6 +17,11 @@ entt::entity reality::Actor::GetEntityId()
 	return entity_id_;
 }
 
+XMMATRIX reality::Actor::GetTransformMatrix()
+{
+	return transform_matrix_;
+}
+
 void reality::Actor::ApplyMovement(XMMATRIX movement_matrix)
 {
 	transform_matrix_ *= movement_matrix;
