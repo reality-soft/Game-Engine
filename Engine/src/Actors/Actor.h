@@ -17,6 +17,6 @@ namespace reality
 		virtual void OnUpdate();
 	public: 
 		entt::entity GetEntityId();
-		virtual void ApplyMovement(XMMATRIX movement_matrix);
+		virtual void ApplyMovement(XMMATRIX transform_matrix);
 	};
 }

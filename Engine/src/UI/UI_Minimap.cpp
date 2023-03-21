@@ -33,7 +33,7 @@ void UI_Minimap::UpdateThisUI()
 	RenderMinimap();
 
 	// 2. 플레이어 아이콘 랜더링
-	XMMATRIX player_world = SCENE_MGR->GetPlayer<Character>(0)->transform_matrix();
+	XMMATRIX player_world = SCENE_MGR->GetPlayer<Character>(0)->GetTranformMatrix();
 	RenderPlayerIcon(player_world);
 
 	// 3. 좀비 아이콘 랜더링 : TODO

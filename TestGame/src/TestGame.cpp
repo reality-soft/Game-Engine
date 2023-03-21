@@ -37,6 +37,7 @@ void TestGame::OnInit()
 	INPUT_EVENT->Subscribe({ DIK_S, DIK_A }, std::bind(&Player::MoveLeftBack, character_actor), KEY_HOLD);
 	INPUT_EVENT->Subscribe({ DIK_W }, std::bind(&Player::MoveForward, character_actor), KEY_HOLD);
 	INPUT_EVENT->Subscribe({ DIK_S }, std::bind(&Player::MoveBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->Subscribe({ DIK_RETURN }, std::bind(&Player::ResetPos, character_actor), KEY_PUSH);
 
 	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Jump, character_actor), KEY_PUSH);
 
@@ -54,7 +55,7 @@ void TestGame::OnInit()
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
-	QUADTREE->Init(&level, 3, SCENE_MGR->GetRegistry());
+	QUADTREE->Init(&level, 3);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
 	gw_property_.AddProperty<int>("raycasted nodes", &QUADTREE->ray_casted_nodes);

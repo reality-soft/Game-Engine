@@ -129,6 +129,12 @@ void Player::Fire()
 	SetCharacterAnimation("A_TP_CH_Handgun_Fire_Anim_Unreal Take.anim");
 }
 
+void Player::ResetPos()
+{
+	transform_matrix_ = XMMatrixTranslation(0, 100, 0);
+	transform_tree_.root_node->OnUpdate(SCENE_MGR->GetRegistry(), entity_id_, transform_matrix_);
+}
+
 int Player::GetMaxHp() const
 {
 	return max_hp_;

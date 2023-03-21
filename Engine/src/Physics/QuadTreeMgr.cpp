@@ -125,6 +125,7 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
+	CheckBlockingLine();
 }
 
 void reality::QuadTreeMgr::Release()
@@ -194,20 +195,38 @@ void reality::QuadTreeMgr::UpdatePhysics()
 	}
 }
 
+#include "SimpleMath.h"
+
 void reality::QuadTreeMgr::CheckBlockingLine()
 {
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
+		SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->blocking_vector_list.clear();
 		XMVECTOR capsule_pos = dynamic_capsule.second->capsule.base;
 		capsule_pos.m128_f32[1] = 0.0f;
 
 		for (auto& blocking_line : blocking_lines)
 		{
 			float distance_from_line = XMVectorGetX(XMVector3LinePointDistance(blocking_line.start, blocking_line.end, capsule_pos));
+
 			if (distance_from_line <= dynamic_capsule.second->capsule.radius)
 			{
-				XMVector3Normalize(blocking_line.end - blocking_line.start);
-				XMVector3Normalize();
+				XMVECTOR OB = blocking_line.end - blocking_line.start;
+				XMVECTOR OA = dynamic_capsule.second->capsule.base - blocking_line.start;
+				float dot = XMVectorGetX(XMVector3Dot(OA, OB));
+				if (dot < 0)
+				{
+					OB *= -1.0f;
+					OA = dynamic_capsule.second->capsule.base - blocking_line.end;
+				}
+
+				float proj_length = Vector3Length(Vector3Project(OB, OA));
+				float line_length = Vector3Length(OB) + dynamic_capsule.second->capsule.radius;
+
+				if (proj_length<= line_length)
+				{
+					SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->blocking_vector_list.push_back(OB);
+				}
 			}
 		}
 	}
