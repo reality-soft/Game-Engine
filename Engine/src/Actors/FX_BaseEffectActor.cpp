@@ -27,7 +27,7 @@ void FX_BaseEffectActor::OnUpdate()
 {
 	//this->node_num_ = SpacePartition::GetInst()->UpdateNodeObjectBelongs(0, collision_box_, entity_id_);
 	//vector<int> node_to_search = SpacePartition::GetInst()->FindCollisionSearchNode(0, collision_box_);
-	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
+	//transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
 }
 
 void FX_BaseEffectActor::AddEffect(map<string, Emitter>& emitter_list)
@@ -45,7 +45,7 @@ void FX_BaseEffectActor::Spawn(XMVECTOR pos, XMVECTOR rotation_q)
 	T = XMMatrixTranslationFromVector(pos);
 	transform_comp.world = S * R * T;
 
-	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
+	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_, transform_comp.world);
 }
 
 void FX_BaseEffectActor::ResetEmitter()
