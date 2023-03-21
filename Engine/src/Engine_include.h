@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Managers/ResourceMgr.h"
-
+#include "Managers/EffectMgr.h"
 #include "Scene/SceneMgr.h"
 #include "Event/EventMgr.h"
 #include "Input/InputEventMgr.h"
