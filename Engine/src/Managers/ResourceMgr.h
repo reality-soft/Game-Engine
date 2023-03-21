@@ -1,8 +1,10 @@
 #pragma once
-#include "Components.h"
 #include "FbxLoader.h"
 #include "DataTableMgr.h"
 #include "Mesh.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "Material.h"
 #include "Effect.h"
 
 namespace reality

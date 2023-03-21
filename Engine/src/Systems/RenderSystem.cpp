@@ -109,20 +109,23 @@ void RenderSystem::SetCbTransform(const C_Transform* const transform)
 	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 }
 
-void RenderSystem::PlayAnimation(const Skeleton& skeleton, const OutAnimData& res_animation)
+void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component)
 {
-	static float keyframe = res_animation.start_frame;
+	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component.anim_id);
+	if (res_animation == nullptr) {
+		return;
+	}
 
-	if (keyframe >= res_animation.end_frame)
-		keyframe = res_animation.start_frame;
+	if (animation_component.cur_frame >= res_animation->end_frame)
+		animation_component.cur_frame = res_animation->start_frame;
 
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
-		XMMATRIX anim_matrix = bp.second * res_animation.animations.find(bp.first)->second[keyframe];
+		XMMATRIX anim_matrix = bp.second * res_animation->animations.find(bp.first)->second[animation_component.cur_frame];
 		cb_skeleton.data.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
 	}
 
-	keyframe += 60.f / TM_FPS;
+	animation_component.cur_frame += 60.f / TM_FPS;
 
 	device_context->UpdateSubresource(cb_skeleton.buffer.Get(), 0, nullptr, &cb_skeleton.data, 0, 0);
 	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
@@ -132,6 +135,10 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 {
 	StaticMesh* static_mesh = RESOURCE->UseResource<StaticMesh>(static_mesh_component->static_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh_component->vertex_shader_id);
+
+	if (static_mesh == nullptr || shader == nullptr) {
+		return;
+	}
 
 	SetCbTransform(static_mesh_component);
 
@@ -155,14 +162,16 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 
 }
 
-void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, const C_Animation* const animation_component)
+void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, C_Animation* const animation_component)
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components->skeletal_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components->vertex_shader_id);
-	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component->anim_id);
-	if (res_animation != nullptr) {
-		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
+
+	if (skeletal_mesh == nullptr || shader == nullptr) {
+		return;
 	}
+
+	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
 
 	SetCbTransform(skeletal_mesh_components);
 

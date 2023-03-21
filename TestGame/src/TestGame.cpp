@@ -39,16 +39,16 @@ void TestGame::OnInit()
 	INPUT_EVENT->Subscribe({ DIK_S }, std::bind(&Player::MoveBack, character_actor), KEY_HOLD);
 	INPUT_EVENT->Subscribe({ DIK_RETURN }, std::bind(&Player::ResetPos, character_actor), KEY_PUSH);
 
-	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Jump, character_actor), KEY_PUSH);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_SPACE }, std::bind(&Player::Jump, character_actor), KEY_PUSH);
 
 	std::function<void()> idle = std::bind(&Player::Idle, character_actor);
-	INPUT_EVENT->Subscribe({ DIK_D }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_S }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_W }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_A }, idle, KEY_UP);
-	//INPUT_EVENT->Subscribe({ DIK_SPACE }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_D }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_S }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_W }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_A }, idle, KEY_UP);
 
-	//INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
@@ -71,6 +71,8 @@ void TestGame::OnUpdate()
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
+
+	ingame_ui.OnUpdate();
 }
 
 void TestGame::OnRender()

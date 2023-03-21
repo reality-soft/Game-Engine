@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Weapon.h"
 
 using namespace reality;
 
@@ -16,7 +17,6 @@ void Player::OnInit(entt::registry& registry)
 	skm.world = XMMatrixIdentity();
 	skm.skeletal_mesh_id = "A_TP_CH_Breathing.skmesh";
 	skm.vertex_shader_id = "SkinningVS.cso";
-	auto& meshes = RESOURCE->UseResource<SkeletalMesh>(skm.skeletal_mesh_id)->meshes;
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
 	reality::C_CapsuleCollision capsule;
@@ -31,12 +31,19 @@ void Player::OnInit(entt::registry& registry)
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_SkeletalMesh));
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_Camera));
 
-	// player start;
 	transform_matrix_ = XMMatrixTranslation(0, 100, 0);
 	transform_tree_.root_node->OnUpdate(registry, entity_id_, transform_matrix_);
 
 	reality::C_SkeletalMesh* skm_ptr = registry.try_get<C_SkeletalMesh>(entity_id_);
 	skm_ptr->local = XMMatrixRotationY(XMConvertToRadians(180)) * XMMatrixScalingFromVector({ 0.3, 0.3, 0.3, 0.0 });
+
+	// weapon
+	entt::entity weapon_id = SCENE_MGR->AddActor<Weapon>(entity_id_);
+	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skm.skeletal_mesh_id);
+	int skeleton_id = skeletal_mesh->skeleton.skeleton_id_map["hand_r"];
+	Weapon* weapon = SCENE_MGR->GetActor<Weapon>(weapon_id);
+	weapon->SetSocket(skeleton_id);
+	weapon->SetOwnerTransform(skm_ptr->local);
 }
 
 void Player::OnUpdate()

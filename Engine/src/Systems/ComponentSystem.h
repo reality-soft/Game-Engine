@@ -18,6 +18,8 @@ namespace reality {
 			registry.on_update<C_Transform>().connect<&ComponentSystem::OnUpdate<C_Transform>>(this);
 			registry.on_update<C_BoundingBox>().connect<&ComponentSystem::OnUpdate<C_BoundingBox>>(this);
 
+			registry.on_update<C_Animation>().connect<&ComponentSystem::OnUpdate<C_Animation>>(this);
+
 			return true;
 		}
 		template<typename ComponentType>

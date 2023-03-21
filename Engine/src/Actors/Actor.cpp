@@ -17,7 +17,12 @@ entt::entity reality::Actor::GetEntityId()
 	return entity_id_;
 }
 
-void reality::Actor::ApplyMovement(XMMATRIX transform_matrix)
+XMMATRIX reality::Actor::GetTransformMatrix()
+{
+	return transform_matrix_;
+}
+
+void reality::Actor::ApplyMovement(XMMATRIX movement_matrix)
 {
 	transform_matrix_ = transform_matrix;
 	transform_tree_.root_node->Translate(*reg_scene_, entity_id_, transform_matrix_);

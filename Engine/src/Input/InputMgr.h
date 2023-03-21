@@ -15,7 +15,8 @@ namespace reality
 		L_BUTTON,
 		R_BUTTON,
 		M_BUTTON,
-		EXTRA_BUTTON
+		EXTRA_BUTTON,
+		NUM_MOUSE_BUTTON
 	};
 
 	class DLL_API InputMgr
