@@ -34,16 +34,14 @@ namespace reality {
 		SINGLETON(QuadTreeMgr)
 #define QUADTREE QuadTreeMgr::GetInst()
 	public:
-		void Init(LightMeshLevel* level_to_devide, int max_depth = 5);
+		void Init(LightMeshLevel* level_to_devide, int max_depth);
 		void Frame(CameraSystem* applied_camera);
 		void Release();
 
 	public:
-		void UpdatePhysics();
 		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
 		RayCallback RaycastAdjustActor(RayShape& ray);
-
-		void RegisterDynamicCapsule(entt::entity ent);
+		void RegistDynamicCapsule(entt::entity ent);
 
 	public:
 		int calculating_triagnles;
@@ -51,7 +49,11 @@ namespace reality {
 		set<UINT> including_nodes_num;
 		XMVECTOR player_capsule_pos;
 
+		vector<RayShape> blocking_lines;
+
 	private:
+		void UpdatePhysics();
+		void CheckBlockingLine();
 		UINT max_depth;
 		UINT node_count = 0;
 		float physics_timestep = 1.0f / 60.0f;
@@ -70,9 +72,6 @@ namespace reality {
 		void SetStaticTriangles(SpaceNode* node);
 
 	public:
-		std::vector<int>					FindCollisionSearchNode(int node_num);
-		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
-
 		LightMeshLevel* deviding_level_ = nullptr;
 		Frustum camera_frustum_;
 

@@ -108,6 +108,16 @@ static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
 	return DirectX::XMVector3Length(vector).m128_f32[0]; 
 }
 
+static float Vector3Length(DirectX::XMVECTOR vector)
+{
+	return DirectX::XMVectorGetX(DirectX::XMVector3Length(vector));
+}
+
+static DirectX::XMVECTOR Vector3Project(DirectX::XMVECTOR OB, DirectX::XMVECTOR OA)
+{
+	return DirectX::XMVectorMultiply(OB, DirectX::XMVectorDivide(DirectX::XMVectorMultiply(OA, OB), DirectX::XMVector3LengthSq(OB)));
+}
+
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
 {
 	// 정규화된 벡터를 사용하여 평행 여부를 확인합니다.
