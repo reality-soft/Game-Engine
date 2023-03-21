@@ -60,6 +60,9 @@ void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
 				blocking_line.start = guide_line.line_nodes.at(i - 1);
 				blocking_line.end = guide_line.line_nodes.at(i);
 
+				blocking_line.start.m128_f32[1] = 0.0f;
+				blocking_line.end.m128_f32[1] = 0.0f;
+
 				blocking_lines.push_back(blocking_line);
 			}
 		}
@@ -188,6 +191,25 @@ void reality::QuadTreeMgr::UpdatePhysics()
 
 		calculating_triagnles = cal;
 		nodes.clear();
+	}
+}
+
+void reality::QuadTreeMgr::CheckBlockingLine()
+{
+	for (auto& dynamic_capsule : dynamic_capsule_list)
+	{
+		XMVECTOR capsule_pos = dynamic_capsule.second->capsule.base;
+		capsule_pos.m128_f32[1] = 0.0f;
+
+		for (auto& blocking_line : blocking_lines)
+		{
+			float distance_from_line = XMVectorGetX(XMVector3LinePointDistance(blocking_line.start, blocking_line.end, capsule_pos));
+			if (distance_from_line <= dynamic_capsule.second->capsule.radius)
+			{
+				XMVector3Normalize(blocking_line.end - blocking_line.start);
+				XMVector3Normalize();
+			}
+		}
 	}
 }
 

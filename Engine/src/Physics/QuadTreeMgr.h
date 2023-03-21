@@ -39,7 +39,6 @@ namespace reality {
 		void Release();
 
 	public:
-		void UpdatePhysics();
 		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
 		RayCallback RaycastAdjustActor(RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
@@ -53,6 +52,8 @@ namespace reality {
 		vector<RayShape> blocking_lines;
 
 	private:
+		void UpdatePhysics();
+		void CheckBlockingLine();
 		UINT max_depth;
 		UINT node_count = 0;
 		float physics_timestep = 1.0f / 60.0f;
