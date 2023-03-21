@@ -30,7 +30,6 @@ void reality::CameraSystem::TargetTag(entt::registry& reg, string tag)
 			this->camera = &camera;
 		}
 	}
-	camera->tag = tag;
 }
 
 void CameraSystem::OnCreate(entt::registry& reg)
