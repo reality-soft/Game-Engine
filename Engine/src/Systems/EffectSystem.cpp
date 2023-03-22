@@ -9,7 +9,6 @@ using namespace reality;
 void EffectSystem::OnCreate(entt::registry& reg)
 {
 	
-	
 }
 
 void EffectSystem::OnUpdate(entt::registry& reg)
@@ -24,13 +23,13 @@ void EffectSystem::OnUpdate(entt::registry& reg)
 		if (effect_comp.effect_lifetime > 0 && effect_comp.effect_timer > effect_comp.effect_lifetime)
 		{
 			SCENE_MGR->DestroyActor(entity);
+			continue;
 		}
 
 		auto& effect = effect_comp.effect;
 		for (auto& pair : effect.emitters)
 		{
 			auto& emitter = pair.second;
-			emitter.timer = effect_comp.effect_timer;
 			UpdateParticles(&emitter);
 
 			EmitParticles(&emitter);
@@ -121,6 +120,8 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 
 void EffectSystem::EmitParticles(Emitter* emitter)
 {
+	emitter->timer += TIMER->GetDeltaTime();
+
 	switch (emitter->emit_type)
 	{
 	case ONCE:
@@ -150,12 +151,7 @@ void EffectSystem::EmitParticles(Emitter* emitter)
 		if (emitter->timer > emitter->emit_time)
 		{
 			emitter->timer -= emitter->emit_time;
-
-			for (int i = 0; i < emitter->emit_time; i++)
-			{
-				EmitParticle(emitter);
-			}
-
+			EmitParticle(emitter);
 		}
 		break;
 	}
