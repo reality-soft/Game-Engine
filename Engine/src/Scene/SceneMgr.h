@@ -34,6 +34,7 @@ namespace reality {
 
             return cur_entity_id;
         }
+        bool DestroyActor(entt::entity actor_id);
 
         template<typename ActorClass>
         ActorClass* GetPlayer(int player_num)
