@@ -42,7 +42,8 @@ void GS(
 		//float4 world = mul(local, g_mat_particle);
 		float4 local = mul(new_point, g_mat_particle);
 		float4 world = mul(local, g_world);
-		world.y += -9.81f * g_particle_values.x * g_particle_values.x; // 시간의 동기화 필요
+		if (g_emitter_values.w)
+			world.y += -9.81f * g_particle_values.x * g_particle_values.x; // 시간의 동기화 필요
 		float4 view = mul(world, g_view);
 		float4 proj = mul(view, g_proj);
 		vertex.p = proj;

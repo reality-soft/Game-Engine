@@ -45,7 +45,8 @@ void GS(
 		//float4 view = mul(bill, g_view);
 
 		float4x4 particle_world_matrix = mul(g_mat_particle, g_world);
-		particle_world_matrix[3][1] += -9.81f * g_particle_values.x * g_particle_values.x;
+		if(g_emitter_values.w)
+			particle_world_matrix[3][1] += -9.81f * g_particle_values.x * g_particle_values.x;
 		float x_offset = particle_world_matrix[3][0];
 		float y_offset = particle_world_matrix[3][1];
 		float z_offset = particle_world_matrix[3][2];
