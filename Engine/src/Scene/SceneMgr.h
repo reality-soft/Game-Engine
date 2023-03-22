@@ -25,6 +25,7 @@ namespace reality {
         entt::entity AddPlayer(Args&&...args);
         template <typename SceneClass>
         void SetScene();
+        bool DestroyActor(entt::entity actor_id);
     private:
         shared_ptr<Scene> cur_scene_;
     private:
@@ -52,7 +53,6 @@ namespace reality {
 
             return cur_entity_id;
         }
-        bool DestroyActor(entt::entity actor_id);
 
     template<typename ActorClass>
     inline ActorClass* SceneMgr::GetPlayer(int player_num)
