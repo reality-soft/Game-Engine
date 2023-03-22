@@ -10,7 +10,8 @@ namespace reality
 		virtual void OnUpdate() override;
 	public:
 		void AddEffect(map<string, Emitter>& emitter_list);
-		void Spawn(XMVECTOR pos, XMVECTOR rotation_q);
+		void Spawn(XMVECTOR pos, XMVECTOR rotation_q = XMQuaternionIdentity(), XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
+		void Spawn(XMVECTOR pos, float lifetime, XMVECTOR rotation_q = XMQuaternionIdentity(), XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
 		void ResetEmitter();
 	};
 }

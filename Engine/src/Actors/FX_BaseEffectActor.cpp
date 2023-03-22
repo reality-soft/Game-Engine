@@ -25,9 +25,7 @@ void FX_BaseEffectActor::OnInit(entt::registry& registry)
 
 void FX_BaseEffectActor::OnUpdate()
 {
-	//this->node_num_ = SpacePartition::GetInst()->UpdateNodeObjectBelongs(0, collision_box_, entity_id_);
-	//vector<int> node_to_search = SpacePartition::GetInst()->FindCollisionSearchNode(0, collision_box_);
-	//transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
+	
 }
 
 void FX_BaseEffectActor::AddEffect(map<string, Emitter>& emitter_list)
@@ -36,16 +34,29 @@ void FX_BaseEffectActor::AddEffect(map<string, Emitter>& emitter_list)
 	effect_comp.effect.emitters = emitter_list;
 }
 
-void FX_BaseEffectActor::Spawn(XMVECTOR pos, XMVECTOR rotation_q)
+void FX_BaseEffectActor::Spawn(XMVECTOR pos, XMVECTOR rotation_q, XMVECTOR scale)
 {
 	auto& transform_comp = reg_scene_->get<C_Transform>(GetEntityId());
 	XMMATRIX S, R, T;
-	S = XMMatrixIdentity();
+	S = XMMatrixScalingFromVector(scale);
 	R = XMMatrixRotationQuaternion(rotation_q);
 	T = XMMatrixTranslationFromVector(pos);
 	transform_comp.world = S * R * T;
 
 	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_, transform_comp.world);
+
+	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
+	// lifetime = -1.0 -> Infinite Lifetime
+	effect_comp.effect_lifetime = -1.0f;
+	effect_comp.effect_timer = 0.0f;
+}
+
+void FX_BaseEffectActor::Spawn(XMVECTOR pos, float lifetime, XMVECTOR rotation_q,  XMVECTOR scale)
+{
+	Spawn(pos, rotation_q, scale);
+
+	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
+	effect_comp.effect_lifetime = lifetime;
 }
 
 void FX_BaseEffectActor::ResetEmitter()
