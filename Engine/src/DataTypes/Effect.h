@@ -129,7 +129,7 @@ namespace reality
 		XMFLOAT3	scale;
 
 		XMFLOAT3	add_size;
-		XMFLOAT3		add_rotation;
+		XMFLOAT3	add_rotation;
 		XMFLOAT3	accelation;
 
 		Particle()
