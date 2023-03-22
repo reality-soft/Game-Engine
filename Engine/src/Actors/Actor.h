@@ -15,10 +15,10 @@ namespace reality
 	public:
 		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate();
-		virtual void ApplyMovement(XMMATRIX movement_matrix);
 
 	public: 
 		entt::entity GetEntityId();
+		virtual void ApplyMovement(XMMATRIX transform_matrix);
 		XMMATRIX	 GetTransformMatrix();
 	};
 }

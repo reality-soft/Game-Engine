@@ -38,8 +38,7 @@ void UI_Minimap::UpdateThisUI()
 	// 1. Render Minimap Image
 	RenderMinimap();
 
-	// 2. Render Player Image
-	XMMATRIX player_world = SCENE_MGR->GetPlayer<Character>(0)->transform_matrix();
+	XMMATRIX player_world = SCENE_MGR->GetPlayer<Character>(0)->GetTranformMatrix();
 	RenderPlayerIcon(player_world);
 
 	// 3. Render Zombie Image

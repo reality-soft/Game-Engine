@@ -9,6 +9,7 @@ namespace reality
 		InstanceData(string obj_name, UINT index)
 		{
 			instance_id = obj_name + "_" + to_string(index);
+			this->index = index;
 
 			S = { 1 ,1, 1 };
 			R = { 0 ,0, 0 };
@@ -17,6 +18,7 @@ namespace reality
 			cdata.world_matrix = XMMatrixIdentity();
 		}
 
+		UINT index;
 		string instance_id;
 		XMFLOAT3 S;
 		XMFLOAT3 R;
@@ -41,16 +43,16 @@ namespace reality
 		void Release();
 
 		InstanceData* selected_instance = nullptr;
-		map<string, InstanceData*> instance_pool;
+		map<UINT, InstanceData*> instance_pool;
 		string object_name;
 
 	public:
 		InstanceData* AddNewInstance(string name);
 		vector<InstanceData::CData> GetCDataArray();
-		InstanceData* SelectInstance(string name);
-		void SetInstanceScale(string name, XMFLOAT3 S);
-		void SetInstanceRotation(string name, XMFLOAT3 R);
-		void SetInstanceTranslation(string name, XMFLOAT3 T);
+		InstanceData* SelectInstance(UINT index);
+		void SetInstanceScale(UINT index, XMFLOAT3 S);
+		void SetInstanceRotation(UINT index, XMFLOAT3 R);
+		void SetInstanceTranslation(UINT index, XMFLOAT3 T);
 
 	private:
 		bool UpdateInstance();

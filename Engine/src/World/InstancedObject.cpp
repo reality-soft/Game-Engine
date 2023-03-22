@@ -128,9 +128,9 @@ vector<InstanceData::CData> reality::InstancedObject::GetCDataArray()
 	return data_array;
 }
 
-InstanceData* reality::InstancedObject::SelectInstance(string name)
+InstanceData* reality::InstancedObject::SelectInstance(UINT index)
 {
-	auto& found = instance_pool.find(name);
+	auto& found = instance_pool.find(index);
 	if (found == instance_pool.end())
 		return nullptr;
 
@@ -138,27 +138,27 @@ InstanceData* reality::InstancedObject::SelectInstance(string name)
 	return selected_instance;
 }
 
-void reality::InstancedObject::SetInstanceScale(string name, XMFLOAT3 S)
+void reality::InstancedObject::SetInstanceScale(UINT index, XMFLOAT3 S)
 {
-	auto found = instance_pool.find(name);
+	auto found = instance_pool.find(index);
 	if (found != instance_pool.end())
 	{
 		found->second->S = S;
 	}
 }
 
-void reality::InstancedObject::SetInstanceRotation(string name, XMFLOAT3 R)
+void reality::InstancedObject::SetInstanceRotation(UINT index, XMFLOAT3 R)
 {
-	auto found = instance_pool.find(name);
+	auto found = instance_pool.find(index);
 	if (found != instance_pool.end())
 	{
 		found->second->R = R;
 	}
 }
 
-void reality::InstancedObject::SetInstanceTranslation(string name, XMFLOAT3 T)
+void reality::InstancedObject::SetInstanceTranslation(UINT index, XMFLOAT3 T)
 {
-	auto found = instance_pool.find(name);
+	auto found = instance_pool.find(index);
 	if (found != instance_pool.end())
 	{
 		found->second->T = T;
@@ -167,14 +167,12 @@ void reality::InstancedObject::SetInstanceTranslation(string name, XMFLOAT3 T)
 
 InstanceData* InstancedObject::AddNewInstance(string name)
 {
-	if (instance_pool.find(name) != instance_pool.end())
-		return nullptr;
+	UINT index = instance_pool.size();
+	InstanceData* data = new InstanceData(name, index);
 
-	InstanceData* data = new InstanceData(name, instance_pool.size());
+	instance_pool.insert(make_pair(index, data));
 
-	instance_pool.insert(make_pair(data->instance_id, data));
-
-	auto current = instance_pool.find(data->instance_id)->second;
+	auto current = instance_pool.find(index)->second;
 	selected_instance = current;
 
 	CreateInstanceBuffer();

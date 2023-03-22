@@ -19,6 +19,7 @@ public:
 	void Jump();
 	void Idle();
 	void Fire();
+	void ResetPos();
 public:
 	int GetMaxHp() const;
 	void SetCurHp(int hp);

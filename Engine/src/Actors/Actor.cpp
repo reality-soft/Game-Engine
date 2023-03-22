@@ -24,6 +24,6 @@ XMMATRIX reality::Actor::GetTransformMatrix()
 
 void reality::Actor::ApplyMovement(XMMATRIX movement_matrix)
 {
-	transform_matrix_ *= movement_matrix;
+	transform_matrix_ = transform_matrix;
 	transform_tree_.root_node->Translate(*reg_scene_, entity_id_, transform_matrix_);
 }

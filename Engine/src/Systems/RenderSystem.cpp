@@ -136,6 +136,10 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 	StaticMesh* static_mesh = RESOURCE->UseResource<StaticMesh>(static_mesh_component->static_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh_component->vertex_shader_id);
 
+	if (static_mesh == nullptr || shader == nullptr) {
+		return;
+	}
+
 	SetCbTransform(static_mesh_component);
 
 	for (auto single_mesh : static_mesh->meshes)
@@ -162,6 +166,10 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components->skeletal_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components->vertex_shader_id);
+
+	if (skeletal_mesh == nullptr || shader == nullptr) {
+		return;
+	}
 
 	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
 
