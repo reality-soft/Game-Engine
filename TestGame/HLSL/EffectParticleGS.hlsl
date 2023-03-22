@@ -38,13 +38,35 @@ void GS(
 	for (int i = 0; i < 4; i++)
 	{
 		float4 new_point = float4(input[0].p + float4(g_positions[i].xyz, 1.0f));
-		float4 local = mul(new_point, g_world);
-		float4 world = mul(local, g_mat_particle);
-		world.y += -9.81f * g_particle_values.x * g_particle_values.x; // 시간의 동기화 필요
+		//float4 local = mul(new_point, g_mat_particle);
+		//float4 world = mul(local, g_world);
+		//world.y += -9.81f * g_particle_values.x * g_particle_values.x;
+		//float4 bill = mul(world, g_billboard);
+		//float4 view = mul(bill, g_view);
 
-		float4 bill = mul(world, g_billboard);
-		float4 view = mul(bill, g_view);
+		float4x4 particle_world_matrix = mul(g_mat_particle, g_world);
+		particle_world_matrix[3][1] += -9.81f * g_particle_values.x * g_particle_values.x;
+		float x_offset = particle_world_matrix[3][0];
+		float y_offset = particle_world_matrix[3][1];
+		float z_offset = particle_world_matrix[3][2];
+		particle_world_matrix[3][0] = 0;
+		particle_world_matrix[3][1] = 0;
+		particle_world_matrix[3][2] = 0;
+		float4x4 final_matrix = mul(particle_world_matrix, g_billboard);
+		final_matrix[3][0] += x_offset;
+		final_matrix[3][1] += y_offset;
+		final_matrix[3][2] += z_offset;
+		float4 world = mul(new_point, final_matrix);
+		float4 view = mul(world, g_view);
 		float4 proj = mul(view, g_proj);
+
+
+		//float4 local = mul(new_point, g_mat_particle);
+		//float4 world = mul(local, g_world);
+		//world.y += -9.81f * g_particle_values.x * g_particle_values.x;
+		//float4 bill = mul(world, g_billboard);
+		//float4 view = mul(bill, g_view);
+		//float4 proj = mul(view, g_proj);
 		vertex.p = proj;
 
 		vertex.c = input[0].c * g_color;
