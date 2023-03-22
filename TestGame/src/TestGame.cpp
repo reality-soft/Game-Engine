@@ -1,6 +1,7 @@
 #include "TestGame.h"
 #include "Player.h"
 #include "FX_BloodImpact.h"
+#include "FX_ConcreteImpact.h"
 
 void TestGame::OnInit()
 {
@@ -76,7 +77,9 @@ void TestGame::OnUpdate()
 	ingame_ui.OnUpdate();
 
 	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
-		CreateEffectFromRay();
+		CreateBloodEffectFromRay();
+	if (DINPUT->GetMouseState(R_BUTTON) == KeyState::KEY_PUSH)
+		CreateDustEffectFromRay();
 }
 
 void TestGame::OnRender()
@@ -96,11 +99,18 @@ void TestGame::OnRelease()
 	reality::RESOURCE->Release();
 }
 
-void TestGame::CreateEffectFromRay()
+void TestGame::CreateBloodEffectFromRay()
 {
 	RayCallback raycallback =  QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
 	if(raycallback.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
+}
+
+void TestGame::CreateDustEffectFromRay()
+{
+	RayCallback raycallback = QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
+	if (raycallback.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
 }
 
 
