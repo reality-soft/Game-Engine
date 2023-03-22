@@ -23,6 +23,7 @@ void TestGame::OnInit()
   
 	sys_camera.SetSpeed(1000);
 	sys_light.OnCreate(reg_scene_);
+	sys_effect.OnCreate(reg_scene_);
 
 	auto player_entity = SCENE_MGR->AddPlayer<Player>();
 	sys_camera.TargetTag(reg_scene_, "Player");
@@ -51,7 +52,7 @@ void TestGame::OnInit()
 
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
-	QUADTREE->Init(&level, 4);
+	QUADTREE->Init(&level, 3);
 	QUADTREE->RegisterDynamicCapsule(player_entity);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
@@ -60,10 +61,7 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
 
-	// Sample Effect
-	XMVECTOR pos = XMVectorSet(0.0f, 10.0f, 0.0f, 0.0f);
-	XMVECTOR rotation_q =  XMQuaternionIdentity();
-	EFFECT_MGR->SpawnEffect<FX_BloodImpact>(pos, rotation_q);
+
 }
 
 void TestGame::OnUpdate()
@@ -72,9 +70,13 @@ void TestGame::OnUpdate()
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
+	sys_effect.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
 
 	ingame_ui.OnUpdate();
+
+	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
+		CreateEffectFromRay();
 }
 
 void TestGame::OnRender()
@@ -92,6 +94,13 @@ void TestGame::OnRelease()
 {
 	QUADTREE->Release();
 	reality::RESOURCE->Release();
+}
+
+void TestGame::CreateEffectFromRay()
+{
+	RayCallback raycallback =  QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
+	if(raycallback.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
 }
 
 
