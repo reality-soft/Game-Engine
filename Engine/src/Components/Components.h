@@ -424,8 +424,10 @@ namespace reality
 
 	struct C_Effect : public C_Transform
 	{
-		string effect_id;
-		Effect effect;
+		string	effect_id;
+		Effect	effect;
+		float	effect_lifetime = -1.0f;
+		float	effect_timer;
 	};
   
 	struct C_UI : public Component
