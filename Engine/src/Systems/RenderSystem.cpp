@@ -414,6 +414,12 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	// Sprite 정보 입력
 	Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
 
+	// gravity
+	if (emitter.gravity_on_off)
+		cb_emitter.data.value.w = 1;
+	else
+		cb_emitter.data.value.w = 0;
+
 	switch (sprite->type)
 	{
 		// UV
@@ -421,7 +427,6 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	{
 		// type
 		cb_emitter.data.value.x = 0;
-
 
 		UVSprite* uv_sprite = (UVSprite*)sprite;
 
@@ -517,14 +522,18 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	cb_particle_.data.values.x	= particle.timer;
 	cb_particle_.data.values.y	= particle.frame_ratio;
 
-	//particle.rotation.z = XMConvertToRadians(particle.rotation.z);
-
 	XMMATRIX s = XMMatrixScalingFromVector(XMLoadFloat3(&particle.scale));
+
 	XMVECTOR rot_vec = { XMConvertToRadians(particle.rotation.x), XMConvertToRadians(particle.rotation.y), XMConvertToRadians(particle.rotation.z) };
 	auto q = XMQuaternionRotationRollPitchYawFromVector(rot_vec);
-	//auto q = XMQuaternionRotationRollPitchYaw(particle.rotation.x, particle.rotation.y, particle.rotation.z);
 	XMMATRIX r = XMMatrixRotationQuaternion(q);
-	//XMMATRIX r = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&particle.rotation));
+
+	// multiply world rotation's inverse matrix
+	XMVECTOR world_scale, world_rot, world_trans;
+	XMMatrixDecompose(&world_scale, &world_rot, &world_trans, cb_effect.data.world);
+	auto world_inv_rot = XMMatrixRotationQuaternion(world_rot);
+	r = XMMatrixMultiply(r, world_inv_rot);
+
 	XMMATRIX t = XMMatrixTranslationFromVector(XMLoadFloat3(&particle.position));
 	XMMATRIX sr = XMMatrixMultiply(s, r);
 	XMMATRIX srt = XMMatrixMultiply(sr, t);

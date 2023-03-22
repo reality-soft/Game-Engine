@@ -50,8 +50,9 @@ namespace reality {
         entt::entity cur_entity_id = cur_actor->GetEntityId();
         actors_.insert({ cur_entity_id, move(cur_actor) });
 
-        return cur_entity_id;
-    }
+            return cur_entity_id;
+        }
+        bool DestroyActor(entt::entity actor_id);
 
     template<typename ActorClass>
     inline ActorClass* SceneMgr::GetPlayer(int player_num)

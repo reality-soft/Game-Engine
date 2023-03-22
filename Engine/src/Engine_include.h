@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Managers/ResourceMgr.h"
-
+#include "Managers/EffectMgr.h"
 #include "Scene/SceneMgr.h"
 #include "Event/EventMgr.h"
 #include "Input/InputEventMgr.h"
@@ -22,7 +22,6 @@
 #include "Actors/Actor.h"
 #include "Actors/Character.h"
 #include "Actors/FX_BaseEffectActor.h"
-#include "Actors/FX_Effect.h"
 #include "Actors/UIActor.h"
 #include "Actors/StaticObject.h"
 

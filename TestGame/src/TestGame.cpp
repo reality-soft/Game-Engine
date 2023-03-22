@@ -1,5 +1,7 @@
 #include "TestGame.h"
 #include "Player.h"
+#include "FX_BloodImpact.h"
+#include "FX_ConcreteImpact.h"
 
 void TestGame::OnInit()
 {
@@ -17,12 +19,12 @@ void TestGame::OnInit()
 	sys_render.OnCreate(reg_scene_);
 	sys_camera.OnCreate(reg_scene_);
 
-// �׽�Ʈ UI
 	ingame_ui.OnInit(reg_scene_);
 	sys_ui.OnCreate(reg_scene_);
   
 	sys_camera.SetSpeed(1000);
 	sys_light.OnCreate(reg_scene_);
+	sys_effect.OnCreate(reg_scene_);
 
 	auto player_entity = SCENE_MGR->AddPlayer<Player>();
 	sys_camera.TargetTag(reg_scene_, "Player");
@@ -60,6 +62,8 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
+
+
 }
 
 void TestGame::OnUpdate()
@@ -68,9 +72,15 @@ void TestGame::OnUpdate()
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
+	sys_effect.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
 
 	ingame_ui.OnUpdate();
+
+	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
+		CreateBloodEffectFromRay();
+	if (DINPUT->GetMouseState(R_BUTTON) == KeyState::KEY_PUSH)
+		CreateDustEffectFromRay();
 }
 
 void TestGame::OnRender()
@@ -90,12 +100,18 @@ void TestGame::OnRelease()
 	reality::RESOURCE->Release();
 }
 
-void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
+void TestGame::CreateBloodEffectFromRay()
 {
-	C_Effect& effect = reg_scene_.get<C_Effect>(effect_.GetEntityId());
-	
-	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
-	effect.world = XMMatrixTranslationFromVector(hitpoint);
+	RayCallback raycallback =  QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
+	if(raycallback.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
+}
+
+void TestGame::CreateDustEffectFromRay()
+{
+	RayCallback raycallback = QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
+	if (raycallback.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
 }
 
 
