@@ -48,4 +48,5 @@ cbuffer cb_particle : register(b3)
 	float4	g_particle_values;
 	float4	g_color;
 	matrix  g_mat_particle;
+	matrix	g_mat_particle_for_bill;
 }
