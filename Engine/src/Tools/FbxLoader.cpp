@@ -186,7 +186,11 @@ namespace reality {
 		UINT poly_count = fbx_mesh->GetPolygonCount();
 
 		vector<Vertex> vertices; vertices.resize(cp_count);
-		vector<SkinnedVertex> skinned_vertices; skinned_vertices.resize(cp_count);
+		
+		vector<SkinnedVertex> skinned_vertices_by_control_point; 
+		skinned_vertices_by_control_point.resize(cp_count);
+
+		vector<SkinnedVertex> skinned_vertices_by_polygon_vertex;
 
 		vector<Vertex> control_points; control_points.resize(cp_count);
 		for (UINT cp = 0; cp < cp_count; ++cp)
@@ -201,6 +205,7 @@ namespace reality {
 		UINT cn_index = 0;
 
 		LightVertex light_vertex;
+		SkinnedVertex skinned_vertex;
 		for (int p = 0; p < poly_count; ++p)
 		{
 			UINT poly_size = fbx_mesh->GetPolygonSize(p);
@@ -232,6 +237,10 @@ namespace reality {
 					light_vertex.p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[0]);
 					light_vertex.p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[1]);
 					light_vertex.p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[2]);
+
+					skinned_vertex.p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[0]);
+					skinned_vertex.p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[1]);
+					skinned_vertex.p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[2]);
 
 					if (vertex_color_layer)
 					{
@@ -269,26 +278,39 @@ namespace reality {
 					{
 						IndexWeight* index_weight = &out_mesh->index_weight[vertex_index];
 
-						skinned_vertices[vertex_index].i.x = index_weight->index[0];
-						skinned_vertices[vertex_index].i.y = index_weight->index[1];
-						skinned_vertices[vertex_index].i.z = index_weight->index[2];
-						skinned_vertices[vertex_index].i.w = index_weight->index[3];
+						skinned_vertices_by_control_point[vertex_index].i.x = index_weight->index[0];
+						skinned_vertices_by_control_point[vertex_index].i.y = index_weight->index[1];
+						skinned_vertices_by_control_point[vertex_index].i.z = index_weight->index[2];
+						skinned_vertices_by_control_point[vertex_index].i.w = index_weight->index[3];
 
-						skinned_vertices[vertex_index].w.x = index_weight->weight[0];
-						skinned_vertices[vertex_index].w.y = index_weight->weight[1];
-						skinned_vertices[vertex_index].w.z = index_weight->weight[2];
-						skinned_vertices[vertex_index].w.w = index_weight->weight[3];
+						skinned_vertices_by_control_point[vertex_index].w.x = index_weight->weight[0];
+						skinned_vertices_by_control_point[vertex_index].w.y = index_weight->weight[1];
+						skinned_vertices_by_control_point[vertex_index].w.z = index_weight->weight[2];
+						skinned_vertices_by_control_point[vertex_index].w.w = index_weight->weight[3];
 
-						skinned_vertices[vertex_index] += vertices[vertex_index];
+						skinned_vertices_by_control_point[vertex_index] = vertices[vertex_index];
+
+						skinned_vertex.i.x = index_weight->index[0];
+						skinned_vertex.i.y = index_weight->index[1];
+						skinned_vertex.i.z = index_weight->index[2];
+						skinned_vertex.i.w = index_weight->index[3];
+
+						skinned_vertex.w.x = index_weight->weight[0];
+						skinned_vertex.w.y = index_weight->weight[1];
+						skinned_vertex.w.z = index_weight->weight[2];
+						skinned_vertex.w.w = index_weight->weight[3];
+
+						skinned_vertex = vertices[vertex_index];
 					}
 					vertex_counter++;
 
 					out_mesh->light_vertices.push_back(light_vertex);
+					out_mesh->skinned_vertices_by_polygon_vertex.push_back(skinned_vertex);
 				}
 			}
 		}
 		out_mesh->vertices = vertices;
-		out_mesh->skinned_vertices = skinned_vertices;
+		out_mesh->skinned_vertices_by_control_point = skinned_vertices_by_control_point;
 	}
 
 	FbxVector2 FbxLoader::ReadUV(FbxMesh* fbx_mesh, FbxLayerElementUV* vertex_uv_layer, int vertex_index, int uv_index)
