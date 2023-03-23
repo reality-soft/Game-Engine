@@ -241,7 +241,7 @@ void CameraSystem::CreateMatrix()
 	}
 	else {
 		rotation_center = camera->target_pos;
-		view_matrix = XMMatrixLookAtLH(camera->camera_pos, camera->target_pos, up_vector);
+		view_matrix = XMMatrixLookAtLH(camera->camera_pos + XMVECTOR{ 10, 0, 10, 0 }, camera->target_pos + XMVECTOR{ 10, 0, 10, 0 }, up_vector);
 		rotation_matrix = DirectX::XMMatrixAffineTransformation(scale_vector, rotation_center, rotation_quaternion, XMVectorZero());
 		rotation_matrix = XMMatrixInverse(0, rotation_matrix);
 		view_matrix = XMMatrixMultiply(rotation_matrix, view_matrix);
