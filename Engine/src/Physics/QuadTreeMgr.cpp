@@ -167,6 +167,12 @@ void reality::QuadTreeMgr::CheckTriangle()
 		if (nodes.empty())
 			break;
 
+		// Add Object to LeafNode
+		for (auto node : nodes)
+		{
+			node->object_list.insert(dynamic_capsule.first);
+		}
+
 		including_nodes_num.clear();
 
 		map<float, CapsuleCallback> floor_list;
@@ -317,7 +323,7 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float 
 	return callback_list.begin()->second;
 }
 
-RayCallback reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
+RayCallback reality::QuadTreeMgr::RaycastAdjustActor(const RayShape& ray)
 {
 
 	map<float, RayCallback> callback_list;
@@ -331,7 +337,7 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
 			auto capsule_comp = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(entity);
 			if (capsule_comp == nullptr)
 				return RayCallback();
-			auto& callback = RayToCapsule(ray, capsule_comp->capsule);
+			const auto& callback = RayToCapsule(ray, capsule_comp->capsule);
 			if (callback.success)
 			{
 				callback_list.insert(make_pair(callback.distance, callback));

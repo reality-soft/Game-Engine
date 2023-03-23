@@ -14,7 +14,7 @@ void Enemy::OnInit(entt::registry& registry)
 	reality::C_SkeletalMesh skm;
 	skm.local = XMMatrixIdentity();
 	skm.world = XMMatrixIdentity();
-	skm.skeletal_mesh_id = mesh_id_;
+	skm.skeletal_mesh_id = "Zombie_Businessman_Male_01.skmesh";
 	skm.vertex_shader_id = "SkinningVS.cso";
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
