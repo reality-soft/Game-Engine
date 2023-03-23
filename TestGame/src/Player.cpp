@@ -7,7 +7,7 @@ void Player::OnInit(entt::registry& registry)
 {
 	Character::OnInit(registry);
 
-	movement_component_->speed = 150;
+	movement_component_->speed = 500;
 	max_hp_ = cur_hp_ = 100;
 
 	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");
@@ -20,16 +20,22 @@ void Player::OnInit(entt::registry& registry)
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
 	reality::C_CapsuleCollision capsule;
-	capsule.SetCapsuleData(XMVectorZero(), 50, 10);
+	capsule.SetCapsuleData(XMVectorZero(), 50, 15);
 	registry.emplace<reality::C_CapsuleCollision>(entity_id_, capsule);
 
 	C_Camera camera;
 	camera.SetLocalFrom(capsule, 50);
 	registry.emplace<C_Camera>(entity_id_, camera);
 
+	C_SoundListener sound_listener;
+	sound_listener.local = camera.local;
+	registry.emplace<C_SoundListener>(entity_id_, sound_listener);
+
+
 	transform_tree_.root_node = make_shared<TransformTreeNode>(TYPE_ID(reality::C_CapsuleCollision));
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_SkeletalMesh));
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_Camera));
+	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_SoundListener));
 
 	transform_matrix_ = XMMatrixTranslation(0, 100, 0);
 	transform_tree_.root_node->OnUpdate(registry, entity_id_, transform_matrix_);

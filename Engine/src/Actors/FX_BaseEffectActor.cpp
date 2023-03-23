@@ -20,6 +20,11 @@ void FX_BaseEffectActor::OnInit(entt::registry& registry)
 	effect_comp.local = XMMatrixIdentity();
 	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_Effect));
 
+	C_SoundGenerator initial_sound_generator_comp;
+	auto& sound_gen_comp = registry.emplace<C_SoundGenerator>(entity_id_, initial_sound_generator_comp);
+	sound_gen_comp.local = XMMatrixIdentity();
+	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_SoundGenerator));
+
 	transform_tree_.root_node->OnUpdate(registry, entity_id_);
 }
 

@@ -144,11 +144,15 @@ void UI_Minimap::RenderPlayerIcon(XMMATRIX world)
 
 	XMMATRIX S, R, T;
 
+	// Scale
 	XMVECTOR scale = XMVectorSet(0.032f, 0.032f, 0.0f, 1.0f);
+	S = XMMatrixScalingFromVector(scale);
+	// Rotation
+	C_Camera& player_camera = SCENE_MGR->GetRegistry().get<C_Camera>(SCENE_MGR->GetPlayer<Character>(0)->GetEntityId());
+	R = XMMatrixRotationZ(-player_camera.pitch_yaw.y);
+	// Translation
 	XMVECTOR pos = ConvertWorldToScreenXZ(world_pos);
 	XMStoreFloat2(&minimap_player_pos, pos);
-	S = XMMatrixScalingFromVector(scale);
-	R = XMMatrixIdentity();
 	T = XMMatrixTranslationFromVector(pos);
 	XMMATRIX minimap_world = S * R * T;
 

@@ -6,6 +6,7 @@
 #include "Event/EventMgr.h"
 #include "Input/InputEventMgr.h"
 #include "Input/InputMgr.h"
+#include "Sound/FmodMgr.h"
 #include "Core/Engine.h"
 
 #include "AI/BehaviorTree.h"

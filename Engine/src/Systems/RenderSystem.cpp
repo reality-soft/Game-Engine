@@ -266,6 +266,7 @@ void RenderSystem::CreateEffectCB()
 		cb_particle_.data.color.w = 1.0f;
 
 		cb_particle_.data.transform = XMMatrixIdentity();
+		cb_particle_.data.transform_for_billboard = XMMatrixIdentity();
 
 		ZeroMemory(&desc, sizeof(desc));
 		ZeroMemory(&subdata, sizeof(subdata));
@@ -547,18 +548,24 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	XMVECTOR rot_vec = { XMConvertToRadians(particle.rotation.x), XMConvertToRadians(particle.rotation.y), XMConvertToRadians(particle.rotation.z) };
 	auto q = XMQuaternionRotationRollPitchYawFromVector(rot_vec);
 	XMMATRIX r = XMMatrixRotationQuaternion(q);
+	XMMATRIX t = XMMatrixTranslationFromVector(XMLoadFloat3(&particle.position));
 
+	// SRT for no Billboard
+	XMMATRIX sr = XMMatrixMultiply(s, r);
+	XMMATRIX srt = XMMatrixMultiply(sr, t);
+
+	cb_particle_.data.transform = XMMatrixTranspose(srt);
+
+	// SRT for Billboard
 	// multiply world rotation's inverse matrix
 	XMVECTOR world_scale, world_rot, world_trans;
 	XMMatrixDecompose(&world_scale, &world_rot, &world_trans, cb_effect.data.world);
 	auto world_inv_rot = XMMatrixRotationQuaternion(world_rot);
 	r = XMMatrixMultiply(r, world_inv_rot);
+	sr = XMMatrixMultiply(s, r);
+	srt = XMMatrixMultiply(sr, t);
 
-	XMMATRIX t = XMMatrixTranslationFromVector(XMLoadFloat3(&particle.position));
-	XMMATRIX sr = XMMatrixMultiply(s, r);
-	XMMATRIX srt = XMMatrixMultiply(sr, t);
-
-	cb_particle_.data.transform = XMMatrixTranspose(srt);
+	cb_particle_.data.transform_for_billboard = XMMatrixTranspose(srt);
 
 	device_context->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
 	device_context->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());

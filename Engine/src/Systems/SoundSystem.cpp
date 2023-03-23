@@ -29,7 +29,7 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
             for (auto entity2 : listeners)
             {
                 auto& generator_transform = reg.get<C_Transform>(entity);
-                auto& listener_transform = reg.get<C_Transform>(entity2);
+                auto& listener_transform = reg.get<C_CapsuleCollision>(entity2);
                 // TODO : Transform 수정 후 고칠 예정
                 XMVECTOR genertor_position = XMVectorSet(generator_transform.world.r[3].m128_f32[0], generator_transform.world.r[3].m128_f32[1],
                     generator_transform.world.r[3].m128_f32[2], 0);

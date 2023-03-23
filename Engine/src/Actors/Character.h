@@ -23,7 +23,7 @@ namespace reality
 	public:
 		float floor_height = 0.0f;
 		MovementState movement_state_;
-		vector<XMVECTOR> blocking_vector_list;
+		vector<RayShape> blocking_walls_;
 
 		void OnInit(entt::registry& registry) override;
 		void OnUpdate() override;

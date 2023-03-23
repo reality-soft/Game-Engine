@@ -66,6 +66,34 @@ namespace reality {
 
             return { edge0, edge1, edge2 };
         }
+        XMVECTOR GetMinXZ()
+        {
+            XMVECTOR min_xz = XMVectorZero();
+
+            min_xz.m128_f32[0] = XMVectorGetX(vertex0);
+            min_xz.m128_f32[0] = min(min_xz.m128_f32[0], XMVectorGetX(vertex1));
+            min_xz.m128_f32[0] = min(min_xz.m128_f32[0], XMVectorGetX(vertex2));
+
+            min_xz.m128_f32[2] = XMVectorGetZ(vertex0);
+            min_xz.m128_f32[2] = min(min_xz.m128_f32[2], XMVectorGetZ(vertex1));
+            min_xz.m128_f32[2] = min(min_xz.m128_f32[2], XMVectorGetZ(vertex2));
+
+            return min_xz;
+        }
+        XMVECTOR GetMaxXZ()
+        {
+            XMVECTOR max_xz = XMVectorZero();
+
+            max_xz.m128_f32[0] = XMVectorGetX(vertex0);
+            max_xz.m128_f32[0] = max(max_xz.m128_f32[0], XMVectorGetX(vertex1));
+            max_xz.m128_f32[0] = max(max_xz.m128_f32[0], XMVectorGetX(vertex2));
+
+            max_xz.m128_f32[2] = XMVectorGetZ(vertex0);
+            max_xz.m128_f32[2] = max(max_xz.m128_f32[2], XMVectorGetZ(vertex1));
+            max_xz.m128_f32[2] = max(max_xz.m128_f32[2], XMVectorGetZ(vertex2));
+
+            return max_xz;
+        }
         XMVECTOR vertex0, vertex1, vertex2;
         XMVECTOR normal;
         UINT index;
