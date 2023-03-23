@@ -39,8 +39,8 @@ namespace reality {
 		void Release();
 
 	public:
-		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
-		RayCallback RaycastAdjustActor(RayShape& ray);
+		RayCallback RaycastAdjustLevel(const RayShape& ray, float max_distance);
+		RayCallback RaycastAdjustActor(const RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
 
 	public:
@@ -53,10 +53,11 @@ namespace reality {
 
 	private:
 		void UpdatePhysics();
+		void CheckTriangle();
 		void CheckBlockingLine();
 		UINT max_depth;
 		UINT node_count = 0;
-		float physics_timestep = 1.0f / 60.0f;
+		float physics_timestep = 1.0f / 120.0f;
 
 		SpaceNode* root_node_ = nullptr;
 		vector<SpaceNode*> total_nodes_;
@@ -66,7 +67,7 @@ namespace reality {
 		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
 
 	private:
-		void NodeCasting(RayShape& ray, SpaceNode* node);
+		void NodeCasting(const RayShape& ray, SpaceNode* node);
 		void ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode* node, vector<SpaceNode*>& node_list);
 		SpaceNode* BuildTree(UINT depth, float row1, float col1, float row2, float col2);
 		void SetStaticTriangles(SpaceNode* node);

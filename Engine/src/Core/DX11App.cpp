@@ -250,5 +250,5 @@ void DX11App::SetBackBufferRTV()
     ID3D11DepthStencilView* pNullDSV = NULL;
     DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &pNullRTV, pNullDSV);
     DX11APP->GetDeviceContext()->OMSetRenderTargets(1, dx11_rtview.GetAddressOf(), dx11_dsview.Get());
-    DX11APP->GetDeviceContext()->RSSetViewports(1, &GetViewPort());
+    DX11APP->GetDeviceContext()->RSSetViewports(1, GetViewPortAddress());
 }
