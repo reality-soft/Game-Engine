@@ -115,16 +115,42 @@ void TestGame::OnRelease()
 
 void TestGame::CreateBloodEffectFromRay()
 {
-	RayCallback raycallback =  QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
-	if(raycallback.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
+	RayShape ray = sys_camera.CreateMouseRay();
+	XMVECTOR ray_dir_inv = XMVector3Normalize(ray.start - ray.end);
+
+	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
+	RayCallback raycallback_actor =  QUADTREE->RaycastAdjustActor(ray);
+	if (raycallback_actor.success && raycallback_node.success)
+	{
+		if (raycallback_actor.distance < raycallback_node.distance)
+			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
+		else
+			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
+	}
+	else if(raycallback_actor.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
+	else if(raycallback_node.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 }
 
 void TestGame::CreateDustEffectFromRay()
 {
-	RayCallback raycallback = QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
-	if (raycallback.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
+	RayShape ray = sys_camera.CreateMouseRay();
+	XMVECTOR ray_dir_inv = XMVector3Normalize(ray.start - ray.end);
+
+	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
+	RayCallback raycallback_actor = QUADTREE->RaycastAdjustActor(ray);
+	if (raycallback_actor.success && raycallback_node.success)
+	{
+		if (raycallback_actor.distance < raycallback_node.distance)
+			EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
+		else
+			EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
+	}
+	else if (raycallback_actor.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
+	else if (raycallback_node.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 }
 
 void TestGame::CursorStateUpdate()
