@@ -4,7 +4,7 @@
 #include "ResourceMgr.h"
 #include "Dx11App.h"
 
-bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
+bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options, FbxVertexOption vertex_option)
 {
     FbxLoader fbx_loader;
     fbx_loader.import_options = options;
@@ -23,7 +23,15 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
         {
             SingleMesh<SkinnedVertex> single_mesh;
             single_mesh.mesh_name = out_mesh->mesh_name;
-            single_mesh.vertices = out_mesh->skinned_vertices;
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                single_mesh.vertices = out_mesh->skinned_vertices_by_control_point;
+                break;
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                single_mesh.vertices = out_mesh->skinned_vertices_by_control_point;
+            }
+
             single_mesh.indices = out_mesh->indices;
 
             res_skeletal_mesh.meshes.push_back(single_mesh);
@@ -34,14 +42,22 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
         {
             SingleMesh<Vertex> single_mesh;
             single_mesh.mesh_name = out_mesh->mesh_name;
-            single_mesh.vertices = out_mesh->vertices;
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                single_mesh.vertices = out_mesh->vertices_by_control_point;
+                break;
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                single_mesh.vertices = out_mesh->vertices_by_polygon_vertex;
+            }
+
             single_mesh.indices = out_mesh->indices;
 
             res_static_mesh.meshes.push_back(single_mesh);
 
             SingleMesh<LightVertex> light_single_mesh;
             light_single_mesh.mesh_name = out_mesh->mesh_name;
-            light_single_mesh.vertices = out_mesh->light_vertices;
+            light_single_mesh.vertices = out_mesh->light_vertices_by_polygon_vertex;
 
             res_light_mesh.meshes.push_back(light_single_mesh);
         }

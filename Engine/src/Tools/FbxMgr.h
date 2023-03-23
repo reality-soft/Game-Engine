@@ -10,7 +10,7 @@ namespace reality {
 #define FBX FbxMgr::GetInst()
 
 	public:
-		bool ImportAndSaveFbx(string filename, FbxImportOption options = FbxImportOption());
+		bool ImportAndSaveFbx(string filename, FbxImportOption options = FbxImportOption(), FbxVertexOption vertex_option = FbxVertexOption::BY_CONTROL_POINT);
 
 	private:
 		void SaveLightMesh(const LightMesh& light_mesh, string filename);
