@@ -27,12 +27,12 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options,
             switch (vertex_option) {
             case FbxVertexOption::BY_CONTROL_POINT:
                 single_mesh.vertices = out_mesh->skinned_vertices_by_control_point;
+                single_mesh.indices = out_mesh->indices;
                 break;
             case FbxVertexOption::BY_POLYGON_VERTEX:
-                single_mesh.vertices = out_mesh->skinned_vertices_by_control_point;
+                single_mesh.vertices = out_mesh->skinned_vertices_by_polygon_vertex;
+                break;
             }
-
-            single_mesh.indices = out_mesh->indices;
 
             res_skeletal_mesh.meshes.push_back(single_mesh);
             res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
@@ -46,12 +46,12 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options,
             switch (vertex_option) {
             case FbxVertexOption::BY_CONTROL_POINT:
                 single_mesh.vertices = out_mesh->vertices_by_control_point;
+                single_mesh.indices = out_mesh->indices;
                 break;
             case FbxVertexOption::BY_POLYGON_VERTEX:
                 single_mesh.vertices = out_mesh->vertices_by_polygon_vertex;
+                break;
             }
-
-            single_mesh.indices = out_mesh->indices;
 
             res_static_mesh.meshes.push_back(single_mesh);
 
@@ -468,18 +468,19 @@ bool reality::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
         return false;
 
     // IndexBuffer
+    if (mesh.indices.size() != 0) {
+        ZeroMemory(&desc, sizeof(desc));
+        ZeroMemory(&subdata, sizeof(subdata));
 
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
+        desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+        subdata.pSysMem = mesh.indices.data();
 
-    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    subdata.pSysMem = mesh.indices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
+        hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
+        if (FAILED(hr))
+            return false;
+    }
 
     return true;
 }
