@@ -115,7 +115,7 @@ static float Vector3Length(DirectX::XMVECTOR vector)
 
 static DirectX::XMVECTOR Vector3Project(DirectX::XMVECTOR OB, DirectX::XMVECTOR OA)
 {
-	return DirectX::XMVectorMultiply(OB, DirectX::XMVectorDivide(DirectX::XMVectorMultiply(OA, OB), DirectX::XMVector3LengthSq(OB)));
+	return DirectX::XMVectorMultiply(DirectX::XMVectorDivide(OB, DirectX::XMVector3LengthSq(OB)), DirectX::XMVector3Dot(OA, OB));
 }
 
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)

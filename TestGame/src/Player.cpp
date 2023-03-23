@@ -7,7 +7,7 @@ void Player::OnInit(entt::registry& registry)
 {
 	Character::OnInit(registry);
 
-	movement_component_->speed = 150;
+	movement_component_->speed = 500;
 	max_hp_ = cur_hp_ = 100;
 
 	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");
@@ -20,7 +20,7 @@ void Player::OnInit(entt::registry& registry)
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
 	reality::C_CapsuleCollision capsule;
-	capsule.SetCapsuleData(XMVectorZero(), 50, 10);
+	capsule.SetCapsuleData(XMVectorZero(), 50, 15);
 	registry.emplace<reality::C_CapsuleCollision>(entity_id_, capsule);
 
 	C_Camera camera;
