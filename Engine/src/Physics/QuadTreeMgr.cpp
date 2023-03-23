@@ -334,6 +334,10 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustActor(const RayShape& ray)
 		for (auto& entity : node.second->object_list)
 		{
 			cal++;
+			// if player capsule, continue
+			if (entity == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
+				continue;
+
 			auto capsule_comp = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(entity);
 			if (capsule_comp == nullptr)
 				return RayCallback();
