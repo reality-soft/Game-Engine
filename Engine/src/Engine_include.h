@@ -9,6 +9,9 @@
 #include "Sound/FmodMgr.h"
 #include "Core/Engine.h"
 
+#include "AI/BehaviorTree.h"
+#include "AI/BehaviorTreeNodes.h"
+
 #include "Systems/RenderSystem.h"
 #include "Systems/CameraSystem.h"
 #include "Systems/SoundSystem.h"

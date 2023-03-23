@@ -9,6 +9,12 @@ namespace reality {
 		FbxVector4 import_rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
 	};
 
+	enum class FbxVertexOption
+	{
+		BY_CONTROL_POINT,
+		BY_POLYGON_VERTEX
+	};
+
 	class DLL_API FbxLoader
 	{
 	public:

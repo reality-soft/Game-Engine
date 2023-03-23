@@ -23,6 +23,7 @@ public:
 public:
 	int GetMaxHp() const;
 	void SetCurHp(int hp);
+	void TakeDamage(int damage);
 	int GetCurHp() const;
 private:
 	int max_hp_;
