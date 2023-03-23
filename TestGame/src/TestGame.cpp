@@ -1,5 +1,6 @@
 #include "TestGame.h"
 #include "Player.h"
+#include "Enemy.h"
 #include "FX_BloodImpact.h"
 #include "FX_ConcreteImpact.h"
 
@@ -57,6 +58,11 @@ void TestGame::OnInit()
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
+	for (int i = 0;i < 10;i++) {
+		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
+	}
+
 	QUADTREE->Init(&level, 3);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
@@ -64,8 +70,6 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
-
-
 }
 
 void TestGame::OnUpdate()

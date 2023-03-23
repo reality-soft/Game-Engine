@@ -152,6 +152,11 @@ void Player::SetCurHp(int hp)
 	cur_hp_ = hp;
 }
 
+void Player::TakeDamage(int damage)
+{
+	cur_hp_ -= damage;
+}
+
 int Player::GetCurHp() const
 {
 	return cur_hp_;
