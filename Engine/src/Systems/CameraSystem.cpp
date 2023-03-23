@@ -199,14 +199,14 @@ void CameraSystem::DebugCameraMovement()
 
 void reality::CameraSystem::PlayerCameraMovement()
 {
-	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
-	{
+	//if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
+	//{
 		float yaw = DINPUT->GetDeltaX() * TM_DELTATIME;
 		float pitch = DINPUT->GetDeltaY() * TM_DELTATIME;
 
 		camera->pitch_yaw.x += pitch;
 		camera->pitch_yaw.y += yaw;
-	}
+	//}
 }
 
 void CameraSystem::CameraAction()
