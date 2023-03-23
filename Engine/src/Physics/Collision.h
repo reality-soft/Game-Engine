@@ -82,7 +82,7 @@ namespace reality {
         return false;
     }
 
-    static RayCallback RayToCapsule(RayShape& ray, CapsuleShape& cap)
+    static RayCallback RayToCapsule(const RayShape& ray, const CapsuleShape& cap)
     {
         XMVECTOR RC;
         float d;
