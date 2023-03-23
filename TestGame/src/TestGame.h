@@ -34,5 +34,6 @@ private:
 	UI_Ingame_Actor ingame_ui;
 	void CreateBloodEffectFromRay();
 	void CreateDustEffectFromRay();
+	void CursorStateUpdate();
 };
 

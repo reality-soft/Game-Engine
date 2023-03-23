@@ -5,6 +5,10 @@
 
 void TestGame::OnInit()
 {
+
+	ShowCursor(false);
+	//SetCapture(ENGINE->GetWindowHandle());
+
 	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
@@ -70,6 +74,7 @@ void TestGame::OnInit()
 
 void TestGame::OnUpdate()
 {
+
 	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
@@ -83,6 +88,8 @@ void TestGame::OnUpdate()
 		CreateBloodEffectFromRay();
 	if (DINPUT->GetMouseState(R_BUTTON) == KeyState::KEY_PUSH)
 		CreateDustEffectFromRay();
+
+	CursorStateUpdate();
 }
 
 void TestGame::OnRender()
@@ -114,6 +121,20 @@ void TestGame::CreateDustEffectFromRay()
 	RayCallback raycallback = QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
 	if (raycallback.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
+}
+
+void TestGame::CursorStateUpdate()
+{
+	static bool b_show_cursor = false;
+	if (DINPUT->GetKeyState(DIK_T) == KeyState::KEY_PUSH)
+	{
+		b_show_cursor = !b_show_cursor;
+		ShowCursor(b_show_cursor);
+	}
+
+	if (!b_show_cursor)
+		SetCursorPos(ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f);
+	
 }
 
 
