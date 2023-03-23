@@ -35,12 +35,13 @@ namespace reality
 		XMFLOAT4   i;
 		XMFLOAT4   w;
 
-		SkinnedVertex operator +=(const Vertex& vertex)
+		SkinnedVertex operator =(const Vertex& vertex)
 		{
 			this->p = vertex.p;
 			this->n = vertex.n;
 			this->c = vertex.c;
 			this->t = vertex.t;
+
 			return *this;
 		}
 	};
