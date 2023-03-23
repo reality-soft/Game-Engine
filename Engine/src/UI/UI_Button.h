@@ -12,7 +12,7 @@ namespace reality
 		virtual void Update() override;
 
 	private:
-		bool MouseOnButton(Rect& button_rect, POINT& mouse_point);
+		bool MouseOnButton(const Rect& button_rect, const POINT& mouse_point);
 		void UpdateButtonState();
 		void UpdateButtonTexture();
 	};

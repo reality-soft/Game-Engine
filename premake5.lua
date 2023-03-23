@@ -79,7 +79,7 @@ project "Engine"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
+		cppdialect "C++20"
 		staticruntime "off"
 		systemversion "latest"
 		runtime "Debug"
@@ -182,7 +182,7 @@ project "TestGame"
 	    shadermodel "5.0"
 
 	filter "system:windows"
-		cppdialect "C++17"
+		cppdialect "C++20"
 		staticruntime "Off"
 		systemversion "latest"
 		runtime "Debug"

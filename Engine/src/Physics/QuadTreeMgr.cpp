@@ -69,7 +69,7 @@ void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
 	}
 
 	// regist dynamic capsule
-	auto& capsule_view = SCENE_MGR->GetRegistry().view<C_CapsuleCollision>();
+	const auto& capsule_view = SCENE_MGR->GetRegistry().view<C_CapsuleCollision>();
 	for (auto& ent : capsule_view)
 	{
 		auto capsule_collision = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(ent);
@@ -246,7 +246,7 @@ void reality::QuadTreeMgr::CheckBlockingLine()
 	}
 }
 
-void reality::QuadTreeMgr::NodeCasting(RayShape& ray, SpaceNode* node)
+void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
 {
 	if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
 		return;
@@ -289,7 +289,7 @@ void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode
 	} 
 }
 
-RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
+RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float max_distance)
 {
 	map<float, RayCallback> callback_list;
 
@@ -302,7 +302,7 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_di
 		for (auto& tri : node.second->static_triangles)
 		{
 			cal++;
-			auto& callback = RayToTriangle(ray, tri);
+			const auto& callback = RayToTriangle(ray, tri);
 			if (callback.success)
 			{
 				callback_list.insert(make_pair(callback.distance, callback));
