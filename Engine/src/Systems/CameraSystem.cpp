@@ -199,14 +199,14 @@ void CameraSystem::DebugCameraMovement()
 
 void reality::CameraSystem::PlayerCameraMovement()
 {
-	if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
-	{
+	//if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
+	//{
 		float yaw = DINPUT->GetDeltaX() * TM_DELTATIME;
 		float pitch = DINPUT->GetDeltaY() * TM_DELTATIME;
 
 		camera->pitch_yaw.x += pitch;
 		camera->pitch_yaw.y += yaw;
-	}
+	//}
 }
 
 void CameraSystem::CameraAction()
@@ -241,7 +241,7 @@ void CameraSystem::CreateMatrix()
 	}
 	else {
 		rotation_center = camera->target_pos;
-		view_matrix = XMMatrixLookAtLH(camera->camera_pos, camera->target_pos, up_vector);
+		view_matrix = XMMatrixLookAtLH(camera->camera_pos + XMVECTOR{ 10, 0, 10, 0 }, camera->target_pos + XMVECTOR{ 10, 0, 10, 0 }, up_vector);
 		rotation_matrix = DirectX::XMMatrixAffineTransformation(scale_vector, rotation_center, rotation_quaternion, XMVectorZero());
 		rotation_matrix = XMMatrixInverse(0, rotation_matrix);
 		view_matrix = XMMatrixMultiply(rotation_matrix, view_matrix);
@@ -259,6 +259,7 @@ void CameraSystem::CreateMatrix()
 	camera->right = XMVector3Normalize(rotation_matrix.r[0]);
 	camera->up = XMVector3Normalize(rotation_matrix.r[1]);
 
+	// billboard matrix
 	cb_effect.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_effect.data.projection_matrix = XMMatrixTranspose(projection_matrix);
 	XMMATRIX billboard = XMMatrixInverse(0, view_matrix);
@@ -283,7 +284,9 @@ void CameraSystem::CreateMatrix()
 	x_only.r[2].m128_f32[2] = view_matrix.r[2].m128_f32[2];
 
 	billboard = DirectX::XMMatrixInverse(0, x_only);
-	billboard.r[3] = XMVectorZero();
+	billboard.r[3].m128_f32[0] = 0.0f;
+	billboard.r[3].m128_f32[1] = 0.0f;
+	billboard.r[3].m128_f32[2] = 0.0f;
 	cb_effect.data.x_billboard = XMMatrixTranspose(billboard);
 
 	XMMATRIX y_only = XMMatrixIdentity();
@@ -293,7 +296,9 @@ void CameraSystem::CreateMatrix()
 	y_only.r[2].m128_f32[2] = view_matrix.r[2].m128_f32[2];
 
 	billboard = DirectX::XMMatrixInverse(0, y_only);
-	billboard.r[3] = XMVectorZero();
+	billboard.r[3].m128_f32[0] = 0.0f;
+	billboard.r[3].m128_f32[1] = 0.0f;
+	billboard.r[3].m128_f32[2] = 0.0f;
 	cb_effect.data.y_billboard = XMMatrixTranspose(billboard);
 
 }

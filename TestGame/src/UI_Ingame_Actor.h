@@ -21,6 +21,7 @@ namespace reality
 		shared_ptr<UI_Image>	status_ui;
 		shared_ptr<UI_Image>	objective_ui_;
 		shared_ptr<UI_Image>	time_ui_;
+		shared_ptr<UI_Image>	crosshair_ui_;
 	// Need to be Updated UI
 	private:
 		shared_ptr<UI_Image>	hp_img_;

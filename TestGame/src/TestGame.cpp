@@ -1,8 +1,15 @@
 #include "TestGame.h"
 #include "Player.h"
+#include "Enemy.h"
+#include "FX_BloodImpact.h"
+#include "FX_ConcreteImpact.h"
 
 void TestGame::OnInit()
 {
+
+	ShowCursor(false);
+	//SetCapture(ENGINE->GetWindowHandle());
+
 	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
@@ -17,12 +24,13 @@ void TestGame::OnInit()
 	sys_render.OnCreate(reg_scene_);
 	sys_camera.OnCreate(reg_scene_);
 
-// �׽�Ʈ UI
 	ingame_ui.OnInit(reg_scene_);
 	sys_ui.OnCreate(reg_scene_);
   
 	sys_camera.SetSpeed(1000);
 	sys_light.OnCreate(reg_scene_);
+	sys_effect.OnCreate(reg_scene_);
+	sys_sound.OnCreate(reg_scene_);
 
 	auto player_entity = SCENE_MGR->AddPlayer<Player>();
 	sys_camera.TargetTag(reg_scene_, "Player");
@@ -55,6 +63,9 @@ void TestGame::OnInit()
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
+	auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+	auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
+
 	QUADTREE->Init(&level, 3);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
@@ -66,13 +77,23 @@ void TestGame::OnInit()
 
 void TestGame::OnUpdate()
 {
+
 	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
+	sys_effect.OnUpdate(reg_scene_);
+	sys_sound.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
 
 	ingame_ui.OnUpdate();
+
+	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
+		CreateBloodEffectFromRay();
+	if (DINPUT->GetMouseState(R_BUTTON) == KeyState::KEY_PUSH)
+		CreateDustEffectFromRay();
+
+	CursorStateUpdate();
 }
 
 void TestGame::OnRender()
@@ -92,12 +113,32 @@ void TestGame::OnRelease()
 	reality::RESOURCE->Release();
 }
 
-void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
+void TestGame::CreateBloodEffectFromRay()
 {
-	C_Effect& effect = reg_scene_.get<C_Effect>(effect_.GetEntityId());
+	RayCallback raycallback =  QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
+	if(raycallback.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
+}
+
+void TestGame::CreateDustEffectFromRay()
+{
+	RayCallback raycallback = QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
+	if (raycallback.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
+}
+
+void TestGame::CursorStateUpdate()
+{
+	static bool b_show_cursor = false;
+	if (DINPUT->GetKeyState(DIK_T) == KeyState::KEY_PUSH)
+	{
+		b_show_cursor = !b_show_cursor;
+		ShowCursor(b_show_cursor);
+	}
+
+	if (!b_show_cursor)
+		SetCursorPos(ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f);
 	
-	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
-	effect.world = XMMatrixTranslationFromVector(hitpoint);
 }
 
 

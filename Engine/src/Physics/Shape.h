@@ -49,7 +49,7 @@ namespace reality {
 
             normal = XMVector3Normalize(XMVector3Cross(edge1, edge2));
         }
-        bool SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b)
+        bool SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b) const
         {
             XMVECTOR cp1 = XMVector3Cross(b - a, p1 - a);
             XMVECTOR cp2 = XMVector3Cross(b - a, p2 - a);

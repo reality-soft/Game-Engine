@@ -107,20 +107,6 @@ namespace reality
 	}
 
 	template<typename T>
-	inline bool ResourceMgr::PushResource(string id, string filename)
-	{
-		current_id = id;
-		bool result = false;
-
-		if (typeid(T) == typeid(FbxLoader))
-		{
-			result = ImportFbx(directory + filename);
-		}
-
-		return result;
-	}
-
-	template<typename T>
 	inline T* ResourceMgr::UseResource(string id)
 	{
 		if (typeid(T) == typeid(StaticMesh))

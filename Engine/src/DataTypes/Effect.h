@@ -88,7 +88,7 @@ namespace reality
 			//int type;
 			//int padding;
 			//int uv_list_size;
-			//int padding;
+			//int b_gravity_onoff(0:off/1:on);
 			XMINT4 value;
 			//float start_u[255];
 			//float start_v[255];
@@ -109,6 +109,7 @@ namespace reality
 			XMFLOAT4 values;
 			XMFLOAT4 color;
 			XMMATRIX transform;
+			XMMATRIX transform_for_billboard;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -129,7 +130,7 @@ namespace reality
 		XMFLOAT3	scale;
 
 		XMFLOAT3	add_size;
-		XMFLOAT3		add_rotation;
+		XMFLOAT3	add_rotation;
 		XMFLOAT3	accelation;
 
 		Particle()

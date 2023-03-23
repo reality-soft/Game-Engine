@@ -27,9 +27,15 @@ void Player::OnInit(entt::registry& registry)
 	camera.SetLocalFrom(capsule, 50);
 	registry.emplace<C_Camera>(entity_id_, camera);
 
+	C_SoundListener sound_listener;
+	sound_listener.local = camera.local;
+	registry.emplace<C_SoundListener>(entity_id_, sound_listener);
+
+
 	transform_tree_.root_node = make_shared<TransformTreeNode>(TYPE_ID(reality::C_CapsuleCollision));
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_SkeletalMesh));
 	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_Camera));
+	transform_tree_.AddNodeToNode(TYPE_ID(C_CapsuleCollision), TYPE_ID(C_SoundListener));
 
 	transform_matrix_ = XMMatrixTranslation(0, 100, 0);
 	transform_tree_.root_node->OnUpdate(registry, entity_id_, transform_matrix_);
@@ -150,6 +156,11 @@ int Player::GetMaxHp() const
 void Player::SetCurHp(int hp)
 {
 	cur_hp_ = hp;
+}
+
+void Player::TakeDamage(int damage)
+{
+	cur_hp_ -= damage;
 }
 
 int Player::GetCurHp() const
