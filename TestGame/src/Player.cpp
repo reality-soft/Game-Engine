@@ -28,6 +28,7 @@ void Player::OnInit(entt::registry& registry)
 	registry.emplace<C_Camera>(entity_id_, camera);
 
 	C_SoundListener sound_listener;
+	sound_listener.local = camera.local;
 	registry.emplace<C_SoundListener>(entity_id_, sound_listener);
 
 
