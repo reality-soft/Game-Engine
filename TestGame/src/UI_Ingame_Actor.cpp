@@ -23,7 +23,7 @@ void UI_Ingame_Actor::CreateUI()
 
 	// ¹«±â UI
 	weapon_ui_ = make_shared<UI_Image>();
-	weapon_ui_->InitImage("T_AR_01.png");
+	weapon_ui_->InitImage("T_Handgun_01.png");
 	weapon_ui_->SetLocalRectByMin({ 100.0f, ENGINE->GetWindowSize().y - 200.0f }, 512.0f, 179.0f);
 	ui_comp.ui_list.insert({ "Weapon UI", weapon_ui_ });
 
