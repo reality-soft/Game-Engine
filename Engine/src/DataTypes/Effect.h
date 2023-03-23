@@ -109,6 +109,7 @@ namespace reality
 			XMFLOAT4 values;
 			XMFLOAT4 color;
 			XMMATRIX transform;
+			XMMATRIX transform_for_billboard;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
