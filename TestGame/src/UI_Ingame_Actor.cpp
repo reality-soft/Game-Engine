@@ -61,6 +61,12 @@ void UI_Ingame_Actor::CreateUI()
 	objective_ui_->InitImage("T_ObjectiveUI.png");
 	objective_ui_->SetLocalRectByMin({ ENGINE->GetWindowSize().x * 4.0f / 5.0f, ENGINE->GetWindowSize().y * 4.0f / 10.0f }, 323.0f, 387.0f);
 	ui_comp.ui_list.insert({ "Objective UI", objective_ui_ });
+
+	// CrossHair UI
+	crosshair_ui_ = make_shared<UI_Image>();
+	crosshair_ui_->InitImage("T_DotCrossHair.png");
+	crosshair_ui_->SetLocalRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, 8.0f, 8.0f);
+	ui_comp.ui_list.insert({ "CrossHair UI", crosshair_ui_ });
 }
 
 void UI_Ingame_Actor::UpdateUI()
