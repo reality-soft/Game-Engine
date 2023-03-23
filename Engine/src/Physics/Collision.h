@@ -24,7 +24,7 @@ namespace reality {
 		INSIDE,
 	};
 
-    static bool PointInTriangle(XMVECTOR& p, TriangleShape& tri)
+    static bool PointInTriangle(const XMVECTOR& p, const TriangleShape& tri)
     {
         if (tri.SameSide(p, tri.vertex0, tri.vertex1, tri.vertex2) &&
             tri.SameSide(p, tri.vertex1, tri.vertex0, tri.vertex2) &&
@@ -37,7 +37,7 @@ namespace reality {
         return false;
     }
 
-    static RayCallback RayToTriangle(RayShape& ray, TriangleShape& tri)
+    static RayCallback RayToTriangle(const RayShape& ray, const TriangleShape& tri)
     {
         RayCallback callback;
         XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri.vertex0, tri.vertex1, tri.vertex2), ray.start, ray.end);
@@ -59,7 +59,7 @@ namespace reality {
         return callback;
     }
 
-    static bool RayToAABB(RayShape& ray, AABBShape& aabb)
+    static bool RayToAABB(const RayShape& ray, AABBShape& aabb)
     {
         XMVECTOR center_to_corner = aabb.max - aabb.center;
         center_to_corner.m128_f32[1] = 0.0f;

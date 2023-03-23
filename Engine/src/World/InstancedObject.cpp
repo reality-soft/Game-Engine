@@ -130,7 +130,7 @@ vector<InstanceData::CData> reality::InstancedObject::GetCDataArray()
 
 InstanceData* reality::InstancedObject::SelectInstance(UINT index)
 {
-	auto& found = instance_pool.find(index);
+	const auto& found = instance_pool.find(index);
 	if (found == instance_pool.end())
 		return nullptr;
 
