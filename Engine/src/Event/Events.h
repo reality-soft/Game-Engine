@@ -33,24 +33,31 @@ namespace reality {
 			if (character == nullptr)
 				return;
 			
-			for (auto& block_vector : character->blocking_vector_list)
+			for (auto& block_wall : character->blocking_walls_)
 			{
+				XMVECTOR blocking_vector = block_wall.end - block_wall.start;
+				XMVECTOR start_to_cap = c_capsule->capsule.base - block_wall.start; start_to_cap.m128_f32[1] = 0.0f;
+				XMVECTOR project = Vector3Project(blocking_vector, start_to_cap);
 
-					XMVECTOR cross = -XMVector3Normalize(XMVector3Cross(block_vector, XMVectorSet(0, 1, 0, 0)));
+				XMVECTOR normal1 = XMVector3Normalize(blocking_vector);
+				XMVECTOR normal2 = XMVector3Normalize(project);
 
-					float dot = XMVectorGetX(XMVector3Dot(movement_vector_, block_vector));
-					if (dot < 0)
-					{
-						block_vector *= -1.0f;
-					}
+				XMVECTOR cap_to_blocking = XMVector3Normalize(project - start_to_cap) * c_capsule->capsule.radius;
 
-					XMVECTOR line_point = cross * c_capsule->capsule.radius;
+				XMVECTOR movement = movement_vector_;
+				movement.m128_f32[1] = 0.0f;
+				float dot = XMVectorGetX(XMVector3Dot(movement, blocking_vector));
+				if (dot < 0)
+				{
+					blocking_vector *= -1.0f;
+				}
 
-					if (XMVectorGetX(XMVector3Dot(line_point, movement_vector_)) > 0)
-						movement_vector_ = Vector3Project(block_vector, movement_vector_);
+				float dot2 = XMVectorGetX(XMVector3Dot(cap_to_blocking, movement_vector_));
+				if (dot2 > 0)
+					movement_vector_ = Vector3Project(blocking_vector, movement_vector_);
 			}
 
-
+			character->blocking_walls_.clear();
 			XMMATRIX transform_matrix = character->GetTranformMatrix();
 			XMMATRIX movement_matrix = XMMatrixTranslationFromVector(movement_vector_);
 			transform_matrix *= movement_matrix;
