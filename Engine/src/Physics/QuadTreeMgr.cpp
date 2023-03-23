@@ -162,6 +162,12 @@ void reality::QuadTreeMgr::UpdatePhysics()
 		if (nodes.empty())
 			break;
 
+		// Add Object to LeafNode
+		for (auto node : nodes)
+		{
+			node->object_list.insert(dynamic_capsule.first);
+		}
+
 		including_nodes_num.clear();
 
 		map<float, CapsuleCallback> result_list;
