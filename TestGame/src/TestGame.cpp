@@ -29,6 +29,7 @@ void TestGame::OnInit()
 	sys_camera.SetSpeed(1000);
 	sys_light.OnCreate(reg_scene_);
 	sys_effect.OnCreate(reg_scene_);
+	sys_sound.OnCreate(reg_scene_);
 
 	auto player_entity = SCENE_MGR->AddPlayer<Player>();
 	sys_camera.TargetTag(reg_scene_, "Player");
@@ -80,6 +81,7 @@ void TestGame::OnUpdate()
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
 	sys_effect.OnUpdate(reg_scene_);
+	sys_sound.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
 
 	ingame_ui.OnUpdate();
