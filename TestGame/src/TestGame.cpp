@@ -63,10 +63,8 @@ void TestGame::OnInit()
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
-	for (int i = 0;i < 10;i++) {
-		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
-		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
-	}
+	auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+	auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
 
 	QUADTREE->Init(&level, 3);
 
@@ -117,14 +115,14 @@ void TestGame::OnRelease()
 
 void TestGame::CreateBloodEffectFromRay()
 {
-	RayCallback raycallback =  QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
+	RayCallback raycallback =  QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
 	if(raycallback.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
 }
 
 void TestGame::CreateDustEffectFromRay()
 {
-	RayCallback raycallback = QUADTREE->RaycastAdjustLevel(sys_camera.CreateMouseRay(), 10000.0f);
+	RayCallback raycallback = QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
 	if (raycallback.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
 }
