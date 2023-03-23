@@ -82,6 +82,11 @@ namespace reality {
         return false;
     }
 
+    static RayCallback RayToCapsule(RayShape& ray, CapsuleShape& cap)
+    {
+        return RayCallback();
+    }
+
     static CollideType FrustumToAABB(Frustum& frustum, AABBShape& aabb)
     {
         int in_axies = 0;
