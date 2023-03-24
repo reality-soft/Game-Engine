@@ -120,6 +120,7 @@ void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
 void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
+	UpdateCapsules();
 
 	casted_nodes_.clear();
 	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
