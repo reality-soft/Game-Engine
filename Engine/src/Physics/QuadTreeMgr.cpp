@@ -308,36 +308,28 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float 
 
 RayCallback reality::QuadTreeMgr::RaycastAdjustActor(const RayShape& ray)
 {
-
 	map<float, RayCallback> callback_list;
 
-	int cal = 0;
-	for (auto& node : casted_nodes_)
+	auto level_callback = RaycastAdjustLevel(ray, 15000);
+	for (auto& capsule : dynamic_capsule_list)
 	{
-		for (auto& entity : node.second->object_list)
+		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
+			continue;
+
+		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
+		if (capsule_callback.success)
 		{
-			cal++;
-			auto capsule_comp = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(entity);
-			if (capsule_comp == nullptr)
-				return RayCallback();
-			const auto& callback = RayToCapsule(ray, capsule_comp->capsule);
-			if (callback.success)
-			{
-				callback_list.insert(make_pair(callback.distance, callback));
-			}
+			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
 		}
 	}
-	cal = 0;
 
 	if (callback_list.begin() == callback_list.end())
 		return RayCallback();
 
-	return callback_list.begin()->second;
-}
+	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
+		return RayCallback();
 
-RayCallback reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
-{
-	return RayCallback();
+	return callback_list.begin()->second;
 }
 
 void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
