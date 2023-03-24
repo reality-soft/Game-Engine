@@ -50,7 +50,7 @@ void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
 	root_node_ = BuildTree(0, min_x, min_z, max_x, max_z);
 
 	// set blocking field
-	for (auto& guide_line : *deviding_level_->GetGuideLines())
+	for (auto& guide_line : deviding_level_->GetGuideLines(GuideLine::GuideType::eBlocking))
 	{
 		if (guide_line.guide_type_ == GuideLine::GuideType::eBlocking)
 		{
@@ -222,6 +222,9 @@ void reality::QuadTreeMgr::CheckBlockingLine()
 {
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
+		if (dynamic_capsule.second->tag == "Enemy")
+			continue;
+
 		XMVECTOR capsule_pos = dynamic_capsule.second->capsule.base;
 		capsule_pos.m128_f32[1] = 0.0f;
 

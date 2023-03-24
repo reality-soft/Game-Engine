@@ -7,6 +7,7 @@ namespace reality
 	{
 	protected:
 		XMMATRIX		transform_matrix_ = XMMatrixIdentity();
+	public:
 		entt::entity	entity_id_;
 		TransformTree	transform_tree_;
 		AABBShape		collision_box_;
