@@ -6,7 +6,7 @@ void Enemy::OnInit(entt::registry& registry)
 {
 	Character::OnInit(registry);
 
-	movement_component_->speed = 300;
+	movement_component_->speed = 100;
 	max_hp_ = cur_hp_ = 100;
 
 	SetCharacterAnimation("Zombie_Idle_1_v2_IPC_Anim_Unreal Take.anim");
@@ -137,7 +137,7 @@ XMVECTOR Enemy::GetPos() const
 
 void Enemy::SetRoute(const vector<XMVECTOR>& target_poses)
 {
-	SetPos(target_poses[0]);
+	SetPos(target_poses[cur_target_pos_index_]);
 
 	target_poses_ = target_poses;
 
