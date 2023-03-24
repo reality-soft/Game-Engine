@@ -151,11 +151,11 @@ namespace reality {
 
             XMVectorSubtract(hb, cap.base);
 
-            float scale = XMVector3Dot(hb, axis).m128_f32[0];
-            raycallback.normal.m128_f32[0] = hb.m128_f32[0] - axis.m128_f32[0] * scale;
-            raycallback.normal.m128_f32[1] = hb.m128_f32[1] - axis.m128_f32[1] * scale;
-            raycallback.normal.m128_f32[2] = hb.m128_f32[2] - axis.m128_f32[2] * scale;
-            raycallback.normal = XMVector3Normalize(raycallback.normal);
+            //float scale = XMVector3Dot(hb, axis).m128_f32[0];
+            //raycallback.normal.m128_f32[0] = hb.m128_f32[0] - axis.m128_f32[0] * scale;
+            //raycallback.normal.m128_f32[1] = hb.m128_f32[1] - axis.m128_f32[1] * scale;
+            //raycallback.normal.m128_f32[2] = hb.m128_f32[2] - axis.m128_f32[2] * scale;
+            raycallback.normal = XMVector3Normalize(-dir);
             raycallback.distance = lambda;
             raycallback.success = true;
 

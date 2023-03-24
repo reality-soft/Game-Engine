@@ -115,14 +115,14 @@ void TestGame::OnRelease()
 
 void TestGame::CreateBloodEffectFromRay()
 {
-	RayCallback raycallback =  QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
+	RayCallback raycallback =  QUADTREE->RaycastAdjustActor(sys_camera.CreateFrontRay());
 	if(raycallback.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
 }
 
 void TestGame::CreateDustEffectFromRay()
 {
-	RayCallback raycallback = QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
+	RayCallback raycallback = QUADTREE->RaycastAdjustActor(sys_camera.CreateFrontRay());
 	if (raycallback.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
 }
