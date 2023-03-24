@@ -1,12 +1,16 @@
 #pragma once
 
 #include "Managers/ResourceMgr.h"
-
+#include "Managers/EffectMgr.h"
 #include "Scene/SceneMgr.h"
 #include "Event/EventMgr.h"
 #include "Input/InputEventMgr.h"
 #include "Input/InputMgr.h"
+#include "Sound/FmodMgr.h"
 #include "Core/Engine.h"
+
+#include "AI/BehaviorTree.h"
+#include "AI/BehaviorTreeNodes.h"
 
 #include "Systems/RenderSystem.h"
 #include "Systems/CameraSystem.h"
@@ -22,11 +26,10 @@
 #include "Actors/Actor.h"
 #include "Actors/Character.h"
 #include "Actors/FX_BaseEffectActor.h"
-#include "Actors/FX_Effect.h"
 #include "Actors/UIActor.h"
-#include "Actors/UI_Ingame_Actor.h"
 #include "Actors/StaticObject.h"
 
+#include "World/Level.h"
 #include "World/SkySphere.h"
 #include "World/LightMeshLevel.h"
 

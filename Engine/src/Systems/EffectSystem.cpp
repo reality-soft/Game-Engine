@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "EffectSystem.h"
 #include "TimeMgr.h"
+#include "SceneMgr.h"
 
 using namespace reality;
 
 
 void EffectSystem::OnCreate(entt::registry& reg)
 {
-	
 	
 }
 
@@ -17,6 +17,15 @@ void EffectSystem::OnUpdate(entt::registry& reg)
 	for (auto& entity : view_effect)
 	{
 		auto& effect_comp = reg.get<C_Effect>(entity);
+		effect_comp.effect_timer += TIMER->GetDeltaTime();
+
+		// if effect's timer is over lifetime, disable effect
+		if (effect_comp.effect_lifetime > 0 && effect_comp.effect_timer > effect_comp.effect_lifetime)
+		{
+			SCENE_MGR->DestroyActor(entity);
+			continue;
+		}
+
 		auto& effect = effect_comp.effect;
 		for (auto& pair : effect.emitters)
 		{
@@ -31,23 +40,22 @@ void EffectSystem::OnUpdate(entt::registry& reg)
 
 void EffectSystem::UpdateParticles(Emitter* emitter)
 {
-	emitter->timer += TIMER->GetDeltaTime();
-
-	// 파티클 lifetime 계산
+	// Particle Timer Add
 	for (auto& particle : emitter->particles)
 	{
-		// 파티클 타이머 체크 후 수명이 다한 파티클은 enable
+		// if particle time is over lifetime, disabled
 		particle.timer += TIMER->GetDeltaTime();
 		if (particle.timer > particle.lifetime)
 		{
+			// TODO : not just disabled, have to destroy particle
 			particle.enable = false;
 			continue;
 		}
 
-		// Lifetime에 따른 수정 프레임
+		// FixedFrame for Lifetime
 		particle.frame_ratio = particle.timer / particle.lifetime;
 
-		// Life Time에 따른 속성 값 조정
+		// Life Time percentage
 		int frame_percentage = particle.frame_ratio * 100.0f;
 		frame_percentage = min(100, frame_percentage);
 
@@ -75,11 +83,6 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 			particle.scale = emitter->size_timeline[frame_percentage];
 			break;
 		}
-
-		// 크기는 현재 x값으로만 계산
-		//particle.scale.x = particle.scale.x;
-		//particle.scale.y = particle.scale.x;
-		//particle.scale.z = particle.scale.x;
 
 		// ROTATION
 		switch (emitter->rotation_setting_type)
@@ -110,13 +113,6 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 			particle.velocity = emitter->velocity_timeline[frame_percentage];
 			break;
 		}
-
-		// GRAVITY
-		if (emitter->gravity_on_off)
-		{
-			XMVECTOR gravity = { 0.0f, -9.8f, 0.0f, 0.0f };
-			XMStoreFloat3(&particle.velocity, XMVectorAdd(XMLoadFloat3(&particle.velocity), TIMER->GetDeltaTime() * gravity));
-		}
 		
 		XMStoreFloat3(&particle.position, XMVectorAdd(XMLoadFloat3(&particle.position), TIMER->GetDeltaTime() * XMLoadFloat3(&particle.velocity)));
 	}
@@ -124,6 +120,8 @@ void EffectSystem::UpdateParticles(Emitter* emitter)
 
 void EffectSystem::EmitParticles(Emitter* emitter)
 {
+	emitter->timer += TIMER->GetDeltaTime();
+
 	switch (emitter->emit_type)
 	{
 	case ONCE:
@@ -153,12 +151,7 @@ void EffectSystem::EmitParticles(Emitter* emitter)
 		if (emitter->timer > emitter->emit_time)
 		{
 			emitter->timer -= emitter->emit_time;
-
-			for (int i = 0; i < emitter->emit_time; i++)
-			{
-				EmitParticle(emitter);
-			}
-
+			EmitParticle(emitter);
 		}
 		break;
 	}

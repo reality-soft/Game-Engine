@@ -3,6 +3,7 @@
 #include "DX11App.h"
 #include "FileTransfer.h"
 #include "TimeMgr.h"
+#include "ResourceMgr.h"
 
 using namespace reality;
 
@@ -38,7 +39,7 @@ bool reality::Level::ImportFromFile(string filepath)
 	file_transfer.ReadBinary<XMINT2>(row_col_blocks_);
 
 	// Arrays
-	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
+	file_transfer.ReadBinary<LevelVertex>(level_mesh_.vertices);
 	file_transfer.ReadBinary<UINT>(level_mesh_.indices);
 	file_transfer.ReadBinary<string>(texture_id);
 
@@ -91,8 +92,8 @@ bool reality::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell)*uv_scale_;
 			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell)*uv_scale_;
 
-			//level_mesh_.vertices[index].t_layer.x = (float)c / (float)(num_row_cell);
-			//level_mesh_.vertices[index].t_layer.y = (float)r / (float)(num_col_cell);
+			level_mesh_.vertices[index].t_layer.x = (float)c / (float)(num_row_cell);
+			level_mesh_.vertices[index].t_layer.y = (float)r / (float)(num_col_cell);
 		}
 	}
 

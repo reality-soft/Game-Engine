@@ -9,6 +9,7 @@
 #include "Vertex.h"
 #include "Effect.h"
 #include "DX11App.h"
+#include "ResourceMgr.h"
 
 namespace reality
 {
@@ -102,8 +103,13 @@ namespace reality
 	struct C_Animation : public Component
 	{
 		string anim_id;
+		float cur_frame = 0.0f;
 
 		virtual void OnConstruct() override {};
+		virtual void OnUpdate() override {
+			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
+			//cur_frame = anim_data->start_frame;
+		};
 	};
 
 	struct C_SoundListener : public C_Transform
@@ -424,8 +430,10 @@ namespace reality
 
 	struct C_Effect : public C_Transform
 	{
-		string effect_id;
-		Effect effect;
+		string	effect_id;
+		Effect	effect;
+		float	effect_lifetime = -1.0f;
+		float	effect_timer;
 	};
   
 	struct C_UI : public Component

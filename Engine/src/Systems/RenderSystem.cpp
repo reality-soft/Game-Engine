@@ -109,20 +109,23 @@ void RenderSystem::SetCbTransform(const C_Transform* const transform)
 	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 }
 
-void RenderSystem::PlayAnimation(const Skeleton& skeleton, const OutAnimData& res_animation)
+void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component)
 {
-	static float keyframe = res_animation.start_frame;
+	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component.anim_id);
+	if (res_animation == nullptr) {
+		return;
+	}
 
-	if (keyframe >= res_animation.end_frame)
-		keyframe = res_animation.start_frame;
+	if (animation_component.cur_frame >= res_animation->end_frame)
+		animation_component.cur_frame = res_animation->start_frame;
 
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
-		XMMATRIX anim_matrix = bp.second * res_animation.animations.find(bp.first)->second[keyframe];
+		XMMATRIX anim_matrix = bp.second * res_animation->animations.find(bp.first)->second[animation_component.cur_frame];
 		cb_skeleton.data.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
 	}
 
-	keyframe += 60.f / TM_FPS;
+	animation_component.cur_frame += 60.f / TM_FPS;
 
 	device_context->UpdateSubresource(cb_skeleton.buffer.Get(), 0, nullptr, &cb_skeleton.data, 0, 0);
 	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
@@ -132,6 +135,10 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 {
 	StaticMesh* static_mesh = RESOURCE->UseResource<StaticMesh>(static_mesh_component->static_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(static_mesh_component->vertex_shader_id);
+
+	if (static_mesh == nullptr || shader == nullptr) {
+		return;
+	}
 
 	SetCbTransform(static_mesh_component);
 
@@ -145,24 +152,32 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 		UINT offset = 0;
 
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 		device_context->IASetInputLayout(shader->InputLayout());
 		device_context->VSSetShader(shader->Get(), 0, 0);
 
-		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+		ID3D11Buffer* index_buffer = single_mesh.index_buffer.Get();
+		if (index_buffer == nullptr) {
+			device_context->Draw(single_mesh.vertices.size(), 0);
+		}
+		else {
+			device_context->IASetIndexBuffer(index_buffer, DXGI_FORMAT_R32_UINT, 0);
+			device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+		}
 	}
 
 }
 
-void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, const C_Animation* const animation_component)
+void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, C_Animation* const animation_component)
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_components->skeletal_mesh_id);
 	VertexShader* shader = RESOURCE->UseResource<VertexShader>(skeletal_mesh_components->vertex_shader_id);
-	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component->anim_id);
-	if (res_animation != nullptr) {
-		PlayAnimation(skeletal_mesh->skeleton, *res_animation);
+
+	if (skeletal_mesh == nullptr || shader == nullptr) {
+		return;
 	}
+
+	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
 
 	SetCbTransform(skeletal_mesh_components);
 
@@ -175,12 +190,18 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
-		device_context->IASetIndexBuffer(single_mesh.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		
 		device_context->IASetInputLayout(shader->InputLayout());
 		device_context->VSSetShader(shader->Get(), 0, 0);
-
-		device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+		
+		ID3D11Buffer* index_buffer = single_mesh.index_buffer.Get();
+		if (index_buffer == nullptr) {
+			device_context->Draw(single_mesh.vertices.size(), 0);
+		}
+		else {
+			device_context->IASetIndexBuffer(index_buffer, DXGI_FORMAT_R32_UINT, 0);
+			device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+		}
 	}
 }
 
@@ -245,6 +266,7 @@ void RenderSystem::CreateEffectCB()
 		cb_particle_.data.color.w = 1.0f;
 
 		cb_particle_.data.transform = XMMatrixIdentity();
+		cb_particle_.data.transform_for_billboard = XMMatrixIdentity();
 
 		ZeroMemory(&desc, sizeof(desc));
 		ZeroMemory(&subdata, sizeof(subdata));
@@ -413,6 +435,12 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	// Sprite 정보 입력
 	Sprite* sprite = RESOURCE->UseResource<Sprite>(emitter.sprite_id);
 
+	// gravity
+	if (emitter.gravity_on_off)
+		cb_emitter.data.value.w = 1;
+	else
+		cb_emitter.data.value.w = 0;
+
 	switch (sprite->type)
 	{
 		// UV
@@ -420,7 +448,6 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	{
 		// type
 		cb_emitter.data.value.x = 0;
-
 
 		UVSprite* uv_sprite = (UVSprite*)sprite;
 
@@ -516,19 +543,29 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	cb_particle_.data.values.x	= particle.timer;
 	cb_particle_.data.values.y	= particle.frame_ratio;
 
-	//particle.rotation.z = XMConvertToRadians(particle.rotation.z);
-
 	XMMATRIX s = XMMatrixScalingFromVector(XMLoadFloat3(&particle.scale));
+
 	XMVECTOR rot_vec = { XMConvertToRadians(particle.rotation.x), XMConvertToRadians(particle.rotation.y), XMConvertToRadians(particle.rotation.z) };
 	auto q = XMQuaternionRotationRollPitchYawFromVector(rot_vec);
-	//auto q = XMQuaternionRotationRollPitchYaw(particle.rotation.x, particle.rotation.y, particle.rotation.z);
 	XMMATRIX r = XMMatrixRotationQuaternion(q);
-	//XMMATRIX r = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&particle.rotation));
 	XMMATRIX t = XMMatrixTranslationFromVector(XMLoadFloat3(&particle.position));
+
+	// SRT for no Billboard
 	XMMATRIX sr = XMMatrixMultiply(s, r);
 	XMMATRIX srt = XMMatrixMultiply(sr, t);
 
 	cb_particle_.data.transform = XMMatrixTranspose(srt);
+
+	// SRT for Billboard
+	// multiply world rotation's inverse matrix
+	XMVECTOR world_scale, world_rot, world_trans;
+	XMMatrixDecompose(&world_scale, &world_rot, &world_trans, cb_effect.data.world);
+	auto world_inv_rot = XMMatrixRotationQuaternion(world_rot);
+	r = XMMatrixMultiply(r, world_inv_rot);
+	sr = XMMatrixMultiply(s, r);
+	srt = XMMatrixMultiply(sr, t);
+
+	cb_particle_.data.transform_for_billboard = XMMatrixTranspose(srt);
 
 	device_context->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
 	device_context->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());

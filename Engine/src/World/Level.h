@@ -1,5 +1,5 @@
 #pragma once
-#include "ResourceMgr.h"
+#include "Components.h"
 #include "InstancedObject.h"
 
 #define LerpByTan(start, end, tan) (start - (start * tan) + (end * tan))
@@ -30,7 +30,7 @@ namespace reality
 		XMINT2 GetWorldSize();
 		XMINT2 GetBlocks();
 		UINT MaxLod();
-		vector<Vertex> GetLevelVertex() { return level_mesh_.vertices; }
+		vector<LevelVertex> GetLevelVertex() { return level_mesh_.vertices; }
 		vector<UINT> GetLevelIndex() { return level_mesh_.indices; }
 
 	public:
@@ -57,8 +57,7 @@ namespace reality
 		void RenderObjects();
 
 	protected:
-		SingleMesh<Vertex> level_mesh_;
-		SingleMesh<LevelVertex> vertices;
+		SingleMesh<LevelVertex> level_mesh_;
 		vector<float> height_list_;
 
 		UINT num_row_vertex_;

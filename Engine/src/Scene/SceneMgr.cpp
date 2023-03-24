@@ -10,6 +10,14 @@ namespace reality{
 	{
 		return weak_ptr<Scene>(cur_scene_);
 	}
+	bool SceneMgr::DestroyActor(entt::entity actor_id)
+	{
+		if (actors_.find(actor_id) == actors_.end())
+			return false;
+		GetRegistry().destroy(actor_id);
+		actors_.erase(actor_id);
+		return true;
+	}
 	void SceneMgr::OnInit()
 	{
 		if (cur_scene_.get() != nullptr) {

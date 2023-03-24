@@ -23,31 +23,25 @@ static std::vector<std::string> split(std::string input, char delimiter) {
 	return answer;
 }
 
-//static void XMtoRP(DirectX::XMVECTOR& xmv, reactphysics3d::Vector3& rpv)
-//{
-//	rpv.x = xmv.m128_f32[0];
-//	rpv.y = xmv.m128_f32[1];
-//	rpv.z = xmv.m128_f32[2];
-//}
-//
-//static void XMtoRP(DirectX::XMVECTOR& xmv, reactphysics3d::Vector2& rpv)
-//{
-//	rpv.x = xmv.m128_f32[0];
-//	rpv.y = xmv.m128_f32[1];
-//}
-//
-//static void RPtoXM(reactphysics3d::Vector3& rpv, DirectX::XMVECTOR& xmv)
-//{
-//	xmv.m128_f32[0] = rpv.x;
-//	xmv.m128_f32[1] = rpv.y;
-//	xmv.m128_f32[2] = rpv.z;
-//}
-//
-//static void RPtoXM(reactphysics3d::Vector2& rpv, DirectX::XMVECTOR& xmv)
-//{
-//	xmv.m128_f32[0] = rpv.x;
-//	xmv.m128_f32[1] = rpv.y;
-//}
+static std::string VectorToString(DirectX::XMVECTOR& arg)
+{
+	std::string str;
+	str =  "\nX : " + std::to_string(DirectX::XMVectorGetX(arg));
+	str += "\nY : " + std::to_string(DirectX::XMVectorGetY(arg));
+	str += "\nZ : " + std::to_string(DirectX::XMVectorGetZ(arg));
+
+	return str;
+}
+
+static std::string VectorToString(DirectX::XMFLOAT3& arg)
+{
+	std::string str;
+	str =  "\nX : " + std::to_string(arg.x);
+	str += "\nY : " + std::to_string(arg.y);
+	str += "\nZ : " + std::to_string(arg.z);
+	
+	return str;
+}
 
 static float RandomFloat()
 {
@@ -114,16 +108,25 @@ static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
 	return DirectX::XMVector3Length(vector).m128_f32[0]; 
 }
 
+static float Vector3Length(DirectX::XMVECTOR vector)
+{
+	return DirectX::XMVectorGetX(DirectX::XMVector3Length(vector));
+}
+
+static DirectX::XMVECTOR Vector3Project(DirectX::XMVECTOR OB, DirectX::XMVECTOR OA)
+{
+	return DirectX::XMVectorMultiply(DirectX::XMVectorDivide(OB, DirectX::XMVector3LengthSq(OB)), DirectX::XMVector3Dot(OA, OB));
+}
+
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
 {
-	// 정규화된 벡터를 사용하여 평행 여부를 확인합니다.
+
 	DirectX::XMVECTOR normalized1 = DirectX::XMVector3Normalize(vector1);
 	DirectX::XMVECTOR normalized2 = DirectX::XMVector3Normalize(vector2);
 
-	// 두 벡터의 내적(dot product)을 계산합니다.
+
 	float dot = DirectX::XMVectorGetX(DirectX::XMVector3Dot(normalized1, normalized2));
 
-	// 내적이 1 또는 -1에 근접하면 두 벡터는 평행합니다.
 	return DirectX::XMScalarNearEqual(dot, 1.f, 0.001f) || DirectX::XMScalarNearEqual(dot, -1.f, 0.001f);
 }
 

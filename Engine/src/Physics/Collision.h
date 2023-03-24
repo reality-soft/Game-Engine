@@ -24,7 +24,7 @@ namespace reality {
 		INSIDE,
 	};
 
-    static bool PointInTriangle(XMVECTOR& p, TriangleShape& tri)
+    static bool PointInTriangle(const XMVECTOR& p, const TriangleShape& tri)
     {
         if (tri.SameSide(p, tri.vertex0, tri.vertex1, tri.vertex2) &&
             tri.SameSide(p, tri.vertex1, tri.vertex0, tri.vertex2) &&
@@ -37,7 +37,7 @@ namespace reality {
         return false;
     }
 
-    static RayCallback RayToTriangle(RayShape& ray, TriangleShape& tri)
+    static RayCallback RayToTriangle(const RayShape& ray, const TriangleShape& tri)
     {
         RayCallback callback;
         XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri.vertex0, tri.vertex1, tri.vertex2), ray.start, ray.end);
@@ -59,7 +59,7 @@ namespace reality {
         return callback;
     }
 
-    static bool RayToAABB(RayShape& ray, AABBShape& aabb)
+    static bool RayToAABB(const RayShape& ray, AABBShape& aabb)
     {
         XMVECTOR center_to_corner = aabb.max - aabb.center;
         center_to_corner.m128_f32[1] = 0.0f;
@@ -80,6 +80,89 @@ namespace reality {
         //}
 
         return false;
+    }
+
+    static RayCallback RayToCapsule(const RayShape& ray, const CapsuleShape& cap)
+    {
+        XMVECTOR RC;
+        float d;
+        float t, s;
+        XMVECTOR n, D, O;
+        float ln;
+        float in, out;
+
+        XMVECTOR axis = XMVectorSet(0.0f, 1.0f * cap.height, 0.0f, 0.0f);
+
+        RC = ray.start;
+        RC = XMVectorSubtract(RC, cap.base);
+        XMVECTOR dir = XMVectorSubtract(ray.end, ray.start);
+        dir = XMVector3Normalize(dir);
+        n = XMVector3Cross(dir, axis);
+
+        ln = XMVector3Length(n).m128_f32[0];
+
+        // if parallel
+        if ((ln < EPSILON) && (ln > -EPSILON))
+            return RayCallback();
+
+        n = XMVector3Normalize(n);
+        d = fabsf(XMVector3Dot(RC, n).m128_f32[0]);
+
+        if (d <= cap.radius)
+        {
+            O = XMVector3Cross(RC, axis);
+            t = -XMVector3Dot(O, n).m128_f32[0] / ln;
+            O = XMVector3Cross(n, axis);
+            O = XMVector3Normalize(O);
+            s = fabs(sqrtf(cap.radius * cap.radius - d * d) / XMVector3Dot(dir, O).m128_f32[0]);
+
+            in = t - s;
+            out = t + s;
+
+            float lambda;
+
+            if (in < -EPSILON)
+            {
+                if (out < -EPSILON)
+                    return RayCallback();
+                else
+                    lambda = out;
+            }
+            else if (out < -EPSILON)
+            {
+                lambda = in;
+            }
+            else if (in < out)
+            {
+                lambda = in;
+            }
+            else
+            {
+                lambda = out;
+            }
+
+            // Calculate intersection point
+            RayCallback raycallback;
+            raycallback.point = ray.start;
+            raycallback.point.m128_f32[0] += dir.m128_f32[0] * lambda;
+            raycallback.point.m128_f32[1] += dir.m128_f32[1] * lambda;
+            raycallback.point.m128_f32[2] += dir.m128_f32[2] * lambda;
+            XMVECTOR hb = raycallback.point;
+
+            XMVectorSubtract(hb, cap.base);
+
+            //float scale = XMVector3Dot(hb, axis).m128_f32[0];
+            //raycallback.normal.m128_f32[0] = hb.m128_f32[0] - axis.m128_f32[0] * scale;
+            //raycallback.normal.m128_f32[1] = hb.m128_f32[1] - axis.m128_f32[1] * scale;
+            //raycallback.normal.m128_f32[2] = hb.m128_f32[2] - axis.m128_f32[2] * scale;
+            raycallback.normal = XMVector3Normalize(-dir);
+            raycallback.distance = lambda;
+            raycallback.success = true;
+
+            return raycallback;
+        }
+
+        return RayCallback();
     }
 
     static CollideType FrustumToAABB(Frustum& frustum, AABBShape& aabb)
@@ -265,5 +348,50 @@ namespace reality {
         }
 
         return result;
+    }
+
+    static CapsuleCallback CapsuleToTriangleEx(CapsuleShape& cap, TriangleShape& triangle)
+    {
+        CapsuleCallback result;
+        RayShape a_to_base(cap.GetTipBaseAB()[2], cap.GetTipBaseAB()[1]);
+
+        auto raycallback = RayToTriangle(a_to_base, triangle);
+        if (raycallback.success) // floor detected
+        {
+            result.reaction = CapsuleCallback::FLOOR;
+            result.floor_pos = raycallback.point;
+            return result;
+        }
+
+        // check if wall
+        auto capsule_info = cap.GetTipBaseAB();
+
+        XMVECTOR a_to_tri_normal = capsule_info[2] + (triangle.normal * cap.radius * -1.0f);
+        RayShape a_to_tri(capsule_info[2], a_to_tri_normal);
+
+        XMVECTOR b_to_tri_normal = capsule_info[3] + (triangle.normal * cap.radius * -1.0f);
+        RayShape b_to_tri(capsule_info[3], a_to_tri_normal);
+
+        auto a_raycallback = RayToTriangle(a_to_tri, triangle);
+        auto b_raycallback = RayToTriangle(b_to_tri, triangle);
+
+        if (a_raycallback.success || b_raycallback.success)
+        {
+            XMVECTOR a_to_base = cap.GetTipBaseAB()[1] - cap.GetTipBaseAB()[2];
+            XMVECTOR a_to_tri_vector = a_to_tri_normal - capsule_info[2];
+            float dot = XMVectorGetX(XMVector3Dot(a_to_base, a_to_tri_vector));
+            if (dot <= 0.0001f)
+            {
+                result.reaction = CapsuleCallback::WALL;
+                result.floor_pos = cap.base;
+                return result;
+            }
+        }
+        else
+        {
+            result.reaction = CapsuleCallback::NONE;
+            result.floor_pos = cap.base;
+            return result;
+        }
     }
 }

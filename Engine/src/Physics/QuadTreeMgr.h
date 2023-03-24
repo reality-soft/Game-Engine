@@ -34,16 +34,15 @@ namespace reality {
 		SINGLETON(QuadTreeMgr)
 #define QUADTREE QuadTreeMgr::GetInst()
 	public:
-		void Init(LightMeshLevel* level_to_devide, int max_depth = 5);
+		void Init(LightMeshLevel* level_to_devide, int max_depth);
 		void Frame(CameraSystem* applied_camera);
 		void Release();
 
 	public:
-		void UpdatePhysics();
-		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
-		RayCallback RaycastAdjustActor(RayShape& ray);
-
-		void RegisterDynamicCapsule(entt::entity ent);
+		void UpdateCapsules();
+		RayCallback RaycastAdjustLevel(const RayShape& ray, float max_distance);
+		pair<RayCallback, entt::entity> RaycastAdjustActor(const RayShape& ray);
+		void RegistDynamicCapsule(entt::entity ent);
 
 	public:
 		int calculating_triagnles;
@@ -51,10 +50,15 @@ namespace reality {
 		set<UINT> including_nodes_num;
 		XMVECTOR player_capsule_pos;
 
+		vector<RayShape> blocking_lines;
+
 	private:
+		void UpdatePhysics();
+		void CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes);
+		void CheckBlockingLine(entt::entity ent, CapsuleShape& capsule);
 		UINT max_depth;
 		UINT node_count = 0;
-		float physics_timestep = 1.0f / 60.0f;
+		float physics_timestep = 1.0f / 120.0f;
 
 		SpaceNode* root_node_ = nullptr;
 		vector<SpaceNode*> total_nodes_;
@@ -64,15 +68,12 @@ namespace reality {
 		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
 
 	private:
-		void NodeCasting(RayShape& ray, SpaceNode* node);
+		void NodeCasting(const RayShape& ray, SpaceNode* node);
 		void ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode* node, vector<SpaceNode*>& node_list);
 		SpaceNode* BuildTree(UINT depth, float row1, float col1, float row2, float col2);
 		void SetStaticTriangles(SpaceNode* node);
 
 	public:
-		std::vector<int>					FindCollisionSearchNode(int node_num);
-		std::unordered_set<entt::entity>	GetObjectListInNode(int node_num);
-
 		LightMeshLevel* deviding_level_ = nullptr;
 		Frustum camera_frustum_;
 

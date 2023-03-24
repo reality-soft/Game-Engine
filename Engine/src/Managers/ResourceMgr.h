@@ -1,8 +1,10 @@
 #pragma once
-#include "Components.h"
 #include "FbxLoader.h"
 #include "DataTableMgr.h"
 #include "Mesh.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "Material.h"
 #include "Effect.h"
 
 namespace reality
@@ -102,20 +104,6 @@ namespace reality
 		{
 			resdic_material.insert(make_pair(id, data));
 		}
-	}
-
-	template<typename T>
-	inline bool ResourceMgr::PushResource(string id, string filename)
-	{
-		current_id = id;
-		bool result = false;
-
-		if (typeid(T) == typeid(FbxLoader))
-		{
-			result = ImportFbx(directory + filename);
-		}
-
-		return result;
 	}
 
 	template<typename T>

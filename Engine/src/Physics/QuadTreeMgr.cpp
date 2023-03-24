@@ -35,6 +35,7 @@ void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
 {
 	deviding_level_ = level_to_devide;
 
+	// build tree
 	float min_x = 0, min_z = 0;
 	float max_x = 0, max_z = 0;
 	for (auto& tri : level_to_devide->level_triangles)
@@ -47,6 +48,33 @@ void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
 	}
 	this->max_depth = max_depth;
 	root_node_ = BuildTree(0, min_x, min_z, max_x, max_z);
+
+	// set blocking field
+	for (auto& guide_line : deviding_level_->GetGuideLines(GuideLine::GuideType::eBlocking))
+	{
+		if (guide_line.guide_type_ == GuideLine::GuideType::eBlocking)
+		{
+			for (UINT i = 1; i < guide_line.line_nodes.size(); ++i)
+			{
+				RayShape blocking_line;
+				blocking_line.start = guide_line.line_nodes.at(i - 1);
+				blocking_line.end = guide_line.line_nodes.at(i);
+
+				blocking_line.start.m128_f32[1] = 0.0f;
+				blocking_line.end.m128_f32[1] = 0.0f;
+
+				blocking_lines.push_back(blocking_line);
+			}
+		}
+	}
+
+	// regist dynamic capsule
+	const auto& capsule_view = SCENE_MGR->GetRegistry().view<C_CapsuleCollision>();
+	for (auto& ent : capsule_view)
+	{
+		auto capsule_collision = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(ent);
+		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
+	}
 }
 
 SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
@@ -89,37 +117,13 @@ void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
 
 }
 
-std::vector<int> reality::QuadTreeMgr::FindCollisionSearchNode(int node_num)
-{
-	std::vector<int> node_to_search;
-	SpaceNode* current_node = total_nodes_[node_num];
-
-	int last_child_num = 0;
-
-	for (int i = 0; i < max_depth - current_node->node_depth; ++i)
-	{
-		last_child_num += (int)pow(max_depth, i + 1);
-	}
-
-	for (int n = node_num; n <= last_child_num; ++n)
-	{
-		node_to_search.push_back(n);
-	}
-
-	return node_to_search;
-}
-
-std::unordered_set<entt::entity> reality::QuadTreeMgr::GetObjectListInNode(int node_num)
-{
-	return total_nodes_[node_num]->object_list;
-}
-
 void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
+	UpdateCapsules();
 
 	casted_nodes_.clear();
-	//NodeCasting(applied_camera->CreateFrontRay(), root_node_);
+	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
 }
@@ -137,61 +141,105 @@ void reality::QuadTreeMgr::Release()
 
 void reality::QuadTreeMgr::UpdatePhysics()
 {
-	if (TM_DELTATIME > physics_timestep)
-		return;
-
-	static double delta = 0;
-	delta += TM_DELTATIME;
-	if (delta < physics_timestep)
-		return;
-
-	delta = 0.0f;
-
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
-		player_capsule_pos = dynamic_capsule.second->capsule.base;
-
-		int cal = 0;
 		vector<SpaceNode*> nodes;
 		ObjectQueryByCapsule(dynamic_capsule.second->capsule, root_node_, nodes);
 
 		if (nodes.empty())
 			break;
 
-		including_nodes_num.clear();
+		CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
+		CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
 
-		map<float, CapsuleCallback> result_list;
+		// Add Object to LeafNode
 		for (auto node : nodes)
 		{
-			including_nodes_num.insert(node->node_num);
-			for (auto& tri : node->static_triangles)
-			{
-				cal++;
-				auto result = CapsuleToTriangle(dynamic_capsule.second->capsule, tri);
-				if (result.reaction != CapsuleCallback::NONE)
-					result_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));				
-			}
+			node->object_list.insert(dynamic_capsule.first);
 		}
 
-		if (result_list.empty())
-		{
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GravityFall(9.81f);
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->movement_state_ = MovementState::GRAVITY_FALL;
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->floor_height = dynamic_capsule.second->capsule.base.m128_f32[1];
-		}
-		else
-		{
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GetMovementComponent()->gravity = 0.0f;
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->movement_state_ = MovementState::STAND_ON_FLOOR;
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->floor_height = result_list.rbegin()->first;
-		}
-
-		calculating_triagnles = cal;
 		nodes.clear();
 	}
 }
 
-void reality::QuadTreeMgr::NodeCasting(RayShape& ray, SpaceNode* node)
+void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes)
+{
+	player_capsule_pos = capsule.base;
+
+	map<float, CapsuleCallback> floor_list;
+	vector<RayShape> wall_list;
+
+	for (auto node : nodes)
+	{
+		including_nodes_num.insert(node->node_num);
+		for (auto& tri : node->static_triangles)
+		{
+			auto result = CapsuleToTriangleEx(capsule, tri);
+			if (result.reaction == CapsuleCallback::FLOOR)
+				floor_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));
+			if (result.reaction == CapsuleCallback::WALL)
+				wall_list.push_back(RayShape(tri.GetMinXZ(), tri.GetMaxXZ()));
+				
+		}
+	}
+
+	if (floor_list.empty())
+	{
+		SCENE_MGR->GetActor<Character>(ent)->GravityFall(9.81f);
+		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::GRAVITY_FALL;
+		SCENE_MGR->GetActor<Character>(ent)->floor_height = capsule.base.m128_f32[1];
+	}
+	else
+	{
+		SCENE_MGR->GetActor<Character>(ent)->GetMovementComponent()->gravity = 0.0f;
+		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::STAND_ON_FLOOR;
+		SCENE_MGR->GetActor<Character>(ent)->floor_height = floor_list.rbegin()->first;
+	}
+
+	if (wall_list.size() > 0)
+	{
+		SCENE_MGR->GetActor<Character>(ent)->blocking_walls_ = wall_list;
+	}	
+}
+
+void reality::QuadTreeMgr::CheckBlockingLine(entt::entity ent, CapsuleShape& capsule)
+{
+	for (auto& dynamic_capsule : dynamic_capsule_list)
+	{
+		if (dynamic_capsule.second->tag == "Enemy")
+			continue;
+
+		XMVECTOR capsule_pos = dynamic_capsule.second->capsule.base;
+		capsule_pos.m128_f32[1] = 0.0f;
+
+		for (auto& blocking_line : blocking_lines)
+		{
+			float distance_from_line = XMVectorGetX(XMVector3LinePointDistance(blocking_line.start, blocking_line.end, capsule_pos));
+
+			if (distance_from_line <= dynamic_capsule.second->capsule.radius)
+			{
+				XMVECTOR OB = blocking_line.end - blocking_line.start;
+				XMVECTOR OA = dynamic_capsule.second->capsule.base - blocking_line.start;
+				float dot = XMVectorGetX(XMVector3Dot(OA, OB));
+				if (dot < 0)
+				{
+					OB *= -1.0f;
+					OA = dynamic_capsule.second->capsule.base - blocking_line.end;
+				}
+
+				float proj_length = Vector3Length(Vector3Project(OB, OA));
+				float line_length = Vector3Length(OB) + dynamic_capsule.second->capsule.radius;
+
+				if (proj_length <= line_length)
+				{
+					SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->blocking_walls_.push_back(blocking_line);
+				}
+			}
+		}
+	}
+}
+
+void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
 {
 	if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
 		return;
@@ -234,16 +282,27 @@ void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode
 	} 
 }
 
-RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
+void reality::QuadTreeMgr::UpdateCapsules()
 {
-	const float ts = 1.0f / 20.0f;
-	static float acc = 0.0f;
-	acc += TM_DELTATIME;
-	if (acc < ts)
-		return RayCallback();
+	vector<entt::entity> destroied_actors;
 
-	acc = 0.0f;
+	for (auto& capsule : dynamic_capsule_list)
+	{
+		if (SCENE_MGR->GetActor<Actor>(capsule.first) == nullptr)
+		{
+			destroied_actors.push_back(capsule.first);
+			capsule.second = nullptr;
+		}
+	}
 
+	for (const auto& ent : destroied_actors)
+	{
+		dynamic_capsule_list.erase(ent);
+	}
+}
+
+RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float max_distance)
+{
 	map<float, RayCallback> callback_list;
 
 	int cal = 0;
@@ -255,7 +314,7 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_di
 		for (auto& tri : node.second->static_triangles)
 		{
 			cal++;
-			auto& callback = RayToTriangle(ray, tri);
+			const auto& callback = RayToTriangle(ray, tri);
 			if (callback.success)
 			{
 				callback_list.insert(make_pair(callback.distance, callback));
@@ -270,14 +329,38 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_di
 	return callback_list.begin()->second;
 }
 
-void reality::QuadTreeMgr::RegisterDynamicCapsule(entt::entity ent)
-{	
-	if (dynamic_capsule_list.find(ent) != dynamic_capsule_list.end())
-		return;
+pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(const RayShape& ray)
+{
+	map<float, RayCallback> callback_list;
 
-	C_CapsuleCollision* actor_capsule = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(ent);
-	if (actor_capsule)
+	entt::entity selected_entity = entt::null;
+
+	auto level_callback = RaycastAdjustLevel(ray, 15000);
+	for (auto& capsule : dynamic_capsule_list)
 	{
-		dynamic_capsule_list.insert(make_pair(ent, actor_capsule));
+		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
+			continue;
+
+		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
+		if (capsule_callback.success)
+		{
+			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
+			selected_entity = capsule.first;
+		}
 	}
+
+	if (callback_list.begin() == callback_list.end())
+		return make_pair(RayCallback(), entt::null);
+
+	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
+		return make_pair(RayCallback(), entt::null);
+
+	return make_pair(callback_list.begin()->second, selected_entity);
+}
+
+void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
+{
+	auto capsule_collision = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(ent);
+	if (capsule_collision != nullptr)
+		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
 }

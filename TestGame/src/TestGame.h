@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine_Include.h"
 #include "TestWidget.h"
+#include "UI_Ingame_Actor.h"
 
 using namespace reality;
 
@@ -13,6 +14,14 @@ public:
 	virtual void OnRelease();
 
 private:
+	vector<std::string> enemy_meshes = {
+		"Zombie_Businessman_Male_01.skmesh",
+		"Zombie_Cheerleader_Female_01.skmesh",
+		"Zombie_Daughter_Female_01.skmesh",
+		"Zombie_Police_Male_01.skmesh",
+		"Zombie_RiotCop_Male_01.skmesh",
+		"Zombie_SchoolGirl_Female_01.skmesh",
+	};
   
 	SkySphere sky_sphere;
 	LightMeshLevel level;
@@ -30,8 +39,11 @@ private:
 private:
 	TestWidget	test_window_;
 	PropertyWidget gw_property_;
-	FX_Effect	effect_;
 	UI_Ingame_Actor ingame_ui;
-	void CreateEffectFromRay(XMVECTOR hitpoint);
+	void CreateEffectFromRay();
+	void CursorStateUpdate();
+
+private:
+	int cur_zombie_created = 0;
 };
 

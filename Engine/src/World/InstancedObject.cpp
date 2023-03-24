@@ -128,28 +128,51 @@ vector<InstanceData::CData> reality::InstancedObject::GetCDataArray()
 	return data_array;
 }
 
-void reality::InstancedObject::SetInstanceScale(string name, XMFLOAT3 S)
+InstanceData* reality::InstancedObject::SelectInstance(UINT index)
 {
-	instance_pool.find(name)->second->S = S;
+	const auto& found = instance_pool.find(index);
+	if (found == instance_pool.end())
+		return nullptr;
+
+	selected_instance = found->second;
+	return selected_instance;
 }
 
-void reality::InstancedObject::SetInstanceRotation(string name, XMFLOAT3 R)
+void reality::InstancedObject::SetInstanceScale(UINT index, XMFLOAT3 S)
 {
-	instance_pool.find(name)->second->R = R;
+	auto found = instance_pool.find(index);
+	if (found != instance_pool.end())
+	{
+		found->second->S = S;
+	}
 }
 
-void reality::InstancedObject::SetInstanceTranslation(string name, XMFLOAT3 T)
+void reality::InstancedObject::SetInstanceRotation(UINT index, XMFLOAT3 R)
 {
-	instance_pool.find(name)->second->T = T;
+	auto found = instance_pool.find(index);
+	if (found != instance_pool.end())
+	{
+		found->second->R = R;
+	}
+}
+
+void reality::InstancedObject::SetInstanceTranslation(UINT index, XMFLOAT3 T)
+{
+	auto found = instance_pool.find(index);
+	if (found != instance_pool.end())
+	{
+		found->second->T = T;
+	}
 }
 
 InstanceData* InstancedObject::AddNewInstance(string name)
 {
-	InstanceData* data = new InstanceData(name, instance_pool.size());
+	UINT index = instance_pool.size();
+	InstanceData* data = new InstanceData(name, index);
 
-	instance_pool.insert(make_pair(data->instance_id, data));
+	instance_pool.insert(make_pair(index, data));
 
-	auto current = instance_pool.find(data->instance_id)->second;
+	auto current = instance_pool.find(index)->second;
 	selected_instance = current;
 
 	CreateInstanceBuffer();
