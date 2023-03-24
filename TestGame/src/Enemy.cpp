@@ -40,6 +40,7 @@ void Enemy::OnUpdate()
 {
 	if (cur_target_pos_index_ >= target_poses_.size()) {
 		SetCharacterAnimation("Zombie_Idle_1_v2_IPC_Anim_Unreal Take.anim");
+		EVENT->PushEvent<DeleteActorEvent>(entity_id_);
 		return;
 	}
 	if (XMVector3Length(GetPos() - target_poses_[cur_target_pos_index_]).m128_f32[0] <= 10.0f) {
