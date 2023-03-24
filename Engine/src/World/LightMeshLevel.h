@@ -32,7 +32,7 @@ namespace reality
 
 	public:
 		void ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type);
-		vector<GuideLine>* GetGuideLines();
+		vector<GuideLine> GetGuideLines(GuideLine::GuideType guide_type);
 
 	private:
 		vector<GuideLine> guide_lines;

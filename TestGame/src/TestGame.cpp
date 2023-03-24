@@ -65,9 +65,6 @@ void TestGame::OnInit()
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
-	auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
-	auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
-
 	QUADTREE->Init(&level, 3);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
@@ -75,10 +72,39 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
+	gw_property_.AddProperty<int>("num of zombie", &cur_zombie_created);
 }
 
 void TestGame::OnUpdate()
 {
+	static float cur_time = 0.0f;
+
+	cur_time += TM_DELTATIME;
+
+	const vector<reality::GuideLine> npc_guidlines = level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack);
+
+	if (cur_time >= 3.0f) {
+		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
+
+		int guidline_index = rand() % npc_guidlines.size();
+		int mesh_index = rand() % enemy_meshes.size();
+		
+		vector<XMVECTOR> target_poses;
+		for (const auto& target_pos : npc_guidlines[guidline_index].line_nodes) {
+			target_poses.push_back(target_pos.second);
+		}
+		enemy_actor->SetRoute(target_poses);
+		enemy_actor->SetMeshId(enemy_meshes[mesh_index]);
+		
+		//auto player = SCENE_MGR->GetPlayer<Player>(0);
+		//player->SetPos(level.GetGuideLines()->at(guidline_index).line_nodes[0]);
+
+		cur_time = 0.0f;
+
+		cur_zombie_created++;
+	}
+
 
 	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);

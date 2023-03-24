@@ -7,13 +7,16 @@ namespace reality {
 	{
         for (auto child : children_)
         {
-            auto result = child->Execute();
-            if (result != BehaviorStatus::Success)
+            BehaviorStatus result;
+            if (child->Future()->_Get_value() != BehaviorStatus::INVALID) {
+                result = child->Execute();
+            }
+            if (result != BehaviorStatus::SUCCESS)
             {
                 return result;
             }
         }
-        return BehaviorStatus::Success;
+        return BehaviorStatus::SUCCESS;
 	}
 
 	BehaviorStatus SelectorNode::Execute()
@@ -21,11 +24,25 @@ namespace reality {
         for (auto child : children_)
         {
             auto result = child->Execute();
-            if (result == BehaviorStatus::Success)
+            if (result != BehaviorStatus::FAILURE)
             {
-                return BehaviorStatus::Success;
+                return result;
             }
         }
-        return BehaviorStatus::Failure;
+        return BehaviorStatus::FAILURE;
 	}
+
+    BehaviorStatus ActionNode::Execute()
+    {
+        if (!future_.valid()) {
+            future_ = std::async(std::launch::async, execute_function_);
+        }
+
+        if (future_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            status_ = future_.get();
+            return status_;
+        }
+
+        return BehaviorStatus::RUNNING;
+    }
 }
