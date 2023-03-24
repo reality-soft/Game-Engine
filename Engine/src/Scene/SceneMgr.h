@@ -36,6 +36,9 @@ namespace reality {
     template<typename ActorClass>
     inline ActorClass* SceneMgr::GetActor(entt::entity actor_id)
     {
+        if (actors_.find(actor_id) == actors_.end())
+            return nullptr;
+
         return dynamic_cast<ActorClass*>(weak_ptr(actors_.at(actor_id)).lock().get());
     }
 

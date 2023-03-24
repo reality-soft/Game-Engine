@@ -65,9 +65,6 @@ void TestGame::OnInit()
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
-	auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
-	auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
-
 	QUADTREE->Init(&level, 3);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
@@ -75,10 +72,39 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
+	gw_property_.AddProperty<int>("num of zombie", &cur_zombie_created);
 }
 
 void TestGame::OnUpdate()
 {
+	static float cur_time = 0.0f;
+
+	cur_time += TM_DELTATIME;
+
+	const vector<reality::GuideLine> npc_guidlines = level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack);
+
+	if (cur_time >= 3.0f) {
+		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
+
+		int guidline_index = rand() % npc_guidlines.size();
+		int mesh_index = rand() % enemy_meshes.size();
+		
+		vector<XMVECTOR> target_poses;
+		for (const auto& target_pos : npc_guidlines[guidline_index].line_nodes) {
+			target_poses.push_back(target_pos.second);
+		}
+		enemy_actor->SetRoute(target_poses);
+		enemy_actor->SetMeshId(enemy_meshes[mesh_index]);
+		
+		//auto player = SCENE_MGR->GetPlayer<Player>(0);
+		//player->SetPos(level.GetGuideLines()->at(guidline_index).line_nodes[0]);
+
+		cur_time = 0.0f;
+
+		cur_zombie_created++;
+	}
+
 
 	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
@@ -91,9 +117,7 @@ void TestGame::OnUpdate()
 	ingame_ui.OnUpdate();
 
 	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
-		CreateBloodEffectFromRay();
-	if (DINPUT->GetMouseState(R_BUTTON) == KeyState::KEY_PUSH)
-		CreateDustEffectFromRay();
+		CreateEffectFromRay();
 
 	CursorStateUpdate();
 }
@@ -115,45 +139,25 @@ void TestGame::OnRelease()
 	reality::RESOURCE->Release();
 }
 
-void TestGame::CreateBloodEffectFromRay()
+void TestGame::CreateEffectFromRay()
 {
 	RayShape ray = sys_camera.CreateFrontRay();
-	XMVECTOR ray_dir_inv = XMVector3Normalize(ray.start - ray.end);
 
 	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
 	RayCallback raycallback_actor =  QUADTREE->RaycastAdjustActor(ray);
 	if (raycallback_actor.success && raycallback_node.success)
 	{
 		if (raycallback_actor.distance < raycallback_node.distance)
-			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
-		else
-			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
-	}
-	else if(raycallback_actor.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
-	else if(raycallback_node.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
-}
-
-void TestGame::CreateDustEffectFromRay()
-{
-	RayShape ray = sys_camera.CreateFrontRay();
-	XMVECTOR ray_dir_inv = XMVector3Normalize(ray.start - ray.end);
-
-	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
-	RayCallback raycallback_actor = QUADTREE->RaycastAdjustActor(ray);
-	if (raycallback_actor.success && raycallback_node.success)
-	{
-		if (raycallback_actor.distance < raycallback_node.distance)
-			EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
+			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, raycallback_actor.normal, 1.0f);
 		else
 			EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 	}
-	else if (raycallback_actor.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_actor.point, ray_dir_inv, 1.0f);
-	else if (raycallback_node.success)
+	else if(raycallback_actor.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, raycallback_actor.normal, 1.0f);
+	else if(raycallback_node.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 }
+
 
 void TestGame::CursorStateUpdate()
 {

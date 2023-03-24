@@ -5,7 +5,8 @@
 
 namespace reality {
 	enum EVENT_TYPE {
-		MOVEMENT
+		MOVEMENT,
+		DELETE_ACTOR
 	};
 
 	class DLL_API Event
@@ -78,4 +79,17 @@ namespace reality {
 		entt::entity actor_id_;
 	};
 
+
+	class DLL_API DeleteActorEvent : public Event {
+	public:
+		DeleteActorEvent(entt::entity actor_id) : Event(DELETE_ACTOR) {
+			actor_id_ = actor_id;
+		}
+
+		virtual void Process() override {
+			SCENE_MGR->DestroyActor(actor_id_);
+		};
+	private:
+		entt::entity actor_id_;
+	};
 }
