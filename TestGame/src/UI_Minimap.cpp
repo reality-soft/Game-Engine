@@ -1,11 +1,7 @@
 #include "stdafx.h"
 #include "UI_Minimap.h"
-#include "SceneMgr.h"
-#include "Character.h"
-#include "RenderTargetMgr.h"
-#include "Engine.h"
-#include "UISystem.h"
-#include "ResourceMgr.h"
+#include "Player.h"
+#include "Enemy.h"
 
 #define MINIMAP_OFFSET 0.1
 #define MINIMAP_LENGTH 15800.0f
@@ -38,13 +34,28 @@ void UI_Minimap::UpdateThisUI()
 	// 1. Render Minimap Image
 	RenderMinimap();
 
-	XMMATRIX player_world = SCENE_MGR->GetPlayer<Character>(0)->GetTranformMatrix();
-	RenderPlayerIcon(player_world);
 
-	// 3. Render Zombie Image
-	//RenderZombieIcon();
+	// 2. Render Actor Icon
+	auto player = SCENE_MGR->GetPlayer<Player>(0);
 
-	// 4. Return from Minimap RenderTarget to Backbuffer
+	auto view_of_capsule = SCENE_MGR->GetRegistry().view<C_CapsuleCollision>();
+	for (auto& entity : view_of_capsule)
+	{
+		// if player, continue;
+		if (entity == player->GetEntityId())
+		{
+			XMMATRIX player_world = player->GetTranformMatrix();
+			RenderPlayerIcon(player_world);
+		}
+		else
+		{
+			auto zombie = SCENE_MGR->GetActor<Enemy>(entity);
+			XMMATRIX zombie_world = zombie->GetTranformMatrix();
+			RenderZombieIcon(zombie_world);
+		}
+	}
+
+	// 3. Return from Minimap RenderTarget to Backbuffer
 	DX11APP->SetBackBufferRTV();
 }
 
@@ -169,7 +180,21 @@ void UI_Minimap::RenderPlayerIcon(XMMATRIX world)
 void UI_Minimap::RenderZombieIcon(XMMATRIX world)
 {
 	// Regulate World Coord
-	XMMATRIX minimap_world = world;
+	XMVECTOR world_scale, world_rot, world_pos;
+	XMMatrixDecompose(&world_scale, &world_rot, &world_pos, world);
+
+	XMMATRIX S, R, T;
+
+	// Scale
+	XMVECTOR scale = XMVectorSet(0.016f, 0.016f, 0.0f, 1.0f);
+	S = XMMatrixScalingFromVector(scale);
+	// Rotation
+	R = XMMatrixIdentity();
+	// Translation
+	XMVECTOR pos = ConvertWorldToScreenXZ(world_pos);
+	XMStoreFloat2(&minimap_player_pos, pos);
+	T = XMMatrixTranslationFromVector(pos);
+	XMMATRIX minimap_world = S * R * T;
 
 	// Set Constant Buffer
 	UISystem::SetCbData(XMMatrixTranspose(minimap_world));
