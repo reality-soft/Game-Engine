@@ -30,7 +30,7 @@ private:
 	int cur_node = 0;
 private:
 	vector<XMVECTOR> target_poses_;
-	int cur_target_pos_index_;
+	int cur_target_pos_index_ = 1;
 private:
 	reality::BehaviorTree behavior_tree_;
 };

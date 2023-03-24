@@ -41,7 +41,7 @@ namespace reality {
 	public:
 		void UpdateCapsules();
 		RayCallback RaycastAdjustLevel(const RayShape& ray, float max_distance);
-		RayCallback RaycastAdjustActor(const RayShape& ray);
+		pair<RayCallback, entt::entity> RaycastAdjustActor(const RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
 
 	public:

@@ -3,7 +3,7 @@
 #include "RenderTargetMgr.h"
 namespace reality
 {
-	class DLL_API UI_Minimap : public UIBase
+	class UI_Minimap : public UIBase
 	{
 	private:
 		string minimap_tex_id_;
