@@ -3,6 +3,7 @@
 #include "Enemy.h"
 #include "FX_BloodImpact.h"
 #include "FX_ConcreteImpact.h"
+#include "FbxMgr.h"
 
 void TestGame::OnInit()
 {
@@ -16,7 +17,8 @@ void TestGame::OnInit()
 	//FbxImportOption option;
 	//option.import_rotation = {90, 0, 180, 0};
 	//option.import_scale = 10.0f;
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision.fbx", option);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_01.fbx", option);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_01.fbx", option);
 
 	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -59,7 +61,7 @@ void TestGame::OnInit()
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
 	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
+	level.Create("DeadPoly_FullLevel_01.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision_01.ltmesh");
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
@@ -115,9 +117,7 @@ void TestGame::OnUpdate()
 	ingame_ui.OnUpdate();
 
 	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
-		CreateBloodEffectFromRay();
-	if (DINPUT->GetMouseState(R_BUTTON) == KeyState::KEY_PUSH)
-		CreateDustEffectFromRay();
+		CreateEffectFromRay();
 
 	CursorStateUpdate();
 }
@@ -139,19 +139,25 @@ void TestGame::OnRelease()
 	reality::RESOURCE->Release();
 }
 
-void TestGame::CreateBloodEffectFromRay()
+void TestGame::CreateEffectFromRay()
 {
-	RayCallback raycallback =  QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
-	if(raycallback.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
+	RayShape ray = sys_camera.CreateFrontRay();
+
+	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
+	RayCallback raycallback_actor =  QUADTREE->RaycastAdjustActor(ray);
+	if (raycallback_actor.success && raycallback_node.success)
+	{
+		if (raycallback_actor.distance < raycallback_node.distance)
+			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, raycallback_actor.normal, 1.0f);
+		else
+			EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
+	}
+	else if(raycallback_actor.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_actor.point, raycallback_actor.normal, 1.0f);
+	else if(raycallback_node.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 }
 
-void TestGame::CreateDustEffectFromRay()
-{
-	RayCallback raycallback = QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
-	if (raycallback.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
-}
 
 void TestGame::CursorStateUpdate()
 {

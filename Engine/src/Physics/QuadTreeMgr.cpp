@@ -125,7 +125,6 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
-	CheckBlockingLine();
 }
 
 void reality::QuadTreeMgr::Release()
@@ -141,31 +140,16 @@ void reality::QuadTreeMgr::Release()
 
 void reality::QuadTreeMgr::UpdatePhysics()
 {
-	//if (TM_DELTATIME > physics_timestep)
-	//	return;
-
-	//static double delta = 0;
-	//delta += TM_DELTATIME;
-	//if (delta < physics_timestep)
-	//	return;
-
-	//delta = 0.0f;
-
-	CheckTriangle();
-}
-
-void reality::QuadTreeMgr::CheckTriangle()
-{
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
-		player_capsule_pos = dynamic_capsule.second->capsule.base;
-
-		int cal = 0;
 		vector<SpaceNode*> nodes;
 		ObjectQueryByCapsule(dynamic_capsule.second->capsule, root_node_, nodes);
 
 		if (nodes.empty())
 			break;
+
+		CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
+		CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
 
 		// Add Object to LeafNode
 		for (auto node : nodes)
@@ -173,52 +157,51 @@ void reality::QuadTreeMgr::CheckTriangle()
 			node->object_list.insert(dynamic_capsule.first);
 		}
 
-		including_nodes_num.clear();
-
-		map<float, CapsuleCallback> floor_list;
-		vector<RayShape> wall_list;
-
-
-		for (auto node : nodes)
-		{
-			including_nodes_num.insert(node->node_num);
-			for (auto& tri : node->static_triangles)
-			{
-				cal++;
-				auto result = CapsuleToTriangleEx(dynamic_capsule.second->capsule, tri);
-				if (result.reaction == CapsuleCallback::FLOOR)
-					floor_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));
-				if (result.reaction == CapsuleCallback::WALL)
-					wall_list.push_back(RayShape(tri.GetMinXZ(), tri.GetMaxXZ()));
-				
-			}
-		}
-
-		if (floor_list.empty())
-		{
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GravityFall(9.81f);
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->movement_state_ = MovementState::GRAVITY_FALL;
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->floor_height = dynamic_capsule.second->capsule.base.m128_f32[1];
-		}
-		else
-		{
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->GetMovementComponent()->gravity = 0.0f;
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->movement_state_ = MovementState::STAND_ON_FLOOR;
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->floor_height = floor_list.rbegin()->first;
-		}
-
-		if (wall_list.size() > 0)
-		{
-			SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->blocking_walls_ = wall_list;
-		}
-
-
-		calculating_triagnles = cal;
 		nodes.clear();
 	}
 }
 
-void reality::QuadTreeMgr::CheckBlockingLine()
+void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes)
+{
+	player_capsule_pos = capsule.base;
+
+	map<float, CapsuleCallback> floor_list;
+	vector<RayShape> wall_list;
+
+	for (auto node : nodes)
+	{
+		including_nodes_num.insert(node->node_num);
+		for (auto& tri : node->static_triangles)
+		{
+			auto result = CapsuleToTriangleEx(capsule, tri);
+			if (result.reaction == CapsuleCallback::FLOOR)
+				floor_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));
+			if (result.reaction == CapsuleCallback::WALL)
+				wall_list.push_back(RayShape(tri.GetMinXZ(), tri.GetMaxXZ()));
+				
+		}
+	}
+
+	if (floor_list.empty())
+	{
+		SCENE_MGR->GetActor<Character>(ent)->GravityFall(9.81f);
+		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::GRAVITY_FALL;
+		SCENE_MGR->GetActor<Character>(ent)->floor_height = capsule.base.m128_f32[1];
+	}
+	else
+	{
+		SCENE_MGR->GetActor<Character>(ent)->GetMovementComponent()->gravity = 0.0f;
+		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::STAND_ON_FLOOR;
+		SCENE_MGR->GetActor<Character>(ent)->floor_height = floor_list.rbegin()->first;
+	}
+
+	if (wall_list.size() > 0)
+	{
+		SCENE_MGR->GetActor<Character>(ent)->blocking_walls_ = wall_list;
+	}	
+}
+
+void reality::QuadTreeMgr::CheckBlockingLine(entt::entity ent, CapsuleShape& capsule)
 {
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
@@ -298,6 +281,25 @@ void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode
 	} 
 }
 
+void reality::QuadTreeMgr::UpdateCapsules()
+{
+	vector<entt::entity> destroied_actors;
+
+	for (auto& capsule : dynamic_capsule_list)
+	{
+		if (SCENE_MGR->GetActor<Actor>(capsule.first) == nullptr)
+		{
+			destroied_actors.push_back(capsule.first);
+			capsule.second = nullptr;
+		}
+	}
+
+	for (const auto& ent : destroied_actors)
+	{
+		dynamic_capsule_list.erase(ent);
+	}
+}
+
 RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float max_distance)
 {
 	map<float, RayCallback> callback_list;
@@ -328,28 +330,25 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float 
 
 RayCallback reality::QuadTreeMgr::RaycastAdjustActor(const RayShape& ray)
 {
-
 	map<float, RayCallback> callback_list;
 
-	int cal = 0;
-	for (auto& node : casted_nodes_)
+	auto level_callback = RaycastAdjustLevel(ray, 15000);
+	for (auto& capsule : dynamic_capsule_list)
 	{
-		for (auto& entity : node.second->object_list)
+		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
+			continue;
+
+		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
+		if (capsule_callback.success)
 		{
-			cal++;
-			auto capsule_comp = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(entity);
-			if (capsule_comp == nullptr)
-				return RayCallback();
-			const auto& callback = RayToCapsule(ray, capsule_comp->capsule);
-			if (callback.success)
-			{
-				callback_list.insert(make_pair(callback.distance, callback));
-			}
+			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
 		}
 	}
-	cal = 0;
 
 	if (callback_list.begin() == callback_list.end())
+		return RayCallback();
+
+	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
 		return RayCallback();
 
 	return callback_list.begin()->second;

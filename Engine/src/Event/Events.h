@@ -40,9 +40,6 @@ namespace reality {
 				XMVECTOR start_to_cap = c_capsule->capsule.base - block_wall.start; start_to_cap.m128_f32[1] = 0.0f;
 				XMVECTOR project = Vector3Project(blocking_vector, start_to_cap);
 
-				XMVECTOR normal1 = XMVector3Normalize(blocking_vector);
-				XMVECTOR normal2 = XMVector3Normalize(project);
-
 				XMVECTOR cap_to_blocking = XMVector3Normalize(project - start_to_cap) * c_capsule->capsule.radius;
 
 				XMVECTOR movement = movement_vector_;

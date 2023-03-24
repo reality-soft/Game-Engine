@@ -140,8 +140,11 @@ RayShape CameraSystem::CreateMouseRay()
 
 RayShape reality::CameraSystem::CreateFrontRay()
 {
-	XMVECTOR ray_origin = camera->camera_pos;
-	XMVECTOR ray_dir = XMVector3Normalize(camera->look);
+	XMMATRIX camera_world = XMMatrixInverse(nullptr, XMMatrixTranspose(cb_viewproj.data.view_matrix));
+	XMVECTOR ray_origin = camera_world.r[3];
+	ray_origin.m128_f32[3] = 0.0f;
+	XMVECTOR ray_dir = XMVector3Normalize(camera_world.r[2]);
+
 	return RayShape(ray_origin, ray_dir * camera->far_z);
 }
 
