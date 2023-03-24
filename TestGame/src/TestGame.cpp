@@ -115,7 +115,7 @@ void TestGame::OnRelease()
 
 void TestGame::CreateBloodEffectFromRay()
 {
-	RayShape ray = sys_camera.CreateMouseRay();
+	RayShape ray = sys_camera.CreateFrontRay();
 	XMVECTOR ray_dir_inv = XMVector3Normalize(ray.start - ray.end);
 
 	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
@@ -135,7 +135,7 @@ void TestGame::CreateBloodEffectFromRay()
 
 void TestGame::CreateDustEffectFromRay()
 {
-	RayShape ray = sys_camera.CreateMouseRay();
+	RayShape ray = sys_camera.CreateFrontRay();
 	XMVECTOR ray_dir_inv = XMVector3Normalize(ray.start - ray.end);
 
 	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
