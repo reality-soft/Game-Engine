@@ -278,6 +278,25 @@ void reality::QuadTreeMgr::ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode
 	} 
 }
 
+void reality::QuadTreeMgr::UpdateCapsules()
+{
+	vector<entt::entity> destroied_actors;
+
+	for (auto& capsule : dynamic_capsule_list)
+	{
+		if (SCENE_MGR->GetActor<Actor>(capsule.first) == nullptr)
+		{
+			destroied_actors.push_back(capsule.first);
+			capsule.second = nullptr;
+		}
+	}
+
+	for (const auto& ent : destroied_actors)
+	{
+		dynamic_capsule_list.erase(ent);
+	}
+}
+
 RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float max_distance)
 {
 	map<float, RayCallback> callback_list;
