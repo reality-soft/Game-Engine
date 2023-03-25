@@ -13,6 +13,7 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 
 	for (auto entity_id : view_movement)
 	{
+
 		auto* movement_component = reg.try_get<C_Movement>(entity_id);
 
 		XMVECTOR jump_vector = XMVectorSet(0, 1, 0, 0) * movement_component->jump_scale * TM_DELTATIME;

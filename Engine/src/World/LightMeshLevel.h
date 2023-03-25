@@ -36,6 +36,7 @@ namespace reality
 
 	private:
 		vector<GuideLine> guide_lines;
+		bool view_collision = true;
 
 	};
 }
