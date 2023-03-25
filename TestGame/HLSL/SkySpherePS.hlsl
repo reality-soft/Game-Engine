@@ -22,23 +22,30 @@ SamplerState sample : register(s0);
 float4 PS(PS_OUT output) : SV_Target  
 {  
     float4 texcolor = textures.SampleLevel(sample, output.t, 0); //CreateColor(textures, sample, output.t);
-    
     float4 skycolor = sky_color;
-    
-    if (strength.w > 0.0f) // baxkgorung sky
-    {
-        if (output.origin.y >= 0)
-        {
-            skycolor.x += output.origin.y * strength.w;
-            skycolor.y += output.origin.y * strength.w;
-            skycolor.z += output.origin.y * strength.w;
-        }
+    if (output.origin.y >= 0)
+    {        
+        skycolor.x -= pow(output.origin.y, strength.w) * 0.5;
+        skycolor.y -= pow(output.origin.y, strength.w) * 0.5;
+        skycolor.z -= pow(output.origin.y, strength.w) * 0.5;
+    }
         
-        return skycolor;
-    }
-    else
-    {
-        texcolor.a = length(texcolor);
-        return texcolor;
-    }
+    return skycolor;
+    
+    //if (strength.w > 0.0f) // baxkgorung sky
+    //{
+    //    if (output.origin.y >= 0)
+    //    {
+    //        skycolor.x += output.origin.y * strength.w;
+    //        skycolor.y += output.origin.y * strength.w;
+    //        skycolor.z += output.origin.y * strength.w;
+    //    }
+        
+    //    return skycolor;
+    //}
+    //else
+    //{
+    //    texcolor.a = length(texcolor);
+    //    return texcolor;
+    //}
 }

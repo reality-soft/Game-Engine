@@ -18,11 +18,16 @@ Texture2D textures : register(t0);
 SamplerState samper_state : register(s0);
 
 float4 PS(PS_OUT output) : SV_Target
-{
-    float4 base_color = textures.Sample(samper_state, output.t);    
-    float4 ambient_color = float4(0.1f, 0.1f, 0.1f, 0.1f);
+{    
+    float4 base_color = textures.Sample(samper_state, output.t);
+    float3 hsv = RGBtoHSV(base_color.xyz);
+    hsv.y *= 1.5f;
+    hsv.z *= 0.5f;
+    base_color = float4(HSVtoRGB(hsv), 1.0f);
+    
+    float4 ambient_color = float4(0.05f, 0.05f, 0.05f, 0.1f);
     float4 specular_color = float4(0, 0, 0, 0);
-    float light_intensity = dot(output.normal, direction.xyz);
+    float light_intensity = dot(output.normal, -direction.xyz);
     
     float4 color = ambient_color;
     if (light_intensity > 0.0f)
@@ -37,7 +42,4 @@ float4 PS(PS_OUT output) : SV_Target
     //color += specular_color;
 
     return base_color;
-    //float sun_distance = 1.0f - length(output.origin - sun_position.xyz) / (length(sun_position.xyz) * 2);    
-    //return base_color + light_color;
-    //light_color;
 }

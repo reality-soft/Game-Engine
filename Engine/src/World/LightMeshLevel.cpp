@@ -2,6 +2,7 @@
 #include "LightMeshLevel.h"
 #include "Components.h"
 #include "FileTransfer.h"
+#include "InputEventMgr.h"
 
 using namespace reality;
 
@@ -59,6 +60,9 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id,
 
 void reality::LightMeshLevel::Update()
 {
+    if (DINPUT->GetKeyState(DIK_C) == KEY_PUSH)
+        view_collision = !view_collision;
+
     DX11APP->GetDeviceContext()->VSSetShader(nullptr, nullptr, 0);
     DX11APP->GetDeviceContext()->GSSetShader(nullptr, nullptr, 0);
     DX11APP->GetDeviceContext()->PSSetShader(nullptr, nullptr, 0);
@@ -83,7 +87,8 @@ void reality::LightMeshLevel::Render()
         DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);
     }
 
-    RenderCollisionMesh();
+    if (view_collision)
+        RenderCollisionMesh();
 }
 
 void reality::LightMeshLevel::Destroy()
