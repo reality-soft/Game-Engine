@@ -3,6 +3,7 @@
 #include "Enemy.h"
 #include "FX_BloodImpact.h"
 #include "FX_ConcreteImpact.h"
+#include "FbxMgr.h"
 
 void TestGame::OnInit()
 {
@@ -16,7 +17,8 @@ void TestGame::OnInit()
 	//FbxImportOption option;
 	//option.import_rotation = {90, 0, 180, 0};
 	//option.import_scale = 10.0f;
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision.fbx", option);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_01.fbx", option);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_01.fbx", option);
 
 	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -59,12 +61,9 @@ void TestGame::OnInit()
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
 	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision.ltmesh");
+	level.Create("DeadPoly_FullLevel_01.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision_01.ltmesh");
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
-
-	auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
-	auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
 
 	QUADTREE->Init(&level, 3);
 
@@ -73,10 +72,39 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
+	gw_property_.AddProperty<int>("num of zombie", &cur_zombie_created);
 }
 
 void TestGame::OnUpdate()
 {
+	static float cur_time = 0.0f;
+
+	cur_time += TM_DELTATIME;
+
+	const vector<reality::GuideLine> npc_guidlines = level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack);
+
+	if (cur_time >= 10.0f) {
+		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
+
+		int guidline_index = rand() % npc_guidlines.size();
+		int mesh_index = rand() % enemy_meshes.size();
+		
+		vector<XMVECTOR> target_poses;
+		for (const auto& target_pos : npc_guidlines[guidline_index].line_nodes) {
+			target_poses.push_back(target_pos.second);
+		}
+		enemy_actor->SetRoute(target_poses);
+		enemy_actor->SetMeshId(enemy_meshes[mesh_index]);
+		
+		//auto player = SCENE_MGR->GetPlayer<Player>(0);
+		//player->SetPos(level.GetGuideLines()->at(guidline_index).line_nodes[0]);
+
+		cur_time = 0.0f;
+
+		cur_zombie_created++;
+	}
+
 
 	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
@@ -89,9 +117,7 @@ void TestGame::OnUpdate()
 	ingame_ui.OnUpdate();
 
 	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
-		CreateBloodEffectFromRay();
-	if (DINPUT->GetMouseState(R_BUTTON) == KeyState::KEY_PUSH)
-		CreateDustEffectFromRay();
+		CreateEffectFromRay();
 
 	CursorStateUpdate();
 }
@@ -113,19 +139,31 @@ void TestGame::OnRelease()
 	reality::RESOURCE->Release();
 }
 
-void TestGame::CreateBloodEffectFromRay()
+void TestGame::CreateEffectFromRay()
 {
-	RayCallback raycallback =  QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
-	if(raycallback.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback.point, raycallback.normal, 1.0f);
+	RayShape ray = sys_camera.CreateFrontRay();
+
+	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
+	auto raycallback_pair = QUADTREE->RaycastAdjustActor(ray);
+	if (raycallback_pair.first.success && raycallback_node.success)
+	{
+		if (raycallback_pair.first.distance < raycallback_node.distance)
+		{
+			// TODO : have to subtract zombie hp
+			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_pair.first.point, raycallback_pair.first.normal, 1.0f);
+		}
+		else
+			EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
+	}
+	else if (raycallback_pair.first.success)
+	{
+		// TODO : have to subtract zombie hp
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_pair.first.point, raycallback_pair.first.normal, 1.0f);
+	}
+	else if(raycallback_node.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 }
 
-void TestGame::CreateDustEffectFromRay()
-{
-	RayCallback raycallback = QUADTREE->RaycastAdjustActor(sys_camera.CreateMouseRay());
-	if (raycallback.success)
-		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback.point, raycallback.normal, 1.0f);
-}
 
 void TestGame::CursorStateUpdate()
 {

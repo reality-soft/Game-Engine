@@ -39,8 +39,9 @@ namespace reality {
 		void Release();
 
 	public:
+		void UpdateCapsules();
 		RayCallback RaycastAdjustLevel(const RayShape& ray, float max_distance);
-		RayCallback RaycastAdjustActor(const RayShape& ray);
+		pair<RayCallback, entt::entity> RaycastAdjustActor(const RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
 
 	public:
@@ -53,8 +54,8 @@ namespace reality {
 
 	private:
 		void UpdatePhysics();
-		void CheckTriangle();
-		void CheckBlockingLine();
+		void CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes);
+		void CheckBlockingLine(entt::entity ent, CapsuleShape& capsule);
 		UINT max_depth;
 		UINT node_count = 0;
 		float physics_timestep = 1.0f / 120.0f;

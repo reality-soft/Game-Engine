@@ -7,7 +7,7 @@ void Player::OnInit(entt::registry& registry)
 {
 	Character::OnInit(registry);
 
-	movement_component_->speed = 500;
+	movement_component_->speed = 150;
 	max_hp_ = cur_hp_ = 100;
 
 	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");
@@ -68,7 +68,7 @@ void Player::SetCharacterAnimation(string anim_id)
 	C_Animation* prev_animation = reg_scene_->try_get<reality::C_Animation>(entity_id_);
 	if (prev_animation != nullptr && prev_animation->anim_id == anim_id) {
 		return;
-	}
+	} 
 	C_Animation animation;
 	animation.anim_id = anim_id;
 	reg_scene_->emplace_or_replace<reality::C_Animation>(entity_id_, animation);
@@ -144,8 +144,14 @@ void Player::Fire()
 
 void Player::ResetPos()
 {
-	transform_matrix_ = XMMatrixTranslation(0, 100, 0);
+	transform_matrix_ = XMMatrixTranslationFromVector({ 0.f, 100.f, 0.f, 0.f });
 	transform_tree_.root_node->OnUpdate(SCENE_MGR->GetRegistry(), entity_id_, transform_matrix_);
+}
+
+void Player::SetPos(const XMVECTOR& position)
+{
+	transform_matrix_ = XMMatrixTranslationFromVector(position);
+	transform_tree_.root_node->Translate(SCENE_MGR->GetRegistry(), entity_id_, transform_matrix_);
 }
 
 int Player::GetMaxHp() const

@@ -138,7 +138,13 @@ void reality::LightMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::Gu
     }
 }
 
-vector<GuideLine>* reality::LightMeshLevel::GetGuideLines()
+vector<GuideLine> reality::LightMeshLevel::GetGuideLines(GuideLine::GuideType guide_type)
 {
-    return &guide_lines;
+    vector<GuideLine> guides;
+    for (const auto& gd : guide_lines)
+    {
+        if (gd.guide_type_ == guide_type)
+            guides.push_back(gd);
+    }
+    return guides;
 }

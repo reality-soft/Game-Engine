@@ -151,11 +151,11 @@ namespace reality {
 
             XMVectorSubtract(hb, cap.base);
 
-            float scale = XMVector3Dot(hb, axis).m128_f32[0];
-            raycallback.normal.m128_f32[0] = hb.m128_f32[0] - axis.m128_f32[0] * scale;
-            raycallback.normal.m128_f32[1] = hb.m128_f32[1] - axis.m128_f32[1] * scale;
-            raycallback.normal.m128_f32[2] = hb.m128_f32[2] - axis.m128_f32[2] * scale;
-            raycallback.normal = XMVector3Normalize(raycallback.normal);
+            //float scale = XMVector3Dot(hb, axis).m128_f32[0];
+            //raycallback.normal.m128_f32[0] = hb.m128_f32[0] - axis.m128_f32[0] * scale;
+            //raycallback.normal.m128_f32[1] = hb.m128_f32[1] - axis.m128_f32[1] * scale;
+            //raycallback.normal.m128_f32[2] = hb.m128_f32[2] - axis.m128_f32[2] * scale;
+            raycallback.normal = XMVector3Normalize(-dir);
             raycallback.distance = lambda;
             raycallback.success = true;
 
@@ -380,7 +380,7 @@ namespace reality {
             XMVECTOR a_to_base = cap.GetTipBaseAB()[1] - cap.GetTipBaseAB()[2];
             XMVECTOR a_to_tri_vector = a_to_tri_normal - capsule_info[2];
             float dot = XMVectorGetX(XMVector3Dot(a_to_base, a_to_tri_vector));
-            if (dot <= 0)
+            if (dot <= 0.0001f)
             {
                 result.reaction = CapsuleCallback::WALL;
                 result.floor_pos = cap.base;

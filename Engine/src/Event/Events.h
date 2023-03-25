@@ -5,7 +5,8 @@
 
 namespace reality {
 	enum EVENT_TYPE {
-		MOVEMENT
+		MOVEMENT,
+		DELETE_ACTOR
 	};
 
 	class DLL_API Event
@@ -38,9 +39,6 @@ namespace reality {
 				XMVECTOR blocking_vector = block_wall.end - block_wall.start;
 				XMVECTOR start_to_cap = c_capsule->capsule.base - block_wall.start; start_to_cap.m128_f32[1] = 0.0f;
 				XMVECTOR project = Vector3Project(blocking_vector, start_to_cap);
-
-				XMVECTOR normal1 = XMVector3Normalize(blocking_vector);
-				XMVECTOR normal2 = XMVector3Normalize(project);
 
 				XMVECTOR cap_to_blocking = XMVector3Normalize(project - start_to_cap) * c_capsule->capsule.radius;
 
@@ -81,4 +79,17 @@ namespace reality {
 		entt::entity actor_id_;
 	};
 
+
+	class DLL_API DeleteActorEvent : public Event {
+	public:
+		DeleteActorEvent(entt::entity actor_id) : Event(DELETE_ACTOR) {
+			actor_id_ = actor_id;
+		}
+
+		virtual void Process() override {
+			SCENE_MGR->DestroyActor(actor_id_);
+		};
+	private:
+		entt::entity actor_id_;
+	};
 }
