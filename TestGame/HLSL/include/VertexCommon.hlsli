@@ -4,6 +4,7 @@ cbuffer cb_data : register(b0)
     matrix view_matrix;
     matrix projection_matrix;
     float4 camera_world;
+    float4 camera_look;
 };
 
 // Returns View X Projection

@@ -14,6 +14,6 @@ namespace reality
 		void OnUpdate(entt::registry& reg) override;
 		void UpdateSun(SkySphere& sky_shere);
 
-		CbLight global_light;
+		CbGlobalLight global_light;
 	};
 }

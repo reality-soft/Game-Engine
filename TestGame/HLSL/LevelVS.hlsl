@@ -28,7 +28,7 @@ VS_OUT VS(VS_IN input)
     output.lod = GetLod(input.p);
     
     output.view_proj = ViewProjection();
-    output.view_dir = (camera_world - world).xyz;
+    output.view_dir = normalize(camera_world - world).xyz;
 
     return output;
 }

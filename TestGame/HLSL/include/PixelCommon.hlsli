@@ -1,9 +1,9 @@
 // Global Directional Lighting
-cbuffer cb_light : register(b0)
+cbuffer CbGlobalLight : register(b0)
 {
-    float4 sun_position;
+    float4 position;
     float4 direction;
-    float4 color;
+    float4 ambient;
 }
 
 // White Basic color  
@@ -20,27 +20,6 @@ float4 CreateColor(Texture2D tex, SamplerState sample, float2 uv)
         return WhiteColor();
     
     return color;
-}
-
-
-
-float Epsilon = 1e-10;
-float3 RGBtoHCV(in float3 RGB)
-{
-    // Based on work by Sam Hocevar and Emil Persson
-    float4 P = (RGB.g < RGB.b) ? float4(RGB.bg, -1.0, 2.0 / 3.0) : float4(RGB.gb, 0.0, -1.0 / 3.0);
-    float4 Q = (RGB.r < P.x) ? float4(P.xyw, RGB.r) : float4(RGB.r, P.yzx);
-    float C = Q.x - min(Q.w, Q.y);
-    float H = abs((Q.w - Q.y) / (6 * C + Epsilon) + Q.z);
-    return float3(H, C, Q.x);
-}
-
-float3 HUEtoRGB(in float H)
-{
-    float R = abs(H * 6 - 3) - 1;
-    float G = 2 - abs(H * 6 - 2);
-    float B = 2 - abs(H * 6 - 4);
-    return saturate(float3(R, G, B));
 }
 
 float3 RGBtoHSV(float3 RGB)
@@ -108,3 +87,47 @@ float3 HSVtoRGB(float3 HSV)
     float M = HSV.z - C;
     return RGB + M;
 }
+
+float4 ChangeHue(float4 color, float amount)
+{
+    float3 hsv = RGBtoHSV(color.xyz);
+    hsv.x *= amount;
+    return float4(HSVtoRGB(hsv), 1.0f);
+}
+
+float4 ChangeSaturation(float4 color, float amount)
+{
+    float3 hsv = RGBtoHSV(color.xyz);
+    hsv.y *= amount;
+    return float4(HSVtoRGB(hsv), 1.0f);
+}
+
+float4 ChangeValue(float4 color, float amount)
+{
+    float3 hsv = RGBtoHSV(color.xyz);
+    hsv.z *= amount;
+    return float4(HSVtoRGB(hsv), 1.0f);
+}
+
+float4 ApplyDirectionalLight(float4 color, float3 normal)
+{
+    float intensity = saturate(dot(normal, -direction.xyz));
+    return saturate(color * intensity);
+}
+
+float4 ApplyAmbientLight(float4 color)
+{
+    
+    return max(color, ambient);
+}
+
+float4 ApplySpecularLight(float4 color, float3 view_dir, float3 reflection, float power)
+{
+    float specular = pow(saturate(dot(view_dir, reflection)), power);
+    
+    color = ChangeSaturation(color, 1.0f + (specular * 10));
+    color = ChangeValue(color, 1.0f + (specular * 10));
+    
+    return saturate(color + specular);
+}
+
