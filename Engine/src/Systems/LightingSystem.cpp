@@ -3,9 +3,6 @@
 
 reality::LightingSystem::LightingSystem()
 {
-	global_light.data.sun_position = { 0, 0, 0, 0 };
-	global_light.data.direction = { 0, -1, 0, 0 };
-	global_light.data.color = { 1, 1, 1, 1 };
 }
 
 reality::LightingSystem::~LightingSystem()
@@ -22,7 +19,7 @@ void reality::LightingSystem::OnCreate(entt::registry& reg)
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(CbLight::Data);
+	desc.ByteWidth = sizeof(CbGlobalLight::Data);
 
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;

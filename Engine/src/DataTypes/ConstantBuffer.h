@@ -22,14 +22,16 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbViewProj
+	struct CbCameraInfo
 	{
-		CbViewProj()
+		CbCameraInfo()
 		{
 			data.view_matrix = XMMatrixIdentity();
 			data.projection_matrix = XMMatrixIdentity();
+			data.camera_position = XMVectorZero();
+			data.camera_look = XMVectorZero();
 		}
-		CbViewProj(const CbViewProj& other)
+		CbCameraInfo(const CbCameraInfo& other)
 		{
 			data = other.data;
 			other.buffer.CopyTo(buffer.GetAddressOf());
@@ -39,6 +41,7 @@ namespace reality
 			XMMATRIX view_matrix;
 			XMMATRIX projection_matrix;
 			XMVECTOR camera_position;
+			XMVECTOR camera_look;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -97,23 +100,24 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbLight
+	struct CbGlobalLight
 	{
-		CbLight()
+		CbGlobalLight()
 		{
-			data.direction = { 0, -1, 0, 0 };
-			data.color = { 1.5, 1.5, 1.5, 1.5 };
+			data.position = { 0, 10000, 0, 0};
+			data.direction = XMFLOAT4(XMVector3Normalize(XMVectorSet(1, -1, 1, 0)).m128_f32);
+			data.ambient = { 0.15f, 0.15f, 0.15f, 0.1f };
 		}
-		CbLight(const CbLight& other)
+		CbGlobalLight(const CbGlobalLight& other)
 		{
 			data = other.data;
 			other.buffer.CopyTo(buffer.GetAddressOf());
 		}
 		struct Data
 		{
-			XMFLOAT4 sun_position;
+			XMFLOAT4 position;
 			XMFLOAT4 direction;
-			XMFLOAT4 color;
+			XMFLOAT4 ambient;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
