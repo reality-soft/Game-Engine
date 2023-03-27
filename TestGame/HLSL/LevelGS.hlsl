@@ -26,8 +26,8 @@ void GS(triangle GS_IN input[3], inout TriangleStream<GS_OUT> stream)
 {
     GS_OUT gs_stream = (GS_OUT) 0;
 	  
-    float3 edge1 = input[1].p - input[0].p;
-    float3 edge2 = input[2].p - input[0].p;
+    float3 edge1 = input[2].p - input[0].p;
+    float3 edge2 = input[1].p - input[0].p;
 	
     for (int i = 0; i < 3; ++i)
     {
