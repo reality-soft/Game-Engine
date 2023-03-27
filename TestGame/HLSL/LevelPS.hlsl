@@ -16,17 +16,8 @@ SamplerState samper_state : register(s0);
 
 float4 PS(PS_OUT output) : SV_Target
 {    
-    float4 tex_color = textures.Sample(samper_state, output.t);
-    tex_color = ChangeSaturation(tex_color, 1.5f);
-    tex_color = ChangeValue(tex_color, 0.5f);
+    float4 diffuse = textures.Sample(samper_state, output.t);
+    diffuse = ChangeSaturation(diffuse, 1.8f);
     
-    float4 light_color = WhiteColor();
-    light_color = ApplyDirectionalLight(light_color, output.normal);
-    light_color = ApplyAmbientLight(light_color);
-    
-    
-    float4 final_color = ApplySpecularLight(tex_color * light_color, output.view_dir, reflect(direction.xyz, output.normal), 0.8);
-    
-    
-    return final_color;
+    return ApplyCookTorrance(diffuse, 0.6f, 0.2f, output.normal, output.view_dir);
 }
