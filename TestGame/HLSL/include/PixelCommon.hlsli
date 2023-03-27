@@ -7,16 +7,21 @@ cbuffer CbGlobalLight : register(b0)
 }
 
 // Point Lighting
-cbuffer CbPointLights : register(b1)
+struct PointLight
 {
     float3  position;
     float   range;
     float3  attenuation;
     float   padding;
+};
+
+cbuffer CbPointLights : register(b1)
+{
+    PointLight point_lights[64];
 }
 
 // Spot Lighting
-cbuffer CbSpotLights : register(b2)
+struct SpotLight
 {
     float3  position;
     float   range;
@@ -24,6 +29,11 @@ cbuffer CbSpotLights : register(b2)
     float   padding;
     float3  direction;
     float   spot;
+};
+
+cbuffer CbSpotLights : register(b2)
+{
+    SpotLight spot_lights[64];
 }
 
 // White Basic color  
@@ -151,7 +161,7 @@ float4 ApplySpecularLight(float4 color, float3 view_dir, float3 reflection, floa
     return saturate(color + specular);
 }
 
-float4 ApplyPointLights(float4 color, float3 normal)
+float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 {
     return float4(0, 0, 0, 1);
 }
