@@ -121,42 +121,6 @@ float4 ApplyAmbientLight(float4 color)
     return max(color, ambient);
 }
 
-float4 ApplySpecularLight(float4 color, float3 view_dir, float3 reflection, float power)
-{
-    float specular = pow(saturate(dot(view_dir, reflection)), power);
-    
-    color = ChangeSaturation(color, 1.0f + (specular * 10));
-    color = ChangeValue(color, 1.0f + (specular * 10));
-    
-    return saturate(color + specular);
-}
-
-float3 FresnelSchlick(float cosTheta, float3 F0)
-{
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-}
-
-float3 CookTorranceBRDF(float3 F0, float Roughness, float Metalness, float3 L, float3 V, float3 N)
-{
-    float3 H = normalize(L + V);
-    float NdotH = saturate(dot(N, H));
-    float NdotL = saturate(dot(N, L));
-    float NdotV = saturate(dot(N, V));
-    float LdotH = saturate(dot(L, H));
-    
-    float3 F = FresnelSchlick(LdotH, F0);
-    
-    float a = Roughness * Roughness;
-    float b = a / (1.0 + (a - 1.0) * NdotH * NdotH);
-    float c = (1.0 - NdotH) * (1.0 - NdotH);
-    float D = b / (3.141592 * c * c);
-    
-    float3 F_Specular = (F * D * NdotL * NdotV) / (NdotL * NdotV);
-    float3 F_Diffuse = (1.0 - F) * (1.0 - Metalness) * (1.0 / 3.141592);
-    
-    return F_Specular + F_Diffuse;
-}
-
 float4 ApplyCookTorrance(float4 diffuse, float roughness, float specular, float3 normal, float3 view_dir)
 {    
     // Correct the input and compute aliases
