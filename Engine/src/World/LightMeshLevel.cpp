@@ -35,24 +35,33 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id,
     // Create Collision
     for (auto& mesh : collision_mesh.get()->meshes)
     {
-        if (mesh.mesh_name != "Level_BackGround")
+        UINT num_triangle = mesh.vertices.size() / 3;
+        UINT index = 0;
+        for (UINT t = 0; t < num_triangle; t++)
         {
-            UINT num_triangle = mesh.vertices.size() / 3;
-            UINT index = 0;
-            for (UINT t = 0; t < num_triangle; t++)
-            {
-                TriangleShape tri_plane = TriangleShape(
-                    mesh.vertices[index + 0].p,
-                    mesh.vertices[index + 1].p,
-                    mesh.vertices[index + 2].p
-                );
+            TriangleShape tri_plane = TriangleShape(
+                mesh.vertices[index + 0].p,
+                mesh.vertices[index + 2].p,
+                mesh.vertices[index + 1].p
+            );
 
-                tri_plane.index = t;
+            tri_plane.index = t;
 
-                level_triangles.push_back(tri_plane);
-                index += 3;
-            }
-        }
+            level_triangles.push_back(tri_plane);
+            index += 3;
+        }        
+    }
+
+    for (auto& mesh : level_mesh.get()->meshes)
+    {
+        if (mesh.mesh_name == "Level_Aspalt")
+            SetMaterialToMesh(mesh.mesh_name, "LevelMat_Aspalt.mat");
+
+        else if (mesh.mesh_name == "Level_BackGround" || mesh.mesh_name == "Level_Ground")
+            SetMaterialToMesh(mesh.mesh_name, "LevelMat_DeadPoly_2.mat");
+
+        else
+            SetRandomMaterialToMesh(mesh.mesh_name, "DeadPoly");        
     }
 
     return true;
@@ -76,7 +85,7 @@ void reality::LightMeshLevel::Render()
 
     for (auto& mesh : level_mesh.get()->meshes)
     {
-        Material* material = RESOURCE->UseResource<Material>(mesh.mesh_name + ".mat");
+        Material* material = mesh_material_map.at(mesh.mesh_name).get();
         if (material)
             material->Set();
 
@@ -101,7 +110,7 @@ void reality::LightMeshLevel::RenderCollisionMesh()
 
     for (auto& mesh : collision_mesh.get()->meshes)
     {
-        Material* material = RESOURCE->UseResource<Material>(mesh.mesh_name + ".mat");
+        Material* material = RESOURCE->UseResource<Material>("LevelMat_Collision.mat");
         if (material)
             material->Set();
 
@@ -113,6 +122,37 @@ void reality::LightMeshLevel::RenderCollisionMesh()
     }
 
     DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
+}
+
+bool reality::LightMeshLevel::SetMaterialToMesh(string mesh_name, string material_id)
+{
+    auto material = RESOURCE->UseResource<Material>(material_id);
+    if (material)
+        mesh_material_map.insert(make_pair(mesh_name, shared_ptr<Material>(material)));
+    else
+        return false;
+
+    return true;
+}
+
+bool reality::LightMeshLevel::SetRandomMaterialToMesh(string mesh_name, string keyward)
+{
+    vector<string> materials_by_keyward;
+    auto mat_ids = RESOURCE->GetTotalMATID();
+    for (const auto& id : mat_ids)
+    {
+        if (id.find(keyward) != string::npos)
+            materials_by_keyward.push_back(id);
+    }
+
+    if (materials_by_keyward.empty())
+        return false;
+
+    UINT num_material = materials_by_keyward.size();
+    UINT random_index = (UINT)(rand() % num_material);
+    SetMaterialToMesh(mesh_name, materials_by_keyward[random_index]);
+
+    return true;
 }
 
 void reality::LightMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type)

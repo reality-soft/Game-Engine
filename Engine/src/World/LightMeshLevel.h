@@ -19,7 +19,6 @@ namespace reality
 		void Destroy();
 
 		void RenderCollisionMesh();
-
 	public:
 		CbTransform level_transform;
 		vector<TriangleShape> level_triangles;
@@ -30,11 +29,15 @@ namespace reality
 		shared_ptr<VertexShader> vertex_shader;
 		shared_ptr<GeometryShader> geometry_shader;
 
+		bool SetMaterialToMesh(string mesh_name, string material_id);
+		bool SetRandomMaterialToMesh(string mesh_name, string keyward);
+
 	public:
 		void ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type);
 		vector<GuideLine> GetGuideLines(GuideLine::GuideType guide_type);
 
 	private:
+		map<string, shared_ptr<Material>> mesh_material_map;
 		vector<GuideLine> guide_lines;
 		bool view_collision = true;
 
