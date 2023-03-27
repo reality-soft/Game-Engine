@@ -122,4 +122,44 @@ namespace reality
 
 		ComPtr<ID3D11Buffer> buffer;
 	};
+
+	struct CbPointLight
+	{
+		struct Data
+		{
+			XMFLOAT3	position;
+			float		range;
+			XMFLOAT3	attenuation;
+			float		padding;
+		} data[64];
+
+		ComPtr<ID3D11Buffer> buffer;
+
+		CbPointLight()
+		{
+			ZeroMemory(data, sizeof(Data) * 64);
+		}
+		
+	};
+
+	struct CbSpotLight
+	{
+		struct Data
+		{
+			XMFLOAT3	position;
+			float		range;
+			XMFLOAT3	attenuation;
+			float		padding; 
+			XMFLOAT3	direction;
+			float		spot;
+		} data[64];
+
+		ComPtr<ID3D11Buffer> buffer;
+
+		CbSpotLight()
+		{
+			ZeroMemory(data, sizeof(Data) * 64);
+		}
+	};
+
 }

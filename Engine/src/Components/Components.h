@@ -440,4 +440,25 @@ namespace reality
 	{
 		map<string, shared_ptr<UIBase>> ui_list;
 	};
+
+	struct C_BaseLight : public C_Transform
+	{
+		float		timer;
+		float		lifetime;
+		XMFLOAT3	position;
+		float		range;
+		XMFLOAT3	attenuation;
+	};
+
+	// Light
+	struct C_PointLight : public C_BaseLight
+	{
+
+	};
+
+	struct C_SpotLight : public C_BaseLight
+	{
+		XMFLOAT3	direction;
+		float		spot;
+	};
 }

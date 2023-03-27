@@ -6,6 +6,36 @@ cbuffer CbGlobalLight : register(b0)
     float4 ambient;
 }
 
+// Point Lighting
+struct PointLight
+{
+    float3  position;
+    float   range;
+    float3  attenuation;
+    float   padding;
+};
+
+cbuffer CbPointLights : register(b1)
+{
+    PointLight point_lights[64];
+}
+
+// Spot Lighting
+struct SpotLight
+{
+    float3  position;
+    float   range;
+    float3  attenuation;
+    float   padding;
+    float3  direction;
+    float   spot;
+};
+
+cbuffer CbSpotLights : register(b2)
+{
+    SpotLight spot_lights[64];
+}
+
 // White Basic color  
 float4 WhiteColor()
 {
@@ -151,4 +181,14 @@ float4 ApplyCookTorrance(float4 diffuse, float roughness, float specular, float3
     float3 S = specular * ((G * F * R) / (normal_dot_light * normal_dot_view));
     float3 flinal_color = WhiteColor().xyz * max(0.2f, normal_dot_light) * (diffuse.xyz + S);
     return float4(flinal_color, 1.0f);
+}
+
+float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
+{
+    return float4(0, 0, 0, 1);
+}
+
+float4 ApplySpotLights(float4 color, float3 normal)
+{
+    return float4(0, 0, 0, 1);
 }
