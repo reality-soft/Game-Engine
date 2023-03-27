@@ -49,7 +49,7 @@ namespace reality
 			XMVECTOR base = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 			// if base & normal is same, identity quaternion is set
-			if (XMVector3Equal(base, normal) || XMVector3Length(normal) < EPSILON)
+			if (XMVector3Equal(base, normal) || Vector3Length(normal) < EPSILON)
 			{
 				rot_q = XMQuaternionIdentity();
 			}
