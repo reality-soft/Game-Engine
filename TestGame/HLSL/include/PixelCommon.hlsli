@@ -163,6 +163,38 @@ float4 ApplySpecularLight(float4 color, float3 view_dir, float3 reflection, floa
 
 float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 {
+    float3 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i < point_lights.length(); i++)
+    {
+        if (point_lights[i].range == 0)
+            continue;
+
+        float3 light_vector = point_lights[i].position - origin);
+
+        float d = length(light_vector);
+
+        if (d > point_lights[i].range)
+            continue;
+
+        light_vector /= d;
+
+        float diffuse_factor = dot(light_vector, normal);
+
+        if (diffuse_factor > 0.0f)
+        {
+            float3 v = reflect(-light_vector, normal);
+
+            diffuse = diffuse_factor * color;
+            spec = ApplySpecularLight();
+        }
+
+        float att = 1.0f / dot(point_lights[i].attenuation, float3(1.0f, d, d * d));
+
+        diffuse *= att;
+        spec *= att;
+    }
     return float4(0, 0, 0, 1);
 }
 
