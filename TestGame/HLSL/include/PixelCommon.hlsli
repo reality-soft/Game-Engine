@@ -6,6 +6,26 @@ cbuffer CbGlobalLight : register(b0)
     float4 ambient;
 }
 
+// Point Lighting
+cbuffer CbPointLights : register(b1)
+{
+    float3  position;
+    float   range;
+    float3  attenuation;
+    float   padding;
+}
+
+// Spot Lighting
+cbuffer CbSpotLights : register(b2)
+{
+    float3  position;
+    float   range;
+    float3  attenuation;
+    float   padding;
+    float3  direction;
+    float   spot;
+}
+
 // White Basic color  
 float4 WhiteColor()
 {
@@ -131,3 +151,12 @@ float4 ApplySpecularLight(float4 color, float3 view_dir, float3 reflection, floa
     return saturate(color + specular);
 }
 
+float4 ApplyPointLights(float4 color, float3 normal)
+{
+    return float4(0, 0, 0, 1);
+}
+
+float4 ApplySpotLights(float4 color, float3 normal)
+{
+    return float4(0, 0, 0, 1);
+}
