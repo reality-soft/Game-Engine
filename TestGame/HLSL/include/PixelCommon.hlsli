@@ -151,14 +151,36 @@ float4 ApplyAmbientLight(float4 color)
     return max(color, ambient);
 }
 
-float4 ApplySpecularLight(float4 color, float3 view_dir, float3 reflection, float power)
-{
-    float specular = pow(saturate(dot(view_dir, reflection)), power);
+float4 ApplyCookTorrance(float4 diffuse, float roughness, float specular, float3 normal, float3 view_dir)
+{    
+    // Correct the input and compute aliases
+    view_dir = normalize(view_dir);
+    float3 light_dir = normalize(-direction);
+    float3 half_vec = normalize(light_dir + view_dir);
+    float normal_dot_half = dot(normal, half_vec);
+    float view_dot_half = dot(half_vec, view_dir);
+    float normal_dot_view = dot(normal, view_dir);
+    float normal_dot_light = dot(normal, light_dir);
     
-    color = ChangeSaturation(color, 1.0f + (specular * 10));
-    color = ChangeValue(color, 1.0f + (specular * 10));
+    // Compute the geometric term  
+    float G1 = (2.0f * normal_dot_half * normal_dot_view) / view_dot_half;
+    float G2 = (2.0f * normal_dot_half * normal_dot_light) / view_dot_half;
+    float G = min(1.0f, max(0.0f, min(G1, G2)));
     
-    return saturate(color + specular);
+    // Compute the fresnel term
+    float F = roughness + (1.0f - roughness) * pow(1.0f - normal_dot_view, 5.0f);
+    
+    // Compute the roughness term  
+    float R_2 = roughness * roughness;
+    float NDotH_2 = normal_dot_half * normal_dot_half;
+    float A = 1.0f / (4.0f * R_2 * NDotH_2 * NDotH_2);
+    float B = exp(-(1.0f - NDotH_2) / (R_2 * NDotH_2));
+    float R = A * B;
+    
+    // Compute the final term  
+    float3 S = specular * ((G * F * R) / (normal_dot_light * normal_dot_view));
+    float3 flinal_color = WhiteColor().xyz * max(0.2f, normal_dot_light) * (diffuse.xyz + S);
+    return float4(flinal_color, 1.0f);
 }
 
 float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
