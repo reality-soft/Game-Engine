@@ -127,6 +127,10 @@ namespace reality
 	{
 		struct Data
 		{
+			XMFLOAT4	diffuse;
+			XMFLOAT4	specular;
+			XMFLOAT4	ambient;
+
 			XMFLOAT3	position;
 			float		range;
 			XMFLOAT3	attenuation;
@@ -146,6 +150,10 @@ namespace reality
 	{
 		struct Data
 		{
+			XMFLOAT4	diffuse;
+			XMFLOAT4	specular;
+			XMFLOAT4	ambient;
+
 			XMFLOAT3	position;
 			float		range;
 			XMFLOAT3	attenuation;

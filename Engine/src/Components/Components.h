@@ -443,6 +443,10 @@ namespace reality
 
 	struct C_BaseLight : public C_Transform
 	{
+		XMFLOAT4	diffuse;
+		XMFLOAT4	specular;
+		XMFLOAT4	ambient;
+
 		float		timer;
 		float		lifetime;
 		XMFLOAT3	position;

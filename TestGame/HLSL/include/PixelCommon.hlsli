@@ -13,6 +13,9 @@ struct PointLight
     float   range;
     float3  attenuation;
     float   padding;
+    float4  diffuse;
+    float4  specular;
+    float4  ambient;
 };
 
 cbuffer CbPointLights : register(b1)
@@ -29,6 +32,9 @@ struct SpotLight
     float   padding;
     float3  direction;
     float   spot;
+    float4  diffuse;
+    float4  specular;
+    float4  ambient;
 };
 
 cbuffer CbSpotLights : register(b2)
@@ -187,18 +193,22 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 {
     float3 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float3 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 ambient = point_lights[i].ambient;
 
-    for (int i = 0; i < point_lights.length(); i++)
+    for (int i = 0; i < 64; i++)
     {
         if (point_lights[i].range == 0)
             continue;
 
-        float3 light_vector = point_lights[i].position - origin);
+        float3 light_vector = point_lights[i].position - origin;
 
         float d = length(light_vector);
 
         if (d > point_lights[i].range)
             continue;
+
+        float3 D = float4(0.0f, 0.0f, 0.0f, 0.0f);
+        float3 S = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
         light_vector /= d;
 
@@ -208,16 +218,22 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
         {
             float3 v = reflect(-light_vector, normal);
 
-            diffuse = diffuse_factor * color;
-            spec = ApplySpecularLight();
+            float spec_factor;
+
+            D = diffuse_factor * point_lights[i].diffuse;
+            S = spec_factor * point_lights[i].diffuse;
         }
 
         float att = 1.0f / dot(point_lights[i].attenuation, float3(1.0f, d, d * d));
 
-        diffuse *= att;
-        spec *= att;
+        D *= att;
+        S *= att;
+
+        diffuse += D;
+        spec += S;
     }
-    return float4(0, 0, 0, 1);
+
+    return diffuse + spec + ambient;
 }
 
 float4 ApplySpotLights(float4 color, float3 normal)
