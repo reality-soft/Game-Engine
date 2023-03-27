@@ -112,6 +112,9 @@ void LightingSystem::UpdateSun(SkySphere& sky_shere)
 
 void LightingSystem::UpdatePointLights(entt::registry& reg)
 {
+	// 0. Clear the last frame PointLights CBData
+	ZeroMemory(point_lights.data, sizeof(CbPointLight::Data) * 64);
+
 	auto view = reg.view<C_PointLight>();
 	int count = 0;
 	for (auto& entity : view)
@@ -140,6 +143,9 @@ void LightingSystem::UpdatePointLights(entt::registry& reg)
 
 void LightingSystem::UpdateSpotLights(entt::registry& reg)
 {
+	// 0. Clear the last frame SpotLights CBData
+	ZeroMemory(spot_lights.data, sizeof(CbSpotLight::Data) * 64);
+
 	auto view = reg.view<C_SpotLight>();
 	int count = 0;
 	for (auto& entity : view)
