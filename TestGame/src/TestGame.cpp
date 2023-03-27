@@ -14,11 +14,12 @@ void TestGame::OnInit()
 	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
+
 	//FbxImportOption option;
-	//option.import_rotation = {90, 0, 180, 0};
-	//option.import_scale = 10.0f;
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_01.fbx", option);
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_01.fbx", option);
+	//option.import_rotation = {90, 180, 0, 0};
+	//option.import_scale = -10.0f;
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_03.fbx", option);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_03.fbx", option);
 
 	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -61,8 +62,8 @@ void TestGame::OnInit()
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
 	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel_01.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision_01.ltmesh");
-	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
+	level.Create("DeadPoly_FullLevel_03.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision_03.ltmesh");
+	//level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
 	QUADTREE->Init(&level, 3);

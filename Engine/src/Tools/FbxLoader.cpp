@@ -56,7 +56,7 @@ namespace reality {
 
 		double scale_factor = fbx_scene->GetGlobalSettings().GetSystemUnit().GetScaleFactor();
 		FbxGeometryConverter converter(fbx_manager);
-		converter.Triangulate(fbx_scene, true);
+		//converter.Triangulate(fbx_scene, true);
 		root_node = fbx_scene->GetRootNode();
 		PreProcess(root_node);
 
@@ -146,7 +146,6 @@ namespace reality {
 		// 임포트 설정값
 		scale *= import_options.import_scale;
 		rot = import_options.import_rotation;
-
 		geom.SetS(scale);
 		geom.SetR(rot);
 		geom.SetT(trans);
