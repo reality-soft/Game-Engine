@@ -9,13 +9,17 @@ cbuffer CbGlobalLight : register(b0)
 // Point Lighting
 struct PointLight
 {
+    float3  diffuse;
+    float   pad1;
+    float3  specular;
+    float   pad2;
+    float3  ambient;
+    float   pad3;
+
     float3  position;
     float   range;
     float3  attenuation;
-    float   padding;
-    float4  diffuse;
-    float4  specular;
-    float4  ambient;
+    float   pad4;
 };
 
 cbuffer CbPointLights : register(b1)
@@ -26,15 +30,19 @@ cbuffer CbPointLights : register(b1)
 // Spot Lighting
 struct SpotLight
 {
+    float3  diffuse;
+    float   pad1;
+    float3  specular;
+    float   pad2;
+    float3  ambient;
+    float   pad3;
+
     float3  position;
     float   range;
     float3  attenuation;
-    float   padding;
+    float   pad4;
     float3  direction;
     float   spot;
-    float4  diffuse;
-    float4  specular;
-    float4  ambient;
 };
 
 cbuffer CbSpotLights : register(b2)
@@ -191,9 +199,9 @@ float4 ApplyCookTorrance(float4 diffuse, float roughness, float specular, float3
 
 float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 {
-    float3 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    float3 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    float3 ambient = point_lights[i].ambient;
+    float3 diffuse = float3(0.0f, 0.0f, 0.0f);
+    float3 spec = float3(0.0f, 0.0f, 0.0f);
+    float3 ambient = float3(0.0f, 0.0f, 0.0f); 
 
     for (int i = 0; i < 64; i++)
     {
@@ -207,8 +215,8 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
         if (d > point_lights[i].range)
             continue;
 
-        float3 D = float4(0.0f, 0.0f, 0.0f, 0.0f);
-        float3 S = float4(0.0f, 0.0f, 0.0f, 0.0f);
+        float3 D = float3(0.0f, 0.0f, 0.0f);
+        float3 S = float3(0.0f, 0.0f, 0.0f);
 
         light_vector /= d;
 
@@ -231,9 +239,10 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 
         diffuse += D;
         spec += S;
+        ambient += point_lights[i].ambient;
     }
 
-    return diffuse + spec + ambient;
+    return color * float4(diffuse + spec + ambient, 1.0f);
 }
 
 float4 ApplySpotLights(float4 color, float3 normal)
