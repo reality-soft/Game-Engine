@@ -104,9 +104,11 @@ namespace reality
 	{
 		CbGlobalLight()
 		{
-			data.position = { 0, 10000, 0, 0};
-			data.direction = XMFLOAT4(XMVector3Normalize(XMVectorSet(1, -1, 1, 0)).m128_f32);
-			data.ambient = { 0.15f, 0.15f, 0.15f, 0.1f };
+			data.position = XMVectorSet(5000, 5000, -5000, 0);
+			data.direction = -XMVector3Normalize(data.position);
+			data.ambient_up    = data.direction * 0.8;
+			data.ambient_down  = data.direction * 0.2f;
+			data.ambient_range = Vector3Length(data.ambient_up - data.ambient_down);
 		}
 		CbGlobalLight(const CbGlobalLight& other)
 		{
@@ -115,9 +117,11 @@ namespace reality
 		}
 		struct Data
 		{
-			XMFLOAT4 position;
-			XMFLOAT4 direction;
-			XMFLOAT4 ambient;
+			XMVECTOR position;
+			XMVECTOR direction;
+			XMVECTOR ambient_up;
+			XMVECTOR ambient_down;
+			float ambient_range;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
