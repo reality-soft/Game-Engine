@@ -127,12 +127,7 @@ namespace reality
 	{
 		struct Data
 		{
-			XMFLOAT3	diffuse;
-			float		pad1;
-			XMFLOAT3	specular;
-			float		pad2;
-			XMFLOAT3	ambient;
-			float		pad3;
+			XMFLOAT4	light_color;
 
 			XMFLOAT3	position;
 			float		range;
@@ -153,12 +148,7 @@ namespace reality
 	{
 		struct Data
 		{
-			XMFLOAT3	diffuse;
-			float		pad1;
-			XMFLOAT3	specular;
-			float		pad2;
-			XMFLOAT3	ambient;
-			float		pad3;
+			XMFLOAT4	light_color;
 
 			XMFLOAT3	position;
 			float		range;
