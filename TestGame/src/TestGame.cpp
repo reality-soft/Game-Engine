@@ -164,8 +164,7 @@ void TestGame::CreateEffectFromRay()
 	else if(raycallback_node.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 }
-
-
+// git push test
 void TestGame::CursorStateUpdate()
 {
 	static bool b_show_cursor = false;
