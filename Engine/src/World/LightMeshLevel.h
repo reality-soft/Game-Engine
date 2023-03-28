@@ -13,7 +13,7 @@ namespace reality
 		~LightMeshLevel();
 
 	public:
-		bool Create(string mesh_id, string vs_id, string gs_id, string collision_ltmesh);
+		bool Create(string mesh_id, string vs_id, string collision_ltmesh);
 		void Update();
 		void Render();
 		void Destroy();
@@ -24,13 +24,13 @@ namespace reality
 		vector<TriangleShape> level_triangles;
 
 	private:
-		shared_ptr<LightMesh> level_mesh;
-		shared_ptr<LightMesh> collision_mesh;
+		shared_ptr<StaticMesh> level_mesh;
+		shared_ptr<StaticMesh> collision_mesh;
 		shared_ptr<VertexShader> vertex_shader;
-		shared_ptr<GeometryShader> geometry_shader;
 
 		bool SetMaterialToMesh(string mesh_name, string material_id);
 		bool SetRandomMaterialToMesh(string mesh_name, string keyward);
+		void CalculateNormal(SingleMesh<Vertex>& mesh);
 
 	public:
 		void ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type);

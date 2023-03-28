@@ -14,9 +14,9 @@ reality::LightMeshLevel::~LightMeshLevel()
 {
 }
 
-bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id, string collision_ltmesh)
+bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string collision_ltmesh)
 {
-    level_mesh = shared_ptr<LightMesh>(RESOURCE->UseResource<LightMesh>(mesh_id));
+    level_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>(mesh_id));
     if (level_mesh.get() == nullptr)
         return false;
 
@@ -24,11 +24,7 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id,
     if (vertex_shader.get() == nullptr)
         return false;
 
-    geometry_shader = shared_ptr<GeometryShader>(RESOURCE->UseResource<GeometryShader>(gs_id));
-    if (geometry_shader.get() == nullptr)
-        return false;
-
-    collision_mesh = shared_ptr<LightMesh>(RESOURCE->UseResource<LightMesh>(collision_ltmesh));
+    collision_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>(collision_ltmesh));
     if (collision_mesh.get() == nullptr)
         return false;
 
@@ -61,7 +57,9 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string gs_id,
             SetMaterialToMesh(mesh.mesh_name, "LevelMat_DeadPoly_2.mat");
 
         else
-            SetRandomMaterialToMesh(mesh.mesh_name, "DeadPoly");        
+            SetRandomMaterialToMesh(mesh.mesh_name, "DeadPoly");
+
+        //CalculateNormal(mesh);
     }
 
     return true;
@@ -81,7 +79,6 @@ void reality::LightMeshLevel::Render()
 {
     DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader.get()->InputLayout());
     DX11APP->GetDeviceContext()->VSSetShader(vertex_shader.get()->Get(), nullptr, 0);
-    DX11APP->GetDeviceContext()->GSSetShader(geometry_shader.get()->GetDefaultGS(), nullptr, 0);
 
     for (auto& mesh : level_mesh.get()->meshes)
     {
@@ -89,7 +86,7 @@ void reality::LightMeshLevel::Render()
         if (material)
             material->Set();
 
-        UINT stride = sizeof(LightVertex);
+        UINT stride = sizeof(Vertex);
         UINT offset = 0;
 
         DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
@@ -114,7 +111,7 @@ void reality::LightMeshLevel::RenderCollisionMesh()
         if (material)
             material->Set();
 
-        UINT stride = sizeof(LightVertex);
+        UINT stride = sizeof(Vertex);
         UINT offset = 0;
 
         DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
@@ -153,6 +150,30 @@ bool reality::LightMeshLevel::SetRandomMaterialToMesh(string mesh_name, string k
     SetMaterialToMesh(mesh_name, materials_by_keyward[random_index]);
 
     return true;
+}
+
+void reality::LightMeshLevel::CalculateNormal(SingleMesh<Vertex>& mesh)
+{
+
+    UINT num_triangle = mesh.vertices.size() / 3;
+    UINT index = 0;
+    for (UINT t = 0; t < num_triangle; t++)
+    {   
+        XMFLOAT3 v0 = mesh.vertices[index + 0].p;
+        XMFLOAT3 v1 = mesh.vertices[index + 1].p;
+        XMFLOAT3 v2 = mesh.vertices[index + 2].p;
+
+        XMVECTOR edge1 = XMLoadFloat3(&v2) - XMLoadFloat3(&v0);
+        XMVECTOR edge2 = XMLoadFloat3(&v1) - XMLoadFloat3(&v0);
+
+        XMVECTOR normal = XMVector3Normalize(XMVector3Cross(edge1, edge2));
+
+        mesh.vertices[index + 0].n = XMFLOAT3(normal.m128_f32);
+        mesh.vertices[index + 1].n = XMFLOAT3(normal.m128_f32);
+        mesh.vertices[index + 2].n = XMFLOAT3(normal.m128_f32);
+
+        index += 3;
+    }
 }
 
 void reality::LightMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type)
