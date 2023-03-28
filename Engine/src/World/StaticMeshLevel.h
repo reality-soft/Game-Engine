@@ -6,11 +6,11 @@
 
 namespace reality
 {
-	class DLL_API LightMeshLevel
+	class DLL_API StaticMeshLevel
 	{
 	public:
-		LightMeshLevel();
-		~LightMeshLevel();
+		StaticMeshLevel();
+		~StaticMeshLevel();
 
 	public:
 		bool Create(string mesh_id, string vs_id, string collision_ltmesh);
