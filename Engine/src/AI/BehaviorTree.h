@@ -8,7 +8,7 @@ namespace reality {
         template<typename BehaviorNodeType, typename... Args>
         void SetRootNode(Args&&...);
         void Update();
-        BehaviorStatus Execute();
+        void Execute();
 
     private:
         shared_ptr<BehaviorNode> root_ = nullptr;

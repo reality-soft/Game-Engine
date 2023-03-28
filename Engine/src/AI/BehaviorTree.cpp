@@ -7,8 +7,15 @@ namespace reality {
 		root_->Execute();
 	}
 
-	BehaviorStatus BehaviorTree::Execute()
+	void BehaviorTree::Execute()
 	{
-		return root_->Execute();
+		root_->Execute();
+		
+		BehaviorStatus root_status = root_->GetStatus();
+
+        if (root_status == BehaviorStatus::FAILURE ||
+            root_status == BehaviorStatus::SUCCESS) {
+            root_->ResetNode();
+        }
 	}
 }

@@ -5,48 +5,64 @@
 namespace reality {
     enum class DLL_API BehaviorStatus
     {
-        SUCCESS,
-        FAILURE,
-        RUNNING,
-        INVALID
+        RUNNING, 
+        SUCCESS, 
+        FAILURE, 
+        IDLE, 
+        HALTED, 
+        EXIT
     };
 
     class DLL_API BehaviorNode
     {
     public:
-        virtual BehaviorStatus Execute() = 0;
-        virtual std::future<BehaviorStatus>* Future() { return nullptr; };
-        BehaviorStatus status_ = BehaviorStatus::INVALID;
+        BehaviorNode() {};
+        BehaviorNode(const vector<shared_ptr<BehaviorNode>>& children) : children_(children) {}
+
+    public:
+        virtual void Execute() {};
+        virtual void ResetNode();
+
+    public:
+        void                   SetStatus(BehaviorStatus);
+        virtual BehaviorStatus GetStatus();
+
+    public:
+        template<typename BehaviorNodeType, typename... Args>
+        void AddChild(Args&&...args);
+
+    private:
+        std::string name_;
+       
+    protected:
+        BehaviorStatus status_ = BehaviorStatus::IDLE;
+        int executing_child_node_index_ = 0;
+
+    protected:
+        std::vector<shared_ptr<BehaviorNode>> children_;
+
+    private:
+        std::mutex status_mutex_;
     };
 
     class DLL_API SelectorNode : public BehaviorNode
     {
     public:
         SelectorNode() {};
-        SelectorNode(const vector<shared_ptr<BehaviorNode>>& children) : children_(children) {}
+        SelectorNode(const vector<shared_ptr<BehaviorNode>>& children) : BehaviorNode(children) {}
 
     public:
-        template<typename BehaviorNodeType, typename... Args>
-        void AddChild(Args&&...args);
-
-    public:
-        virtual BehaviorStatus Execute() override;
-
-    private:
-        std::vector<shared_ptr<BehaviorNode>> children_;
+        virtual void Execute() override;
     };
 
     class DLL_API SequenceNode : public BehaviorNode
     {
     public:
         SequenceNode() {};
-        SequenceNode(const vector<shared_ptr<BehaviorNode>>& children) : children_(children) {}
-    public:
-        template<typename BehaviorNodeType, typename... Args>
-        void AddChild(Args&&...args);
+        SequenceNode(const vector<shared_ptr<BehaviorNode>>& children) : BehaviorNode(children) {}
 
     public:
-        virtual BehaviorStatus Execute() override;
+        virtual void Execute() override;
 
     private:
         std::vector<shared_ptr<BehaviorNode>> children_;
@@ -55,30 +71,22 @@ namespace reality {
     class DLL_API ActionNode : public BehaviorNode
     {
     public:
-        using ExecuteFunction = std::function<BehaviorStatus()>;
+        virtual void Execute() override;
 
-        ActionNode(const ExecuteFunction& execute_function) : execute_function_(execute_function) {}
     public:
-        BehaviorStatus Execute() override;
-        virtual std::future<BehaviorStatus>* Future() override
-        {
-            return &future_;
-        }
+        virtual BehaviorStatus GetStatus() override;
 
     private:
-        ExecuteFunction execute_function_;
-        std::future<BehaviorStatus> future_;
+        virtual BehaviorStatus Action() = 0;
+
+    private:
+        std::thread action_thread_;
+        std::future<BehaviorStatus> future_status_;
     };
 
     template<typename BehaviorNodeType, typename ...Args>
-    inline void SelectorNode::AddChild(Args && ...args)
+    inline void BehaviorNode::AddChild(Args&&...args)
     {
-        children_.push_back(make_shared<BehaviorNodeType>(Args...));
-    }
-
-    template<typename BehaviorNodeType, typename ...Args>
-    inline void SequenceNode::AddChild(Args && ...args)
-    {
-        children_.push_back(make_shared<BehaviorNodeType>(std::forward<Args>(args)...));
+        children_.push_back(make_shared<BehaviorNodeType>(args...));
     }
 }

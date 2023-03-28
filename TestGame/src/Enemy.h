@@ -44,20 +44,7 @@ public:
 		for (int i = 1;i < target_positions_.size();i++) 
 		{
 			auto target_pos = target_positions_[i];
-			auto move_to_target = [&, target_pos]() {
-				auto enemy = reality::SCENE_MGR->GetActor<Enemy>(enemy_id);
-				enemy->SetCharacterAnimation("Zombie_Walk_F_6_Loop_Anim_Unreal Take.anim");
-				enemy->SetDirection(XMVector4Normalize(enemy->GetPos() - target_pos));
-				if (XMVector3Length(enemy->GetPos() - target_pos).m128_f32[0] <= 10.0f)
-				{
-					status_ = reality::BehaviorStatus::SUCCESS;
-					return reality::BehaviorStatus::SUCCESS;
-				}
-				status_ = reality::BehaviorStatus::RUNNING;
-				return reality::BehaviorStatus::RUNNING;
-			};
 
-			AddChild<reality::ActionNode>(move_to_target);
 		}
 	}
 

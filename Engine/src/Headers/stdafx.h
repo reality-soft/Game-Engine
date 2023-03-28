@@ -25,6 +25,8 @@
 #include <functional>
 #include <array>
 #include <wrl.h>
+#include <thread>
+#include <mutex>
 #include <future>
 
 #include <windows.h>
