@@ -1,6 +1,7 @@
 workspace "Game-Engine"
 	architecture "x86_64"
 	toolset "v143"
+	cppdialect "C++20"
 	configurations
 	{
 		"Debug",
@@ -57,8 +58,6 @@ project "Engine"
 	libdirs
 	{
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug",
-		"../SDK/FMOD/lib/debug",
 		"../SDK/IMGUI/lib"
 	}
 
@@ -79,7 +78,6 @@ project "Engine"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		staticruntime "off"
 		systemversion "latest"
 		runtime "Debug"
@@ -99,12 +97,32 @@ project "Engine"
 		defines "_DEBUG"
 		symbols "On"
 
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/debug",
+			"../SDK/FMOD/lib/debug",
+		}
+
 	filter "configurations:Release"
 		defines "_RELEASE"
 		optimize "On"
+
+		
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
+
 	filter "configurations:Dist"
 		defines "_DIST"
 		optimize "On"
+
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
 
 
 project "TestGame"
@@ -150,8 +168,6 @@ project "TestGame"
 	libdirs
 	{
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug",
-		"../SDK/FMOD/lib/debug",
 		"../SDK/IMGUI/lib"
 	}
 
@@ -182,14 +198,24 @@ project "TestGame"
 	    shadermodel "5.0"
 
 	filter "system:windows"
-		cppdialect "C++17"
+		cppdialect "C++20"
 		staticruntime "Off"
 		systemversion "latest"
-		runtime "Debug"
 
 		defines
 		{
 			"PLATFORM_WINDOWS"
+		}
+
+	filter "configurations:Debug"
+		defines "_DEBUG"
+		symbols "On"
+		runtime "Debug"
+
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/debug",
+			"../SDK/FMOD/lib/debug",
 		}
 
 		postbuildcommands
@@ -197,13 +223,33 @@ project "TestGame"
 			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
 		}
 
-	filter "configurations:Debug"
-		defines "_DEBUG"
-		symbols "On"
 	filter "configurations:Release"
 		defines "_RELEASE"
 		optimize "On"
+		runtime "Release"
+
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
+
+		postbuildcommands
+		{
+			"copy \"..\\..\\output\\bin\\Release-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
+		}
+
 	filter "configurations:Dist"
 		defines "_DIST"
 		optimize "On"
 
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
+
+		postbuildcommands
+		{
+			"copy \"..\\..\\output\\bin\\Release-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
+		}

@@ -7,6 +7,13 @@ namespace reality {
 	{
 		float import_scale = 1.0f;
 		FbxVector4 import_rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+		bool recalculate_normal = false;
+	};
+
+	enum class FbxVertexOption
+	{
+		BY_CONTROL_POINT,
+		BY_POLYGON_VERTEX
 	};
 
 	class DLL_API FbxLoader

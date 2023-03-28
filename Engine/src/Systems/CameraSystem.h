@@ -36,7 +36,7 @@ namespace reality
 		XMMATRIX view_matrix;
 		XMMATRIX projection_matrix;
 
-		CbViewProj		cb_viewproj;
+		CbCameraInfo	cb_camera_info;
 		CbCameraEffect	cb_effect;
 
 		float speed = 30;

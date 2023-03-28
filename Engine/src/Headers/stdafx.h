@@ -25,6 +25,7 @@
 #include <functional>
 #include <array>
 #include <wrl.h>
+#include <future>
 
 #include <windows.h>
 #include <tchar.h>

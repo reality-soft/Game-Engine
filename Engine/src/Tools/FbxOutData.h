@@ -32,9 +32,10 @@ namespace reality
 
 		std::string mesh_name;
 		std::string material_name;
-		std::vector<Vertex> vertices;
-		std::vector<LightVertex> light_vertices;
-		std::vector<SkinnedVertex> skinned_vertices;
+		std::vector<Vertex> vertices_by_control_point;
+		std::vector<Vertex> vertices_by_polygon_vertex;
+		std::vector<SkinnedVertex> skinned_vertices_by_control_point;
+		std::vector<SkinnedVertex> skinned_vertices_by_polygon_vertex;
 		std::vector<UINT>   indices;
 		std::vector<IndexWeight> index_weight;
 		std::map<UINT, XMMATRIX> bind_poses;

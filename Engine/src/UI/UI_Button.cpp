@@ -24,7 +24,7 @@ void UI_Button::Update()
 	UpdateButtonTexture();
 }
 
-bool UI_Button::MouseOnButton(Rect& button_rect, POINT& mouse_point)
+bool UI_Button::MouseOnButton(const Rect& button_rect, const POINT& mouse_point)
 {
 	if ((button_rect.min.x <= mouse_point.x && mouse_point.x <= button_rect.max.x))
 	{

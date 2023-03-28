@@ -22,14 +22,16 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbViewProj
+	struct CbCameraInfo
 	{
-		CbViewProj()
+		CbCameraInfo()
 		{
 			data.view_matrix = XMMatrixIdentity();
 			data.projection_matrix = XMMatrixIdentity();
+			data.camera_position = XMVectorZero();
+			data.camera_look = XMVectorZero();
 		}
-		CbViewProj(const CbViewProj& other)
+		CbCameraInfo(const CbCameraInfo& other)
 		{
 			data = other.data;
 			other.buffer.CopyTo(buffer.GetAddressOf());
@@ -39,6 +41,7 @@ namespace reality
 			XMMATRIX view_matrix;
 			XMMATRIX projection_matrix;
 			XMVECTOR camera_position;
+			XMVECTOR camera_look;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -97,25 +100,84 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbLight
+	struct CbGlobalLight
 	{
-		CbLight()
+		CbGlobalLight()
 		{
-			data.direction = { 0, -1, 0, 0 };
-			data.color = { 1.5, 1.5, 1.5, 1.5 };
+			data.position = XMVectorSet(5000, 5000, -5000, 0);
+			data.direction = -XMVector3Normalize(data.position);
+			data.ambient_up    = data.direction * 0.8;
+			data.ambient_down  = data.direction * 0.2f;
+			data.ambient_range = Vector3Length(data.ambient_up - data.ambient_down);
 		}
-		CbLight(const CbLight& other)
+		CbGlobalLight(const CbGlobalLight& other)
 		{
 			data = other.data;
 			other.buffer.CopyTo(buffer.GetAddressOf());
 		}
 		struct Data
 		{
-			XMFLOAT4 sun_position;
-			XMFLOAT4 direction;
-			XMFLOAT4 color;
+			XMVECTOR position;
+			XMVECTOR direction;
+			XMVECTOR ambient_up;
+			XMVECTOR ambient_down;
+			float ambient_range;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
 	};
+
+	struct CbPointLight
+	{
+		struct Data
+		{
+			XMFLOAT3	diffuse;
+			float		pad1;
+			XMFLOAT3	specular;
+			float		pad2;
+			XMFLOAT3	ambient;
+			float		pad3;
+
+			XMFLOAT3	position;
+			float		range;
+			XMFLOAT3	attenuation;
+			float		pad4;
+		} data[64];
+
+		ComPtr<ID3D11Buffer> buffer;
+
+		CbPointLight()
+		{
+			ZeroMemory(data, sizeof(Data) * 64);
+		}
+		
+	};
+
+	struct CbSpotLight
+	{
+		struct Data
+		{
+			XMFLOAT3	diffuse;
+			float		pad1;
+			XMFLOAT3	specular;
+			float		pad2;
+			XMFLOAT3	ambient;
+			float		pad3;
+
+			XMFLOAT3	position;
+			float		range;
+			XMFLOAT3	attenuation;
+			float		pad4; 
+			XMFLOAT3	direction;
+			float		spot;
+		} data[64];
+
+		ComPtr<ID3D11Buffer> buffer;
+
+		CbSpotLight()
+		{
+			ZeroMemory(data, sizeof(Data) * 64);
+		}
+	};
+
 }

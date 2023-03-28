@@ -4,7 +4,7 @@
 #include "ResourceMgr.h"
 #include "Dx11App.h"
 
-bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
+bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options, FbxVertexOption vertex_option)
 {
     FbxLoader fbx_loader;
     fbx_loader.import_options = options;
@@ -16,15 +16,23 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
 
     StaticMesh res_static_mesh;
     SkeletalMesh res_skeletal_mesh;
-    LightMesh res_light_mesh;
+
     for (auto out_mesh : fbx_loader.out_mesh_list)
     {
         if (out_mesh->is_skinned)
         {
             SingleMesh<SkinnedVertex> single_mesh;
             single_mesh.mesh_name = out_mesh->mesh_name;
-            single_mesh.vertices = out_mesh->skinned_vertices;
-            single_mesh.indices = out_mesh->indices;
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                single_mesh.vertices = out_mesh->skinned_vertices_by_control_point;
+                single_mesh.indices = out_mesh->indices;
+                break;
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                single_mesh.vertices = out_mesh->skinned_vertices_by_polygon_vertex;
+                break;
+            }
 
             res_skeletal_mesh.meshes.push_back(single_mesh);
             res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
@@ -34,18 +42,33 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
         {
             SingleMesh<Vertex> single_mesh;
             single_mesh.mesh_name = out_mesh->mesh_name;
-            single_mesh.vertices = out_mesh->vertices;
-            single_mesh.indices = out_mesh->indices;
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                single_mesh.vertices = out_mesh->vertices_by_control_point;
+                single_mesh.indices = out_mesh->indices;
+                break;
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                single_mesh.vertices = out_mesh->vertices_by_polygon_vertex;
+                break;
+            }
 
             res_static_mesh.meshes.push_back(single_mesh);
-
-            SingleMesh<LightVertex> light_single_mesh;
-            light_single_mesh.mesh_name = out_mesh->mesh_name;
-            light_single_mesh.vertices = out_mesh->light_vertices;
-
-            res_light_mesh.meshes.push_back(light_single_mesh);
         }
     }
+
+    if (options.recalculate_normal)
+    {
+        if (res_static_mesh.meshes.size() > 0)
+        {
+            ReCalculateNormal(res_static_mesh, vertex_option);
+        }
+        else if (res_skeletal_mesh.meshes.size() > 0)
+        {
+            ReCalculateNormal(res_skeletal_mesh, vertex_option);
+        }  
+    }
+
 
     auto strs = split(filename, '/');
     string id = strs[strs.size() - 1];
@@ -63,21 +86,11 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
     {
         CreateBuffers(single_mesh);
     }
-    for (auto& single_mesh : res_light_mesh.meshes)
-    {
-        CreateBuffers(single_mesh);
-    }
 
     if (res_static_mesh.meshes.size() > 0) 
     {
         RESOURCE->PushStaticMesh(name + ".stmesh", res_static_mesh);
         SaveStaticMesh(res_static_mesh, name);
-    }
-
-    if (res_light_mesh.meshes.size() > 0)
-    {
-        RESOURCE->PushLightMesh(name + ".ltmesh", res_light_mesh);
-        SaveLightMesh(res_light_mesh, name);
     }
 
     if (res_skeletal_mesh.meshes.size() > 0) 
@@ -94,27 +107,6 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options)
 
     fbx_loader.Destroy();
     return true;
-}
-
-void reality::FbxMgr::SaveLightMesh(const LightMesh& light_mesh, string filename)
-{
-    string file_name = RESOURCE->directory() + "LTM/" + filename + ".ltmesh";
-    FileTransfer file_exporter(file_name, WRITE);
-
-    int num_of_meshes = light_mesh.meshes.size();
-
-    file_exporter.WriteBinaryWithoutSize<int>(&num_of_meshes, 1);
-
-    for (int cur_mesh_index = 0; cur_mesh_index < num_of_meshes; cur_mesh_index++) {
-        string mesh_name = light_mesh.meshes[cur_mesh_index].mesh_name;
-        int mesh_name_size = mesh_name.size() + 1;
-        file_exporter.WriteBinaryWithoutSize<int>(&mesh_name_size, 1);
-        file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(mesh_name.c_str()), mesh_name_size);
-
-        int num_of_vertices = light_mesh.meshes[cur_mesh_index].vertices.size();
-        file_exporter.WriteBinaryWithoutSize<int>(&num_of_vertices, 1);
-        file_exporter.WriteBinaryWithoutSize<LightVertex>(const_cast<LightVertex*>(light_mesh.meshes[cur_mesh_index].vertices.data()), num_of_vertices);
-    }
 }
 
 void reality::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filename)
@@ -236,29 +228,6 @@ void reality::FbxMgr::SaveAnimation(const map<string, OutAnimData>& animation)
         UINT end_frame = cur_anim.second.end_frame;
         file_exporter.WriteBinaryWithoutSize<UINT>(&end_frame, 1);
     }
-}
-
-reality::LightMesh reality::FbxMgr::LoadLightMesh(string filename)
-{
-    FileTransfer file_exporter(filename, READ);
-
-    LightMesh light_mesh;
-
-    int num_of_meshes = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-
-    light_mesh.meshes.resize(num_of_meshes);
-
-    for (int cur_mesh_index = 0; cur_mesh_index < num_of_meshes; cur_mesh_index++) {
-        int mesh_name_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        light_mesh.meshes[cur_mesh_index].mesh_name = file_exporter.ReadBinaryWithoutSize<char>(mesh_name_size).data();
-
-        int num_of_vertices = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        light_mesh.meshes[cur_mesh_index].vertices = file_exporter.ReadBinaryWithoutSize<LightVertex>(num_of_vertices);
-
-        CreateBuffers(light_mesh.meshes[cur_mesh_index]);
-    }
-
-    return light_mesh;
 }
 
 reality::StaticMesh reality::FbxMgr::LoadStaticMesh(string filename)
@@ -411,27 +380,6 @@ bool reality::FbxMgr::CreateBuffers(SingleMesh<Vertex>& mesh)
     return true;
 }
 
-bool reality::FbxMgr::CreateBuffers(SingleMesh<LightVertex>& mesh)
-{
-    HRESULT hr;
-
-    // VertexBuffer
-    D3D11_BUFFER_DESC desc;
-    D3D11_SUBRESOURCE_DATA subdata;
-
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
-
-    desc.ByteWidth = sizeof(LightVertex) * mesh.vertices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    subdata.pSysMem = mesh.vertices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.vertex_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-}
-
 bool reality::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
     HRESULT hr;
 
@@ -452,18 +400,137 @@ bool reality::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
         return false;
 
     // IndexBuffer
+    if (mesh.indices.size() != 0) {
+        ZeroMemory(&desc, sizeof(desc));
+        ZeroMemory(&subdata, sizeof(subdata));
 
-    ZeroMemory(&desc, sizeof(desc));
-    ZeroMemory(&subdata, sizeof(subdata));
+        desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+        subdata.pSysMem = mesh.indices.data();
 
-    desc.ByteWidth = sizeof(UINT) * mesh.indices.size();
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    subdata.pSysMem = mesh.indices.data();
-
-    hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
+        hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, mesh.index_buffer.GetAddressOf());
+        if (FAILED(hr))
+            return false;
+    }
 
     return true;
+}
+
+void reality::FbxMgr::ReCalculateNormal(StaticMesh& static_mesh, FbxVertexOption vertex_option)
+{
+    for (auto& mesh : static_mesh.meshes)
+    {
+        UINT num_triangle;
+        UINT index = 0;
+        switch (vertex_option) {
+        case FbxVertexOption::BY_CONTROL_POINT:
+            num_triangle = mesh.indices.size();
+            break;
+        case FbxVertexOption::BY_POLYGON_VERTEX:
+            num_triangle = mesh.vertices.size() / 3;
+            break;
+        }
+
+        for (UINT t = 0; t < num_triangle; t++)
+        {
+            XMFLOAT3 v0;
+            XMFLOAT3 v1;
+            XMFLOAT3 v2;
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                v0 = mesh.vertices[mesh.indices[index + 0]].p;
+                v1 = mesh.vertices[mesh.indices[index + 1]].p;
+                v2 = mesh.vertices[mesh.indices[index + 2]].p;
+                break;
+
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                v0 = mesh.vertices[index + 0].p;
+                v1 = mesh.vertices[index + 1].p;
+                v2 = mesh.vertices[index + 2].p;
+                break;
+            }
+
+            XMVECTOR edge1 = XMLoadFloat3(&v2) - XMLoadFloat3(&v0);
+            XMVECTOR edge2 = XMLoadFloat3(&v1) - XMLoadFloat3(&v0);
+
+            XMVECTOR normal = XMVector3Normalize(XMVector3Cross(edge1, edge2));
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                mesh.vertices[mesh.indices[index + 0]].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[mesh.indices[index + 1]].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[mesh.indices[index + 2]].n = XMFLOAT3(normal.m128_f32);
+                break;
+
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                mesh.vertices[index + 0].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[index + 1].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[index + 2].n = XMFLOAT3(normal.m128_f32);
+                break;
+            }
+
+
+            index += 3;
+        }
+    }
+}
+
+void reality::FbxMgr::ReCalculateNormal(SkeletalMesh& skeletal_mesh, FbxVertexOption vertex_option)
+{
+    for (auto& mesh : skeletal_mesh.meshes)
+    {
+        UINT num_triangle;
+        UINT index = 0;
+        switch (vertex_option) {
+        case FbxVertexOption::BY_CONTROL_POINT:
+            num_triangle = mesh.indices.size();
+            break;
+        case FbxVertexOption::BY_POLYGON_VERTEX:
+            num_triangle = mesh.vertices.size() / 3;
+            break;
+        }
+
+        for (UINT t = 0; t < num_triangle; t++)
+        {
+            XMFLOAT3 v0;
+            XMFLOAT3 v1;
+            XMFLOAT3 v2;
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                v0 = mesh.vertices[mesh.indices[index + 0]].p;
+                v1 = mesh.vertices[mesh.indices[index + 1]].p;
+                v2 = mesh.vertices[mesh.indices[index + 2]].p;
+                break;
+
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                v0 = mesh.vertices[index + 0].p;
+                v1 = mesh.vertices[index + 1].p;
+                v2 = mesh.vertices[index + 2].p;
+                break;
+            }
+
+            XMVECTOR edge1 = XMLoadFloat3(&v2) - XMLoadFloat3(&v0);
+            XMVECTOR edge2 = XMLoadFloat3(&v1) - XMLoadFloat3(&v0);
+
+            XMVECTOR normal = XMVector3Normalize(XMVector3Cross(edge1, edge2));
+
+            switch (vertex_option) {
+            case FbxVertexOption::BY_CONTROL_POINT:
+                mesh.vertices[mesh.indices[index + 0]].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[mesh.indices[index + 1]].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[mesh.indices[index + 2]].n = XMFLOAT3(normal.m128_f32);
+                break;
+
+            case FbxVertexOption::BY_POLYGON_VERTEX:
+                mesh.vertices[index + 0].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[index + 1].n = XMFLOAT3(normal.m128_f32);
+                mesh.vertices[index + 2].n = XMFLOAT3(normal.m128_f32);
+                break;
+            }
+            index += 3;
+        }
+    }
 }

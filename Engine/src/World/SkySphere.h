@@ -27,18 +27,8 @@ namespace reality
 		void FrameBackgroundSky(const C_Camera* camera);
 		void RenderBackgroundSky();
 
-		void FrameSunSky(const C_Camera* camera);
-		void RenderSunSky();
-
-		void FrameStarSky(const C_Camera* camera);
-		void RenderStarSky();
-
-		void FrameCloudSky(const C_Camera* camera);
-		void RenderCloudSky();
-
 	private:
 		shared_ptr<StaticMesh> sphere_mesh;
-		shared_ptr<StaticMesh> cloud_dome;
 		shared_ptr<VertexShader> vs;
 		CbTransform cb_transform;
 	};

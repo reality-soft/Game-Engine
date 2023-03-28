@@ -7,6 +7,7 @@ namespace reality
 	{
 	protected:
 		XMMATRIX		transform_matrix_ = XMMatrixIdentity();
+	public:
 		entt::entity	entity_id_;
 		TransformTree	transform_tree_;
 		AABBShape		collision_box_;
@@ -15,10 +16,10 @@ namespace reality
 	public:
 		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate();
-		virtual void ApplyMovement(XMMATRIX movement_matrix);
 
 	public: 
 		entt::entity GetEntityId();
+		virtual void ApplyMovement(XMMATRIX transform_matrix);
 		XMMATRIX	 GetTransformMatrix();
 	};
 }

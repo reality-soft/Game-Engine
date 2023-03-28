@@ -5,6 +5,7 @@
 #include "EventMgr.h"
 #include "InputEventMgr.h"
 #include "SceneMgr.h"
+#include "FmodMgr.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -54,6 +55,7 @@ namespace reality {
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
 		DINPUT->Init();
 		TIMER->Init();
+		FMOD_MGR->Init();
 
 		return true;
 	}
@@ -80,6 +82,7 @@ namespace reality {
 			INPUT_EVENT->PollEvents();
 			SCENE_MGR->OnUpdate();
 			EVENT->ProcessEvents();
+			FMOD_MGR->Update();
 
 			// Render Here
 			DX11APP->PreRender(true, true, true);
@@ -102,6 +105,7 @@ namespace reality {
 
 	void Engine::OnRelease()
 	{
+		FMOD_MGR->Release();
 		DX11APP->OnRelease();
 	}
 

@@ -23,19 +23,12 @@ namespace reality
 	public:
 		float floor_height = 0.0f;
 		MovementState movement_state_;
-		CapsuleCallback capsule_callback;
+		vector<RayShape> blocking_walls_;
 
-	public:
-		void		OnInit(entt::registry& registry) override;
-		void		ApplyMovement(XMMATRIX movement_matrix) override;
-		void    OnUpdate() override;
-
-  public:
+		void OnInit(entt::registry& registry) override;
+		void OnUpdate() override;
 		C_Movement* GetMovementComponent() { return movement_component_; }
-		void		GravityFall(float _gravity);
-		XMMATRIX	transform_matrix() { return transform_matrix_; }
-
-	protected:
-		void		FastenAtFloor();
+		void GravityFall(float _gravity);
+		XMMATRIX GetTranformMatrix() { return transform_matrix_; }
 	};
 }
