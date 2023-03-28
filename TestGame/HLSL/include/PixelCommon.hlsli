@@ -3,7 +3,9 @@ cbuffer CbGlobalLight : register(b0)
 {
     float4 position;
     float4 direction;
-    float4 ambient;
+    float4 ambient_up;
+    float4 ambient_down;
+    float4 ambient_range;
 }
 
 // Point Lighting
@@ -143,6 +145,17 @@ float4 ChangeValue(float4 color, float amount)
     return float4(HSVtoRGB(hsv), 1.0f);
 }
 
+float4 ApplyHemisphericAmbient(float3 normal, float4 color)
+{
+    // Convert from [-1, 1] to [0, 1]
+    float up = normal * ambient_range.xyz + ambient_range.xyz;
+    // Calculate the ambient value
+    float3 ambient = ambient_down + up * ambient_up;
+
+    // Apply the ambient value to the color
+    return length(ambient) * color;
+}
+
 float4 ApplyDirectionalLight(float4 color, float3 normal)
 {
     float intensity = saturate(dot(normal, -direction.xyz));
@@ -167,7 +180,7 @@ float4 ApplyPointLight(float4 light_color, float3 normal, float4 origin)
             float intensity = saturate(dot(normalize(normal), light_dir));
             total_light += light_color * intensity * attenuation;
         }
-        
+
     }
 
     return total_light;
@@ -199,11 +212,11 @@ float4 ApplySpotLight(float light_color, float3 normal, float4 origin)
 
 float4 ApplyAmbientLight(float4 color)
 {
-    
+
     return max(color, ambient);
 }
 
-float4 ApplyCookTorrance(float4 diffuse, float roughness, float specular, float3 normal, float3 view_dir)
+float4 ApplyCookTorrance(float4 albedo, float roughness, float specular, float3 normal, float3 view_dir)
 {    
     // Correct the input and compute aliases
     view_dir = normalize(view_dir);
@@ -231,6 +244,6 @@ float4 ApplyCookTorrance(float4 diffuse, float roughness, float specular, float3
     
     // Compute the final term  
     float3 S = specular * ((G * F * R) / (normal_dot_light * normal_dot_view));
-    float3 flinal_color = WhiteColor().xyz * max(0.2f, normal_dot_light) * (diffuse.xyz + S);
+    float3 flinal_color = WhiteColor().xyz * max(0.2f, normal_dot_light) * (albedo.xyz + S);
     return float4(flinal_color, 1.0f);
 }

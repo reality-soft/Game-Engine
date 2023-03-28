@@ -24,7 +24,7 @@ private:
 	};
   
 	SkySphere sky_sphere;
-	LightMeshLevel level;
+	StaticMeshLevel level;
 
 	reality::LightingSystem sys_light;
 	reality::RenderSystem sys_render;
