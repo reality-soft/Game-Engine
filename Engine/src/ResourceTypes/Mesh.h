@@ -56,15 +56,6 @@ namespace reality
 		vector<SingleMesh<Vertex>> meshes;
 	};
 
-	struct LightMesh
-	{
-		LightMesh() = default;
-		LightMesh(const LightMesh& other);
-
-		vector<SingleMesh<LightVertex>> meshes;
-	};
-
-
 	template<typename MeshType>
 	static XMFLOAT3 GetMaxVertex(const MeshType& mesh)
 	{

@@ -29,5 +29,5 @@ float4 PS(PS_OUT input) : SV_Target
 	float bright = max(0.2f, dot(input.n, -direction));
 	float4 light_color = float4(bright, bright, bright, 1);
 
-	return base_color * light_color * input.c;
+    return base_color * light_color;// * input.c;
 }

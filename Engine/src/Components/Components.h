@@ -148,14 +148,14 @@ namespace reality
 
 		void SetXYZ(int x, int y, int z) {
 			vertex_list.clear();
-			vertex_list.push_back({ XMFLOAT3(-x / 2,  y, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });  // Top left
-			vertex_list.push_back({ XMFLOAT3(x / 2,  y, -z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top right
-			vertex_list.push_back({ XMFLOAT3(-x / 2, 0, -z / 2), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });  // Bottom left
-			vertex_list.push_back({ XMFLOAT3(x / 2, 0, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });   // Bottom right
-			vertex_list.push_back({ XMFLOAT3(-x / 2,  y,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top front
-			vertex_list.push_back({ XMFLOAT3(x / 2,  y,  z / 2),    XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });    // Top back
-			vertex_list.push_back({ XMFLOAT3(-x / 2, 0,  z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });  // Bottom front
-			vertex_list.push_back({ XMFLOAT3(x / 2, 0,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });   // Bottom back
+			vertex_list.push_back({ XMFLOAT3(-x / 2,  y, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });  // Top left
+			vertex_list.push_back({ XMFLOAT3(x / 2,  y, -z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top right
+			vertex_list.push_back({ XMFLOAT3(-x / 2, 0, -z / 2), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });  // Bottom left
+			vertex_list.push_back({ XMFLOAT3(x / 2, 0, -z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });   // Bottom right
+			vertex_list.push_back({ XMFLOAT3(-x / 2,  y,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) });   // Top front
+			vertex_list.push_back({ XMFLOAT3(x / 2,  y,  z / 2),    XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) });    // Top back
+			vertex_list.push_back({ XMFLOAT3(-x / 2, 0,  z / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) });  // Bottom front
+			vertex_list.push_back({ XMFLOAT3(x / 2, 0,  z / 2),   XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) });   // Bottom back
 
 			D3D11_BUFFER_DESC bufDesc;
 
@@ -373,10 +373,10 @@ namespace reality
 			material_id = "box_material.mat";
 
 			// ���ؽ� ����
-			vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +0.0f} });
-			vertex_list.push_back({ { +1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +0.0f} });
-			vertex_list.push_back({ { -1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+0.0f, +1.0f} });
-			vertex_list.push_back({ { +1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f} });
+			vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+0.0f, +0.0f} });
+			vertex_list.push_back({ { +1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +0.0f} });
+			vertex_list.push_back({ { -1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+0.0f, +1.0f} });
+			vertex_list.push_back({ { +1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f} });
 
 			D3D11_BUFFER_DESC bufDesc;
 

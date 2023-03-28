@@ -236,7 +236,7 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 
         D *= att;
         S *= att;
-
+        
         diffuse += D;
         spec += S;
         ambient += point_lights[i].ambient;

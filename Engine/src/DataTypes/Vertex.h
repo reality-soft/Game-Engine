@@ -7,23 +7,7 @@ namespace reality
 	{
 		XMFLOAT3   p;
 		XMFLOAT3   n;
-		XMFLOAT4   c;
 		XMFLOAT2   t;
-	};
-
-	struct LightVertex
-	{
-		XMFLOAT3 p;
-		XMFLOAT2 t;
-	};
-
-	struct LevelVertex
-	{
-		XMFLOAT3   p;
-		XMFLOAT3   n;
-		XMFLOAT4   c;
-		XMFLOAT2   t;
-		XMFLOAT2   t_layer;
 	};
 
 	struct SkinnedVertex
@@ -39,7 +23,6 @@ namespace reality
 		{
 			this->p = vertex.p;
 			this->n = vertex.n;
-			this->c = vertex.c;
 			this->t = vertex.t;
 
 			return *this;
