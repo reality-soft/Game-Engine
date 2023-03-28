@@ -31,7 +31,7 @@ void reality::SpaceNode::SetNode(float min_x, float min_z, float max_x, float ma
 	area = AABBShape(min, max);
 }
 
-void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
+void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth)
 {
 	deviding_level_ = level_to_devide;
 

@@ -31,6 +31,6 @@
 
 #include "World/Level.h"
 #include "World/SkySphere.h"
-#include "World/LightMeshLevel.h"
+#include "World/StaticMeshLevel.h"
 
 #include "UI/WriteMgr.h"

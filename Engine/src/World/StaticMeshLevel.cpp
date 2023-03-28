@@ -1,20 +1,20 @@
 #include "stdafx.h"
-#include "LightMeshLevel.h"
+#include "StaticMeshLevel.h"
 #include "Components.h"
 #include "FileTransfer.h"
 #include "InputEventMgr.h"
 
 using namespace reality;
 
-reality::LightMeshLevel::LightMeshLevel()
+reality::StaticMeshLevel::StaticMeshLevel()
 {
 }
 
-reality::LightMeshLevel::~LightMeshLevel()
+reality::StaticMeshLevel::~StaticMeshLevel()
 {
 }
 
-bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string collision_ltmesh)
+bool reality::StaticMeshLevel::Create(string mesh_id, string vs_id, string collision_ltmesh)
 {
     level_mesh = shared_ptr<StaticMesh>(RESOURCE->UseResource<StaticMesh>(mesh_id));
     if (level_mesh.get() == nullptr)
@@ -65,7 +65,7 @@ bool reality::LightMeshLevel::Create(string mesh_id, string vs_id, string collis
     return true;
 }
 
-void reality::LightMeshLevel::Update()
+void reality::StaticMeshLevel::Update()
 {
     if (DINPUT->GetKeyState(DIK_C) == KEY_PUSH)
         view_collision = !view_collision;
@@ -75,7 +75,7 @@ void reality::LightMeshLevel::Update()
     DX11APP->GetDeviceContext()->PSSetShader(nullptr, nullptr, 0);
 }
 
-void reality::LightMeshLevel::Render()
+void reality::StaticMeshLevel::Render()
 {
     DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader.get()->InputLayout());
     DX11APP->GetDeviceContext()->VSSetShader(vertex_shader.get()->Get(), nullptr, 0);
@@ -97,11 +97,11 @@ void reality::LightMeshLevel::Render()
         RenderCollisionMesh();
 }
 
-void reality::LightMeshLevel::Destroy()
+void reality::StaticMeshLevel::Destroy()
 {
 }
 
-void reality::LightMeshLevel::RenderCollisionMesh()
+void reality::StaticMeshLevel::RenderCollisionMesh()
 {
     DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->Wireframe());
 
@@ -121,7 +121,7 @@ void reality::LightMeshLevel::RenderCollisionMesh()
     DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
-bool reality::LightMeshLevel::SetMaterialToMesh(string mesh_name, string material_id)
+bool reality::StaticMeshLevel::SetMaterialToMesh(string mesh_name, string material_id)
 {
     auto material = RESOURCE->UseResource<Material>(material_id);
     if (material)
@@ -132,7 +132,7 @@ bool reality::LightMeshLevel::SetMaterialToMesh(string mesh_name, string materia
     return true;
 }
 
-bool reality::LightMeshLevel::SetRandomMaterialToMesh(string mesh_name, string keyward)
+bool reality::StaticMeshLevel::SetRandomMaterialToMesh(string mesh_name, string keyward)
 {
     vector<string> materials_by_keyward;
     auto mat_ids = RESOURCE->GetTotalMATID();
@@ -152,7 +152,7 @@ bool reality::LightMeshLevel::SetRandomMaterialToMesh(string mesh_name, string k
     return true;
 }
 
-void reality::LightMeshLevel::CalculateNormal(SingleMesh<Vertex>& mesh)
+void reality::StaticMeshLevel::CalculateNormal(SingleMesh<Vertex>& mesh)
 {
 
     UINT num_triangle = mesh.vertices.size() / 3;
@@ -176,7 +176,7 @@ void reality::LightMeshLevel::CalculateNormal(SingleMesh<Vertex>& mesh)
     }
 }
 
-void reality::LightMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type)
+void reality::StaticMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type)
 {
     FileTransfer out_mapdata(mapdat_file, READ);
 
@@ -204,7 +204,7 @@ void reality::LightMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::Gu
     }
 }
 
-vector<GuideLine> reality::LightMeshLevel::GetGuideLines(GuideLine::GuideType guide_type)
+vector<GuideLine> reality::StaticMeshLevel::GetGuideLines(GuideLine::GuideType guide_type)
 {
     vector<GuideLine> guides;
     for (const auto& gd : guide_lines)
