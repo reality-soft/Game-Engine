@@ -39,7 +39,7 @@ bool reality::Level::ImportFromFile(string filepath)
 	file_transfer.ReadBinary<XMINT2>(row_col_blocks_);
 
 	// Arrays
-	file_transfer.ReadBinary<LevelVertex>(level_mesh_.vertices);
+	file_transfer.ReadBinary<Vertex>(level_mesh_.vertices);
 	file_transfer.ReadBinary<UINT>(level_mesh_.indices);
 	file_transfer.ReadBinary<string>(texture_id);
 
@@ -87,13 +87,8 @@ bool reality::Level::CreateLevel(UINT _max_lod, UINT _cell_scale, UINT _uv_scale
 			level_mesh_.vertices[index].p.y = 0.0f;
 			level_mesh_.vertices[index].p.z = (half_col - r) * cell_distance_;
 
-			level_mesh_.vertices[index].c = { 0, 0, 0, 0 };
-
 			level_mesh_.vertices[index].t.x = (float)c / (float)(num_row_cell)*uv_scale_;
 			level_mesh_.vertices[index].t.y = (float)r / (float)(num_col_cell)*uv_scale_;
-
-			level_mesh_.vertices[index].t_layer.x = (float)c / (float)(num_row_cell);
-			level_mesh_.vertices[index].t_layer.y = (float)r / (float)(num_col_cell);
 		}
 	}
 
@@ -169,7 +164,7 @@ void Level::Render(bool culling)
 	}
 
 	{ // Input Assembly Stage
-		UINT stride = sizeof(LevelVertex);
+		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, level_mesh_.vertex_buffer.GetAddressOf(), &stride, &offset);
 		DX11APP->GetDeviceContext()->IASetInputLayout(vs->InputLayout());
@@ -351,7 +346,7 @@ bool Level::CreateBuffers()
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(LevelVertex) * level_mesh_.vertices.size();
+	desc.ByteWidth = sizeof(Vertex) * level_mesh_.vertices.size();
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	subdata.pSysMem = level_mesh_.vertices.data();
