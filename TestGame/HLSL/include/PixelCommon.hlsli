@@ -9,17 +9,17 @@ cbuffer CbGlobalLight : register(b0)
 // Point Lighting
 struct PointLight
 {
-    float3 diffuse;
-    float pad1;
-    float3 specular;
-    float pad2;
-    float3 ambient;
-    float pad3;
+    float3  diffuse;
+    float   pad1;
+    float3  specular;
+    float   pad2;
+    float3  ambient;
+    float   pad3;
 
-    float3 position;
-    float range;
-    float3 attenuation;
-    float pad4;
+    float3  position;
+    float   range;
+    float3  attenuation;
+    float   pad4;
 };
 
 cbuffer CbPointLights : register(b1)
@@ -30,19 +30,19 @@ cbuffer CbPointLights : register(b1)
 // Spot Lighting
 struct SpotLight
 {
-    float3 diffuse;
-    float pad1;
-    float3 specular;
-    float pad2;
-    float3 ambient;
-    float pad3;
+    float3  diffuse;
+    float   pad1;
+    float3  specular;
+    float   pad2;
+    float3  ambient;
+    float   pad3;
 
-    float3 position;
-    float range;
-    float3 attenuation;
-    float pad4;
-    float3 direction;
-    float spot;
+    float3  position;
+    float   range;
+    float3  attenuation;
+    float   pad4;
+    float3  direction;
+    float   spot;
 };
 
 cbuffer CbSpotLights : register(b2)
@@ -201,7 +201,7 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 {
     float3 diffuse = float3(0.0f, 0.0f, 0.0f);
     float3 spec = float3(0.0f, 0.0f, 0.0f);
-    float3 ambient = float3(0.0f, 0.0f, 0.0f);
+    float3 ambient = float3(0.0f, 0.0f, 0.0f); 
 
     for (int i = 0; i < 64; i++)
     {
@@ -234,9 +234,9 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 
         float att = 1.0f / dot(point_lights[i].attenuation, float3(1.0f, d, d * d));
 
-        D = att;
-        S = att;
-
+        D *= att;
+        S *= att;
+        
         diffuse += D;
         spec += S;
         ambient += point_lights[i].ambient;
