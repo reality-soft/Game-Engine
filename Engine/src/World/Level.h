@@ -30,7 +30,7 @@ namespace reality
 		XMINT2 GetWorldSize();
 		XMINT2 GetBlocks();
 		UINT MaxLod();
-		vector<LevelVertex> GetLevelVertex() { return level_mesh_.vertices; }
+		vector<Vertex> GetLevelVertex() { return level_mesh_.vertices; }
 		vector<UINT> GetLevelIndex() { return level_mesh_.indices; }
 
 	public:
@@ -57,7 +57,7 @@ namespace reality
 		void RenderObjects();
 
 	protected:
-		SingleMesh<LevelVertex> level_mesh_;
+		SingleMesh<Vertex> level_mesh_;
 		vector<float> height_list_;
 
 		UINT num_row_vertex_;

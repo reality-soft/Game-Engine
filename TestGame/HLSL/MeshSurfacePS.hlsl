@@ -4,7 +4,6 @@ struct PS_OUT
 {
     float4 p : SV_POSITION;
     float4 n : NORMAL;
-    float4 c : COLOR;
     float2 t : TEXCOORD;
     float lod : TEXCOORD1;
 };

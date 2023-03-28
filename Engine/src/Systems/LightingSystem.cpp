@@ -112,22 +112,29 @@ void LightingSystem::UpdateSun(SkySphere& sky_shere)
 
 void LightingSystem::UpdatePointLights(entt::registry& reg)
 {
+	// 0. Clear the last frame PointLights CBData
+	ZeroMemory(point_lights.data, sizeof(CbPointLight::Data) * 64);
+
 	auto view = reg.view<C_PointLight>();
 	int count = 0;
 	for (auto& entity : view)
 	{
-		auto& point_light = reg.get<C_PointLight>(entity);
+		auto& point_light_comp = reg.get<C_PointLight>(entity);
 		// 1. Lifetime Check
-		if (point_light.lifetime > 0 && point_light.lifetime < point_light.timer)
+		if (point_light_comp.lifetime > 0 && point_light_comp.lifetime < point_light_comp.timer)
 			continue;
 		else
-			point_light.timer += TIMER->GetDeltaTime();
+			point_light_comp.timer += TIMER->GetDeltaTime();
 
 		// 2. if Lifetime remain, Plus Data to CB Array
 		CbPointLight::Data point_light_data;
-		point_light_data.position = point_light.position;
-		point_light_data.range = point_light.range;
-		point_light_data.attenuation = point_light.attenuation;
+		point_light_data.diffuse = point_light_comp.diffuse;
+		point_light_data.specular = point_light_comp.specular;
+		point_light_data.ambient = point_light_comp.ambient;
+
+		point_light_data.position = point_light_comp.position;
+		point_light_data.range = point_light_comp.range;
+		point_light_data.attenuation = point_light_comp.attenuation;
 
 		point_lights.data[count++] = point_light_data;
 	}
@@ -140,24 +147,32 @@ void LightingSystem::UpdatePointLights(entt::registry& reg)
 
 void LightingSystem::UpdateSpotLights(entt::registry& reg)
 {
+	// 0. Clear the last frame SpotLights CBData
+	ZeroMemory(spot_lights.data, sizeof(CbSpotLight::Data) * 64);
+
 	auto view = reg.view<C_SpotLight>();
 	int count = 0;
 	for (auto& entity : view)
 	{
-		auto& spot_light = reg.get<C_SpotLight>(entity);
+		auto& spot_light_comp = reg.get<C_SpotLight>(entity);
 		// 1. Lifetime Check
-		if (spot_light.lifetime > 0 && spot_light.lifetime < spot_light.timer)
+		if (spot_light_comp.lifetime > 0 && spot_light_comp.lifetime < spot_light_comp.timer)
 			continue;
 		else
-			spot_light.timer += TIMER->GetDeltaTime();
+			spot_light_comp.timer += TIMER->GetDeltaTime();
 
 		// 2. if Lifetime remain, Plus Data to CB Array
 		CbSpotLight::Data spot_light_data;
-		spot_light_data.position = spot_light.position;
-		spot_light_data.range = spot_light.range;
-		spot_light_data.attenuation = spot_light.attenuation;
-		spot_light_data.direction = spot_light.direction;
-		spot_light_data.spot = spot_light.spot;
+
+		spot_light_data.diffuse = spot_light_comp.diffuse;
+		spot_light_data.specular = spot_light_comp.specular;
+		spot_light_data.ambient = spot_light_comp.ambient;
+
+		spot_light_data.position = spot_light_comp.position;
+		spot_light_data.range = spot_light_comp.range;
+		spot_light_data.attenuation = spot_light_comp.attenuation;
+		spot_light_data.direction = spot_light_comp.direction;
+		spot_light_data.spot = spot_light_comp.spot;
 
 		spot_lights.data[count++] = spot_light_data;
 	}

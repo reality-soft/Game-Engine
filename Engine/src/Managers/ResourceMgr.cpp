@@ -29,7 +29,6 @@ void ResourceMgr::Release()
 void ResourceMgr::LoadAllResource()
 {
     LoadDir(directory_ + "/SKM/", &ResourceMgr::ImportSKM);
-    LoadDir(directory_ + "/LTM/", &ResourceMgr::ImportLTM);
     LoadDir(directory_ + "/STM/", &ResourceMgr::ImportSTM);
     LoadDir(directory_ + "/ANIM/", &ResourceMgr::ImportANIM);
     LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
@@ -71,10 +70,6 @@ map<string, string> ResourceMgr::GetTotalResID()
         res_id_map.insert(make_pair(res.first, "STM"));
     }
     for (auto res : resdic_skeletal_mesh)
-    {
-        res_id_map.insert(make_pair(res.first, "SKM"));
-    }
-    for (auto res : resdic_light_mesh)
     {
         res_id_map.insert(make_pair(res.first, "SKM"));
     }
@@ -202,11 +197,6 @@ set<string> ResourceMgr::GetTotalMATID()
     return mat;
 }
 
-void reality::ResourceMgr::PushLightMesh(string id, const LightMesh& light_mesh)
-{
-    resdic_light_mesh.insert({id, light_mesh });
-}
-
 void reality::ResourceMgr::PushStaticMesh(string id, const StaticMesh& static_mesh)
 {
     resdic_static_mesh.insert({ id, static_mesh });
@@ -302,18 +292,6 @@ bool ResourceMgr::ImportSTM(string filename)
     string id = strs[strs.size() - 1];
 
     resdic_static_mesh.insert(make_pair(id, static_mesh));
-
-    return true;
-}
-
-bool reality::ResourceMgr::ImportLTM(string filename)
-{
-    LightMesh static_mesh = FBX->LoadLightMesh(filename);
-
-    auto strs = split(filename, '/');
-    string id = strs[strs.size() - 1];
-
-    resdic_light_mesh.insert(make_pair(id, static_mesh));
 
     return true;
 }

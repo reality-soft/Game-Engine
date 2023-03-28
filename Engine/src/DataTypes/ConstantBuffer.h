@@ -127,10 +127,17 @@ namespace reality
 	{
 		struct Data
 		{
+			XMFLOAT3	diffuse;
+			float		pad1;
+			XMFLOAT3	specular;
+			float		pad2;
+			XMFLOAT3	ambient;
+			float		pad3;
+
 			XMFLOAT3	position;
 			float		range;
 			XMFLOAT3	attenuation;
-			float		padding;
+			float		pad4;
 		} data[64];
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -146,10 +153,17 @@ namespace reality
 	{
 		struct Data
 		{
+			XMFLOAT3	diffuse;
+			float		pad1;
+			XMFLOAT3	specular;
+			float		pad2;
+			XMFLOAT3	ambient;
+			float		pad3;
+
 			XMFLOAT3	position;
 			float		range;
 			XMFLOAT3	attenuation;
-			float		padding; 
+			float		pad4; 
 			XMFLOAT3	direction;
 			float		spot;
 		} data[64];

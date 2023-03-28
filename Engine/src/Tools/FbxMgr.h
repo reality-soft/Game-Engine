@@ -13,21 +13,20 @@ namespace reality {
 		bool ImportAndSaveFbx(string filename, FbxImportOption options = FbxImportOption(), FbxVertexOption vertex_option = FbxVertexOption::BY_CONTROL_POINT);
 
 	private:
-		void SaveLightMesh(const LightMesh& light_mesh, string filename);
 		void SaveStaticMesh(const StaticMesh& static_mesh, string filename);
 		void SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string filename);
 		void SaveAnimation(const map<string, OutAnimData>& animation);
 
 	public:
-		LightMesh LoadLightMesh(string filename);
 		StaticMesh LoadStaticMesh(string filename);
 		SkeletalMesh LoadSkeletalMesh(string filename);
 		reality::OutAnimData LoadAnimation(string filename);
 
 	private:
 		bool CreateBuffers(SingleMesh<Vertex>& mesh);
-		bool CreateBuffers(SingleMesh<LightVertex>& mesh);
 		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
+		void ReCalculateNormal(StaticMesh& static_mesh, FbxVertexOption vertex_option);
+		void ReCalculateNormal(SkeletalMesh& skeletal_mesh, FbxVertexOption vertex_option);
 	};
 }
 
