@@ -455,7 +455,6 @@ namespace reality
 	// Light
 	struct C_PointLight : public C_BaseLight
 	{
-
 	};
 
 	struct C_SpotLight : public C_BaseLight

@@ -157,7 +157,7 @@ namespace reality
 			XMFLOAT3	position;
 			float		range;
 			XMFLOAT3	attenuation;
-			float		pad4; 
+			float		pad;
 			XMFLOAT3	direction;
 			float		spot;
 		} data[64];
