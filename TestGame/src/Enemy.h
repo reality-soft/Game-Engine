@@ -19,6 +19,7 @@ public:
 	void SetCurHp(int hp);
 	void TakeDamage(int damage);
 	void SetPos(const XMVECTOR& position);
+	void RotateAlongMovementDirection();
 	void SetDirection(const XMVECTOR& direction);
 	void SetRoute(const vector<XMVECTOR>& target_poses);
 	void SetMeshId(const string& mesh_id);
@@ -29,26 +30,36 @@ private:
 	string mesh_id_;
 	int cur_node = 0;
 private:
-	vector<XMVECTOR> target_poses_;
-	int cur_target_pos_index_ = 1;
-private:
 	reality::BehaviorTree behavior_tree_;
 };
 
-class EnemyMoveToTargets : public reality::SequenceNode
+class EnemyMoveToTargets : public reality::ActionNode
 {
 public:
-	EnemyMoveToTargets(entt::entity enemy_id, std::vector<XMVECTOR> target_positions)
-		: target_positions_(target_positions), current_target_index_(0)
+	EnemyMoveToTargets(entt::entity enemy_id, XMVECTOR target_position)
+		: enemy_id_(enemy_id), target_position_(target_position)
 	{
-		for (int i = 1;i < target_positions_.size();i++) 
-		{
-			auto target_pos = target_positions_[i];
+	};
 
+	virtual reality::BehaviorStatus Action() override
+	{
+		Enemy* enemy = reality::SCENE_MGR->GetActor<Enemy>(enemy_id_);
+
+		enemy->SetCharacterAnimation("Zombie_Idle_1_v2_IPC_Anim_Unreal Take.anim");
+
+		XMVECTOR cur_pos = enemy->GetPos();
+		enemy->SetDirection(XMVector3Normalize(target_position_ - cur_pos));
+		enemy->RotateAlongMovementDirection();
+
+		if (XMVector3Length(target_position_ - cur_pos).m128_f32[0] < 10.0f) {
+			return reality::BehaviorStatus::SUCCESS;
 		}
+
+		return reality::BehaviorStatus::RUNNING;
 	}
 
 private:
-	std::vector<XMVECTOR> target_positions_;
-	int current_target_index_;
+	XMVECTOR target_position_;
+	entt::entity enemy_id_;
+	std::mutex  movement_mutex_;
 };

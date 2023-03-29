@@ -63,9 +63,6 @@ namespace reality {
 
     public:
         virtual void Execute() override;
-
-    private:
-        std::vector<shared_ptr<BehaviorNode>> children_;
     };
 
     class DLL_API ActionNode : public BehaviorNode
@@ -73,15 +70,8 @@ namespace reality {
     public:
         virtual void Execute() override;
 
-    public:
-        virtual BehaviorStatus GetStatus() override;
-
     private:
         virtual BehaviorStatus Action() = 0;
-
-    private:
-        std::thread action_thread_;
-        std::future<BehaviorStatus> future_status_;
     };
 
     template<typename BehaviorNodeType, typename ...Args>

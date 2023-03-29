@@ -4,18 +4,22 @@
 namespace reality {
 	void BehaviorTree::Update()
 	{
-		root_->Execute();
-	}
+		if (root_ == nullptr) {
+			return;
+		}
 
-	void BehaviorTree::Execute()
-	{
 		root_->Execute();
-		
+
 		BehaviorStatus root_status = root_->GetStatus();
 
-        if (root_status == BehaviorStatus::FAILURE ||
-            root_status == BehaviorStatus::SUCCESS) {
-            root_->ResetNode();
-        }
+		if (root_status == BehaviorStatus::FAILURE ||
+			root_status == BehaviorStatus::SUCCESS) {
+			root_->ResetNode();
+		}
+	}
+
+	BehaviorNode* BehaviorTree::GetRootNode()
+	{
+		return root_.get();
 	}
 }
