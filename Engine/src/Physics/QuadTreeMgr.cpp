@@ -127,7 +127,7 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
 
-	player_capsule_pos = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())->capsule.base;
+	//player_capsule_pos = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())->capsule.base;
 }
 
 void reality::QuadTreeMgr::Release()

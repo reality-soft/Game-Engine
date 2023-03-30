@@ -28,6 +28,7 @@ namespace reality
 		{
 			data.view_matrix = XMMatrixIdentity();
 			data.projection_matrix = XMMatrixIdentity();
+			data.camera_translation = XMMatrixIdentity();
 			data.camera_position = XMVectorZero();
 			data.camera_look = XMVectorZero();
 		}
@@ -40,6 +41,7 @@ namespace reality
 		{
 			XMMATRIX view_matrix;
 			XMMATRIX projection_matrix;
+			XMMATRIX camera_translation;
 			XMVECTOR camera_position;
 			XMVECTOR camera_look;
 		} data;
@@ -87,14 +89,31 @@ namespace reality
 	{
 		CbSkySphere()
 		{
-			data.time = { 240, 480, 240, 480 };
-			data.sky_color = { 1.0f,  1.0f,   1.0f,  1.0f };
+			data.sky_color = { 0, 0, 0, 0 };
+			data.gradation = { 0, 0, 0, 0 };
 		}
 		struct Data
 		{
-			XMFLOAT4 time;
 			XMFLOAT4 sky_color;
-			XMFLOAT4 strength;
+			XMFLOAT4 gradation;
+		} data;
+
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
+	struct CbFog
+	{
+		CbFog()
+		{
+			data.fog_color = { 1, 1, 1, 1 };
+			data.fog_start = { 0, 0, 0 };
+			data.distance = 5000;
+		}
+		struct Data
+		{
+			XMFLOAT4 fog_color;
+			XMFLOAT3 fog_start;
+			float distance;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
