@@ -16,10 +16,10 @@ namespace reality {
     void BehaviorNode::ResetNode()
     {
         SetStatus(BehaviorStatus::IDLE);
-        executing_child_node_index_ = -1;
+        executing_child_node_index_ = 0;
 
         for (auto child : children_) {
-
+            child->ResetNode();
         }
     }
 
