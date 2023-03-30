@@ -21,9 +21,3 @@ StaticMesh::StaticMesh(const StaticMesh& other)
 	meshes.resize(other.meshes.size());
 	meshes = other.meshes;
 }
-
-LightMesh::LightMesh(const LightMesh& other)
-{
-	meshes.resize(other.meshes.size());
-	meshes = other.meshes;
-}

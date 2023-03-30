@@ -31,7 +31,7 @@ void reality::SpaceNode::SetNode(float min_x, float min_z, float max_x, float ma
 	area = AABBShape(min, max);
 }
 
-void reality::QuadTreeMgr::Init(LightMeshLevel* level_to_devide, int max_depth)
+void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth)
 {
 	deviding_level_ = level_to_devide;
 
@@ -126,6 +126,8 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	ray_casted_nodes = casted_nodes_.size();
 	UpdatePhysics();
+
+	//player_capsule_pos = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())->capsule.base;
 }
 
 void reality::QuadTreeMgr::Release()
@@ -141,6 +143,7 @@ void reality::QuadTreeMgr::Release()
 
 void reality::QuadTreeMgr::UpdatePhysics()
 {
+	int a = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
 		vector<SpaceNode*> nodes;
@@ -160,12 +163,11 @@ void reality::QuadTreeMgr::UpdatePhysics()
 
 		nodes.clear();
 	}
+	int b = 0;
 }
 
 void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes)
 {
-	player_capsule_pos = capsule.base;
-
 	map<float, CapsuleCallback> floor_list;
 	vector<RayShape> wall_list;
 

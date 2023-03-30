@@ -11,8 +11,8 @@ CameraSystem::CameraSystem()
 	camera = nullptr;
 	viewport = DX11APP->GetViewPortAddress();
 
-	cb_viewproj.data.view_matrix = XMMatrixIdentity();
-	projection_matrix = cb_viewproj.data.projection_matrix = XMMatrixIdentity();
+	cb_camera_info.data.view_matrix = XMMatrixIdentity();
+	projection_matrix = cb_camera_info.data.projection_matrix = XMMatrixIdentity();
 }
 
 CameraSystem::~CameraSystem()
@@ -65,13 +65,13 @@ void CameraSystem::OnCreate(entt::registry& reg)
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(CbViewProj::Data);
+	desc.ByteWidth = sizeof(CbCameraInfo::Data);
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	subdata.pSysMem = cb_viewproj.buffer.GetAddressOf();
+	subdata.pSysMem = cb_camera_info.buffer.GetAddressOf();
 
 	HRESULT hr;
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_viewproj.buffer.GetAddressOf());
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_camera_info.buffer.GetAddressOf());
 
 	// 빌보드 상수버퍼
 	ZeroMemory(&desc, sizeof(desc));
@@ -98,8 +98,8 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 
 	CreateMatrix();
 
-	DX11APP->GetDeviceContext()->UpdateSubresource(cb_viewproj.buffer.Get(), 0, nullptr, &cb_viewproj.data, 0, 0);
-	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, cb_viewproj.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->UpdateSubresource(cb_camera_info.buffer.Get(), 0, nullptr, &cb_camera_info.data, 0, 0);
+	DX11APP->GetDeviceContext()->VSSetConstantBuffers(0, 1, cb_camera_info.buffer.GetAddressOf());
 
 	// 빌보드 상수버퍼 적용
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
@@ -140,7 +140,7 @@ RayShape CameraSystem::CreateMouseRay()
 
 RayShape reality::CameraSystem::CreateFrontRay()
 {
-	XMMATRIX camera_world = XMMatrixInverse(nullptr, XMMatrixTranspose(cb_viewproj.data.view_matrix));
+	XMMATRIX camera_world = XMMatrixInverse(nullptr, XMMatrixTranspose(cb_camera_info.data.view_matrix));
 	XMVECTOR ray_origin = camera_world.r[3];
 	ray_origin.m128_f32[3] = 0.0f;
 	XMVECTOR ray_dir = XMVector3Normalize(camera_world.r[2]);
@@ -253,10 +253,12 @@ void CameraSystem::CreateMatrix()
 	this->view_matrix = view_matrix;
 	this->world_matrix = rotation_matrix;
 
-	cb_viewproj.data.view_matrix = XMMatrixTranspose(view_matrix);
-	cb_viewproj.data.projection_matrix = XMMatrixTranspose(projection_matrix);
-	cb_viewproj.data.camera_position = camera->camera_pos;
-	cb_viewproj.data.camera_position.m128_f32[3] = camera->far_z;
+	cb_camera_info.data.view_matrix = XMMatrixTranspose(view_matrix);
+	cb_camera_info.data.projection_matrix = XMMatrixTranspose(projection_matrix);
+	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(camera->camera_pos));
+	cb_camera_info.data.camera_position = XMMatrixInverse(nullptr, this->view_matrix).r[3];
+	cb_camera_info.data.camera_position.m128_f32[3] = camera->far_z;
+	cb_camera_info.data.camera_look = XMVector3Normalize(XMMatrixInverse(nullptr, this->view_matrix).r[2]);
 
 	camera->look = XMVector3Normalize(rotation_matrix.r[2]);
 	camera->right = XMVector3Normalize(rotation_matrix.r[0]);

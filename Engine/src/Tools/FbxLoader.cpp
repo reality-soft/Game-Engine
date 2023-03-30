@@ -56,7 +56,7 @@ namespace reality {
 
 		double scale_factor = fbx_scene->GetGlobalSettings().GetSystemUnit().GetScaleFactor();
 		FbxGeometryConverter converter(fbx_manager);
-		converter.Triangulate(fbx_scene, true);
+		//converter.Triangulate(fbx_scene, true);
 		root_node = fbx_scene->GetRootNode();
 		PreProcess(root_node);
 
@@ -146,7 +146,6 @@ namespace reality {
 		// 임포트 설정값
 		scale *= import_options.import_scale;
 		rot = import_options.import_rotation;
-
 		geom.SetS(scale);
 		geom.SetR(rot);
 		geom.SetT(trans);
@@ -157,17 +156,12 @@ namespace reality {
 
 		// Layer 개념
 		FbxLayerElementUV* vertex_uv_layer = nullptr;
-		FbxLayerElementVertexColor* vertex_color_layer = nullptr;
 		FbxLayerElementNormal* vertex_normal_layer = nullptr;
 
 		FbxLayer* fbx_layer = fbx_mesh->GetLayer(0);
 		if (fbx_layer->GetUVs() != nullptr)
 		{
 			vertex_uv_layer = fbx_layer->GetUVs();
-		}
-		if (fbx_layer->GetVertexColors() != nullptr)
-		{
-			vertex_color_layer = fbx_layer->GetVertexColors();
 		}
 		if (fbx_layer->GetNormals() != nullptr)
 		{
@@ -207,7 +201,6 @@ namespace reality {
 		UINT uv_index = 0;
 		UINT cn_index = 0;
 
-		LightVertex light_vertex;
 		Vertex vertex;
 		SkinnedVertex skinned_vertex;
 		for (int p = 0; p < poly_count; ++p)
@@ -238,9 +231,6 @@ namespace reality {
 					}
 
 					out_mesh->indices.push_back(vertex_index);
-					light_vertex.p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[0]);
-					light_vertex.p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[1]);
-					light_vertex.p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[2]);
 
 					vertex.p.x = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[0]);
 					vertex.p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[1]);
@@ -250,25 +240,12 @@ namespace reality {
 					skinned_vertex.p.y = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[1]);
 					skinned_vertex.p.z = static_cast<float>(geom.MultT(fbx_mesh->GetControlPointAt(vertex_index)).mData[2]);
 
-					if (vertex_color_layer)
-					{
-						FbxColor c = ReadColor(fbx_mesh, vertex_color_layer, vertex_index, vertex_counter);
-						vertices_by_control_point[vertex_index].c.x = c.mRed;
-						vertices_by_control_point[vertex_index].c.y = c.mGreen;
-						vertices_by_control_point[vertex_index].c.z = c.mBlue;
-						vertices_by_control_point[vertex_index].c.w = 1.0f;
-					}
-					else { vertices_by_control_point[vertex_index].c = { 1, 1, 1, 1 }; }
-
 					if (vertex_uv_layer)
 					{
 						FbxVector2 t = ReadUV(fbx_mesh, vertex_uv_layer, vertex_index, uv_index);
 						
 						vertices_by_control_point[vertex_index].t.x = t.mData[0];
 						vertices_by_control_point[vertex_index].t.y = 1.0f - t.mData[1];
-
-						light_vertex.t.x = t.mData[0];
-						light_vertex.t.y = 1.0f - t.mData[1];
 					}
 
 					if (vertex_normal_layer)
@@ -310,16 +287,15 @@ namespace reality {
 
 						skinned_vertex = vertices_by_control_point[vertex_index];
 
-						vertex = vertices_by_control_point[vertex_index];
 					}
-					vertex_counter++;
-
-					out_mesh->light_vertices_by_polygon_vertex.push_back(light_vertex);
+					vertex = vertices_by_control_point[vertex_index];
 					out_mesh->vertices_by_polygon_vertex.push_back(vertex);
 					out_mesh->skinned_vertices_by_polygon_vertex.push_back(skinned_vertex);
+					vertex_counter++;
 				}
 			}
 		}
+
 		out_mesh->vertices_by_control_point = vertices_by_control_point;
 		out_mesh->skinned_vertices_by_control_point = skinned_vertices_by_control_point;
 	}

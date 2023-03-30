@@ -34,7 +34,6 @@ namespace reality
 		std::string material_name;
 		std::vector<Vertex> vertices_by_control_point;
 		std::vector<Vertex> vertices_by_polygon_vertex;
-		std::vector<LightVertex> light_vertices_by_polygon_vertex;
 		std::vector<SkinnedVertex> skinned_vertices_by_control_point;
 		std::vector<SkinnedVertex> skinned_vertices_by_polygon_vertex;
 		std::vector<UINT>   indices;

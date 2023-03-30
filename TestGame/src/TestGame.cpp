@@ -14,11 +14,14 @@ void TestGame::OnInit()
 	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
+
 	//FbxImportOption option;
-	//option.import_rotation = {90, 0, 180, 0};
+	//option.import_rotation = {0, 0, 0, 0};
 	//option.import_scale = 10.0f;
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_01.fbx", option);
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_01.fbx", option);
+	//option.recalculate_normal = true;
+
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_04.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_04.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
 
 	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -60,12 +63,17 @@ void TestGame::OnInit()
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
-	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel_01.ltmesh", "LevelVS.cso", "LevelGS.cso", "DeadPoly_Level_Collision_01.ltmesh");
-	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
-	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
+	level.Create("DeadPoly_FullLevel_04.stmesh", "LevelVS.cso", "DeadPoly_Level_Collision_04.stmesh");
+	//level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
+	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack_01.mapdat", GuideLine::GuideType::eNpcTrack);
 
 	QUADTREE->Init(&level, 3);
+
+	environment_.CreateEnvironment();
+	environment_.SetWorldTime(60, 60, true);
+	environment_.SetSkyColorByTime(RGB_TO_FLOAT(201, 205, 204), RGB_TO_FLOAT(11, 11, 19));
+	environment_.SetFogDistanceByTime(5000, 1000);
+	environment_.SetLightProperty(0.2f, 0.2f);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
 	gw_property_.AddProperty<int>("raycasted nodes", &QUADTREE->ray_casted_nodes);
@@ -73,46 +81,69 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
 	gw_property_.AddProperty<int>("num of zombie", &cur_zombie_created);
-}
-
-void TestGame::OnUpdate()
-{
-	static float cur_time = 0.0f;
-
-	cur_time += TM_DELTATIME;
 
 	const vector<reality::GuideLine> npc_guidlines = level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack);
 
-	if (cur_time >= 10.0f) {
+
 		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
 		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
 
-		int guidline_index = rand() % npc_guidlines.size();
+		int guidline_index = 0;// rand() % npc_guidlines.size();
 		int mesh_index = rand() % enemy_meshes.size();
-		
+
 		vector<XMVECTOR> target_poses;
 		for (const auto& target_pos : npc_guidlines[guidline_index].line_nodes) {
 			target_poses.push_back(target_pos.second);
 		}
+
 		enemy_actor->SetRoute(target_poses);
 		enemy_actor->SetMeshId(enemy_meshes[mesh_index]);
-		
-		//auto player = SCENE_MGR->GetPlayer<Player>(0);
-		//player->SetPos(level.GetGuideLines()->at(guidline_index).line_nodes[0]);
 
-		cur_time = 0.0f;
+		auto player = SCENE_MGR->GetPlayer<Player>(0);
+		player->SetPos(level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack).at(guidline_index).line_nodes[0] + XMVECTOR{0, 1000, 0, 0});
 
-		cur_zombie_created++;
-	}
+}
 
+void TestGame::OnUpdate()
+{
+	//static float cur_time = 0.0f;
 
-	sys_light.UpdateSun(sky_sphere);
+	//cur_time += TM_DELTATIME;
+
+	//const vector<reality::GuideLine> npc_guidlines = level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack);
+
+	//if (cur_time >= 2.0f) {
+	//	auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+	//	auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
+
+	//	int guidline_index = rand() % npc_guidlines.size();
+	//	int mesh_index = rand() % enemy_meshes.size();
+	//	
+	//	vector<XMVECTOR> target_poses;
+	//	for (const auto& target_pos : npc_guidlines[guidline_index].line_nodes) {
+	//		target_poses.push_back(target_pos.second);
+	//	}
+	//	
+	//	target_poses.erase(target_poses.begin());
+	//	enemy_actor->SetRoute(target_poses);
+	//	enemy_actor->SetMeshId(enemy_meshes[mesh_index]);
+	//	
+	//	//auto player = SCENE_MGR->GetPlayer<Player>(0);
+	//	//player->SetPos(level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack).at(guidline_index).line_nodes[0]);
+
+	//	cur_time = 0.0f;
+
+	//	cur_zombie_created++;
+	//}
+
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
 	sys_effect.OnUpdate(reg_scene_);
 	sys_sound.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
+
+	environment_.Update(&sys_camera, &sys_light);
 
 	ingame_ui.OnUpdate();
 
@@ -124,7 +155,7 @@ void TestGame::OnUpdate()
 
 void TestGame::OnRender()
 {
-	sky_sphere.FrameRender(sys_camera.GetCamera());
+	environment_.Render();
 	level.Update();
 	level.Render();
 	sys_render.OnUpdate(reg_scene_);
@@ -163,8 +194,7 @@ void TestGame::CreateEffectFromRay()
 	else if(raycallback_node.success)
 		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
 }
-
-
+// git push test
 void TestGame::CursorStateUpdate()
 {
 	static bool b_show_cursor = false;

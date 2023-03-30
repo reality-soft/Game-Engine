@@ -25,7 +25,11 @@
 #include <functional>
 #include <array>
 #include <wrl.h>
+#include <thread>
+#include <mutex>
 #include <future>
+#include <cmath>
+#define _USE_MATH_DEFINES
 
 #include <windows.h>
 #include <tchar.h>
@@ -58,3 +62,6 @@ type() {}\
 ~type() {}\
 type(const type&) = delete;\
 type& operator=(const type&) = delete;
+
+#define RGB_TO_FLOAT(r, g, b) XMFLOAT4(r / 256.f, g / 256.f, b / 256.f, 1.f)
+#define RGBA_TO_FLOAT(r, g, b, a) XMFLOAT4(r / 256.f, g / 256.f, b / 256.f, a / 256.f)

@@ -13,33 +13,20 @@ namespace reality
 
 	public:
 		bool CreateSphere();
-		void FrameRender(const C_Camera* camera);
+		void Update(XMFLOAT2 world_time, float current_time);
+		void Render();
 
-		XMMATRIX sun_world;
+		void SetNoonColor(XMFLOAT4 _color);
+		void SetNightColor(XMFLOAT4 _color);
+		XMFLOAT4 GetSkyColor();
 
-		XMFLOAT4 skycolor_afternoon;
-		XMFLOAT4 skycolor_noon;
+	private:
 		XMFLOAT4 skycolor_night;
-		FLOAT color_strength;
+		XMFLOAT4 skycolor_noon;
 		CbSkySphere cb_sky;
 
 	private:
-		void FrameBackgroundSky(const C_Camera* camera);
-		void RenderBackgroundSky();
-
-		void FrameSunSky(const C_Camera* camera);
-		void RenderSunSky();
-
-		void FrameStarSky(const C_Camera* camera);
-		void RenderStarSky();
-
-		void FrameCloudSky(const C_Camera* camera);
-		void RenderCloudSky();
-
-	private:
 		shared_ptr<StaticMesh> sphere_mesh;
-		shared_ptr<StaticMesh> cloud_dome;
 		shared_ptr<VertexShader> vs;
-		CbTransform cb_transform;
 	};
 }

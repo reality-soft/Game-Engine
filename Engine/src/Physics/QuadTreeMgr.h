@@ -1,6 +1,6 @@
 #pragma once
 #include "Collision.h"
-#include "LightMeshLevel.h"
+#include "StaticMeshLevel.h"
 #include "CameraSystem.h"
 
 #define MIN_HEIGHT -10000.f
@@ -34,7 +34,7 @@ namespace reality {
 		SINGLETON(QuadTreeMgr)
 #define QUADTREE QuadTreeMgr::GetInst()
 	public:
-		void Init(LightMeshLevel* level_to_devide, int max_depth);
+		void Init(StaticMeshLevel* level_to_devide, int max_depth);
 		void Frame(CameraSystem* applied_camera);
 		void Release();
 
@@ -74,7 +74,7 @@ namespace reality {
 		void SetStaticTriangles(SpaceNode* node);
 
 	public:
-		LightMeshLevel* deviding_level_ = nullptr;
+		StaticMeshLevel* deviding_level_ = nullptr;
 		Frustum camera_frustum_;
 
 		bool wire_frame = false;
