@@ -9,14 +9,12 @@ struct VS_IN
 {
     float3 p : F3_POSITION;  
     float3 n : F3_NORMAL;
-    float4 c : F4_COLOR;
     float2 t : F2_TEXTURE;
 };
 struct VS_OUT  
 {
     float4 p : SV_POSITION;
     float4 n : NORMAL;
-    float4 c : COLOR;
     float2 t : TEXCOORD;
     float3 origin : TEXCOORD1;
 };
@@ -35,7 +33,6 @@ VS_OUT VS(VS_IN input)
     
     output.p = projection;
     output.n = normal;
-    output.c = input.c;
     output.t = input.t;
 
     return output;

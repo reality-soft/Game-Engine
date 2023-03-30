@@ -1,11 +1,27 @@
 #include "TestGame.h"
 #include "Player.h"
+#include "Enemy.h"
+#include "FX_BloodImpact.h"
+#include "FX_ConcreteImpact.h"
+#include "FbxMgr.h"
 
 void TestGame::OnInit()
 {
+
+	ShowCursor(false);
+	//SetCapture(ENGINE->GetWindowHandle());
+
 	GUI->AddWidget("property", &gw_property_);
 
 	reality::RESOURCE->Init("../../Contents/");
+
+	//FbxImportOption option;
+	//option.import_rotation = {0, 0, 0, 0};
+	//option.import_scale = 10.0f;
+	//option.recalculate_normal = true;
+
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_03.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_03.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
 
 	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -13,56 +29,100 @@ void TestGame::OnInit()
 	sys_render.OnCreate(reg_scene_);
 	sys_camera.OnCreate(reg_scene_);
 
-// �׽�Ʈ UI
-	test_ui_.OnInit(reg_scene_);
-	CreateTestUI();
+	ingame_ui.OnInit(reg_scene_);
 	sys_ui.OnCreate(reg_scene_);
   
 	sys_camera.SetSpeed(1000);
 	sys_light.OnCreate(reg_scene_);
+	sys_effect.OnCreate(reg_scene_);
+	sys_sound.OnCreate(reg_scene_);
 
 	auto player_entity = SCENE_MGR->AddPlayer<Player>();
 	sys_camera.TargetTag(reg_scene_, "Player");
 
 	auto character_actor = SCENE_MGR->GetPlayer<Player>(0);
 	// Key Settings
-	INPUT_EVENT->Subscribe({ DIK_D }, std::bind(&Player::MoveRight, character_actor), KEY_HOLD);
-	INPUT_EVENT->Subscribe({ DIK_W, DIK_D }, std::bind(&Player::MoveRightForward, character_actor), KEY_HOLD);
-	INPUT_EVENT->Subscribe({ DIK_S, DIK_D }, std::bind(&Player::MoveRightBack, character_actor), KEY_HOLD);
-	INPUT_EVENT->Subscribe({ DIK_A }, std::bind(&Player::MoveLeft, character_actor), KEY_HOLD);
-	INPUT_EVENT->Subscribe({ DIK_W, DIK_A }, std::bind(&Player::MoveLeftForward, character_actor), KEY_HOLD);
-	INPUT_EVENT->Subscribe({ DIK_S, DIK_A }, std::bind(&Player::MoveLeftBack, character_actor), KEY_HOLD);
-	INPUT_EVENT->Subscribe({ DIK_W }, std::bind(&Player::MoveForward, character_actor), KEY_HOLD);
-	INPUT_EVENT->Subscribe({ DIK_S }, std::bind(&Player::MoveBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_D }, std::bind(&Player::MoveRight, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_W, DIK_D }, std::bind(&Player::MoveRightForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_S, DIK_D }, std::bind(&Player::MoveRightBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_A }, std::bind(&Player::MoveLeft, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_W, DIK_A }, std::bind(&Player::MoveLeftForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_S, DIK_A }, std::bind(&Player::MoveLeftBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_W }, std::bind(&Player::MoveForward, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_S }, std::bind(&Player::MoveBack, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_RETURN }, std::bind(&Player::ResetPos, character_actor), KEY_PUSH);
+
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_SPACE }, std::bind(&Player::Jump, character_actor), KEY_PUSH);
 
 	std::function<void()> idle = std::bind(&Player::Idle, character_actor);
-	INPUT_EVENT->Subscribe({ DIK_D }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_S }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_W }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_A }, idle, KEY_UP);
-	INPUT_EVENT->Subscribe({ DIK_SPACE }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_D }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_S }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_W }, idle, KEY_UP);
+	INPUT_EVENT->SubscribeKeyEvent({ DIK_A }, idle, KEY_UP);
 
-	INPUT_EVENT->Subscribe({ DIK_SPACE }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
+	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
 	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel.ltmesh", "LevelVS.cso", "LevelGS.cso");
-	QUADTREE->Init(&level);
-	QUADTREE->RegisterDynamicCapsule(player_entity);
+	level.Create("DeadPoly_FullLevel_03.stmesh", "LevelVS.cso", "DeadPoly_Level_Collision_03.stmesh");
+	//level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
+	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
+
+	QUADTREE->Init(&level, 3);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
 	gw_property_.AddProperty<int>("raycasted nodes", &QUADTREE->ray_casted_nodes);
 	gw_property_.AddProperty<set<UINT>>("including nodes", &QUADTREE->including_nodes_num);
-	gw_property_.AddProperty<XMVECTOR>("player pos", &QUADTREE->player_capsule_pos);
+	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
+	gw_property_.AddProperty<int>("num of zombie", &cur_zombie_created);
 }
 
 void TestGame::OnUpdate()
 {
+	static float cur_time = 0.0f;
+
+	cur_time += TM_DELTATIME;
+
+	const vector<reality::GuideLine> npc_guidlines = level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack);
+
+	if (cur_time >= 10.0f) {
+		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
+		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
+
+		int guidline_index = rand() % npc_guidlines.size();
+		int mesh_index = rand() % enemy_meshes.size();
+		
+		vector<XMVECTOR> target_poses;
+		for (const auto& target_pos : npc_guidlines[guidline_index].line_nodes) {
+			target_poses.push_back(target_pos.second);
+		}
+		enemy_actor->SetRoute(target_poses);
+		enemy_actor->SetMeshId(enemy_meshes[mesh_index]);
+		
+		//auto player = SCENE_MGR->GetPlayer<Player>(0);
+		//player->SetPos(level.GetGuideLines()->at(guidline_index).line_nodes[0]);
+
+		cur_time = 0.0f;
+
+		cur_zombie_created++;
+	}
+
+
 	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
+	sys_effect.OnUpdate(reg_scene_);
+	sys_sound.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
+
+	ingame_ui.OnUpdate();
+
+	if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH)
+		CreateEffectFromRay();
+
+	CursorStateUpdate();
 }
 
 void TestGame::OnRender()
@@ -79,64 +139,46 @@ void TestGame::OnRender()
 void TestGame::OnRelease()
 {
 	QUADTREE->Release();
-	PHYSICS->Release();
 	reality::RESOURCE->Release();
 }
 
-void TestGame::CreateEffectFromRay(XMVECTOR hitpoint)
+void TestGame::CreateEffectFromRay()
 {
-	C_Effect& effect = reg_scene_.get<C_Effect>(effect_.GetEntityId());
+	RayShape ray = sys_camera.CreateFrontRay();
+
+	RayCallback raycallback_node = QUADTREE->RaycastAdjustLevel(ray, 10000.0f);
+	auto raycallback_pair = QUADTREE->RaycastAdjustActor(ray);
+	if (raycallback_pair.first.success && raycallback_node.success)
+	{
+		if (raycallback_pair.first.distance < raycallback_node.distance)
+		{
+			// TODO : have to subtract zombie hp
+			EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_pair.first.point, raycallback_pair.first.normal, 1.0f);
+		}
+		else
+			EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
+	}
+	else if (raycallback_pair.first.success)
+	{
+		// TODO : have to subtract zombie hp
+		EFFECT_MGR->SpawnEffectFromNormal<FX_BloodImpact>(raycallback_pair.first.point, raycallback_pair.first.normal, 1.0f);
+	}
+	else if(raycallback_node.success)
+		EFFECT_MGR->SpawnEffectFromNormal<FX_ConcreteImpact>(raycallback_node.point, raycallback_node.normal, 1.0f);
+}
+// git push test
+void TestGame::CursorStateUpdate()
+{
+	static bool b_show_cursor = false;
+	if (DINPUT->GetKeyState(DIK_T) == KeyState::KEY_PUSH)
+	{
+		b_show_cursor = !b_show_cursor;
+		ShowCursor(b_show_cursor);
+	}
+
+	if (!b_show_cursor)
+		SetCursorPos(ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f);
 	
-	//effect.world = DirectX::XMMatrixAffineTransformation(S, O, R, T);
-	effect.world = XMMatrixTranslationFromVector(hitpoint);
 }
 
-void TestGame::CreateTestUI()
-{
-	C_UI& ui_comp = reg_scene_.get<C_UI>(test_ui_.GetEntityId());
-	// 무기 UI
-	shared_ptr<UI_Image> weapon_image = make_shared<UI_Image>();
-	weapon_image->InitImage("AR_01.png");
-	weapon_image->SetLocalRectByMin({ 0, ENGINE->GetWindowSize().y * 5.0f / 6.0f }, 512.0f, 179.0f);
-	shared_ptr<UI_Text> weapon_text = make_shared<UI_Text>();
-	weapon_image->AddChildUI(weapon_text);
-	weapon_text->InitText("AR_01", { weapon_image->rect_transform_.world_rect.width / 2.0f, weapon_image->rect_transform_.world_rect.height / 3.0f }, 0.2f);
-	shared_ptr<UI_Text> ammo_text = make_shared<UI_Text>();
-	weapon_image->AddChildUI(ammo_text);
-	ammo_text->InitText("30/30", { weapon_image->rect_transform_.world_rect.width / 2.0f, weapon_image->rect_transform_.world_rect.height / 2.0f }, 0.2f);
-	ui_comp.ui_list.insert({ "Weapon UI", weapon_image });
-
-	// 미니맵 UI
-	shared_ptr<UI_Image> minimap_image = make_shared<UI_Image>();
-	minimap_image->InitImage("PreviewMinimap.png");
-	//minimap_image->InitImage("Minimap_Border.png");
-	minimap_image->SetLocalRectByMin({ ENGINE->GetWindowSize().x * 5.0f / 6.0f, ENGINE->GetWindowSize().y * 1.0f / 10.0f }, 248.0f, 245.0f);
-	ui_comp.ui_list.insert({ "Minimap UI", minimap_image });
-
-	// 플레이어 UI
-	shared_ptr<UI_Image> player_image = make_shared<UI_Image>();
-	player_image->InitImage("PreviewChr.png");
-	player_image->SetLocalRectByMin({ 0, ENGINE->GetWindowSize().y * 1.0f / 10.0f }, 432.0f, 153.0f);
-	//shared_ptr<UI_Image> player_image = make_shared<UI_Image>();
-	//player_image->InitImage("PlayerBorder.png");
-	//player_image->SetLocalRectByMin({ 0, ENGINE->GetWindowSize().y * 1.0f / 10.0f }, 432.0f, 153.0f);
-	//
-	//shared_ptr<UI_Image> hp_image = make_shared<UI_Image>();
-	//player_image->AddChildUI(hp_image);
-	//hp_image->InitImage("BarHealth.png");
-	//hp_image->SetLocalRectByMin({ 170.0f, 47.0f }, 200.0f, 20.0f );
-	//
-	//shared_ptr<UI_Image> bq_image = make_shared<UI_Image>();
-	//player_image->AddChildUI(bq_image);
-	//bq_image->InitImage("BqBar.png");
-	//bq_image->SetLocalRectByMin({ 170.0f, 80.0f }, 200.0f, 20.0f);
-	ui_comp.ui_list.insert({ "Player UI", player_image });
-
-	// Objective UI
-	shared_ptr<UI_Image> obj_image = make_shared<UI_Image>();
-	obj_image->InitImage("PreviewObj.png");
-	obj_image->SetLocalRectByMin({ ENGINE->GetWindowSize().x * 5.0f / 6.0f, ENGINE->GetWindowSize().y * 4.0f / 10.0f }, 350.0f, 413.0f);
-
-	ui_comp.ui_list.insert({ "Objective UI", obj_image });
-}
 

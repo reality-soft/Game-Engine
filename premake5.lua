@@ -1,6 +1,7 @@
 workspace "Game-Engine"
 	architecture "x86_64"
 	toolset "v143"
+	cppdialect "C++20"
 	configurations
 	{
 		"Debug",
@@ -19,7 +20,7 @@ project "Engine"
 	objdir("../output/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	pchheader "stdafx.h"
-    pchsource "Engine/src/Engine/stdafx.cpp"
+    pchsource "Engine/src/Headers/stdafx.cpp"
 
 	files
 	{
@@ -31,28 +32,33 @@ project "Engine"
 
 	includedirs
 	{
-		"%{prj.name}/src/Engine",
-		"%{prj.name}/src/ECS",
-		"%{prj.name}/src/ECS/Actors",
-		"%{prj.name}/src/ECS/Systems",
-		"%{prj.name}/src/GUI",
-		"%{prj.name}/src/Engine/SingletonClass",
-		"%{prj.name}/src/Engine/SpacePartition",
+		"%{prj.name}/src/Actors",
+		"%{prj.name}/src/Components",
+		"%{prj.name}/src/Core",
+		"%{prj.name}/src/DataTypes",
+		"%{prj.name}/src/Headers",
+		"%{prj.name}/src/Physics",
+		"%{prj.name}/src/ResourceTypes",
+		"%{prj.name}/src/Systems",
+		"%{prj.name}/src/Tools",
+		"%{prj.name}/src/UI",
+		"%{prj.name}/src/World",
+		"%{prj.name}/src/Event",
+		"%{prj.name}/src/Scene",
+		"%{prj.name}/src/Sound",
+		"%{prj.name}/src/Input",
+		"%{prj.name}/src/Managers",
 		"%{prj.name}/vendor/spdlog/include",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
 		"../SDK/IMGUI/include",
-		"../SDK/RP3D/include"
 	}
 
 	libdirs
 	{
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug",
-		"../SDK/FMOD/lib/debug",
-		"../SDK/IMGUI/lib",
-		"../SDK/RP3D/lib/debug"
+		"../SDK/IMGUI/lib"
 	}
 
 	links
@@ -68,12 +74,10 @@ project "Engine"
 		"zlib-md",
 		"fmod_vc",
 		"fmodL_vc",
-		"ImGui_Win32_Dx11_D",
-		"reactphysics3d"
+		"ImGui_Win32_Dx11_D"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		staticruntime "off"
 		systemversion "latest"
 		runtime "Debug"
@@ -93,12 +97,32 @@ project "Engine"
 		defines "_DEBUG"
 		symbols "On"
 
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/debug",
+			"../SDK/FMOD/lib/debug",
+		}
+
 	filter "configurations:Release"
 		defines "_RELEASE"
 		optimize "On"
+
+		
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
+
 	filter "configurations:Dist"
 		defines "_DIST"
 		optimize "On"
+
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
 
 
 project "TestGame"
@@ -118,28 +142,33 @@ project "TestGame"
 
 	includedirs
 	{
-		"Engine/vendor/spdlog/include",
 		"Engine/src",
-		"Engine/src/Engine",
-		"Engine/src/ECS",
-		"Engine/src/ECS/Actors",
-		"Engine/src/ECS/Systems",
-		"Engine/src/Engine/SingletonClass",
-		"Engine/src/Engine/SpacePartition",
+		"Engine/src/Actors",
+		"Engine/src/Components",
+		"Engine/src/Core",
+		"Engine/src/DataTypes",
+		"Engine/src/Headers",
+		"Engine/src/Physics",
+		"Engine/src/ResourceTypes",
+		"Engine/src/Systems",
+		"Engine/src/Tools",
+		"Engine/src/UI",
+		"Engine/src/World",
+		"Engine/src/Event",
+		"Engine/src/Scene",
+		"Engine/src/Sound",
+		"Engine/src/Input",
+		"Engine/src/Managers",
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
-		"../SDK/IMGUI/include",
-		"../SDK/RP3D/include"
+		"../SDK/IMGUI/include"
 	}
 
 	libdirs
 	{
 		"../SDK/DirectXTK/lib",
-		"../SDK/FBXSDK/lib/debug",
-		"../SDK/FMOD/lib/debug",
-		"../SDK/IMGUI/lib",
-		"../SDK/RP3D/lib/debug"
+		"../SDK/IMGUI/lib"
 	}
 
 	links
@@ -150,8 +179,7 @@ project "TestGame"
 		"zlib-md",
 		"fmod_vc",
 		"fmodL_vc",
-		"ImGui_Win32_Dx11_D",
-		"reactphysics3d"
+		"ImGui_Win32_Dx11_D"
 	}
 
 	filter "files:**VS.hlsl"
@@ -170,14 +198,24 @@ project "TestGame"
 	    shadermodel "5.0"
 
 	filter "system:windows"
-		cppdialect "C++17"
+		cppdialect "C++20"
 		staticruntime "Off"
 		systemversion "latest"
-		runtime "Debug"
 
 		defines
 		{
 			"PLATFORM_WINDOWS"
+		}
+
+	filter "configurations:Debug"
+		defines "_DEBUG"
+		symbols "On"
+		runtime "Debug"
+
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/debug",
+			"../SDK/FMOD/lib/debug",
 		}
 
 		postbuildcommands
@@ -185,13 +223,33 @@ project "TestGame"
 			"copy \"..\\..\\output\\bin\\Debug-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
 		}
 
-	filter "configurations:Debug"
-		defines "_DEBUG"
-		symbols "On"
 	filter "configurations:Release"
 		defines "_RELEASE"
 		optimize "On"
+		runtime "Release"
+
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
+
+		postbuildcommands
+		{
+			"copy \"..\\..\\output\\bin\\Release-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
+		}
+
 	filter "configurations:Dist"
 		defines "_DIST"
 		optimize "On"
 
+		libdirs
+		{
+			"../SDK/FBXSDK/lib/release",
+			"../SDK/FMOD/lib/release",
+		}
+
+		postbuildcommands
+		{
+			"copy \"..\\..\\output\\bin\\Release-windows-x86_64\\TestGame\\*.cso\" \"..\\..\\Contents\\Shader\\*.cso\"",
+		}
