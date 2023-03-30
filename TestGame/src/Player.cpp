@@ -10,7 +10,7 @@ void Player::OnInit(entt::registry& registry)
 	movement_component_->speed = 550;
 	max_hp_ = cur_hp_ = 100;
 
-	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Retargeted_Unreal Take.anim");
 
 	reality::C_SkeletalMesh skm;
 	skm.local = XMMatrixIdentity();
