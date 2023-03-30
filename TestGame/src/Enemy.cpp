@@ -94,15 +94,18 @@ void Enemy::RotateAlongMovementDirection()
 	XMVECTOR scale, rotation, translation;
 	XMMatrixDecompose(&scale, &rotation, &translation, transform_matrix_);
 
+	XMVECTOR movement_direction = movement_component_->direction;
+	movement_direction.m128_f32[1] = 0.0f;
+	movement_direction = XMVector3Normalize(movement_direction);
 	float dot_product = XMVectorGetX(XMVector3Dot(movement_component_->direction, { 0, 0, 1, 0 }));
 	float magnitude1 = XMVectorGetX(XMVector3Length(movement_component_->direction));
 	float magnitude2 = XMVectorGetX(XMVector3Length({ 0, 0, 1, 0 }));
 
 	float radian_angle = acos(dot_product / (magnitude1 * magnitude2));
 
-	if (dot_product < 0)
+	if (-movement_direction.m128_f32[2] < 0)
 	{
-		radian_angle = -radian_angle;
+		radian_angle = 2 * M_PI -radian_angle;
 	}
 
 	XMMATRIX rotation_matrix = XMMatrixRotationY(radian_angle);

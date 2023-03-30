@@ -28,6 +28,8 @@
 #include <thread>
 #include <mutex>
 #include <future>
+#include <cmath>
+#define _USE_MATH_DEFINES
 
 #include <windows.h>
 #include <tchar.h>
