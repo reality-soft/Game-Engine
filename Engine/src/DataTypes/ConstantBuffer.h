@@ -123,10 +123,14 @@ namespace reality
 	{
 		CbGlobalLight()
 		{
-			data.position = XMVectorSet(5000, 5000, -5000, 0);
-			data.direction = -XMVector3Normalize(data.position);
-			data.ambient_up    = data.direction * 0.8;
-			data.ambient_down  = data.direction * 0.2f;
+			data.position = XMFLOAT3(5000, 5000, -5000);
+			data.brightness = 1.0f;
+
+			data.direction = XMFLOAT3((-1.0f * XMVector3Normalize(XMLoadFloat3(&data.position))).m128_f32);
+			data.specular_strength = 1.0f;
+			
+			data.ambient_up    = XMLoadFloat3(&data.direction) * 0.8;
+			data.ambient_down  = XMLoadFloat3(&data.direction) * 0.2f;
 			data.ambient_range = Vector3Length(data.ambient_up - data.ambient_down);
 		}
 		CbGlobalLight(const CbGlobalLight& other)
@@ -136,8 +140,12 @@ namespace reality
 		}
 		struct Data
 		{
-			XMVECTOR position;
-			XMVECTOR direction;
+			XMFLOAT3 position;
+			float brightness;
+
+			XMFLOAT3 direction;
+			float specular_strength;
+
 			XMVECTOR ambient_up;
 			XMVECTOR ambient_down;
 			float ambient_range;

@@ -42,7 +42,13 @@ void reality::Environment::SetFogDistanceByTime(float start_distance, float end_
 	distance_fog_.SetMaxMinDistance(start_distance, end_distance);
 }
 
-void reality::Environment::Update(CameraSystem* sys_camera)
+void reality::Environment::SetLightProperty(float _min_brightness, float _max_specular)
+{
+	min_directional_bright_ = _min_brightness;
+	max_specular_strength_ = _max_specular;
+}
+
+void reality::Environment::Update(CameraSystem* sys_camera, LightingSystem* sys_lighting)
 {
 	if (current_time_ >= world_time_.x)
 		time_routin_ = TimeRoutin::NOON_TO_NIGHT;
@@ -65,9 +71,11 @@ void reality::Environment::Update(CameraSystem* sys_camera)
 
 	sky_sphere_.Update(world_time_, current_time_);
 	distance_fog_.Update(world_time_, current_time_);
+	sys_lighting->UpdateGlobalLight(world_time_, current_time_, min_directional_bright_, max_specular_strength_);
 
 	distance_fog_.UpdateFogStart(sys_camera->GetCamera()->camera_pos);
 	distance_fog_.UpdateFogColor(sky_sphere_.GetSkyColor());
+
 }
 
 void reality::Environment::Render()
