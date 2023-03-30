@@ -50,4 +50,8 @@ namespace reality{
 			cur_scene_->OnRelease();
 		}
 	}
+
+	int  SceneMgr::GetNumOfActor() {
+		return actors_.size();
+	}
 }

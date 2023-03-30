@@ -7,7 +7,7 @@ void Player::OnInit(entt::registry& registry)
 {
 	Character::OnInit(registry);
 
-	movement_component_->speed = 150;
+	movement_component_->speed = 550;
 	max_hp_ = cur_hp_ = 100;
 
 	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");

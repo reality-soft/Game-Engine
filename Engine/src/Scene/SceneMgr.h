@@ -26,6 +26,8 @@ namespace reality {
         template <typename SceneClass>
         void SetScene();
         bool DestroyActor(entt::entity actor_id);
+    public:
+        int  GetNumOfActor();
     private:
         shared_ptr<Scene> cur_scene_;
     private:
@@ -87,5 +89,4 @@ namespace reality {
         cur_scene_ = make_shared<SceneClass>();
         OnInit();
     }
-
 }

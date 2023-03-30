@@ -6,11 +6,13 @@ void Enemy::OnInit(entt::registry& registry)
 {
 	Character::OnInit(registry);
 
+	// setting character data
 	movement_component_->speed = 100;
 	max_hp_ = cur_hp_ = 100;
 
 	SetCharacterAnimation("Zombie_Idle_1_v2_IPC_Anim_Unreal Take.anim");
 
+	// setting character objects
 	reality::C_SkeletalMesh skm;
 	skm.local = XMMatrixIdentity();
 	skm.world = XMMatrixIdentity();
@@ -32,48 +34,13 @@ void Enemy::OnInit(entt::registry& registry)
 	reality::C_SkeletalMesh* skm_ptr = registry.try_get<C_SkeletalMesh>(entity_id_);
 	skm_ptr->local = XMMatrixScalingFromVector({ 0.3, 0.3, 0.3, 0.0 }) * XMMatrixRotationY(XMConvertToRadians(180.f));
 
-
+	// setting a character into quad tree
 	QUADTREE->RegistDynamicCapsule(entity_id_);
 }
 
 void Enemy::OnUpdate()
 {
-	if (cur_target_pos_index_ >= target_poses_.size()) {
-		SetCharacterAnimation("Zombie_Idle_1_v2_IPC_Anim_Unreal Take.anim");
-		EVENT->PushEvent<DeleteActorEvent>(entity_id_);
-		return;
-	}
-	if (XMVector3Length(GetPos() - target_poses_[cur_target_pos_index_]).m128_f32[0] <= 10.0f) {
-		cur_target_pos_index_++;
-		if (cur_target_pos_index_ >= target_poses_.size()) {
-			return;
-		}
-	}
-
-	SetCharacterAnimation("Zombie_Walk_F_6_Loop_IPC_Anim_Unreal Take.anim");
-
-	movement_component_->direction = XMVector3Normalize(target_poses_[cur_target_pos_index_] - GetPos());
-	
-	XMVECTOR scale, rotation, translation;
-	XMMatrixDecompose(&scale, &rotation, &translation, transform_matrix_);
-	
-	float dot_product = XMVectorGetX(XMVector3Dot(movement_component_->direction, { 0, 0, 1, 0 }));
-	float magnitude1 = XMVectorGetX(XMVector3Length(movement_component_->direction));
-	float magnitude2 = XMVectorGetX(XMVector3Length({ 0, 0, 1, 0 }));
-
-	float radian_angle = acos(dot_product / (magnitude1 * magnitude2));
-
-	if (dot_product < 0)
-	{
-		radian_angle = -radian_angle;
-	}
-
-	XMMATRIX rotation_matrix = XMMatrixRotationY(radian_angle);
-	transform_tree_.root_node->Rotate(*reg_scene_, entity_id_, translation, rotation_matrix);
-	front_ = XMVector3Transform({ 0, 0, 1, 0 }, rotation_matrix);
-	right_ = XMVector3Transform({ 1, 0, 0, 0 }, rotation_matrix);
-
-	//behavior_tree_.Execute();
+	behavior_tree_.Update();
 }
 
 void Enemy::SetCharacterAnimation(string anim_id) const
@@ -122,6 +89,28 @@ void Enemy::SetPos(const XMVECTOR& position)
 	transform_tree_.root_node->Translate(*reg_scene_, entity_id_, transform_matrix_);
 }
 
+void Enemy::RotateAlongMovementDirection()
+{
+	XMVECTOR scale, rotation, translation;
+	XMMatrixDecompose(&scale, &rotation, &translation, transform_matrix_);
+
+	float dot_product = XMVectorGetX(XMVector3Dot(movement_component_->direction, { 0, 0, 1, 0 }));
+	float magnitude1 = XMVectorGetX(XMVector3Length(movement_component_->direction));
+	float magnitude2 = XMVectorGetX(XMVector3Length({ 0, 0, 1, 0 }));
+
+	float radian_angle = acos(dot_product / (magnitude1 * magnitude2));
+
+	if (dot_product < 0)
+	{
+		radian_angle = -radian_angle;
+	}
+
+	XMMATRIX rotation_matrix = XMMatrixRotationY(radian_angle);
+	transform_tree_.root_node->Rotate(*reg_scene_, entity_id_, translation, rotation_matrix);
+	front_ = XMVector3Transform({ 0, 0, 1, 0 }, rotation_matrix);
+	right_ = XMVector3Transform({ 1, 0, 0, 0 }, rotation_matrix);
+}
+
 void Enemy::SetDirection(const XMVECTOR& direction)
 {
 	movement_component_->direction = direction;
@@ -129,19 +118,25 @@ void Enemy::SetDirection(const XMVECTOR& direction)
 
 XMVECTOR Enemy::GetPos() const
 {
-	XMVECTOR scale, rotation, translation;
-	XMMatrixDecompose(&scale, &rotation, &translation, transform_matrix_);
+	XMVECTOR translation;
+	translation.m128_f32[0] = transform_matrix_.r[3].m128_f32[0];
+	translation.m128_f32[1] = transform_matrix_.r[3].m128_f32[1];
+	translation.m128_f32[2] = transform_matrix_.r[3].m128_f32[2];
+	translation.m128_f32[3] = 0.0f;
 
 	return translation;
 }
 
 void Enemy::SetRoute(const vector<XMVECTOR>& target_poses)
 {
-	SetPos(target_poses[cur_target_pos_index_]);
+	SetPos(target_poses[0] + XMVECTOR{0, 1000.0f, 0, 0});
+	// setting behavior tree
+	behavior_tree_.SetRootNode<SequenceNode>();
 
-	target_poses_ = target_poses;
-
-	// behavior_tree_.SetRootNode<EnemyMoveToTargets>(entity_id_, target_poses);
+	for (auto target_pos : target_poses) {
+		BehaviorNode* root_node = behavior_tree_.GetRootNode();
+		root_node->AddChild<EnemyMoveToTargets>(entity_id_, target_pos);
+	}
 }
 
 void Enemy::SetMeshId(const string& mesh_id)

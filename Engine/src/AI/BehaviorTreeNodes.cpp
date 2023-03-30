@@ -3,46 +3,86 @@
 #include "BehaviorTreeNodes.h"
 
 namespace reality {
-	BehaviorStatus SequenceNode::Execute()
-	{
-        for (auto child : children_)
-        {
-            BehaviorStatus result;
-            if (child->Future()->_Get_value() != BehaviorStatus::INVALID) {
-                result = child->Execute();
-            }
-            if (result != BehaviorStatus::SUCCESS)
-            {
-                return result;
-            }
-        }
-        return BehaviorStatus::SUCCESS;
-	}
-
-	BehaviorStatus SelectorNode::Execute()
-	{
-        for (auto child : children_)
-        {
-            auto result = child->Execute();
-            if (result != BehaviorStatus::FAILURE)
-            {
-                return result;
-            }
-        }
-        return BehaviorStatus::FAILURE;
-	}
-
-    BehaviorStatus ActionNode::Execute()
+    void BehaviorNode::SetStatus(BehaviorStatus new_status)
     {
-        if (!future_.valid()) {
-            future_ = std::async(std::launch::async, execute_function_);
-        }
+        status_ = new_status;
+    }
+    
+    BehaviorStatus BehaviorNode::GetStatus()
+    {
+        return status_;
+    }
 
-        if (future_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            status_ = future_.get();
-            return status_;
-        }
+    void BehaviorNode::ResetNode()
+    {
+        SetStatus(BehaviorStatus::IDLE);
+        executing_child_node_index_ = 0;
 
-        return BehaviorStatus::RUNNING;
+        for (auto child : children_) {
+            child->ResetNode();
+        }
+    }
+
+    void SequenceNode::Execute()
+	{
+        if (children_.size() == 0) {
+            status_ = BehaviorStatus::SUCCESS;
+            return;
+        }
+        status_ = BehaviorStatus::RUNNING;
+
+        BehaviorStatus child_status = children_[executing_child_node_index_]->GetStatus();
+
+        switch (child_status) {
+        case BehaviorStatus::IDLE: 
+        case BehaviorStatus::RUNNING:
+            children_[executing_child_node_index_]->Execute();
+            break;
+        case BehaviorStatus::FAILURE:
+            status_ = BehaviorStatus::FAILURE;
+            break;
+        case BehaviorStatus::SUCCESS:
+            if (executing_child_node_index_ == children_.size() - 1) {
+                status_ = BehaviorStatus::SUCCESS;
+            }
+            else {
+                executing_child_node_index_++;
+            }
+            break;
+        }
+	}
+
+    void SelectorNode::Execute()
+	{
+        if (children_.size() == 0) {
+            status_ = BehaviorStatus::SUCCESS;
+            return;
+        }
+        status_ = BehaviorStatus::RUNNING;
+
+        BehaviorStatus child_status = children_[executing_child_node_index_]->GetStatus();
+
+        switch (child_status) {
+        case BehaviorStatus::IDLE:
+            children_[executing_child_node_index_]->Execute();
+            break;
+        case BehaviorStatus::FAILURE:
+            if (executing_child_node_index_ == children_.size() - 1) {
+                status_ = BehaviorStatus::FAILURE;
+            }
+            else {
+                executing_child_node_index_++;
+            }
+            break;
+        case BehaviorStatus::SUCCESS:
+            status_ = BehaviorStatus::SUCCESS;
+            break;
+        }
+	}
+
+    void ActionNode::Execute()
+    {
+        BehaviorStatus result = Action();
+        SetStatus(result);
     }
 }
