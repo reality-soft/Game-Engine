@@ -32,7 +32,7 @@
 #include "Actors/SpotLightActor.h"
 
 #include "World/Level.h"
-#include "World/SkySphere.h"
+#include "World/Environment.h"
 #include "World/StaticMeshLevel.h"
 
 #include "UI/WriteMgr.h"

@@ -52,7 +52,7 @@ project "Engine"
 		"../SDK/DirectXTK/include",
 		"../SDK/FBXSDK/include",
 		"../SDK/FMOD/include",
-		"../SDK/IMGUI/include"
+		"../SDK/IMGUI/include",
 	}
 
 	libdirs

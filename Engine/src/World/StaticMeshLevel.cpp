@@ -77,6 +77,8 @@ void reality::StaticMeshLevel::Update()
 
 void reality::StaticMeshLevel::Render()
 {
+    DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
+
     DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader.get()->InputLayout());
     DX11APP->GetDeviceContext()->VSSetShader(vertex_shader.get()->Get(), nullptr, 0);
 
@@ -150,30 +152,6 @@ bool reality::StaticMeshLevel::SetRandomMaterialToMesh(string mesh_name, string 
     SetMaterialToMesh(mesh_name, materials_by_keyward[random_index]);
 
     return true;
-}
-
-void reality::StaticMeshLevel::CalculateNormal(SingleMesh<Vertex>& mesh)
-{
-
-    UINT num_triangle = mesh.vertices.size() / 3;
-    UINT index = 0;
-    for (UINT t = 0; t < num_triangle; t++)
-    {   
-        XMFLOAT3 v0 = mesh.vertices[index + 0].p;
-        XMFLOAT3 v1 = mesh.vertices[index + 1].p;
-        XMFLOAT3 v2 = mesh.vertices[index + 2].p;
-
-        XMVECTOR edge1 = XMLoadFloat3(&v2) - XMLoadFloat3(&v0);
-        XMVECTOR edge2 = XMLoadFloat3(&v1) - XMLoadFloat3(&v0);
-
-        XMVECTOR normal = XMVector3Normalize(XMVector3Cross(edge1, edge2));
-
-        mesh.vertices[index + 0].n = XMFLOAT3(normal.m128_f32);
-        mesh.vertices[index + 1].n = XMFLOAT3(normal.m128_f32);
-        mesh.vertices[index + 2].n = XMFLOAT3(normal.m128_f32);
-
-        index += 3;
-    }
 }
 
 void reality::StaticMeshLevel::ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type)

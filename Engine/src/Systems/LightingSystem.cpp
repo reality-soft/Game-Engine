@@ -104,12 +104,37 @@ HRESULT LightingSystem::CreateSpotLightsCB()
 	return hr;
 }
 
-void LightingSystem::UpdateSun(SkySphere& sky_shere)
+void reality::LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular)
 {
-	//XMStoreFloat4(&global_light.data.sun_position, sky_shere.sun_world.r[3]);
-	//XMStoreFloat4(&global_light.data.direction, XMVector4Normalize(sky_shere.sun_world.r[3]));
+	float half_noon = world_time.x / 2;
+	float half_night = world_time.y / 2;
 
-	//DX11APP->GetDeviceContext()->UpdateSubresource(global_light.buffer.Get(), 0, 0, &global_light.data, 0, 0);
+	if (current_time > half_noon)
+	{
+		global_light.data.brightness = 1.0f;
+		global_light.data.specular_strength = max_specular;
+	}
+
+	else if (current_time < half_night)
+	{
+		global_light.data.brightness = min_bright;
+		global_light.data.specular_strength = 0.0f;
+	}
+
+	else if (current_time <= half_noon && current_time >= half_night)
+	{
+		float a = half_noon - half_night;
+		float b = half_night - half_night;
+		float ct = current_time - half_night;
+		float lerp = ct / (a + b);
+
+		global_light.data.brightness = max(min_bright, lerp);
+		global_light.data.specular_strength = lerp * max_specular;
+	}
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(global_light.buffer.Get(), 0, 0, &global_light.data, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(0, 1, global_light.buffer.GetAddressOf());
+
 }
 
 void LightingSystem::UpdatePointLights(entt::registry& reg)
