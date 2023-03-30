@@ -122,14 +122,14 @@ XMVECTOR Enemy::GetPos() const
 	translation.m128_f32[0] = transform_matrix_.r[3].m128_f32[0];
 	translation.m128_f32[1] = transform_matrix_.r[3].m128_f32[1];
 	translation.m128_f32[2] = transform_matrix_.r[3].m128_f32[2];
-	translation.m128_f32[0] = 0.0f;
+	translation.m128_f32[3] = 0.0f;
 
 	return translation;
 }
 
 void Enemy::SetRoute(const vector<XMVECTOR>& target_poses)
 {
-	SetPos(target_poses[0]);
+	SetPos(target_poses[0] + XMVECTOR{0, 1000.0f, 0, 0});
 	// setting behavior tree
 	behavior_tree_.SetRootNode<SequenceNode>();
 

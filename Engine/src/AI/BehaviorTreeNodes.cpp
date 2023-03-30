@@ -34,7 +34,8 @@ namespace reality {
         BehaviorStatus child_status = children_[executing_child_node_index_]->GetStatus();
 
         switch (child_status) {
-        case BehaviorStatus::IDLE:
+        case BehaviorStatus::IDLE: 
+        case BehaviorStatus::RUNNING:
             children_[executing_child_node_index_]->Execute();
             break;
         case BehaviorStatus::FAILURE:

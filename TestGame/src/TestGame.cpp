@@ -66,7 +66,7 @@ void TestGame::OnInit()
 	sky_sphere.CreateSphere();
 	level.Create("DeadPoly_FullLevel_03.stmesh", "LevelVS.cso", "DeadPoly_Level_Collision_03.stmesh");
 	//level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
-	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
+	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack_01.mapdat", GuideLine::GuideType::eNpcTrack);
 
 	QUADTREE->Init(&level, 3);
 
@@ -83,7 +83,7 @@ void TestGame::OnInit()
 		auto enemy_entity = SCENE_MGR->AddActor<Enemy>();
 		auto enemy_actor = SCENE_MGR->GetActor<Enemy>(enemy_entity);
 
-		int guidline_index = rand() % npc_guidlines.size();
+		int guidline_index = 0;// rand() % npc_guidlines.size();
 		int mesh_index = rand() % enemy_meshes.size();
 
 		vector<XMVECTOR> target_poses;
@@ -91,12 +91,11 @@ void TestGame::OnInit()
 			target_poses.push_back(target_pos.second);
 		}
 
-		target_poses.erase(target_poses.begin());
 		enemy_actor->SetRoute(target_poses);
 		enemy_actor->SetMeshId(enemy_meshes[mesh_index]);
 
 		auto player = SCENE_MGR->GetPlayer<Player>(0);
-		player->SetPos(level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack).at(guidline_index).line_nodes[0]);
+		player->SetPos(level.GetGuideLines(reality::GuideLine::GuideType::eNpcTrack).at(guidline_index).line_nodes[0] + XMVECTOR{0, 1000, 0, 0});
 
 }
 

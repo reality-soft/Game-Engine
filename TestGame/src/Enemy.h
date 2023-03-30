@@ -45,13 +45,13 @@ public:
 	{
 		Enemy* enemy = reality::SCENE_MGR->GetActor<Enemy>(enemy_id_);
 
-		enemy->SetCharacterAnimation("Zombie_Idle_1_v2_IPC_Anim_Unreal Take.anim");
+		enemy->SetCharacterAnimation("Zombie_Walk_F_6_Loop_IPC_Anim_Unreal Take.anim");
 
 		XMVECTOR cur_pos = enemy->GetPos();
 		enemy->SetDirection(XMVector3Normalize(target_position_ - cur_pos));
 		enemy->RotateAlongMovementDirection();
 
-		if (XMVector3Length(target_position_ - cur_pos).m128_f32[0] < 10.0f) {
+		if (XMVector3Length(target_position_ - cur_pos).m128_f32[0] < 100.0f) {
 			return reality::BehaviorStatus::SUCCESS;
 		}
 
