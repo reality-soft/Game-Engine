@@ -148,12 +148,6 @@ void Player::ResetPos()
 	transform_tree_.root_node->OnUpdate(SCENE_MGR->GetRegistry(), entity_id_, transform_matrix_);
 }
 
-void Player::SetPos(const XMVECTOR& position)
-{
-	transform_matrix_ = XMMatrixTranslationFromVector(position);
-	transform_tree_.root_node->Translate(SCENE_MGR->GetRegistry(), entity_id_, transform_matrix_);
-}
-
 int Player::GetMaxHp() const
 {
 	return max_hp_;

@@ -15,11 +15,8 @@ public:
 public:
 	int	 GetMaxHp() const;
 	int	 GetCurHp() const;
-	XMVECTOR GetPos() const;
 	void SetCurHp(int hp);
 	void TakeDamage(int damage);
-	void SetPos(const XMVECTOR& position);
-	void RotateAlongMovementDirection();
 	void SetDirection(const XMVECTOR& direction);
 	void SetRoute(const vector<XMVECTOR>& target_poses);
 	void SetMeshId(const string& mesh_id);

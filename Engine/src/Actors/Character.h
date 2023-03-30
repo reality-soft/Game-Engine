@@ -25,10 +25,16 @@ namespace reality
 		MovementState movement_state_;
 		vector<RayShape> blocking_walls_;
 
+	public:
 		void OnInit(entt::registry& registry) override;
 		void OnUpdate() override;
 		C_Movement* GetMovementComponent() { return movement_component_; }
 		void GravityFall(float _gravity);
 		XMMATRIX GetTranformMatrix() { return transform_matrix_; }
+
+	public:
+		XMVECTOR GetPos() const;
+		void SetPos(const XMVECTOR& position);
+		void RotateAlongMovementDirection();
 	};
 }
