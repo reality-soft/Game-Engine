@@ -30,7 +30,6 @@ namespace reality
 
 		bool SetMaterialToMesh(string mesh_name, string material_id);
 		bool SetRandomMaterialToMesh(string mesh_name, string keyward);
-		void CalculateNormal(SingleMesh<Vertex>& mesh);
 
 	public:
 		void ImportGuideLines(string mapdat_file, GuideLine::GuideType guide_type);
