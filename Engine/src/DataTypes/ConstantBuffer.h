@@ -80,7 +80,8 @@ namespace reality
 		}
 		struct Data
 		{
-			XMMATRIX  mat_skeleton[255];
+			XMMATRIX  bind_pose[128];	
+			XMMATRIX  animation[128];
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};

@@ -212,7 +212,6 @@ float4 ApplySpotLight(float light_color, float3 normal, float4 origin)
 
 float4 ApplyAmbientLight(float4 color)
 {
-
     return max(color, ambient);
 }
 
