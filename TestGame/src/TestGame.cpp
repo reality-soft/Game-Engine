@@ -71,8 +71,9 @@ void TestGame::OnInit()
 
 	environment_.CreateEnvironment();
 	environment_.SetWorldTime(60, 60, true);
-	environment_.SetSkyColorByTime(RGB_TO_FLOAT(201, 205, 204), RGB_TO_FLOAT(16, 7, 9));
+	environment_.SetSkyColorByTime(RGB_TO_FLOAT(201, 205, 204), RGB_TO_FLOAT(11, 11, 19));
 	environment_.SetFogDistanceByTime(5000, 1000);
+	environment_.SetLightProperty(0.2f, 0.2f);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
 	gw_property_.AddProperty<int>("raycasted nodes", &QUADTREE->ray_casted_nodes);
@@ -119,7 +120,7 @@ void TestGame::OnUpdate()
 	sys_sound.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
 
-	environment_.Update(&sys_camera);
+	environment_.Update(&sys_camera, &sys_light);
 
 	ingame_ui.OnUpdate();
 

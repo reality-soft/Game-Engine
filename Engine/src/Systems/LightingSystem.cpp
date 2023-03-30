@@ -101,6 +101,39 @@ HRESULT LightingSystem::CreateSpotLightsCB()
 	return hr;
 }
 
+void reality::LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular)
+{
+	float half_noon = world_time.x / 2;
+	float half_night = world_time.y / 2;
+
+	if (current_time > half_noon)
+	{
+		global_light.data.brightness = 1.0f;
+		global_light.data.specular_strength = max_specular;
+	}
+
+	else if (current_time < half_night)
+	{
+		global_light.data.brightness = min_bright;
+		global_light.data.specular_strength = 0.0f;
+	}
+
+	else if (current_time <= half_noon && current_time >= half_night)
+	{
+		float a = half_noon - half_night;
+		float b = half_night - half_night;
+		float ct = current_time - half_night;
+		float lerp = ct / (a + b);
+
+		global_light.data.brightness = max(min_bright, lerp);
+		global_light.data.specular_strength = lerp * max_specular;
+	}
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(global_light.buffer.Get(), 0, 0, &global_light.data, 0, 0);
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(0, 1, global_light.buffer.GetAddressOf());
+
+}
+
 void LightingSystem::UpdatePointLights(entt::registry& reg)
 {
 	// 0. Clear the last frame PointLights CBData

@@ -12,11 +12,13 @@ namespace reality
 	public:	
 		void OnCreate(entt::registry& reg) override;
 		void OnUpdate(entt::registry& reg) override;
-		void UpdateSun(SkySphere& sky_shere);
+		void UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular);
+
 	private:
 		HRESULT CreateSunCB();
 		HRESULT CreatePointLightsCB();
 		HRESULT CreateSpotLightsCB();
+
 		void UpdatePointLights(entt::registry& reg);
 		void UpdateSpotLights(entt::registry& reg);
 
