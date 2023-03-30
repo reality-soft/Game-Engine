@@ -20,8 +20,8 @@ void TestGame::OnInit()
 	//option.import_scale = 10.0f;
 	//option.recalculate_normal = true;
 
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_03.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
-	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_03.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_FullLevel_04.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
+	//reality::FBX->ImportAndSaveFbx("../../Contents/FBX/DeadPoly_Level_Collision_04.fbx", option, FbxVertexOption::BY_POLYGON_VERTEX);
 
 	WRITER->Init();
 	reality::ComponentSystem::GetInst()->OnInit(reg_scene_);
@@ -63,12 +63,16 @@ void TestGame::OnInit()
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
-	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel_03.stmesh", "LevelVS.cso", "DeadPoly_Level_Collision_03.stmesh");
+	level.Create("DeadPoly_FullLevel_04.stmesh", "LevelVS.cso", "DeadPoly_Level_Collision_04.stmesh");
 	//level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
-	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
+	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack_01.mapdat", GuideLine::GuideType::eNpcTrack);
 
 	QUADTREE->Init(&level, 3);
+
+	environment_.CreateEnvironment();
+	environment_.SetWorldTime(60, 60, true);
+	environment_.SetSkyColorByTime(RGB_TO_FLOAT(201, 205, 204), RGB_TO_FLOAT(16, 7, 9));
+	environment_.SetFogDistanceByTime(5000, 1000);
 
 	gw_property_.AddProperty<float>("FPS", &TIMER->fps);
 	gw_property_.AddProperty<int>("raycasted nodes", &QUADTREE->ray_casted_nodes);
@@ -108,14 +112,14 @@ void TestGame::OnUpdate()
 		cur_zombie_created++;
 	}
 
-
-	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
 	sys_effect.OnUpdate(reg_scene_);
 	sys_sound.OnUpdate(reg_scene_);
 	QUADTREE->Frame(&sys_camera);
+
+	environment_.Update(&sys_camera);
 
 	ingame_ui.OnUpdate();
 
@@ -127,7 +131,7 @@ void TestGame::OnUpdate()
 
 void TestGame::OnRender()
 {
-	sky_sphere.FrameRender(sys_camera.GetCamera());
+	environment_.Render();
 	level.Update();
 	level.Render();
 	sys_render.OnUpdate(reg_scene_);
