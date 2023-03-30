@@ -1,4 +1,6 @@
 // Global Directional Lighting
+#define e 2.71828182846
+
 cbuffer CbGlobalLight : register(b0)
 {
     float4 position;
@@ -50,6 +52,13 @@ struct SpotLight
 cbuffer CbSpotLights : register(b2)
 {
     SpotLight spot_lights[64];
+}
+
+cbuffer CbDistanceFog : register(b3)
+{
+    float4 fog_color;
+    float3 eye_position;
+    float distance;
 }
 
 // White Basic color  
@@ -249,4 +258,14 @@ float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
 float4 ApplySpotLights(float4 color, float3 normal)
 {
     return float4(0, 0, 0, 1);
+}
+
+float4 ApplyDistanceFog(float4 color, float3 pixel_world)
+{        
+    float3 fog_start = eye_position;
+    float3 fog_end = normalize(pixel_world - fog_start) * distance;
+    
+    float f = 1 / pow(e, pow(length(pixel_world - fog_start) / distance, 2));
+    
+   return f * color + (1.0f - f) * fog_color;
 }
