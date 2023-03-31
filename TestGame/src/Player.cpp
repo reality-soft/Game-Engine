@@ -44,12 +44,12 @@ void Player::OnInit(entt::registry& registry)
 	skm_ptr->local = XMMatrixRotationY(XMConvertToRadians(180)) * XMMatrixScalingFromVector({ 0.3, 0.3, 0.3, 0.0 });
 
 	// weapon
-	entt::entity weapon_id = SCENE_MGR->AddActor<Weapon>(entity_id_);
-	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skm.skeletal_mesh_id);
-	int skeleton_id = skeletal_mesh->skeleton.skeleton_id_map["hand_r"];
-	Weapon* weapon = SCENE_MGR->GetActor<Weapon>(weapon_id);
-	weapon->SetSocket(skeleton_id);
-	weapon->SetOwnerTransform(skm_ptr->local);
+	//entt::entity weapon_id = SCENE_MGR->AddActor<Weapon>(entity_id_);
+	//SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skm.skeletal_mesh_id);
+	//int skeleton_id = skeletal_mesh->skeleton.skeleton_id_map["hand_r"].bone_id;
+	//Weapon* weapon = SCENE_MGR->GetActor<Weapon>(weapon_id);
+	//weapon->SetSocket(skeleton_id);
+	//weapon->SetOwnerTransform(skm_ptr->local);
 }
 
 void Player::OnUpdate()

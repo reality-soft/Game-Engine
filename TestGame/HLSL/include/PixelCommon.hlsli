@@ -210,11 +210,6 @@ float4 ApplySpotLight(float light_color, float3 normal, float4 origin)
     return total_light;
 }
 
-float4 ApplyAmbientLight(float4 color)
-{
-    return max(color, ambient);
-}
-
 float4 ApplyCookTorrance(float4 albedo, float roughness, float specular, float3 normal, float3 view_dir)
 {    
     // Correct the input and compute aliases
