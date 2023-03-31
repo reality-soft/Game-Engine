@@ -19,6 +19,7 @@ namespace reality
 		void Destroy();
 
 		void RenderCollisionMesh();
+		StaticMesh* GetLevelMesh();
 	public:
 		CbTransform level_transform;
 		vector<TriangleShape> level_triangles;

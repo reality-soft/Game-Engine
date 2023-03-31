@@ -1,11 +1,17 @@
 // Global Directional Lighting
 cbuffer CbGlobalLight : register(b0)
 {
-    float4 position;
-    float4 direction;
+    float3 position;
+    float brightness;
+    
+    float3 direction;
+    float specular_strength;
+    
     float4 ambient_up;
     float4 ambient_down;
     float4 ambient_range;
+    
+    matrix shadow_matrix;
 }
 
 // Point Lighting
@@ -19,7 +25,7 @@ struct PointLight
     float   pad4;
 };
 
-cbuffer CbPointLights : register(b1)
+cbuffer CbPointLights : register(b2)
 {
     PointLight point_lights[64];
 }
@@ -37,9 +43,16 @@ struct SpotLight
     float   spot;
 };
 
-cbuffer CbSpotLights : register(b2)
+cbuffer CbSpotLights : register(b3)
 {
     SpotLight spot_lights[64];
+}
+
+cbuffer CbDistanceFog : register(b4)
+{
+    float4 fog_color;
+    float3 eye_position;
+    float distance;
 }
 
 // White Basic color  
@@ -156,12 +169,6 @@ float4 ApplyHemisphericAmbient(float3 normal, float4 color)
     return length(ambient) * color;
 }
 
-float4 ApplyDirectionalLight(float4 color, float3 normal)
-{
-    float intensity = saturate(dot(normal, -direction.xyz));
-    return saturate(color * intensity);
-}
-
 float4 ApplyPointLight(float4 light_color, float3 normal, float4 origin)
 {
     float4 total_light = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -208,11 +215,6 @@ float4 ApplySpotLight(float light_color, float3 normal, float4 origin)
         total_light += light_color * intensity * spot_attenuation * angle_attenuation;
     }
     return total_light;
-}
-
-float4 ApplyAmbientLight(float4 color)
-{
-    return max(color, ambient);
 }
 
 float4 ApplyCookTorrance(float4 albedo, float roughness, float specular, float3 normal, float3 view_dir)

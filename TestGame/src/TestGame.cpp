@@ -4,6 +4,7 @@
 #include "FX_BloodImpact.h"
 #include "FX_ConcreteImpact.h"
 #include "FbxMgr.h"
+#include "StaticShadowMap.h"
 
 void TestGame::OnInit()
 {
@@ -76,6 +77,10 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<XMVECTOR>("floor pos", &QUADTREE->player_capsule_pos);
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
 	gw_property_.AddProperty<int>("num of zombie", &cur_zombie_created);
+
+	//StaticShadowMap shadow_map_;
+	//shadow_map_.Create(XMVectorSet(5000, 5000, -5000, 0), "StaticShadowMapVS.cso", "StaticShadowMapPS.cso");
+	//shadow_map_.RenderLevelShadowMap(&level);
 }
 
 void TestGame::OnUpdate()
