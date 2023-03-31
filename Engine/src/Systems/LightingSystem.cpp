@@ -137,6 +137,16 @@ void reality::LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float curre
 
 }
 
+CbGlobalLight::Data reality::LightingSystem::GetGlobalLightData()
+{
+	return global_light.data;
+}
+
+void reality::LightingSystem::SetGlobalLightPos(XMFLOAT3 position)
+{
+	global_light.data.position = position;
+}
+
 void LightingSystem::UpdatePointLights(entt::registry& reg)
 {
 	// 0. Clear the last frame PointLights CBData
