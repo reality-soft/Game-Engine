@@ -118,16 +118,30 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 		return;
 	}
 
-	if (animation_component.cur_frame >= res_animation->end_frame)
-		animation_component.cur_frame = res_animation->start_frame;
-
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
 		cb_skeleton.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
 		cb_skeleton.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
 	}
 
-	animation_component.cur_frame += 60.f / TM_FPS;
+	for (auto anim_slot_pair : animation_component.anim_slots) {
+		AnimSlot& anim_slot = anim_slot_pair.second;
+		OutAnimData* slot_anim = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_id);
+		if (slot_anim == nullptr) {
+			continue;
+		}
+
+		if (anim_slot.cur_frame >= slot_anim->end_frame)
+			anim_slot.cur_frame = slot_anim->start_frame;
+
+		for (UINT bone_id : anim_slot.included_skeletons) {
+			cb_skeleton.data.animation[bone_id] = XMMatrixTranspose(res_animation->animations.find(bone_id)->second[anim_slot.cur_frame]);
+		}
+
+		anim_slot.cur_frame += 60.f / TM_FPS;
+	}
+
+
 
 	device_context->UpdateSubresource(cb_skeleton.buffer.Get(), 0, nullptr, &cb_skeleton.data, 0, 0);
 	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());

@@ -10,6 +10,7 @@
 #include "Effect.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"
+#include "AnimSlot.h"
 
 namespace reality
 {
@@ -103,7 +104,8 @@ namespace reality
 	struct C_Animation : public Component
 	{
 		string anim_id;
-		float cur_frame = 0.0f;
+		vector<pair<string, AnimSlot>> anim_slots;
+		float cur_frame;
 
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override {
