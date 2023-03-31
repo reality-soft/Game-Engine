@@ -89,6 +89,14 @@ void reality::StaticMeshLevel::Destroy()
 {
 }
 
+void reality::StaticMeshLevel::SetShadowMap(ID3D11ShaderResourceView* shadow_map, CbShadowMap* cb_shaodow)
+{
+    auto clamp_sampler = DX11APP->GetCommonStates()->LinearClamp();
+    DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_shaodow->buffer.GetAddressOf());
+    DX11APP->GetDeviceContext()->PSSetSamplers(1, 1, &clamp_sampler);
+    DX11APP->GetDeviceContext()->PSSetShaderResources(8, 1, &shadow_map);
+}
+
 void reality::StaticMeshLevel::RenderCollisionMesh()
 {
     DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->Wireframe());
