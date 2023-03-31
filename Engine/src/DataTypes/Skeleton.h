@@ -34,7 +34,6 @@ namespace reality {
 				if (cur_bone_ids.empty()) {
 					break;
 				}
-
 			}
 		}
 	};

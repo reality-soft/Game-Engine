@@ -112,6 +112,16 @@ namespace reality
 			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
 			//cur_frame = anim_data->start_frame;
 		};
+
+		void AddNewAnimSlot(string skeletal_mesh_id, string bone_id) {
+			AnimSlot anim_slot;
+
+			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
+
+			anim_slot.anim_id = "";
+			anim_slot.cur_frame = 0.0f;
+			anim_slot.included_skeletons = skeletal_mesh->skeleton.GetSubBonesOf(bone_id);
+		};
 	};
 
 	struct C_SoundListener : public C_Transform
