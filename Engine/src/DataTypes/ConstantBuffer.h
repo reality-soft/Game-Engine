@@ -120,11 +120,27 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	struct CbShadowMap
+	{
+		CbShadowMap()
+		{
+			data.shadow_view = XMMatrixIdentity();
+			data.shadow_proj = XMMatrixIdentity();
+		}
+		struct Data
+		{
+			XMMATRIX shadow_view;
+			XMMATRIX shadow_proj;
+		} data;
+
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 	struct CbGlobalLight
 	{
 		CbGlobalLight()
 		{
-			data.position = XMFLOAT3(5000, 5000, -5000);
+			data.position = XMFLOAT3(15000, 15000, -15000);
 			data.brightness = 1.0f;
 
 			data.direction = XMFLOAT3((-1.0f * XMVector3Normalize(XMLoadFloat3(&data.position))).m128_f32);
