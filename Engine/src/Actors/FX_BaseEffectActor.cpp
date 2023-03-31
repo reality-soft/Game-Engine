@@ -8,35 +8,12 @@ void FX_BaseEffectActor::OnInit(entt::registry& registry)
 {
 	Actor::OnInit(registry);
 
-	C_Transform transform;
+	auto& transform = registry.emplace<C_Transform>(entity_id_);
 	transform.world = XMMatrixIdentity();
 	transform.local = XMMatrixIdentity();
-	registry.emplace<C_Transform>(entity_id_, transform);
 
 	transform_tree_.root_node = make_shared<TransformTreeNode>(TYPE_ID(reality::C_Transform));
-
-	C_Effect initial_effect_comp;
-	auto& effect_comp = registry.emplace<C_Effect>(entity_id_, initial_effect_comp);
-	effect_comp.local = XMMatrixIdentity();
-	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_Effect));
-
-	C_SoundGenerator initial_sound_generator_comp;
-	auto& sound_gen_comp = registry.emplace<C_SoundGenerator>(entity_id_, initial_sound_generator_comp);
-	sound_gen_comp.local = XMMatrixIdentity();
-	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_SoundGenerator));
-
 	transform_tree_.root_node->OnUpdate(registry, entity_id_);
-}
-
-void FX_BaseEffectActor::OnUpdate()
-{
-	
-}
-
-void FX_BaseEffectActor::AddEffect(map<string, Emitter>& emitter_list)
-{
-	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
-	effect_comp.effect.emitters = emitter_list;
 }
 
 void FX_BaseEffectActor::Spawn(XMVECTOR pos, XMVECTOR rotation_q, XMVECTOR scale)
@@ -49,19 +26,77 @@ void FX_BaseEffectActor::Spawn(XMVECTOR pos, XMVECTOR rotation_q, XMVECTOR scale
 	transform_comp.world = S * R * T;
 
 	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_, transform_comp.world);
-
-	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
-	// lifetime = -1.0 -> Infinite Lifetime
-	effect_comp.effect_lifetime = -1.0f;
-	effect_comp.effect_timer = 0.0f;
 }
 
-void FX_BaseEffectActor::Spawn(XMVECTOR pos, float lifetime, XMVECTOR rotation_q,  XMVECTOR scale)
+void FX_BaseEffectActor::AddEffectComponent(string effect_name, float lifetime)
 {
-	Spawn(pos, rotation_q, scale);
-
-	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
+	auto& effect_comp = reg_scene_->emplace<C_Effect>(entity_id_);
+	effect_comp.local = XMMatrixIdentity();
+	effect_comp.effect_id = effect_name;
+	auto effect = RESOURCE->UseResource<Effect>(effect_name);
+	if(effect)
+		effect_comp.effect = *effect;
+	// lifetime = -1.0 -> Infinite Lifetime
 	effect_comp.effect_lifetime = lifetime;
+	effect_comp.effect_timer = 0.0f;
+
+	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_Effect));
+	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
+}
+
+void FX_BaseEffectActor::AddSoundGeneratorComponent()
+{
+	auto& sound_gen_comp = reg_scene_->emplace<C_SoundGenerator>(GetEntityId());
+	sound_gen_comp.local = XMMatrixIdentity();
+
+	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_SoundGenerator));
+	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
+}
+
+void FX_BaseEffectActor::AddSoundQueue(string sound_name, SoundType type, bool looping, float volume)
+{
+	auto& sound_gen_comp = reg_scene_->get<C_SoundGenerator>(GetEntityId());
+	sound_gen_comp.local = XMMatrixIdentity();
+	SoundQueue sound_queue;
+	sound_queue.sound_filename = sound_name;
+	sound_queue.is_looping = looping;
+	sound_queue.sound_type = type;
+	sound_queue.sound_volume = volume;
+	sound_gen_comp.sound_queue_list.push(sound_queue);
+}
+
+void FX_BaseEffectActor::AddPointLightComponent(string pointlight_name, float lifetime)
+{
+	auto& pointlight_comp = reg_scene_->emplace<C_PointLight>(entity_id_);
+	pointlight_comp.point_light_id = pointlight_name;
+	pointlight_comp.point_light = *(PointLight*)RESOURCE->UseResource<BaseLight>(pointlight_name);
+	pointlight_comp.local = XMMatrixIdentity();
+	pointlight_comp.lifetime = lifetime;
+	pointlight_comp.timer = 0.0f;
+
+	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_PointLight));
+	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
+}
+
+void FX_BaseEffectActor::AddSpotLightComponent(string spotlight_name, float lifetime)
+{
+	auto& spotlight_comp = reg_scene_->emplace<C_SpotLight>(entity_id_);
+	spotlight_comp.spot_light_id = spotlight_name;
+	spotlight_comp.spot_light = *(SpotLight*)RESOURCE->UseResource<BaseLight>(spotlight_name);
+	spotlight_comp.local = XMMatrixIdentity();
+	spotlight_comp.lifetime = lifetime;
+	spotlight_comp.timer = 0.0f;
+
+	transform_tree_.AddNodeToNode(TYPE_ID(reality::C_Transform), TYPE_ID(reality::C_SpotLight));
+	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
+}
+
+
+// Only Used for Tool
+void FX_BaseEffectActor::AddEffect(map<string, Emitter>& emitter_list)
+{
+	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
+	effect_comp.effect.emitters = emitter_list;
 }
 
 void FX_BaseEffectActor::ResetEmitter()
