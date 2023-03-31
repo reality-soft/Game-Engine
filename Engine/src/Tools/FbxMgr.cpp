@@ -175,11 +175,11 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
     file_exporter.WriteBinaryWithoutSize<XMMATRIX>(bind_pose_matrices.data(), num_of_matrices); 
 
     vector<string> skeleton_names;
-    vector<UINT> skeleton_ids;
+    vector<Bone> bones;
 
     for (const auto& cur_pair : skeletal_mesh.skeleton.skeleton_id_map) {
         skeleton_names.push_back(cur_pair.first);
-        skeleton_ids.push_back(cur_pair.second);
+        bones.push_back(cur_pair.second);
     }
 
     int num_of_names = skeleton_names.size();
@@ -190,9 +190,14 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
         file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(skeleton_name.c_str()), skeleton_name_size);
     }
 
-    int num_of_ids = skeleton_ids.size();
-    file_exporter.WriteBinaryWithoutSize<int>(&num_of_ids, 1);
-    file_exporter.WriteBinaryWithoutSize<UINT>(skeleton_ids.data(), num_of_ids);
+    int num_of_bones = bones.size();
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_bones, 1);
+    for (int i = 0;i < num_of_bones;i++) {
+        file_exporter.WriteBinaryWithoutSize<UINT>(&(bones[i].bone_id), 1);
+        int num_child_ids = bones[i].child_bone_ids.size();
+        file_exporter.WriteBinaryWithoutSize<int>(&(num_child_ids), 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(bones[i].child_bone_ids.data(), num_child_ids);
+    }
 }
 
 void reality::FbxMgr::SaveAnimation(const map<string, OutAnimData>& animation)
@@ -293,7 +298,7 @@ reality::SkeletalMesh reality::FbxMgr::LoadSkeletalMesh(string filename)
     }
 
     vector<string> skeleton_names;
-    vector<UINT> skeleton_ids;
+    vector<Bone> bones;
 
     int num_of_names = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
 
@@ -302,11 +307,17 @@ reality::SkeletalMesh reality::FbxMgr::LoadSkeletalMesh(string filename)
         skeleton_names.push_back(file_exporter.ReadBinaryWithoutSize<char>(skeleton_name_size).data());
     }
 
-    int num_of_ids = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-    skeleton_ids = file_exporter.ReadBinaryWithoutSize<UINT>(num_of_ids);
+    int num_of_bones = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    for (int i = 0;i < num_of_bones;i++) {
+        Bone bone;
+        bone.bone_id = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
+        int num_child_ids = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        bone.child_bone_ids = file_exporter.ReadBinaryWithoutSize<UINT>(num_child_ids);
+        bones.push_back(bone);
+    }
 
     for (int i = 0;i < num_of_keys;i++) {
-        skeletal_mesh.skeleton.skeleton_id_map.insert({ skeleton_names[i], skeleton_ids[i] });
+        skeletal_mesh.skeleton.skeleton_id_map.insert({ skeleton_names[i], bones[i] });
     }
 
     return skeletal_mesh;
