@@ -450,6 +450,7 @@ namespace reality
 		XMFLOAT3	position;
 		float		range;
 		XMFLOAT3	attenuation;
+		XMFLOAT3	attenuation_level;
 		float		specular;
 	};
 
