@@ -77,9 +77,20 @@ namespace reality {
 		int ID = 0;
 		for (auto node : node_list)
 		{
-			string name = node->GetName();
-			skeleton_id_map.insert({ ID, name });
 			node_id_map.insert(make_pair(node, ID++));
+		}
+		for (auto cur_node: node_id_map) {
+			Bone bone;
+			bone.bone_id = node_id_map[cur_node.first];
+			int child_count = cur_node.first->GetChildCount();
+			for (int child_index = 0; child_index < child_count; child_index++)
+			{
+				FbxNode* child_node = cur_node.first->GetChild(child_index);
+				bone.child_bone_ids.push_back(node_id_map[child_node]);
+			}
+
+			skeleton_bone_map.insert({ node_id_map[cur_node.first], bone});
+			skeleton_name_map.insert({ cur_node.second, cur_node.first->GetName() });
 		}
 		for (auto node : node_list)
 		{
@@ -575,7 +586,7 @@ namespace reality {
 			XMVECTOR det;
 			bind_pose_matrix = XMMatrixInverse(&det, bind_pose_matrix);
 			out_mesh->bind_poses.insert(std::make_pair(bone_ID, bind_pose_matrix));
-			out_mesh->skelton_id_map.insert(std::make_pair(skeleton_id_map[bone_ID], bone_ID));
+			out_mesh->skelton_id_map.insert(std::make_pair(skeleton_name_map[bone_ID], skeleton_bone_map[bone_ID]));
 
 			// 임의의 1개 정점에 영향을 미치는 뼈대의 개수
 			int index_weight_count = fbx_cluster->GetControlPointIndicesCount();

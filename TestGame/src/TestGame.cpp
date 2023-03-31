@@ -64,8 +64,7 @@ void TestGame::OnInit()
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, std::bind(&Player::Fire, character_actor), KEY_HOLD);
 	INPUT_EVENT->SubscribeMouseEvent({ MouseButton::L_BUTTON }, idle, KEY_UP);
 
-	sky_sphere.CreateSphere();
-	level.Create("DeadPoly_FullLevel_03.stmesh", "LevelVS.cso", "DeadPoly_Level_Collision_03.stmesh");
+	level.Create("DeadPoly_FullLevel_04.stmesh", "LevelVS.cso", "DeadPoly_Level_Collision_04.stmesh");
 	//level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_Blocking1.mapdat", GuideLine::GuideType::eBlocking);
 	level.ImportGuideLines("../../Contents/BinaryPackage/DeadPoly_NpcTrack.mapdat", GuideLine::GuideType::eNpcTrack);
 
@@ -78,10 +77,12 @@ void TestGame::OnInit()
 	gw_property_.AddProperty<int>("calculating triagnles", &QUADTREE->calculating_triagnles);
 	gw_property_.AddProperty<int>("num of zombie", &cur_zombie_created);
 
-	//StaticShadowMap shadow_map_;
-	//shadow_map_.Create(XMVectorSet(5000, 5000, -5000, 0), "StaticShadowMapVS.cso", "StaticShadowMapPS.cso");
-	//shadow_map_.RenderLevelShadowMap(&level);
-}
+	environment_.CreateEnvironment();
+	environment_.SetWorldTime(60, 60, true);
+	environment_.SetSkyColorByTime(RGB_TO_FLOAT(201, 205, 204), RGB_TO_FLOAT(11, 11, 19));
+	environment_.SetFogDistanceByTime(5000, 1000);
+	environment_.SetLightProperty(0.2f, 0.2f);
+
 
 void TestGame::OnUpdate()
 {
@@ -113,8 +114,6 @@ void TestGame::OnUpdate()
 		cur_zombie_created++;
 	}
 
-
-	sys_light.UpdateSun(sky_sphere);
 	sys_camera.OnUpdate(reg_scene_);
 	sys_light.OnUpdate(reg_scene_);
 	sys_movement.OnUpdate(reg_scene_);
@@ -132,11 +131,13 @@ void TestGame::OnUpdate()
 
 void TestGame::OnRender()
 {
-	sky_sphere.FrameRender(sys_camera.GetCamera());
+	sys_light.OnUpdate(reg_scene_);
 	level.Update();
 	level.Render();
 	sys_render.OnUpdate(reg_scene_);
 	sys_ui.OnUpdate(reg_scene_);
+
+	environment_.Update(&sys_camera, &sys_light);
 
 	GUI->RenderWidgets();
 }

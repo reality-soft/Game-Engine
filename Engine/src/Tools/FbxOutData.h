@@ -1,5 +1,6 @@
 #pragma once
 #include "Vertex.h"
+#include "Skeleton.h"
 
 namespace reality
 {
@@ -39,7 +40,7 @@ namespace reality
 		std::vector<UINT>   indices;
 		std::vector<IndexWeight> index_weight;
 		std::map<UINT, XMMATRIX> bind_poses;
-		std::map<string, UINT> skelton_id_map;
+		std::map<string, Bone> skelton_id_map;
 	};
 
 	struct OutAnimData

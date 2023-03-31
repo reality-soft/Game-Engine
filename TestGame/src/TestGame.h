@@ -23,9 +23,9 @@ private:
 		"Zombie_SchoolGirl_Female_01.skmesh",
 	};
   
-	SkySphere sky_sphere;
 	StaticMeshLevel level;
 
+	reality::Environment environment_;
 	reality::LightingSystem sys_light;
 	reality::RenderSystem sys_render;
 	reality::CameraSystem sys_camera;
