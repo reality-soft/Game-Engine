@@ -28,8 +28,6 @@
 #include "Actors/FX_BaseEffectActor.h"
 #include "Actors/UIActor.h"
 #include "Actors/StaticObject.h"
-#include "Actors/PointLightActor.h"
-#include "Actors/SpotLightActor.h"
 
 #include "World/Level.h"
 #include "World/Environment.h"

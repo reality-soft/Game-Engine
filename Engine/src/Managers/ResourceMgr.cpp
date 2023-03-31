@@ -37,6 +37,7 @@ void ResourceMgr::LoadAllResource()
     LoadDir(directory_ + "/Material/", &ResourceMgr::ImportMaterial);
     LoadDir(directory_ + "/Sprite/", &ResourceMgr::ImportSprite);
     LoadDir(directory_ + "/Effect/", &ResourceMgr::ImportEffect);
+    LoadDir(directory_ + "/Light/", &ResourceMgr::ImportLight);
 }
 
 void ResourceMgr::LoadDir(string path, Load_Func load_func)
@@ -187,6 +188,16 @@ set<string> ResourceMgr::GetTotalEffectID()
     return effect;
 }
 
+set<string> ResourceMgr::GetTotalLightID()
+{
+    set<string> light;
+    for (auto pair : resdic_light)
+    {
+        light.insert(pair.first);
+    }
+    return light;
+}
+
 set<string> ResourceMgr::GetTotalMATID()
 {
     set<string> mat;
@@ -305,6 +316,90 @@ bool ResourceMgr::ImportANIM(string filename)
 
     resdic_animation.insert(make_pair(id, animation));
 
+    return true;
+}
+
+bool reality::ResourceMgr::ImportLight(string filename)
+{
+    DATA->LoadSheetFile(filename);
+
+    auto strs1 = split(filename, '/');
+    auto name = strs1[max((int)strs1.size() - 1, 0)];
+    auto strs2 = split(name, '.');
+    name = strs2[0];
+
+    auto sheet = DATA->LoadSheet(name);
+
+    if (name == "PointLight")
+    {
+        for (auto& pair : sheet->resdic_item)
+        {
+            auto& item = pair.second;
+
+            PointLight new_pointlight;
+
+            // Light Color
+            auto strs = split(item->GetValue("light_color"), ' ');
+            if(strs.size() == 4)
+                new_pointlight.light_color = {stof(strs[0]), stof(strs[1]), stof(strs[2]), stof(strs[3]) };
+
+            // Range
+            new_pointlight.range = stof(item->GetValue("range"));
+            
+            // Attenuation
+            strs = split(item->GetValue("attenuation"), ' ');
+            if (strs.size() == 3)
+                new_pointlight.attenuation = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
+
+            // Attenuation_level
+            strs = split(item->GetValue("attenuation_level"), ' ');
+            if (strs.size() == 3)
+                new_pointlight.attenuation_level = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
+
+            // Specular
+            new_pointlight.specular = stof(item->GetValue("specular"));
+
+            resdic_light.insert({ pair.first, make_shared<PointLight>(new_pointlight) });
+        }
+    }
+    else if (name == "SpotLight")
+    {
+        for (auto& pair : sheet->resdic_item)
+        {
+            auto& item = pair.second;
+
+            SpotLight new_spotlight;
+
+            // Light Color
+            auto strs = split(item->GetValue("light_color"), ' ');
+            if (strs.size() == 4)
+                new_spotlight.light_color = { stof(strs[0]), stof(strs[1]), stof(strs[2]), stof(strs[3]) };
+
+            // Range
+            new_spotlight.range = stof(item->GetValue("range"));
+
+            // Attenuation
+            strs = split(item->GetValue("attenuation"), ' ');
+            if (strs.size() == 3)
+                new_spotlight.attenuation = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
+
+            // Attenuation_level
+            strs = split(item->GetValue("attenuation_level"), ' ');
+            if (strs.size() == 3)
+                new_spotlight.attenuation_level = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
+
+            // Specular
+            new_spotlight.specular = stof(item->GetValue("specular"));
+
+            // Spot
+            new_spotlight.spot = stof(item->GetValue("spot"));
+
+            resdic_light.insert({ pair.first, make_shared<SpotLight>(new_spotlight) });
+        }
+    }
+    else
+        return false;
+    
     return true;
 }
 
