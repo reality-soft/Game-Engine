@@ -1,17 +1,9 @@
 #pragma once
 #include "Vertex.h"
+#include "Skeleton.h"
 
 namespace reality
 {
-	struct Skeleton
-	{
-		Skeleton() = default;
-		Skeleton(const Skeleton& other);
-
-		map<UINT, XMMATRIX> bind_pose_matrices;
-		map<string, UINT> skeleton_id_map;
-	};
-
 	template <typename VertexType>
 	struct SingleMesh
 	{
