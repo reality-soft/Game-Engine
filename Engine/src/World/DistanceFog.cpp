@@ -21,7 +21,7 @@ bool reality::DistanceFog::CreateDistacneFog()
 		return false;
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_fog_.buffer.Get(), 0, 0, &cb_fog_.data, 0, 0);
-	DX11APP->GetDeviceContext()->PSSetConstantBuffers(3, 1, cb_fog_.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(4, 1, cb_fog_.buffer.GetAddressOf());
 
 	return true;
 }
@@ -68,5 +68,5 @@ void reality::DistanceFog::Update(XMFLOAT2 world_time, float current_time)
 void reality::DistanceFog::Render()
 {
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_fog_.buffer.Get(), 0, 0, &cb_fog_.data, 0, 0);
-	DX11APP->GetDeviceContext()->PSSetConstantBuffers(3, 1, cb_fog_.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(4, 1, cb_fog_.buffer.GetAddressOf());
 }

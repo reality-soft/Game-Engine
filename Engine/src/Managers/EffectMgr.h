@@ -56,8 +56,14 @@ namespace reality
 			else
 			{
 				XMVECTOR axis = XMVector3Cross(base, normal);
-				float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
-				rot_q = XMQuaternionRotationAxis(axis, angle);
+				if (Vector3Length(axis) < EPSILON)
+					rot_q = XMQuaternionIdentity();
+				else
+				{
+					float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
+					rot_q = XMQuaternionRotationAxis(axis, angle);
+				}
+				
 			}
 			
 			effect_actor->Spawn(pos, lifetime, rot_q, scale);

@@ -48,20 +48,6 @@ bool reality::StaticMeshLevel::Create(string mesh_id, string vs_id, string colli
         }        
     }
 
-    for (auto& mesh : level_mesh.get()->meshes)
-    {
-        if (mesh.mesh_name == "Level_Aspalt")
-            SetMaterialToMesh(mesh.mesh_name, "LevelMat_Aspalt.mat");
-
-        else if (mesh.mesh_name == "Level_BackGround" || mesh.mesh_name == "Level_Ground")
-            SetMaterialToMesh(mesh.mesh_name, "LevelMat_DeadPoly_2.mat");
-
-        else
-            SetRandomMaterialToMesh(mesh.mesh_name, "DeadPoly");
-
-        //CalculateNormal(mesh);
-    }
-
     return true;
 }
 
@@ -84,7 +70,7 @@ void reality::StaticMeshLevel::Render()
 
     for (auto& mesh : level_mesh.get()->meshes)
     {
-        Material* material = mesh_material_map.at(mesh.mesh_name).get();
+        Material* material = RESOURCE->UseResource<Material>(mesh.mesh_name + ".mat");
         if (material)
             material->Set();
 
@@ -121,6 +107,11 @@ void reality::StaticMeshLevel::RenderCollisionMesh()
     }
 
     DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
+}
+
+StaticMesh* reality::StaticMeshLevel::GetLevelMesh()
+{
+    return level_mesh.get();
 }
 
 bool reality::StaticMeshLevel::SetMaterialToMesh(string mesh_name, string material_id)

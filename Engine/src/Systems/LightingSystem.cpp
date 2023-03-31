@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "LightingSystem.h"
 #include "TimeMgr.h"
+#include "SceneMgr.h"
+#include "PointLightActor.h"
+#include "SpotLightActor.h"
 
 using namespace reality;
 
@@ -67,12 +70,12 @@ HRESULT LightingSystem::CreatePointLightsCB()
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(CbPointLight::Data);
+	desc.ByteWidth = sizeof(CbPointLight::Data) * 64;
 
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	subdata.pSysMem = &point_lights.data;
+	subdata.pSysMem = point_lights.data;
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, point_lights.buffer.GetAddressOf());
 
@@ -89,19 +92,19 @@ HRESULT LightingSystem::CreateSpotLightsCB()
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(CbSpotLight::Data);
+	desc.ByteWidth = sizeof(CbSpotLight::Data) * 64;
 
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	subdata.pSysMem = &spot_lights.data;
+	subdata.pSysMem = spot_lights.data;
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, spot_lights.buffer.GetAddressOf());
 
 	return hr;
 }
 
-void reality::LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular)
+void LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular)
 {
 	float half_noon = world_time.x / 2;
 	float half_night = world_time.y / 2;
@@ -144,6 +147,7 @@ void LightingSystem::UpdatePointLights(entt::registry& reg)
 	for (auto& entity : view)
 	{
 		auto& point_light_comp = reg.get<C_PointLight>(entity);
+
 		// 1. Lifetime Check
 		if (point_light_comp.lifetime > 0 && point_light_comp.lifetime < point_light_comp.timer)
 			continue;
@@ -152,21 +156,21 @@ void LightingSystem::UpdatePointLights(entt::registry& reg)
 
 		// 2. if Lifetime remain, Plus Data to CB Array
 		CbPointLight::Data point_light_data;
-		point_light_data.diffuse = point_light_comp.diffuse;
-		point_light_data.specular = point_light_comp.specular;
-		point_light_data.ambient = point_light_comp.ambient;
+		point_light_data.light_color = point_light_comp.light_color;
 
 		point_light_data.position = point_light_comp.position;
 		point_light_data.range = point_light_comp.range;
+		point_light_data.attenuation_level = point_light_comp.attenuation_level;
 		point_light_data.attenuation = point_light_comp.attenuation;
+		point_light_data.specular = point_light_comp.specular;
 
 		point_lights.data[count++] = point_light_data;
 	}
 
 	// 3. Update Constant Buffer & Set CB
-	DX11APP->GetDeviceContext()->UpdateSubresource(point_lights.buffer.Get(), 0, 0, &point_lights.data, 0, 0);
+	DX11APP->GetDeviceContext()->UpdateSubresource(point_lights.buffer.Get(), 0, 0, point_lights.data, 0, 0);
 
-	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, point_lights.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(2, 1, point_lights.buffer.GetAddressOf());
 }
 
 void LightingSystem::UpdateSpotLights(entt::registry& reg)
@@ -179,6 +183,7 @@ void LightingSystem::UpdateSpotLights(entt::registry& reg)
 	for (auto& entity : view)
 	{
 		auto& spot_light_comp = reg.get<C_SpotLight>(entity);
+
 		// 1. Lifetime Check
 		if (spot_light_comp.lifetime > 0 && spot_light_comp.lifetime < spot_light_comp.timer)
 			continue;
@@ -188,13 +193,14 @@ void LightingSystem::UpdateSpotLights(entt::registry& reg)
 		// 2. if Lifetime remain, Plus Data to CB Array
 		CbSpotLight::Data spot_light_data;
 
-		spot_light_data.diffuse = spot_light_comp.diffuse;
-		spot_light_data.specular = spot_light_comp.specular;
-		spot_light_data.ambient = spot_light_comp.ambient;
+		spot_light_data.light_color = spot_light_comp.light_color;
 
 		spot_light_data.position = spot_light_comp.position;
 		spot_light_data.range = spot_light_comp.range;
+		spot_light_data.attenuation_level = spot_light_comp.attenuation_level;
 		spot_light_data.attenuation = spot_light_comp.attenuation;
+		spot_light_data.specular = spot_light_comp.specular;
+
 		spot_light_data.direction = spot_light_comp.direction;
 		spot_light_data.spot = spot_light_comp.spot;
 
@@ -202,7 +208,7 @@ void LightingSystem::UpdateSpotLights(entt::registry& reg)
 	}
 
 	// 3. Update Constant Buffer & Set CB
-	DX11APP->GetDeviceContext()->UpdateSubresource(spot_lights.buffer.Get(), 0, 0, &point_lights.data, 0, 0);
+	DX11APP->GetDeviceContext()->UpdateSubresource(spot_lights.buffer.Get(), 0, 0, spot_lights.data, 0, 0);
 
-	DX11APP->GetDeviceContext()->PSSetConstantBuffers(2, 1, spot_lights.buffer.GetAddressOf());
+	DX11APP->GetDeviceContext()->PSSetConstantBuffers(3, 1, spot_lights.buffer.GetAddressOf());
 }
