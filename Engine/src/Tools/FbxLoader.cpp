@@ -586,7 +586,7 @@ namespace reality {
 			XMVECTOR det;
 			bind_pose_matrix = XMMatrixInverse(&det, bind_pose_matrix);
 			out_mesh->bind_poses.insert(std::make_pair(bone_ID, bind_pose_matrix));
-			out_mesh->skelton_id_map.insert(std::make_pair(skeleton_name_map[bone_ID], skeleton_bone_map[bone_ID]));
+			out_mesh->name_bone_map.insert(std::make_pair(skeleton_name_map[bone_ID], skeleton_bone_map[bone_ID]));
 
 			// 임의의 1개 정점에 영향을 미치는 뼈대의 개수
 			int index_weight_count = fbx_cluster->GetControlPointIndicesCount();

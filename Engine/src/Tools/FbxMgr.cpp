@@ -36,7 +36,11 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options,
 
             res_skeletal_mesh.meshes.push_back(single_mesh);
             res_skeletal_mesh.skeleton.bind_pose_matrices.merge(out_mesh->bind_poses);
-            res_skeletal_mesh.skeleton.skeleton_id_map.merge(out_mesh->skelton_id_map);
+
+            for (auto name_bone : out_mesh->name_bone_map) {
+                res_skeletal_mesh.skeleton.id_bone_map.insert({ name_bone.second.bone_id, name_bone.second });
+                res_skeletal_mesh.skeleton.bone_name_id_map.insert({ name_bone.first, name_bone.second.bone_id });
+            }
         }
         else
         {
@@ -174,12 +178,33 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
     file_exporter.WriteBinaryWithoutSize<int>(&num_of_matrices, 1);
     file_exporter.WriteBinaryWithoutSize<XMMATRIX>(bind_pose_matrices.data(), num_of_matrices); 
 
-    vector<string> skeleton_names;
+    vector<UINT> bone_ids;
     vector<Bone> bones;
 
-    for (const auto& cur_pair : skeletal_mesh.skeleton.skeleton_id_map) {
-        skeleton_names.push_back(cur_pair.first);
+    for (const auto& cur_pair : skeletal_mesh.skeleton.id_bone_map) {
+        bone_ids.push_back(cur_pair.first);
         bones.push_back(cur_pair.second);
+    }
+
+    int num_of_bone_ids = bone_ids.size();
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_bone_ids, 1);
+    file_exporter.WriteBinaryWithoutSize<UINT>(bone_ids.data(), 1);
+
+    int num_of_bones = bones.size();
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_bones, 1);
+    for (int i = 0;i < num_of_bones;i++) {
+        file_exporter.WriteBinaryWithoutSize<UINT>(&(bones[i].bone_id), 1);
+        int num_child_ids = bones[i].child_bone_ids.size();
+        file_exporter.WriteBinaryWithoutSize<int>(&(num_child_ids), 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(bones[i].child_bone_ids.data(), num_child_ids);
+    }
+
+    vector<string> skeleton_names;
+    bone_ids.clear();
+
+    for (const auto& cur_pair : skeletal_mesh.skeleton.bone_name_id_map) {
+        skeleton_names.push_back(cur_pair.first);
+        bone_ids.push_back(cur_pair.second);
     }
 
     int num_of_names = skeleton_names.size();
@@ -190,14 +215,9 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
         file_exporter.WriteBinaryWithoutSize<char>(const_cast<char*>(skeleton_name.c_str()), skeleton_name_size);
     }
 
-    int num_of_bones = bones.size();
-    file_exporter.WriteBinaryWithoutSize<int>(&num_of_bones, 1);
-    for (int i = 0;i < num_of_bones;i++) {
-        file_exporter.WriteBinaryWithoutSize<UINT>(&(bones[i].bone_id), 1);
-        int num_child_ids = bones[i].child_bone_ids.size();
-        file_exporter.WriteBinaryWithoutSize<int>(&(num_child_ids), 1);
-        file_exporter.WriteBinaryWithoutSize<UINT>(bones[i].child_bone_ids.data(), num_child_ids);
-    }
+    num_of_bone_ids = bone_ids.size();
+    file_exporter.WriteBinaryWithoutSize<int>(&num_of_bone_ids, 1);
+    file_exporter.WriteBinaryWithoutSize<UINT>(bone_ids.data(), 1);
 }
 
 void reality::FbxMgr::SaveAnimation(const map<string, OutAnimData>& animation)
@@ -297,15 +317,11 @@ reality::SkeletalMesh reality::FbxMgr::LoadSkeletalMesh(string filename)
         skeletal_mesh.skeleton.bind_pose_matrices.insert({ keys[i], bind_pose_matrices[i] });
     }
 
-    vector<string> skeleton_names;
+    vector<UINT> bone_ids;
     vector<Bone> bones;
 
-    int num_of_names = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-
-    for (int i = 0;i < num_of_names;i++) {
-        int skeleton_name_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
-        skeleton_names.push_back(file_exporter.ReadBinaryWithoutSize<char>(skeleton_name_size).data());
-    }
+    int num_bone_ids = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    bone_ids = file_exporter.ReadBinaryWithoutSize<UINT>(num_bone_ids);
 
     int num_of_bones = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
     for (int i = 0;i < num_of_bones;i++) {
@@ -316,8 +332,24 @@ reality::SkeletalMesh reality::FbxMgr::LoadSkeletalMesh(string filename)
         bones.push_back(bone);
     }
 
-    for (int i = 0;i < num_of_keys;i++) {
-        skeletal_mesh.skeleton.skeleton_id_map.insert({ skeleton_names[i], bones[i] });
+    for (int i = 0;i < num_bone_ids;i++) {
+        skeletal_mesh.skeleton.id_bone_map.insert({ bone_ids[i], bones[i] });
+    }
+
+    vector<string> bone_names;
+    bone_ids.clear();
+
+    int num_of_names = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    for (int i = 0;i < num_of_names;i++) {
+        int skeleton_name_size = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+        bone_names.push_back(file_exporter.ReadBinaryWithoutSize<char>(skeleton_name_size).data());
+    }
+
+    num_bone_ids = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
+    bone_ids = file_exporter.ReadBinaryWithoutSize<UINT>(num_bone_ids);
+
+    for (int i = 0;i < num_bone_ids;i++) {
+        skeletal_mesh.skeleton.bone_name_id_map.insert({ bone_names[i], bone_ids[i] });
     }
 
     return skeletal_mesh;
