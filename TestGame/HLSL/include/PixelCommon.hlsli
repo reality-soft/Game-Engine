@@ -12,6 +12,8 @@ cbuffer CbGlobalLight : register(b0)
     float4 ambient_up;
     float4 ambient_down;
     float4 ambient_range;
+    
+    matrix shadow_matrix;
 }
 
 // Point Lighting
@@ -30,7 +32,7 @@ struct PointLight
     float   pad4;
 };
 
-cbuffer CbPointLights : register(b1)
+cbuffer CbPointLights : register(b2)
 {
     PointLight point_lights[64];
 }
@@ -53,12 +55,12 @@ struct SpotLight
     float   spot;
 };
 
-cbuffer CbSpotLights : register(b2)
+cbuffer CbSpotLights : register(b3)
 {
     SpotLight spot_lights[64];
 }
 
-cbuffer CbDistanceFog : register(b3)
+cbuffer CbDistanceFog : register(b4)
 {
     float4 fog_color;
     float3 eye_position;
