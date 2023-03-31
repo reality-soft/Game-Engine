@@ -4,6 +4,7 @@
 #include "FX_BloodImpact.h"
 #include "FX_ConcreteImpact.h"
 #include "FbxMgr.h"
+#include "StaticShadowMap.h"
 
 void TestGame::OnInit()
 {
@@ -81,7 +82,7 @@ void TestGame::OnInit()
 	environment_.SetSkyColorByTime(RGB_TO_FLOAT(201, 205, 204), RGB_TO_FLOAT(11, 11, 19));
 	environment_.SetFogDistanceByTime(5000, 1000);
 	environment_.SetLightProperty(0.2f, 0.2f);
-}
+
 
 void TestGame::OnUpdate()
 {

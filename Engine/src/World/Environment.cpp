@@ -20,7 +20,7 @@ void reality::Environment::SetWorldTime(float noon_time, float night_time, bool 
 
 	if (noon_start)
 	{
-		current_time_ = world_time_.x; 
+		current_time_ = world_time_.x;
 		time_routin_ = TimeRoutin::NOON_TO_NIGHT;
 	}
 
@@ -81,7 +81,6 @@ void reality::Environment::Update(CameraSystem* sys_camera, LightingSystem* sys_
 void reality::Environment::Render()
 {
 	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
-
 	sky_sphere_.Render();
 	distance_fog_.Render();
 }

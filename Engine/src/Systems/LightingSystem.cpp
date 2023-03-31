@@ -104,7 +104,7 @@ HRESULT LightingSystem::CreateSpotLightsCB()
 	return hr;
 }
 
-void reality::LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular)
+void LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular)
 {
 	float half_noon = world_time.x / 2;
 	float half_night = world_time.y / 2;
@@ -160,6 +160,7 @@ void LightingSystem::UpdatePointLights(entt::registry& reg)
 
 		point_light_data.position = point_light_comp.position;
 		point_light_data.range = point_light_comp.range;
+		point_light_data.attenuation_level = point_light_comp.attenuation_level;
 		point_light_data.attenuation = point_light_comp.attenuation;
 		point_light_data.specular = point_light_comp.specular;
 
@@ -196,6 +197,7 @@ void LightingSystem::UpdateSpotLights(entt::registry& reg)
 
 		spot_light_data.position = spot_light_comp.position;
 		spot_light_data.range = spot_light_comp.range;
+		spot_light_data.attenuation_level = spot_light_comp.attenuation_level;
 		spot_light_data.attenuation = spot_light_comp.attenuation;
 		spot_light_data.specular = spot_light_comp.specular;
 
