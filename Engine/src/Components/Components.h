@@ -441,27 +441,20 @@ namespace reality
 		map<string, shared_ptr<UIBase>> ui_list;
 	};
 
-	struct C_BaseLight : public C_Transform
+	// Light
+	struct C_PointLight : public C_Transform
 	{
 		float		timer;
 		float		lifetime;
-
-		XMFLOAT4	light_color;
-		XMFLOAT3	position;
-		float		range;
-		XMFLOAT3	attenuation;
-		XMFLOAT3	attenuation_level;
-		float		specular;
+		string		point_light_id;
+		PointLight	point_light;
 	};
 
-	// Light
-	struct C_PointLight : public C_BaseLight
+	struct C_SpotLight : public C_Transform
 	{
-	};
-
-	struct C_SpotLight : public C_BaseLight
-	{
-		XMFLOAT3	direction;
-		float		spot;
+		float		timer;
+		float		lifetime;
+		string		spot_light_id;
+		SpotLight	spot_light;
 	};
 }

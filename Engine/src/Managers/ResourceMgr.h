@@ -47,6 +47,7 @@ namespace reality
 		set<string> GetTotalMATID();
 		set<string> GetTotalSpriteID();
 		set<string> GetTotalEffectID();
+		set<string> GetTotalLightID();
 
 	public:
 		void PushStaticMesh(string id, const StaticMesh& static_mesh);
@@ -71,6 +72,7 @@ namespace reality
 
 		unordered_map<string, shared_ptr<Sprite>>	resdic_sprite;
 		unordered_map<string, Effect>				resdic_effect;
+		unordered_map<string, shared_ptr<BaseLight>> resdic_light;
 
 	private:
 		bool ImportShaders(string filename);
@@ -80,6 +82,7 @@ namespace reality
 		bool ImportSKM(string filename);
 		bool ImportSTM(string filename);
 		bool ImportANIM(string filename);
+		bool ImportLight(string filename);
 	public:
 		bool ImportSprite(string filename);
 		bool SaveSprite(string name, shared_ptr<Sprite> new_sprite);
@@ -192,6 +195,14 @@ namespace reality
 			if (iter != resdic_effect.end())
 			{
 				return (T*)(&iter->second);
+			}
+		}
+		else if (typeid(T) == typeid(BaseLight))
+		{
+			auto iter = resdic_light.find(id);
+			if (iter != resdic_light.end())
+			{
+				return (T*)iter->second.get();
 			}
 		}
 		return nullptr;

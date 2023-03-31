@@ -281,4 +281,23 @@ namespace reality
 	{
 		map<string, Emitter> emitters;
 	};
+
+	struct BaseLight
+	{
+		XMFLOAT4	light_color;
+		float		range;
+		XMFLOAT3	attenuation;
+		XMFLOAT3	attenuation_level;
+		float		specular;
+	};
+
+	struct PointLight : public BaseLight
+	{
+		
+	};
+
+	struct SpotLight : public BaseLight
+	{
+		float		spot;
+	};
 }
