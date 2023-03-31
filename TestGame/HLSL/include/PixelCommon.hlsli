@@ -1,6 +1,4 @@
 // Global Directional Lighting
-#define e 2.71828182846
-
 cbuffer CbGlobalLight : register(b0)
 {
     float3 position;
@@ -19,12 +17,7 @@ cbuffer CbGlobalLight : register(b0)
 // Point Lighting
 struct PointLight
 {
-    float3  diffuse;
-    float   pad1;
-    float3  specular;
-    float   pad2;
-    float3  ambient;
-    float   pad3;
+    float4  light_color;
 
     float3  position;
     float   range;
@@ -40,12 +33,7 @@ cbuffer CbPointLights : register(b2)
 // Spot Lighting
 struct SpotLight
 {
-    float3  diffuse;
-    float   pad1;
-    float3  specular;
-    float   pad2;
-    float3  ambient;
-    float   pad3;
+    float4  light_color;
 
     float3  position;
     float   range;
@@ -181,7 +169,55 @@ float4 ApplyHemisphericAmbient(float3 normal, float4 color)
     return length(ambient) * color;
 }
 
-float4 ApplyCookTorrance(float4 albedo, float roughness, float3 normal, float3 view_dir)
+float4 ApplyPointLight(float4 light_color, float3 normal, float4 origin)
+{
+    float4 total_light = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i < 64; i++)
+    {
+        float distance = length(point_lights[i].position - origin.xyz);
+
+        if (distance > point_lights[i].range)
+            continue;
+        else
+        {
+            float3 light_dir = normalize(point_lights[i].position - origin.xyz);
+
+            float attenuation = 1.0 / (point_lights[i].attenuation.x + point_lights[i].attenuation.y * distance, point_lights[i].attenuation.z * distance * distance);
+            float intensity = saturate(dot(normalize(normal), light_dir));
+            total_light += light_color * intensity * attenuation;
+        }
+
+    }
+
+    return total_light;
+}
+
+float4 ApplySpotLight(float light_color, float3 normal, float4 origin)
+{
+    float4 total_light = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i < 64; i++)
+    {
+        float distance = length(spot_lights[i].position - origin.xyz);
+
+        if (distance > point_lights[i].range)
+            continue;
+
+        float3 spot_direction_norm = normalize(spot_lights[i].direction);
+        float3 light_dir = normalize(point_lights[i].position - origin.xyz);
+        float3 half_vector = normalize(spot_direction_norm + light_dir);
+
+        float intensity = max(dot(normalize(normal), light_dir), 0.0f);
+        float spot_attenuation = max(dot(half_vector, -spot_direction_norm), 0.0f);
+        float angle_attenuation = saturate((1.0 - max(dot(light_dir, normalize(-spot_direction_norm)), 0.0)) * 1.0 / (1.0 - cos(1.0f * 0.5)));
+
+        total_light += light_color * intensity * spot_attenuation * angle_attenuation;
+    }
+    return total_light;
+}
+
+float4 ApplyCookTorrance(float4 albedo, float roughness, float specular, float3 normal, float3 view_dir)
 {    
     // Correct the input and compute aliases
     view_dir = normalize(view_dir);
@@ -208,68 +244,7 @@ float4 ApplyCookTorrance(float4 albedo, float roughness, float3 normal, float3 v
     float R = A * B;
     
     // Compute the final term  
-    float3 S = ((G * F * R) / (normal_dot_light * normal_dot_view)) * specular_strength;
-    float3 flinal_color = float3(brightness, brightness, brightness) * max(0.2f, normal_dot_light) * (albedo.xyz + S);
+    float3 S = specular * ((G * F * R) / (normal_dot_light * normal_dot_view));
+    float3 flinal_color = WhiteColor().xyz * max(0.2f, normal_dot_light) * (albedo.xyz + S);
     return float4(flinal_color, 1.0f);
-}
-
-float4 ApplyPointLights(float4 color, float3 origin, float3 normal)
-{
-    float3 diffuse = float3(0.0f, 0.0f, 0.0f);
-    float3 spec = float3(0.0f, 0.0f, 0.0f);
-    float3 ambient = float3(0.0f, 0.0f, 0.0f); 
-
-    for (int i = 0; i < 64; i++)
-    {
-        if (point_lights[i].range == 0)
-            continue;
-
-        float3 light_vector = point_lights[i].position - origin;
-
-        float d = length(light_vector);
-
-        if (d > point_lights[i].range)
-            continue;
-
-        float3 D = float3(0.0f, 0.0f, 0.0f);
-        float3 S = float3(0.0f, 0.0f, 0.0f);
-
-        light_vector /= d;
-
-        float diffuse_factor = dot(light_vector, normal);
-
-        if (diffuse_factor > 0.0f)
-        {
-            float3 v = reflect(-light_vector, normal);
-
-            float spec_factor;
-
-            D = diffuse_factor * point_lights[i].diffuse;
-            S = spec_factor * point_lights[i].diffuse;
-        }
-
-        float att = 1.0f / dot(point_lights[i].attenuation, float3(1.0f, d, d * d));
-
-        D *= att;
-        S *= att;
-        
-        diffuse += D;
-        spec += S;
-        ambient += point_lights[i].ambient;
-    }
-
-    return color * float4(diffuse + spec + ambient, 1.0f);
-}
-
-float4 ApplySpotLights(float4 color, float3 normal)
-{
-    return float4(0, 0, 0, 1);
-}
-
-float4 ApplyDistanceFog(float4 color, float3 pixel_world)
-{        
-    float3 fog_start = eye_position;    
-    float f = 1 / pow(e, pow(length(pixel_world - fog_start) / distance, 2));
-    
-   return f * color + (1.0f - f) * fog_color;
 }

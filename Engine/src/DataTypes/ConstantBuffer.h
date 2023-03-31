@@ -80,7 +80,8 @@ namespace reality
 		}
 		struct Data
 		{
-			XMMATRIX  mat_skeleton[255];
+			XMMATRIX  bind_pose[128];	
+			XMMATRIX  animation[128];
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -158,17 +159,12 @@ namespace reality
 	{
 		struct Data
 		{
-			XMFLOAT3	diffuse;
-			float		pad1;
-			XMFLOAT3	specular;
-			float		pad2;
-			XMFLOAT3	ambient;
-			float		pad3;
+			XMFLOAT4	light_color;
 
 			XMFLOAT3	position;
 			float		range;
 			XMFLOAT3	attenuation;
-			float		pad4;
+			float		specular;
 		} data[64];
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -184,17 +180,12 @@ namespace reality
 	{
 		struct Data
 		{
-			XMFLOAT3	diffuse;
-			float		pad1;
-			XMFLOAT3	specular;
-			float		pad2;
-			XMFLOAT3	ambient;
-			float		pad3;
+			XMFLOAT4	light_color;
 
 			XMFLOAT3	position;
 			float		range;
 			XMFLOAT3	attenuation;
-			float		pad4; 
+			float		specular;
 			XMFLOAT3	direction;
 			float		spot;
 		} data[64];

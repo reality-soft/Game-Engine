@@ -22,8 +22,8 @@ private:
 		"Zombie_RiotCop_Male_01.skmesh",
 		"Zombie_SchoolGirl_Female_01.skmesh",
 	};
-    
-	Environment environment_;
+  
+	SkySphere sky_sphere;
 	StaticMeshLevel level;
 
 	reality::LightingSystem sys_light;

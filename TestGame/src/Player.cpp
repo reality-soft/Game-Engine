@@ -15,7 +15,7 @@ void Player::OnInit(entt::registry& registry)
 	reality::C_SkeletalMesh skm;
 	skm.local = XMMatrixIdentity();
 	skm.world = XMMatrixIdentity();
-	skm.skeletal_mesh_id = "SM_Chr_Biker_Male_01.skmesh";
+	skm.skeletal_mesh_id = "A_TP_CH_Breathing.skmesh";
 	skm.vertex_shader_id = "SkinningVS.cso";
 	registry.emplace_or_replace<reality::C_SkeletalMesh>(entity_id_, skm);
 
@@ -46,7 +46,7 @@ void Player::OnInit(entt::registry& registry)
 	// weapon
 	entt::entity weapon_id = SCENE_MGR->AddActor<Weapon>(entity_id_);
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skm.skeletal_mesh_id);
-	int skeleton_id = skeletal_mesh->skeleton.skeleton_id_map["Hand_R"];
+	int skeleton_id = skeletal_mesh->skeleton.skeleton_id_map["hand_r"];
 	Weapon* weapon = SCENE_MGR->GetActor<Weapon>(weapon_id);
 	weapon->SetSocket(skeleton_id);
 	weapon->SetOwnerTransform(skm_ptr->local);
@@ -76,53 +76,53 @@ void Player::SetCharacterAnimation(string anim_id)
 
 void Player::MoveRight()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim_Unreal Take.anim");
 	movement_component_->direction += right_;
 }
 
 void Player::MoveRightForward()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_RF_Anim_Unreal Take.anim");
 	movement_component_->direction += front_;
 	movement_component_->direction += right_;
 }
 
 void Player::MoveRightBack()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_RB_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_RB_Anim_Unreal Take.anim");
 	movement_component_->direction -= front_;
 	movement_component_->direction += right_;
 }
 
 void Player::MoveLeft()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim_Unreal Take.anim");
 	movement_component_->direction -= right_;
 }
 
 void Player::MoveLeftForward()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_LF_Anim_Unreal Take.anim");
 	movement_component_->direction += front_;
 	movement_component_->direction -= right_;
 }
 
 void Player::MoveLeftBack()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_LB_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_LB_Anim_Unreal Take.anim");
 	movement_component_->direction -= front_;
 	movement_component_->direction -= right_;
 }
 
 void Player::MoveForward()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_F_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_F_Anim_Unreal Take.anim");
 	movement_component_->direction += front_;
 }
 
 void Player::MoveBack()
 {
-	SetCharacterAnimation("A_TP_CH_Jog_B_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Jog_B_Anim_Unreal Take.anim");
 	movement_component_->direction -= front_;
 }
 
@@ -134,12 +134,12 @@ void Player::Jump()
 
 void Player::Idle()
 {
-	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Breathing_Anim_Unreal Take.anim");
 }
 
 void Player::Fire()
 {
-	SetCharacterAnimation("A_TP_CH_Handgun_Fire_Anim_Retargeted_Unreal Take.anim");
+	SetCharacterAnimation("A_TP_CH_Handgun_Fire_Anim_Unreal Take.anim");
 }
 
 void Player::ResetPos()

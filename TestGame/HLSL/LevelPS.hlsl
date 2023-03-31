@@ -21,11 +21,11 @@ float4 PS(PS_OUT input) : SV_Target
     
     float4 final_color = WhiteColor();
     
-    albedo = ChangeSaturation(albedo, 1.3f);    
-    albedo = ChangeValue(albedo, 0.5f);
+    albedo = ChangeSaturation(albedo, 1.8f);
     albedo = ApplyHemisphericAmbient(input.n, albedo);
     
-    final_color = ApplyCookTorrance(albedo, roughness.r, input.n, input.view_dir);
+    final_color = ApplyCookTorrance(albedo, roughness.r, specular_strength, input.n, input.view_dir);
     final_color = ApplyDistanceFog(final_color, input.origin);
+
     return final_color;
 }

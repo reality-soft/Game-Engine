@@ -43,8 +43,10 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_transform.buffer.GetAddressOf());
 
 	// Init SkeletonBuffer
-	for (int i = 0; i < 255; ++i)
-		cb_skeleton.data.mat_skeleton[i] = XMMatrixIdentity();
+	for (int i = 0; i < 128; ++i) {
+		cb_skeleton.data.bind_pose[i] = XMMatrixIdentity();
+		cb_skeleton.data.animation[i] = XMMatrixIdentity();
+	}
 
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
@@ -121,8 +123,8 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
-		XMMATRIX anim_matrix = bp.second * res_animation->animations.find(bp.first)->second[animation_component.cur_frame];
-		cb_skeleton.data.mat_skeleton[bp.first] = XMMatrixTranspose(anim_matrix);
+		cb_skeleton.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
+		cb_skeleton.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
 	}
 
 	animation_component.cur_frame += 60.f / TM_FPS;
