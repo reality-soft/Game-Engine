@@ -39,7 +39,8 @@ namespace reality {
 		FbxNode* root_node = nullptr;
 
 		map<FbxNode*, OutMeshData*> out_mesh_map;
-		unordered_map<int, string> skeleton_id_map;
+		unordered_map<UINT, Bone> skeleton_bone_map;
+		unordered_map<UINT, string> skeleton_name_map;
 		map<FbxNode*, UINT> node_id_map;
 		vector<FbxNode*> node_list;
 
