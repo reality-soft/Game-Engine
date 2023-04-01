@@ -195,25 +195,6 @@ namespace reality {
         return CollideType::INTERSECT;
     }
 
-    static bool AABBToCapsule(AABBShape& aabb, CapsuleShape& capsule)
-    {
-
-        RayShape box_to_capsule_ray(aabb.center, capsule.base);
-        box_to_capsule_ray.start.m128_f32[1] = 0.0f;
-        box_to_capsule_ray.end.m128_f32[1] = 0.0f;
-
-        float box_to_capsule_distance = Distance(box_to_capsule_ray.start, box_to_capsule_ray.end) - capsule.radius;
-
-        XMVECTOR center_to_corner = aabb.max - aabb.center;
-        center_to_corner.m128_f32[1] = 0.0f;
-        float box_radius = XMVectorGetX(XMVector3Length(center_to_corner));
-
-        if (box_to_capsule_distance <= box_radius)
-            return true;
-
-        return false;
-    }
-
 	static CollideType AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2)
 	{
         for (int i = 0; i < 3; i++)
@@ -227,14 +208,34 @@ namespace reality {
                 return CollideType::OUTSIDE;
         }
 
-        bool aabb1_inside = DirectX::XMVector3GreaterOrEqual(aabb1.max, aabb2.max) && DirectX::XMVector3LessOrEqual(aabb1.min, aabb2.max);
-        bool aabb2_inside = DirectX::XMVector3GreaterOrEqual(aabb2.max, aabb1.max) && DirectX::XMVector3LessOrEqual(aabb2.max, aabb1.min);
+        bool aabb1_inside = DirectX::XMVector3GreaterOrEqual(aabb1.max, aabb2.max) && DirectX::XMVector3LessOrEqual(aabb1.min, aabb2.min);
+        bool aabb2_inside = DirectX::XMVector3GreaterOrEqual(aabb2.max, aabb1.max) && DirectX::XMVector3LessOrEqual(aabb2.min, aabb1.min);
 
         if (aabb1_inside || aabb2_inside)
             return CollideType::INSIDE;
 
         return CollideType::INTERSECT;
 	}
+
+    static CollideType CapsuleToAABB(AABBShape& aabb, CapsuleShape& capsule)
+    {
+        auto cap_to_aabb = capsule.GetAsAABB();
+        return AABBtoAABB(cap_to_aabb, aabb);
+        //RayShape box_to_capsule_ray(aabb.center, capsule.base);
+        //box_to_capsule_ray.start.m128_f32[1] = 0.0f;
+        //box_to_capsule_ray.end.m128_f32[1] = 0.0f;
+
+        //float box_to_capsule_distance = Distance(box_to_capsule_ray.start, box_to_capsule_ray.end) - capsule.radius;
+
+        //XMVECTOR center_to_corner = aabb.max - aabb.center;
+        //center_to_corner.m128_f32[1] = 0.0f;
+        //float box_radius = XMVectorGetX(XMVector3Length(center_to_corner));
+
+        //if (box_to_capsule_distance <= box_radius)
+        //    return true;
+
+        //return false;
+    }
 
     static CollideType CapsuleToCapsule(CapsuleShape& cap1, CapsuleShape& cap2)
     {

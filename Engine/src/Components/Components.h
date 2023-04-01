@@ -55,6 +55,7 @@ namespace reality
 	struct C_CapsuleCollision : public C_Transform
 	{
 		reality::CapsuleShape capsule;
+		UINT enclosed_node_index = 0;
 
 		void SetCapsuleData(XMVECTOR offset, float height, float radius) {
 			capsule = reality::CapsuleShape(offset, height, radius);

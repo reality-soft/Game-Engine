@@ -3,13 +3,11 @@
 #include "ResourceMgr.h"
 #include "StaticShadowMap.h"
 
-#define DEPTH_BIAS_D24_FLOAT(d) (d/(1/pow(2,24)))
-
 bool reality::StaticShadowMap::Create(XMFLOAT3 light_position, string vs_id, string ps_id)
 {
 	XMVECTOR light_pos_vector = XMLoadFloat3(&light_position);
 	XMMATRIX view_matrix = XMMatrixLookAtLH(light_pos_vector, XMVectorZero(), XMVectorSet(0, 1, 0, 0));
-	XMMATRIX proj_matrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45), 1.0f, 5000.f, 15000.0f);
+	XMMATRIX proj_matrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45), 1.0f, 5000.f, 10000.0f);
 
 	cb_shadow_map_.data.shadow_view = XMMatrixTranspose(view_matrix);
 	cb_shadow_map_.data.shadow_proj = XMMatrixTranspose(proj_matrix);
@@ -49,7 +47,7 @@ bool reality::StaticShadowMap::Create(XMFLOAT3 light_position, string vs_id, str
 
 	// Set depth bias parameters
 	rs_desc.DepthBias = 1;
-	rs_desc.SlopeScaledDepthBias = 10.f;
+	rs_desc.SlopeScaledDepthBias = 100.f;
 	rs_desc.DepthBiasClamp = 0.0f;
 
 	// Create the rasterizer state

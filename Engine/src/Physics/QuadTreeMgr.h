@@ -24,6 +24,7 @@ namespace reality {
 		UINT node_num, node_depth;
 		AABBShape area;
 		SpaceNode* child_node_[4] = { 0, };
+		SpaceNode* parent_node = nullptr;
 		std::unordered_set<entt::entity> object_list;
 		vector<TriangleShape> static_triangles;
 
@@ -56,20 +57,23 @@ namespace reality {
 		void UpdatePhysics();
 		void CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes);
 		void CheckBlockingLine(entt::entity ent, CapsuleShape& capsule);
+
+		SpaceNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node);
+		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& node_list);
+		void	   NodeCasting(const RayShape& ray, SpaceNode* node);
+
 		UINT max_depth;
 		UINT node_count = 0;
 		float physics_timestep = 1.0f / 120.0f;
 
 		SpaceNode* root_node_ = nullptr;
-		vector<SpaceNode*> total_nodes_;
-		vector<SpaceNode*> leaf_nodes_;
+		map<UINT, SpaceNode*> total_nodes_;
+		map<UINT, SpaceNode*> leaf_nodes_;
 		map<float, SpaceNode*> casted_nodes_;
 
 		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
 
 	private:
-		void NodeCasting(const RayShape& ray, SpaceNode* node);
-		void ObjectQueryByCapsule(CapsuleShape& capsule, SpaceNode* node, vector<SpaceNode*>& node_list);
 		SpaceNode* BuildTree(UINT depth, float row1, float col1, float row2, float col2);
 		void SetStaticTriangles(SpaceNode* node);
 
