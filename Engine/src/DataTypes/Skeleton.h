@@ -4,6 +4,7 @@
 namespace reality {
 	struct Bone {
 		UINT bone_id;
+		UINT parent_bone_id;
 		vector<UINT> child_bone_ids;
 	};
 

@@ -92,6 +92,18 @@ namespace reality {
 			skeleton_bone_map.insert({ node_id_map[cur_node.first], bone});
 			skeleton_name_map.insert({ cur_node.second, cur_node.first->GetName() });
 		}
+		for (auto cur_node : node_id_map) {
+			UINT node_id = cur_node.second;
+			FbxNode* fbx_node = cur_node.first;
+
+			int child_count = cur_node.first->GetChildCount();
+			for (int child_index = 0; child_index < child_count; child_index++)
+			{
+				FbxNode* child_node = cur_node.first->GetChild(child_index);
+				Bone& child_bone = skeleton_bone_map[node_id_map[child_node]];
+				child_bone.parent_bone_id = node_id;
+			}
+		}
 		for (auto node : node_list)
 		{
 			FbxMesh* fbx_mesh = node->GetMesh();

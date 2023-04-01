@@ -194,6 +194,7 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
     file_exporter.WriteBinaryWithoutSize<int>(&num_of_bones, 1);
     for (int i = 0;i < num_of_bones;i++) {
         file_exporter.WriteBinaryWithoutSize<UINT>(&(bones[i].bone_id), 1);
+        file_exporter.WriteBinaryWithoutSize<UINT>(&(bones[i].parent_bone_id), 1);
         int num_child_ids = bones[i].child_bone_ids.size();
         file_exporter.WriteBinaryWithoutSize<int>(&(num_child_ids), 1);
         file_exporter.WriteBinaryWithoutSize<UINT>(bones[i].child_bone_ids.data(), num_child_ids);
@@ -327,6 +328,7 @@ reality::SkeletalMesh reality::FbxMgr::LoadSkeletalMesh(string filename)
     for (int i = 0;i < num_of_bones;i++) {
         Bone bone;
         bone.bone_id = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
+        bone.parent_bone_id = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
         int num_child_ids = file_exporter.ReadBinaryWithoutSize<int>(1)[0];
         bone.child_bone_ids = file_exporter.ReadBinaryWithoutSize<UINT>(num_child_ids);
         bones.push_back(bone);
