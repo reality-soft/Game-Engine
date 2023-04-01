@@ -188,7 +188,7 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
 
     int num_of_bone_ids = bone_ids.size();
     file_exporter.WriteBinaryWithoutSize<int>(&num_of_bone_ids, 1);
-    file_exporter.WriteBinaryWithoutSize<UINT>(bone_ids.data(), 1);
+    file_exporter.WriteBinaryWithoutSize<UINT>(bone_ids.data(), num_of_bone_ids);
 
     int num_of_bones = bones.size();
     file_exporter.WriteBinaryWithoutSize<int>(&num_of_bones, 1);
@@ -217,7 +217,7 @@ void reality::FbxMgr::SaveSkeletalMesh(const SkeletalMesh& skeletal_mesh, string
 
     num_of_bone_ids = bone_ids.size();
     file_exporter.WriteBinaryWithoutSize<int>(&num_of_bone_ids, 1);
-    file_exporter.WriteBinaryWithoutSize<UINT>(bone_ids.data(), 1);
+    file_exporter.WriteBinaryWithoutSize<UINT>(bone_ids.data(), num_of_bone_ids);
 }
 
 void reality::FbxMgr::SaveAnimation(const map<string, OutAnimData>& animation)

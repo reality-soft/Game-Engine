@@ -35,6 +35,8 @@ namespace reality {
 					break;
 				}
 			}
+
+			return sub_bones;
 		}
 	};
 }
