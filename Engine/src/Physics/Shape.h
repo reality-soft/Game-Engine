@@ -215,6 +215,12 @@ namespace reality {
 
             return { tip, base, A, B };
         }
+        AABBShape GetAsAABB()
+        {
+            XMVECTOR cap_min = base + XMVectorSet(-radius, 0, -radius, 0);
+            XMVECTOR cap_max = base + XMVectorSet(radius, height, radius, 0);
+            return AABBShape(cap_min, cap_max);
+        }
         XMVECTOR base;
         float height;
         float radius;
