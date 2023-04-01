@@ -30,10 +30,11 @@ namespace reality {
 		virtual void Process() override {
 
 			auto character = SCENE_MGR->GetActor<Character>(actor_id_);
-			auto c_capsule = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(character->GetEntityId());
 			if (character == nullptr)
 				return;
-			
+
+			auto c_capsule = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(character->GetEntityId());
+
 			for (auto& block_wall : character->blocking_walls_)
 			{
 				XMVECTOR blocking_vector = block_wall.end - block_wall.start;
