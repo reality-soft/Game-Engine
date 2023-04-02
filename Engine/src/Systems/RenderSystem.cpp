@@ -126,9 +126,12 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 	{
 		cb_skeleton.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
 		cb_skeleton.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
+		cb_skeleton.data.slot_animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
 	}
 
 	for (auto& anim_slot_pair : animation_component.anim_slots) {
+		ZeroMemory(cb_skeleton.data.weights, sizeof(cb_skeleton.data.weights));
+
 		AnimSlot& anim_slot = anim_slot_pair.second;
 		OutAnimData* slot_anim = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_id);
 		if (slot_anim == nullptr) {
@@ -140,8 +143,15 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 		if (anim_slot.cur_frame >= slot_anim->end_frame)
 			anim_slot.cur_frame = slot_anim->start_frame;
 
-		for (UINT bone_id : anim_slot.included_skeletons) {
-			cb_skeleton.data.animation[bone_id] = XMMatrixTranspose(slot_anim->animations.find(bone_id)->second[anim_slot.cur_frame]);
+		for (const auto& cur_pair : anim_slot.included_skeletons) {
+			int depth = cur_pair.first;
+			
+			for (const auto& bone_id : cur_pair.second) {
+				cb_skeleton.data.animation[bone_id] = cb_skeleton.data.slot_animation[bone_id];
+				cb_skeleton.data.slot_animation[bone_id] = XMMatrixTranspose(slot_anim->animations.find(bone_id)->second[anim_slot.cur_frame]);
+
+				cb_skeleton.data.weights[bone_id] = depth / anim_slot.range;
+			}
 		}
 
 		anim_slot.cur_frame += 60.f / TM_FPS;

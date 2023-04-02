@@ -113,14 +113,15 @@ namespace reality
 			cur_frame = anim_data->start_frame;
 		};
 
-		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id) {
+		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range) {
 			AnimSlot anim_slot;
 
 			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
 
 			anim_slot.anim_id = "";
 			anim_slot.cur_frame = 0.0f;
-			anim_slot.included_skeletons = skeletal_mesh->skeleton.GetSubBonesOf(bone_id);
+			anim_slot.included_skeletons = skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range);
+			anim_slot.range = range * 2;
 
 			anim_slots.push_back({ anim_slot_name, anim_slot });
 		};

@@ -82,6 +82,8 @@ namespace reality
 		{
 			XMMATRIX  bind_pose[128];	
 			XMMATRIX  animation[128];
+			XMMATRIX  slot_animation[128];
+			float	  weights[128];
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
