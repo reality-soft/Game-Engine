@@ -10,6 +10,12 @@
 
 namespace reality {
 
+	struct CollisionResult
+	{
+		int result = 0;
+		XMFLOAT3 position = {0, 0, 0};
+	};
+
 	class DLL_API SpaceNode 
 	{
 	public:
@@ -44,6 +50,22 @@ namespace reality {
 		RayCallback RaycastAdjustLevel(const RayShape& ray, float max_distance);
 		pair<RayCallback, entt::entity> RaycastAdjustActor(const RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
+
+		bool CreatePhysicsCS();
+		void RunPhysicsCS(string cs_id);
+
+		ComPtr<ID3D11Buffer> triangle_data_buffer_;
+		ComPtr<ID3D11Buffer> capsule_data_buffer_;
+		ComPtr<ID3D11Buffer> collision_result_buffer_;
+
+		ComPtr<ID3D11ShaderResourceView> triangle_data_srv_;
+		ComPtr<ID3D11ShaderResourceView> capsule_data_srv_;
+		ComPtr<ID3D11UnorderedAccessView> collision_result_uav_;
+
+		array<CapsuleShape, 64> capsule_data_pool_;
+		array<CollisionResult, 64> collision_result_pool_;
+
+		ComPtr<ID3D11Buffer> staging_buffer_;
 
 	public:
 		int calculating_triagnles;
