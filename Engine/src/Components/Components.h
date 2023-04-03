@@ -57,14 +57,14 @@ namespace reality
 		reality::CapsuleShape capsule;
 		UINT enclosed_node_index = 0;
 
-		void SetCapsuleData(XMVECTOR offset, float height, float radius) {
+		void SetCapsuleData(XMFLOAT3 offset, float height, float radius) {
 			capsule = reality::CapsuleShape(offset, height, radius);
-			local = XMMatrixTranslationFromVector(capsule.base);
+			local = XMMatrixTranslationFromVector(_XMVECTOR3(capsule.base));
 			world = world * local;
 		}
 		virtual void OnUpdate() override
 		{
-			capsule.base = world.r[3];
+			capsule.base = _XMFLOAT3(world.r[3]);
 		}
 	};
 
@@ -132,9 +132,9 @@ namespace reality
 
 			world = translation;
 
-			aabb.min = XMVector3TransformCoord(aabb.min, translation);
-			aabb.max = XMVector3TransformCoord(aabb.max, translation);
-			aabb.center = (aabb.min + aabb.max) / 2;
+			aabb.min = _XMFLOAT3(XMVector3TransformCoord(_XMVECTOR3(aabb.min), translation));
+			aabb.max = _XMFLOAT3(XMVector3TransformCoord(_XMVECTOR3(aabb.max), translation));
+			aabb.center = _XMFLOAT3(((_XMVECTOR3(aabb.min) + _XMVECTOR3(aabb.max)) / 2));
 		}
 
 		string vs_id = "StaticMeshVS.cso";
@@ -239,8 +239,8 @@ namespace reality
 
 			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &index_buffer);
 
-			aabb.min = { -static_cast<float>(x) / 2, static_cast<float>(y), -static_cast<float>(z) / 2, 0 };
-			aabb.min = { static_cast<float>(x) / 2, -static_cast<float>(y), static_cast<float>(z) / 2, 0 };
+			aabb.min = { -static_cast<float>(x) / 2, static_cast<float>(y), -static_cast<float>(z) / 2 };
+			aabb.min = { static_cast<float>(x) / 2, -static_cast<float>(y), static_cast<float>(z) / 2 };
 		}
 	};
 

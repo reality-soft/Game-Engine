@@ -24,23 +24,33 @@ namespace reality {
 		INSIDE,
 	};
 
-    static bool PointInTriangle(const XMVECTOR& p, const TriangleShape& tri)
+    static bool PointInTriangle(const XMVECTOR& p, TriangleShape& tri)
     {
-        if (tri.SameSide(p, tri.vertex0, tri.vertex1, tri.vertex2) &&
-            tri.SameSide(p, tri.vertex1, tri.vertex0, tri.vertex2) &&
-            tri.SameSide(p, tri.vertex2, tri.vertex0, tri.vertex1))
+        XMVECTOR tri_vertex0 = _XMVECTOR3(tri.vertex0);
+        XMVECTOR tri_vertex1 = _XMVECTOR3(tri.vertex1);
+        XMVECTOR tri_vertex2 = _XMVECTOR3(tri.vertex2);
+        XMVECTOR tri_normal = _XMVECTOR3(tri.normal);
+
+        if (tri.SameSide(p, tri_vertex0, tri_vertex1, tri_vertex2) &&
+            tri.SameSide(p, tri_vertex1, tri_vertex0, tri_vertex2) &&
+            tri.SameSide(p, tri_vertex2, tri_vertex0, tri_vertex1))
         {
-            XMVECTOR cross = XMVector3Cross(tri.vertex0 - p, tri.vertex1 - p);
-            if (IsParallelVector(cross, tri.normal))
+            XMVECTOR cross = XMVector3Cross(tri_vertex0 - p, tri_vertex1 - p);
+            if (IsParallelVector(cross, tri_normal))
                 return true;
         }
         return false;
     }
 
-    static RayCallback RayToTriangle(const RayShape& ray, const TriangleShape& tri)
+    static RayCallback RayToTriangle(const RayShape& ray, TriangleShape& tri)
     {
+        XMVECTOR tri_vertex0 = _XMVECTOR3(tri.vertex0);
+        XMVECTOR tri_vertex1 = _XMVECTOR3(tri.vertex1);
+        XMVECTOR tri_vertex2 = _XMVECTOR3(tri.vertex2);
+        XMVECTOR tri_normal = _XMVECTOR3(tri.normal);
+
         RayCallback callback;
-        XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri.vertex0, tri.vertex1, tri.vertex2), ray.start, ray.end);
+        XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri_vertex0, tri_vertex1, tri_vertex2), ray.start, ray.end);
 
         if (PointInTriangle(P, tri))
         {
@@ -51,7 +61,7 @@ namespace reality {
                 callback.success = true;
                 callback.distance = distance;
                 callback.point = P;
-                callback.normal = tri.normal;
+                callback.normal = tri_normal;
             }
         }
 
@@ -61,13 +71,13 @@ namespace reality {
 
     static bool RayToAABB(const RayShape& ray, AABBShape& aabb)
     {
-        XMVECTOR center_to_corner = aabb.max - aabb.center;
+        XMVECTOR center_to_corner = _XMVECTOR3(aabb.max) - _XMVECTOR3(aabb.center);
         center_to_corner.m128_f32[1] = 0.0f;
         float box_radius = XMVectorGetX(XMVector3Length(center_to_corner));
 
-        XMVECTOR line1 = ray.start; line1.m128_f32[1] = aabb.center.m128_f32[1];
-        XMVECTOR line2 = ray.end; line2.m128_f32[1] = aabb.center.m128_f32[1];
-        float box_to_line = XMVectorGetX(XMVector3LinePointDistance(line1, line2, aabb.center));
+        XMVECTOR line1 = ray.start; line1.m128_f32[1] = aabb.center.y;
+        XMVECTOR line2 = ray.end; line2.m128_f32[1] = aabb.center.y;
+        float box_to_line = XMVectorGetX(XMVector3LinePointDistance(line1, line2, _XMVECTOR3(aabb.center)));
 
         if (box_to_line <= box_radius)
             return true;
@@ -94,7 +104,7 @@ namespace reality {
         XMVECTOR axis = XMVectorSet(0.0f, 1.0f * cap.height, 0.0f, 0.0f);
 
         RC = ray.start;
-        RC = XMVectorSubtract(RC, cap.base);
+        RC = XMVectorSubtract(RC, _XMVECTOR3(cap.base));
         XMVECTOR dir = XMVectorSubtract(ray.end, ray.start);
         dir = XMVector3Normalize(dir);
         n = XMVector3Cross(dir, axis);
@@ -149,7 +159,7 @@ namespace reality {
             raycallback.point.m128_f32[2] += dir.m128_f32[2] * lambda;
             XMVECTOR hb = raycallback.point;
 
-            XMVectorSubtract(hb, cap.base);
+            XMVectorSubtract(hb, _XMVECTOR3(cap.base));
 
             //float scale = XMVector3Dot(hb, axis).m128_f32[0];
             //raycallback.normal.m128_f32[0] = hb.m128_f32[0] - axis.m128_f32[0] * scale;
@@ -200,16 +210,16 @@ namespace reality {
         for (int i = 0; i < 3; i++)
         {
             bool overlap = 
-                aabb1.max.m128_f32[i] >= aabb2.min.m128_f32[i]
+                _XMVECTOR3(aabb1.max).m128_f32[i] >= _XMVECTOR3(aabb2.min).m128_f32[i]
                 &&
-                aabb1.min.m128_f32[i] <= aabb2.max.m128_f32[i];
+                _XMVECTOR3(aabb1.min).m128_f32[i] <= _XMVECTOR3(aabb2.max).m128_f32[i];
 
             if (!overlap)
                 return CollideType::OUTSIDE;
         }
 
-        bool aabb1_inside = DirectX::XMVector3GreaterOrEqual(aabb1.max, aabb2.max) && DirectX::XMVector3LessOrEqual(aabb1.min, aabb2.min);
-        bool aabb2_inside = DirectX::XMVector3GreaterOrEqual(aabb2.max, aabb1.max) && DirectX::XMVector3LessOrEqual(aabb2.min, aabb1.min);
+        bool aabb1_inside = DirectX::XMVector3GreaterOrEqual(_XMVECTOR3(aabb1.max), _XMVECTOR3(aabb2.max)) && DirectX::XMVector3LessOrEqual(_XMVECTOR3(aabb1.min), _XMVECTOR3(aabb2.min));
+        bool aabb2_inside = DirectX::XMVector3GreaterOrEqual(_XMVECTOR3(aabb2.max), _XMVECTOR3(aabb1.max)) && DirectX::XMVector3LessOrEqual(_XMVECTOR3(aabb2.min), _XMVECTOR3(aabb1.min));
 
         if (aabb1_inside || aabb2_inside)
             return CollideType::INSIDE;
@@ -271,13 +281,13 @@ namespace reality {
         // Check if all three vertices are inside the AABB
         int tri_vertices = 0;
 
-        if (XMVector3GreaterOrEqual(triangle.vertex0, aabb.min) && XMVector3LessOrEqual(triangle.vertex0, aabb.max))
+        if (XMVector3GreaterOrEqual(_XMVECTOR3(triangle.vertex0), _XMVECTOR3(aabb.min)) && XMVector3LessOrEqual(_XMVECTOR3(triangle.vertex0), _XMVECTOR3(aabb.max)))
             tri_vertices++;
 
-        if (XMVector3GreaterOrEqual(triangle.vertex1, aabb.min) && XMVector3LessOrEqual(triangle.vertex1, aabb.max))
+        if (XMVector3GreaterOrEqual(_XMVECTOR3(triangle.vertex1), _XMVECTOR3(aabb.min)) && XMVector3LessOrEqual(_XMVECTOR3(triangle.vertex1), _XMVECTOR3(aabb.max)))
             tri_vertices++;
 
-        if (XMVector3GreaterOrEqual(triangle.vertex2, aabb.min) && XMVector3LessOrEqual(triangle.vertex2, aabb.max))
+        if (XMVector3GreaterOrEqual(_XMVECTOR3(triangle.vertex2), _XMVECTOR3(aabb.min)) && XMVector3LessOrEqual(_XMVECTOR3(triangle.vertex2), _XMVECTOR3(aabb.max)))
             tri_vertices++;
 
         if (tri_vertices == 3)
@@ -345,7 +355,7 @@ namespace reality {
         else
         {
             result.reaction = CapsuleCallback::NONE;
-            result.floor_pos = cap.base;
+            result.floor_pos = _XMVECTOR3(cap.base);
         }
 
         return result;
@@ -367,10 +377,10 @@ namespace reality {
         // check if wall
         auto capsule_info = cap.GetTipBaseAB();
 
-        XMVECTOR a_to_tri_normal = capsule_info[2] + (triangle.normal * cap.radius * -1.0f);
+        XMVECTOR a_to_tri_normal = capsule_info[2] + (_XMVECTOR3(triangle.normal) * cap.radius * -1.0f);
         RayShape a_to_tri(capsule_info[2], a_to_tri_normal);
 
-        XMVECTOR b_to_tri_normal = capsule_info[3] + (triangle.normal * cap.radius * -1.0f);
+        XMVECTOR b_to_tri_normal = capsule_info[3] + (_XMVECTOR3(triangle.normal) * cap.radius * -1.0f);
         RayShape b_to_tri(capsule_info[3], a_to_tri_normal);
 
         auto a_raycallback = RayToTriangle(a_to_tri, triangle);
@@ -384,14 +394,14 @@ namespace reality {
             if (dot <= 0.0001f)
             {
                 result.reaction = CapsuleCallback::WALL;
-                result.floor_pos = cap.base;
+                result.floor_pos = _XMVECTOR3(cap.base);
                 return result;
             }
         }
         else
         {
             result.reaction = CapsuleCallback::NONE;
-            result.floor_pos = cap.base;
+            result.floor_pos = _XMVECTOR3(cap.base);
             return result;
         }
     }
