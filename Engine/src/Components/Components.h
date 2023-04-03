@@ -106,13 +106,33 @@ namespace reality
 	{
 		string anim_id;
 		vector<pair<string, AnimSlot>> anim_slots;
-		float cur_frame;
+		unordered_map<string, int> name_to_anim_slot_index;
+		float cur_frame = 0.0f;
 
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override {
 			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
 			cur_frame = anim_data->start_frame;
 		};
+
+		XMMATRIX GetCurAnimMatrix(int bone_id) {
+			if (anim_slots.size() == 0) {
+				return RESOURCE->UseResource<OutAnimData>(anim_id)->animations[bone_id][cur_frame];
+			}
+			else if (anim_slots.size() == 1) {
+				XMMATRIX base_animation = RESOURCE->UseResource<OutAnimData>(anim_id)->animations[bone_id][cur_frame];
+				XMMATRIX slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[0].second.anim_id)->animations[bone_id][anim_slots[0].second.cur_frame];
+				float weight = anim_slots[0].second.bone_id_to_weight[bone_id] / anim_slots[0].second.range;
+				return base_animation* (1.0f - weight) + slot_animation * weight;
+			}
+			else {
+				int end_index = anim_slots.size() - 1;
+				XMMATRIX base_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index - 1].second.anim_id)->animations[bone_id][anim_slots[end_index - 1].second.cur_frame];
+				XMMATRIX slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index].second.anim_id)->animations[bone_id][anim_slots[end_index - 1].second.cur_frame];
+				float weight = anim_slots[end_index].second.bone_id_to_weight[bone_id] / anim_slots[end_index].second.range;
+				return base_animation * (1.0f - weight) + slot_animation * weight;
+			}
+		}
 
 		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range) {
 			AnimSlot anim_slot;
@@ -121,10 +141,12 @@ namespace reality
 
 			anim_slot.anim_id = "";
 			anim_slot.cur_frame = 0.0f;
-			anim_slot.included_skeletons = skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range);
+			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons, anim_slot.bone_id_to_weight);
 			anim_slot.range = range * 2;
 
+			
 			anim_slots.push_back({ anim_slot_name, anim_slot });
+			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
 		};
 
 		void SetAnimSlotAnimation(string anim_slot_name, string animation_name) {
