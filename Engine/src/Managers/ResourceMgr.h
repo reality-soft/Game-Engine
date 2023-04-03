@@ -64,6 +64,7 @@ namespace reality
 		unordered_map<string, VertexShader>			resdic_vs;
 		unordered_map<string, PixelShader>			resdic_ps;
 		unordered_map<string, GeometryShader>		resdic_gs;
+		unordered_map<string, ComputeShader>		resdic_cs;
 		unordered_map<string, Texture>				resdic_texture;
 		unordered_map<string, Material>				resdic_material;
 
@@ -153,6 +154,14 @@ namespace reality
 		{
 			auto iter = resdic_gs.find(id);
 			if (iter != resdic_gs.end())
+			{
+				return (T*)(&iter->second);
+			}
+		}
+		else if (typeid(T) == typeid(ComputeShader))
+		{
+			auto iter = resdic_cs.find(id);
+			if (iter != resdic_cs.end())
 			{
 				return (T*)(&iter->second);
 			}
