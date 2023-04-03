@@ -3,11 +3,17 @@
 
 namespace reality
 {
+	struct Transform {
+		XMMATRIX    world_matrix;
+		XMMATRIX    local_matrix;
+	};
+
 	struct CbTransform
 	{
 		CbTransform()
 		{
-			data.world_matrix = XMMatrixIdentity();
+			data.transform.world_matrix = XMMatrixIdentity();
+			data.transform.local_matrix = XMMatrixIdentity();
 		}
 		CbTransform(const CbTransform& other)
 		{
@@ -16,7 +22,7 @@ namespace reality
 		}
 		struct Data
 		{
-			XMMATRIX world_matrix;
+			Transform transform;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -70,18 +76,21 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbSkeleton
+	struct CbSkeletalMesh
 	{
-		CbSkeleton() = default;
-		CbSkeleton(const CbSkeleton& other)
+		CbSkeletalMesh() = default;
+		CbSkeletalMesh(const CbSkeletalMesh& other)
 		{
 			data = other.data;
 			other.buffer.CopyTo(buffer.GetAddressOf());
 		}
 		struct Data
 		{
-			XMMATRIX  bind_pose[128];	
-			XMMATRIX  animation[128];
+			Transform   transform;
+			XMMATRIX	bind_pose[128];	
+			XMMATRIX	animation[128];
+			XMMATRIX	slot_animation[128];
+			float		weights[128];
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
