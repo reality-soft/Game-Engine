@@ -263,6 +263,19 @@ bool ResourceMgr::ImportShaders(string filename)
         return true;
     }
 
+    if (filename.find("CS") != string::npos)
+    {
+        ComputeShader new_cs;
+        if (!new_cs.LoadCompiled(to_mw(filename)))
+            return false;
+
+        auto strs = split(filename, '/');
+        string id = strs[strs.size() - 1];
+
+        resdic_cs.insert(make_pair(id, new_cs));
+        return true;
+    }
+
     return true;
 }
 

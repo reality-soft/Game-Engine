@@ -101,11 +101,11 @@ ID3D11PixelShader* PixelShader::Get()
 	return ps.Get();
 }
 
-bool GeometryShader::LoadCompiled(wstring _csoFIle)
+bool GeometryShader::LoadCompiled(wstring cso_file)
 {
     HRESULT hr = S_OK;
     ID3DBlob* blob = nullptr;
-    hr = D3DReadFileToBlob(_csoFIle.c_str(), &blob);
+    hr = D3DReadFileToBlob(cso_file.c_str(), &blob);
 
     D3D11_SO_DECLARATION_ENTRY ied[] =
     {
@@ -135,4 +135,27 @@ ID3D11GeometryShader* GeometryShader::GetStreamOutGS()
 ID3D11GeometryShader* GeometryShader::GetDefaultGS()
 {
     return default_gs.Get();
+}
+
+bool reality::ComputeShader::LoadCompiled(wstring cso_file)
+{
+    HRESULT hr;
+
+    ID3DBlob* blob = nullptr;
+    hr = D3DReadFileToBlob(cso_file.c_str(), &blob);
+
+    hr = DX11APP->GetDevice()->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, cs.GetAddressOf());
+
+    blob->Release();
+    blob = nullptr;
+
+    if (FAILED(hr))
+        return false;
+
+    return true;
+}
+
+ID3D11ComputeShader* reality::ComputeShader::Get()
+{
+    return cs.Get();
 }
