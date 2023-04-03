@@ -23,9 +23,6 @@ RenderSystem::~RenderSystem()
 void reality::RenderSystem::OnCreate(entt::registry& reg)
 {
 	HRESULT hr;
-
-	// Init Transform Buffer
-	cb_transform.data.world_matrix = XMMatrixIdentity();
 	
 	D3D11_BUFFER_DESC desc;
 	D3D11_SUBRESOURCE_DATA subdata;
@@ -44,19 +41,20 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 
 	// Init SkeletonBuffer
 	for (int i = 0; i < 128; ++i) {
-		cb_skeleton.data.bind_pose[i] = XMMatrixIdentity();
-		cb_skeleton.data.animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh.data.bind_pose[i] = XMMatrixIdentity();
+		cb_skeletal_mesh.data.animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh.data.slot_animation[i] = XMMatrixIdentity();
 	}
 
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(CbSkeleton::Data);
+	desc.ByteWidth = sizeof(CbSkeletalMesh::Data);
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	subdata.pSysMem = &cb_skeleton.data;
+	subdata.pSysMem = &cb_skeletal_mesh.data;
 
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeleton.buffer.GetAddressOf());
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeletal_mesh.buffer.GetAddressOf());
 
 	// Create Effect Data
 	CreateEffectCB();
@@ -102,14 +100,6 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	RenderEffects(reg);
 }
 
-void RenderSystem::SetCbTransform(const C_Transform* const transform)
-{
-	cb_transform.data.world_matrix = XMMatrixTranspose(transform->local * transform->world);
-
-	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
-	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
-}
-
 void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component)
 {
 	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component.anim_id);
@@ -124,13 +114,13 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
-		cb_skeleton.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
-		cb_skeleton.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
-		cb_skeleton.data.slot_animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
+		cb_skeletal_mesh.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
+		cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
+		cb_skeletal_mesh.data.slot_animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
 	}
 
 	for (auto& anim_slot_pair : animation_component.anim_slots) {
-		ZeroMemory(cb_skeleton.data.weights, sizeof(cb_skeleton.data.weights));
+		ZeroMemory(cb_skeletal_mesh.data.weights, sizeof(cb_skeletal_mesh.data.weights));
 
 		AnimSlot& anim_slot = anim_slot_pair.second;
 		OutAnimData* slot_anim = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_id);
@@ -147,10 +137,10 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 			int depth = cur_pair.first;
 			
 			for (const auto& bone_id : cur_pair.second) {
-				cb_skeleton.data.animation[bone_id] = cb_skeleton.data.slot_animation[bone_id];
-				cb_skeleton.data.slot_animation[bone_id] = XMMatrixTranspose(slot_anim->animations.find(bone_id)->second[anim_slot.cur_frame]);
+				cb_skeletal_mesh.data.animation[bone_id] = cb_skeletal_mesh.data.slot_animation[bone_id];
+				cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(slot_anim->animations.find(bone_id)->second[anim_slot.cur_frame]);
 
-				cb_skeleton.data.weights[bone_id] = depth / anim_slot.range;
+				cb_skeletal_mesh.data.weights[bone_id] = depth / anim_slot.range;
 			}
 		}
 
@@ -158,9 +148,6 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 	}
 
 	animation_component.cur_frame += 60.f / TM_FPS;
-
-	device_context->UpdateSubresource(cb_skeleton.buffer.Get(), 0, nullptr, &cb_skeleton.data, 0, 0);
-	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
 }
 
 void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_component)
@@ -172,7 +159,9 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 		return;
 	}
 
-	SetCbTransform(static_mesh_component);
+	SetTransformCb(static_mesh_component, cb_transform.data.transform);
+	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
+	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 
 	for (auto single_mesh : static_mesh->meshes)
 	{
@@ -197,7 +186,6 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 			device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
 		}
 	}
-
 }
 
 void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, C_Animation* const animation_component)
@@ -210,8 +198,10 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 	}
 
 	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
-
-	SetCbTransform(skeletal_mesh_components);
+	
+	SetTransformCb(skeletal_mesh_components, cb_skeletal_mesh.data.transform);
+	device_context->UpdateSubresource(cb_skeletal_mesh.buffer.Get(), 0, nullptr, &cb_skeletal_mesh.data, 0, 0);
+	device_context->VSSetConstantBuffers(1, 1, cb_skeletal_mesh.buffer.GetAddressOf());
 
 	for (auto& single_mesh : skeletal_mesh->meshes)
 	{
@@ -221,6 +211,7 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
+
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		
 		device_context->IASetInputLayout(shader->InputLayout());
@@ -257,6 +248,7 @@ void RenderSystem::CreateEffectCB()
 		desc.Usage = D3D11_USAGE_DEFAULT;
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
+		subdata.pSysMem = &cb_effect.data;
 		subdata.pSysMem = &cb_effect.data;
 
 		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect.buffer.GetAddressOf());
@@ -349,7 +341,11 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 	for (auto ent : view_box)
 	{
 		auto& box = reg.get<C_BoxShape>(ent);
-		SetCbTransform(&box);
+
+		SetTransformCb(&box, cb_transform.data.transform);
+
+		device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
+		device_context->VSSetConstantBuffers(1, 1, cb_skeletal_mesh.buffer.GetAddressOf());
 
 		auto material = RESOURCE->UseResource<Material>(box.material_id);
 		material->Set();
@@ -380,7 +376,9 @@ void RenderSystem::RenderBoundingBox(const C_BoundingBox* const box)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	SetCbTransform(box);
+	SetTransformCb(box, cb_transform.data.transform);
+	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
+	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 
 	device_context->IASetVertexBuffers(0, 1, box->vertex_buffer.GetAddressOf(), &stride, &offset);
 	device_context->IASetIndexBuffer(box->index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -452,6 +450,12 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
 	device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	device_context->GSSetShader(nullptr, 0, 0);
+}
+
+void reality::RenderSystem::SetTransformCb(const C_Transform* const transform_component, Transform& transform)
+{
+	transform.local_matrix = XMMatrixTranspose(transform_component->local);
+	transform.world_matrix = XMMatrixTranspose(transform_component->world);
 }
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
