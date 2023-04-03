@@ -2,6 +2,7 @@
 #include "Collision.h"
 #include "StaticMeshLevel.h"
 #include "CameraSystem.h"
+#include "StructuredBuffer.h"
 
 #define MIN_HEIGHT -10000.f
 #define MAX_HEIGHT  10000.f
@@ -12,8 +13,8 @@ namespace reality {
 
 	struct CollisionResult
 	{
-		int result = 0;
-		XMFLOAT3 position = {0, 0, 0};
+		int result;
+		XMFLOAT3 position;
 	};
 
 	class DLL_API SpaceNode 
@@ -54,22 +55,25 @@ namespace reality {
 		bool CreatePhysicsCS();
 		void RunPhysicsCS(string cs_id);
 
-		ComPtr<ID3D11Buffer> triangle_data_buffer_;
-		ComPtr<ID3D11Buffer> capsule_data_buffer_;
-		ComPtr<ID3D11Buffer> collision_result_buffer_;
+		//ComPtr<ID3D11Buffer> triangle_data_buffer_;
+		//ComPtr<ID3D11Buffer> capsule_data_buffer_;
+		//ComPtr<ID3D11Buffer> collision_result_buffer_;
 
-		ComPtr<ID3D11ShaderResourceView> triangle_data_srv_;
-		ComPtr<ID3D11ShaderResourceView> capsule_data_srv_;
-		ComPtr<ID3D11UnorderedAccessView> collision_result_uav_;
+		//ComPtr<ID3D11ShaderResourceView> triangle_data_srv_;
+		//ComPtr<ID3D11ShaderResourceView> capsule_data_srv_;
+		//ComPtr<ID3D11UnorderedAccessView> collision_result_uav_;
 
-		array<CapsuleShape, 64> capsule_data_pool_;
-		array<CollisionResult, 64> collision_result_pool_;
+		SbTriangleCollision triangle_stbuffer;
+		SbCapsuleCollision capsule_stbuffer;
+		SbCollisionResult result_stbuffer;
+
+		//array<CapsuleShape, 64> capsule_data_pool_;
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
+		array<CollisionResult, 64> collision_result_pool_;
 
 	public:
 		int calculating_triagnles;
-		int ray_casted_nodes;
 		set<UINT> including_nodes_num;
 		XMVECTOR player_capsule_pos;
 
