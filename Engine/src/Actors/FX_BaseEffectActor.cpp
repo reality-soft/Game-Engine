@@ -91,16 +91,15 @@ void FX_BaseEffectActor::AddSpotLightComponent(string spotlight_name, float life
 	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
 }
 
-
 // Only Used for Tool
 void FX_BaseEffectActor::AddEffect(map<string, Emitter>& emitter_list)
 {
-	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
+	auto& effect_comp = reg_scene_->get_or_emplace<C_Effect>(entity_id_);
 	effect_comp.effect.emitters = emitter_list;
 }
 
 void FX_BaseEffectActor::ResetEmitter()
 {
-	auto& effect_comp = reg_scene_->get<C_Effect>(entity_id_);
+	auto& effect_comp = reg_scene_->get_or_emplace<C_Effect>(entity_id_);
 	effect_comp.effect.emitters.clear();
 }
