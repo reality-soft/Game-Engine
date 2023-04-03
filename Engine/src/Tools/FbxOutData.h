@@ -40,7 +40,7 @@ namespace reality
 		std::vector<UINT>   indices;
 		std::vector<IndexWeight> index_weight;
 		std::map<UINT, XMMATRIX> bind_poses;
-		std::map<string, Bone> skelton_id_map;
+		std::map<string, Bone> name_bone_map;
 	};
 
 	struct OutAnimData

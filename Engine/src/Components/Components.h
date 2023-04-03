@@ -10,6 +10,7 @@
 #include "Effect.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"
+#include "AnimSlot.h"
 
 namespace reality
 {
@@ -104,13 +105,36 @@ namespace reality
 	struct C_Animation : public Component
 	{
 		string anim_id;
-		float cur_frame = 0.0f;
+		vector<pair<string, AnimSlot>> anim_slots;
+		float cur_frame;
 
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override {
 			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
-			//cur_frame = anim_data->start_frame;
+			cur_frame = anim_data->start_frame;
 		};
+
+		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range) {
+			AnimSlot anim_slot;
+
+			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
+
+			anim_slot.anim_id = "";
+			anim_slot.cur_frame = 0.0f;
+			anim_slot.included_skeletons = skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range);
+			anim_slot.range = range * 2;
+
+			anim_slots.push_back({ anim_slot_name, anim_slot });
+		};
+
+		void SetAnimSlotAnimation(string anim_slot_name, string animation_name) {
+			for (int i = 0;i < anim_slots.size();i++) {
+				if (anim_slot_name == anim_slots[i].first) {
+					anim_slots[i].second.anim_id = animation_name;
+					return;
+				}
+			}
+		}
 	};
 
 	struct C_SoundListener : public C_Transform
