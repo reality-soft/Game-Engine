@@ -155,7 +155,6 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 		}
 
 		anim_slot.cur_frame += 60.f / TM_FPS;
-		int i = 0;
 	}
 
 	animation_component.cur_frame += 60.f / TM_FPS;
