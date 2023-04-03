@@ -121,7 +121,6 @@ void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
 		if (result != CollideType::OUTSIDE)
 			node->static_triangles.push_back(tri);
 	}
-
 }
 
 void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
@@ -186,6 +185,7 @@ void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule
 	map<float, CapsuleCallback> floor_list;
 	vector<RayShape> wall_list;
 
+	int cal = 0;
 	for (auto node : nodes)
 	{
 		including_nodes_num.insert(node->node_num);
@@ -196,8 +196,17 @@ void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule
 				floor_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));
 			if (result.reaction == CapsuleCallback::WALL)
 				wall_list.push_back(RayShape(tri.GetMinXZ(), tri.GetMaxXZ()));
-				
+			
+			if (ent == SCENE_MGR->GetPlayer<Character>(0)->entity_id_)
+			{
+				cal++;
+			}
 		}
+	}
+
+	if (ent == SCENE_MGR->GetPlayer<Character>(0)->entity_id_)
+	{
+		calculating_triagnles = cal;
 	}
 
 	if (floor_list.empty())
@@ -413,6 +422,45 @@ void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 
 bool reality::QuadTreeMgr::CreatePhysicsCS()
 {
+	triangle_stbuffer.SetElementArraySize(deviding_level_->level_triangles.size());
+	for (auto& tri : deviding_level_->level_triangles)
+	{
+		triangle_stbuffer.elements[tri.index].index = tri.index;
+		triangle_stbuffer.elements[tri.index].normal = tri.normal;
+		triangle_stbuffer.elements[tri.index].vertex0 = tri.vertex0;
+		triangle_stbuffer.elements[tri.index].vertex1 = tri.vertex1;
+		triangle_stbuffer.elements[tri.index].vertex2 = tri.vertex2;
+	}
+	if (triangle_stbuffer.Create(triangle_stbuffer.elements.data()) == false)
+		return false;
+
+	capsule_stbuffer.SetElementArraySize(64);
+	if (capsule_stbuffer.Create(capsule_stbuffer.elements.data()) == false)
+		return false;
+
+	result_stbuffer.SetElementArraySize(64);
+	if (result_stbuffer.Create(result_stbuffer.elements.data()) == false)
+		return false;
+
+	// staging buffer
+
+	HRESULT hr = S_OK;
+
+	D3D11_BUFFER_DESC buffer_desc;
+
+	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
+	buffer_desc.ByteWidth = sizeof(CollisionResult) * 64;
+	buffer_desc.Usage = D3D11_USAGE_STAGING;
+	buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	buffer_desc.StructureByteStride = sizeof(CollisionResult);
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&buffer_desc, nullptr, staging_buffer_.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	return true;
+	/*
+
 	HRESULT hr = S_OK;
 
 	D3D11_BUFFER_DESC buffer_desc;
@@ -507,18 +555,7 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 	if (FAILED(hr))
 		return false;
 
-	// staging buffer
-	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
-	buffer_desc.ByteWidth = sizeof(CollisionResult) * 64;
-	buffer_desc.Usage = D3D11_USAGE_STAGING;
-	buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	buffer_desc.StructureByteStride = sizeof(CollisionResult);
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&buffer_desc, nullptr, staging_buffer_.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	return true;
+	*/
 }
 
 void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
@@ -528,12 +565,14 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 		return;
 
 	DX11APP->GetDeviceContext()->CSSetShader(compute_shader->Get(), nullptr, 0);
-	DX11APP->GetDeviceContext()->CSSetShaderResources(0, 1, triangle_data_srv_.GetAddressOf());
-	DX11APP->GetDeviceContext()->CSSetShaderResources(1, 1, capsule_data_srv_.GetAddressOf());
-	DX11APP->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, collision_result_uav_.GetAddressOf(), 0);;
+
+
+	DX11APP->GetDeviceContext()->CSSetShaderResources(0, 1, triangle_stbuffer.srv.GetAddressOf());	
+	DX11APP->GetDeviceContext()->CSSetShaderResources(1, 1, capsule_stbuffer.srv.GetAddressOf());
+	DX11APP->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, result_stbuffer.uav.GetAddressOf(), 0);
 	DX11APP->GetDeviceContext()->Dispatch(1, 1, 1);
 
-	DX11APP->GetDeviceContext()->CopyResource(staging_buffer_.Get(), collision_result_buffer_.Get());
+	DX11APP->GetDeviceContext()->CopyResource(staging_buffer_.Get(), result_stbuffer.buffer.Get());
 
 	D3D11_MAPPED_SUBRESOURCE mapped_resource = { 0, };
 	HRESULT hr = DX11APP->GetDeviceContext()->Map(staging_buffer_.Get(), 0, D3D11_MAP_READ, 0, &mapped_resource);
