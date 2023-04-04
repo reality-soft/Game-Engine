@@ -17,7 +17,7 @@ namespace reality {
 		map<UINT, Bone> id_bone_map;
 		map<string, UINT> bone_name_id_map;
 
-		void GetSubBonesOf(string bone_name, int range, map<int, unordered_set<UINT>>& out_sub_bones, unordered_map<UINT, int> out_id_weight_map) {
+		void GetSubBonesOf(string bone_name, int range, map<int, unordered_set<UINT>>& out_sub_bones, unordered_map<UINT, int>& out_id_weight_map) {
 			queue<pair<int, UINT>> cur_bone_ids;
 
 			UINT center_bone_id = bone_name_id_map[bone_name];
