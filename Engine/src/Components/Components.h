@@ -104,15 +104,79 @@ namespace reality
 
 	struct C_Animation : public Component
 	{
-		string anim_id;
+		string anim_id = "";
 		vector<pair<string, AnimSlot>> anim_slots;
-		float cur_frame;
+		unordered_map<string, int> name_to_anim_slot_index;
+		float cur_frame = 0.0f;
 
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override {
 			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
+
+			if (anim_data == nullptr) {
+				return;
+			}
+
 			cur_frame = anim_data->start_frame;
 		};
+
+		XMMATRIX GetCurAnimMatrix(int bone_id) {
+			if (anim_slots.size() == 0) {
+				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_id);
+				if (base_animation == nullptr) {
+					return XMMatrixIdentity();
+				}
+
+				int cur_frame_revised = min(cur_frame, base_animation->end_frame - 1);
+				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
+
+				return base_animation_matrix;
+			}
+			else if (anim_slots.size() == 1) {
+				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_id);
+				if (base_animation == nullptr) {
+					return XMMatrixIdentity();
+				}
+
+				int cur_frame_revised = min(cur_frame, base_animation->end_frame - 1);
+				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
+
+				OutAnimData* slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[0].second.anim_id);
+				if (slot_animation == nullptr) {
+					return base_animation_matrix;
+				}
+
+				cur_frame_revised = min(anim_slots[0].second.cur_frame, slot_animation->end_frame - 1);
+				XMMATRIX slot_animation_matrix = slot_animation->animations[bone_id][cur_frame_revised];
+
+				float weight = anim_slots[0].second.bone_id_to_weight[bone_id] / anim_slots[0].second.range;
+				
+				return base_animation_matrix * (1.0f - weight) + slot_animation_matrix * weight;
+			}
+			else {
+				int end_index = anim_slots.size() - 1;
+				
+				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index - 1].second.anim_id);
+				if (base_animation == nullptr) {
+					return XMMatrixIdentity();
+				}
+
+
+				int cur_frame_revised = min(anim_slots[end_index - 1].second.cur_frame, base_animation->end_frame - 1);
+				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
+
+				OutAnimData* slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index].second.anim_id);
+				if (slot_animation == nullptr) {
+					return base_animation_matrix;
+				}
+
+				cur_frame_revised = min(anim_slots[end_index].second.cur_frame, slot_animation->end_frame - 1);
+				XMMATRIX slot_animation_matrix = slot_animation->animations[bone_id][cur_frame_revised];
+			
+				float weight = anim_slots[end_index].second.bone_id_to_weight[bone_id] / anim_slots[end_index].second.range;
+				return base_animation_matrix * (1.0f - weight) + slot_animation_matrix * weight;
+			}
+		}
 
 		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range) {
 			AnimSlot anim_slot;
@@ -121,10 +185,12 @@ namespace reality
 
 			anim_slot.anim_id = "";
 			anim_slot.cur_frame = 0.0f;
-			anim_slot.included_skeletons = skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range);
+			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons, anim_slot.bone_id_to_weight);
 			anim_slot.range = range * 2;
 
+			
 			anim_slots.push_back({ anim_slot_name, anim_slot });
+			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
 		};
 
 		void SetAnimSlotAnimation(string anim_slot_name, string animation_name) {
