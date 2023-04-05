@@ -104,103 +104,33 @@ namespace reality
 
 	struct C_Animation : public Component
 	{
-		string anim_id = "";
 		vector<pair<string, AnimSlot>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
-		float cur_frame = 0.0f;
 
-		virtual void OnConstruct() override {};
-		virtual void OnUpdate() override {
-			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
+		virtual void OnConstruct() override {
+			AnimSlot base_anim_slot;
 
-			if (anim_data == nullptr) {
-				return;
-			}
-
-			cur_frame = anim_data->start_frame;
+			anim_slots.push_back({ "Base", base_anim_slot });
+			name_to_anim_slot_index.insert({ "Base", 0 });
 		};
+		virtual void OnUpdate() override {};
 
 		XMMATRIX GetCurAnimMatrix(int bone_id) {
-			if (anim_slots.size() == 0) {
-				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_id);
-				if (base_animation == nullptr) {
-					return XMMatrixIdentity();
-				}
-
-				int cur_frame_revised = min(cur_frame, base_animation->end_frame - 1);
-				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
-
-				return base_animation_matrix;
-			}
-			else if (anim_slots.size() == 1) {
-				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_id);
-				if (base_animation == nullptr) {
-					return XMMatrixIdentity();
-				}
-
-				int cur_frame_revised = min(cur_frame, base_animation->end_frame - 1);
-				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
-
-				OutAnimData* slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[0].second.anim_id);
-				if (slot_animation == nullptr) {
-					return base_animation_matrix;
-				}
-
-				cur_frame_revised = min(anim_slots[0].second.cur_frame, slot_animation->end_frame - 1);
-				XMMATRIX slot_animation_matrix = slot_animation->animations[bone_id][cur_frame_revised];
-
-				float weight = anim_slots[0].second.bone_id_to_weight[bone_id] / anim_slots[0].second.range;
-				
-				return base_animation_matrix * (1.0f - weight) + slot_animation_matrix * weight;
-			}
-			else {
-				int end_index = anim_slots.size() - 1;
-				
-				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index - 1].second.anim_id);
-				if (base_animation == nullptr) {
-					return XMMatrixIdentity();
-				}
-
-
-				int cur_frame_revised = min(anim_slots[end_index - 1].second.cur_frame, base_animation->end_frame - 1);
-				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
-
-				OutAnimData* slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index].second.anim_id);
-				if (slot_animation == nullptr) {
-					return base_animation_matrix;
-				}
-
-				cur_frame_revised = min(anim_slots[end_index].second.cur_frame, slot_animation->end_frame - 1);
-				XMMATRIX slot_animation_matrix = slot_animation->animations[bone_id][cur_frame_revised];
-			
-				float weight = anim_slots[end_index].second.bone_id_to_weight[bone_id] / anim_slots[end_index].second.range;
-				return base_animation_matrix * (1.0f - weight) + slot_animation_matrix * weight;
-			}
+		
 		}
 
-		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range) {
+		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range, AnimationBase& anim_object) {
 			AnimSlot anim_slot;
 
 			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
 
-			anim_slot.anim_id = "";
-			anim_slot.cur_frame = 0.0f;
-			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons, anim_slot.bone_id_to_weight);
+			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons_, anim_slot.bone_id_to_weight_);
 			anim_slot.range = range * 2;
+			anim_slot.anim_object_ = make_shared<AnimationBase>(anim_object);
 
-			
 			anim_slots.push_back({ anim_slot_name, anim_slot });
 			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
 		};
-
-		void SetAnimSlotAnimation(string anim_slot_name, string animation_name) {
-			for (int i = 0;i < anim_slots.size();i++) {
-				if (anim_slot_name == anim_slots[i].first) {
-					anim_slots[i].second.anim_id = animation_name;
-					return;
-				}
-			}
-		}
 	};
 
 	struct C_SoundListener : public C_Transform

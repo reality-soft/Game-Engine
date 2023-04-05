@@ -1,19 +1,22 @@
 #include "stdafx.h"
 #include "AnimationStateMachine.h"
 
-void AnimationStateMachine::Update()
-{
-    cur_state_->Update();
-
-    auto range = transitions_.equal_range(cur_state_->GetId());
-    for (auto it = range.first; it != range.second; ++it)
+namespace reality {
+    void AnimationStateMachine::OnUpdate()
     {
-        if (it->second.condition())
+        cur_state_->OnUpdate();
+
+        auto range = transitions_.equal_range(cur_state_->GetId());
+        for (auto it = range.first; it != range.second; ++it)
         {
-            cur_state_->Exit();
-            cur_state_ = states_[it->second.to_state_id];
-            cur_state_->Enter();
-            break;
+            if (it->second.condition())
+            {
+                cur_state_->Exit();
+                cur_state_ = states_[it->second.to_state_id];
+                cur_state_->Enter();
+                break;
+            }
         }
     }
 }
+

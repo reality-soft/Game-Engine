@@ -102,52 +102,58 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component)
 {
-	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component.anim_id);
+	ZeroMemory(cb_skeletal_mesh.data.weights, sizeof(cb_skeletal_mesh.data.weights));
+	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component.anim_slots[0].second.anim_object_->GetCurAnimationId());
 	if (res_animation == nullptr) {
 		return;
 	}
 
-	if (animation_component.cur_frame >= res_animation->end_frame)
-		animation_component.cur_frame = res_animation->start_frame;
-
-	animation_component.cur_frame = max(res_animation->start_frame, animation_component.cur_frame);
-
 	for (auto bp : skeleton.bind_pose_matrices)
 	{
 		cb_skeletal_mesh.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
-		cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
-		cb_skeletal_mesh.data.slot_animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
+		int cur_frame = animation_component.anim_slots[0].second.anim_object_->GetCurFrame();
+		cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[cur_frame]);
 	}
 
-	for (auto& anim_slot_pair : animation_component.anim_slots) {
-		ZeroMemory(cb_skeletal_mesh.data.weights, sizeof(cb_skeletal_mesh.data.weights));
+	int i = animation_component.anim_slots.size() - 1;
 
-		AnimSlot& anim_slot = anim_slot_pair.second;
-		OutAnimData* slot_anim = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_id);
+	for (i;i >= 0;i--) {
+		AnimSlot& anim_slot = animation_component.anim_slots[i].second;
+		OutAnimData* slot_anim = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+
 		if (slot_anim == nullptr) {
 			continue;
 		}
 
-		anim_slot.cur_frame = max(slot_anim->start_frame, anim_slot.cur_frame);
-
-		if (anim_slot.cur_frame >= slot_anim->end_frame)
-			anim_slot.cur_frame = slot_anim->start_frame;
-
-		for (const auto& cur_pair : anim_slot.included_skeletons) {
+		for (const auto& cur_pair : anim_slot.included_skeletons_) {
 			int depth = cur_pair.first;
-			
+
 			for (const auto& bone_id : cur_pair.second) {
-				cb_skeletal_mesh.data.animation[bone_id] = cb_skeletal_mesh.data.slot_animation[bone_id];
-				cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(slot_anim->animations.find(bone_id)->second[anim_slot.cur_frame]);
+				cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(slot_anim->animations.find(bone_id)->second[anim_slot.anim_object_->GetCurFrame()]);
 
 				cb_skeletal_mesh.data.weights[bone_id] = depth / anim_slot.range;
 			}
 		}
-
-		anim_slot.cur_frame += 60.f / TM_FPS;
+		break;
 	}
 
-	animation_component.cur_frame += 60.f / TM_FPS;
+	for (i;i >= 1;i--) {
+		AnimSlot& anim_slot = animation_component.anim_slots[i].second;
+		OutAnimData* slot_anim = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+
+		if (slot_anim == nullptr) {
+			continue;
+		}
+
+		for (const auto& cur_pair : anim_slot.included_skeletons_) {
+			int depth = cur_pair.first;
+
+			for (const auto& bone_id : cur_pair.second) {
+				cb_skeletal_mesh.data.animation[bone_id] = XMMatrixTranspose(slot_anim->animations.find(bone_id)->second[anim_slot.anim_object_->GetCurFrame()]);
+			}
+		}
+		break;
+	}
 }
 
 void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_component)
