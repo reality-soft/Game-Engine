@@ -10,7 +10,7 @@ using namespace reality;
 void UIBase::Init()
 {
 	current_state_ = E_UIState::UI_NORMAL;
-
+	On();
 	CreateRenderData();
 }
 
