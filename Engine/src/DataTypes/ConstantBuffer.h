@@ -213,8 +213,6 @@ namespace reality
 			float		range;
 			XMFLOAT3	attenuation;
 			float		specular;
-			XMFLOAT3	attenuation_level;
-			float		pad;
 			XMFLOAT3	direction;
 			float		spot;
 		} data[64];

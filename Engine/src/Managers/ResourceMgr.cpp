@@ -364,11 +364,6 @@ bool reality::ResourceMgr::ImportLight(string filename)
             if (strs.size() == 3)
                 new_pointlight.attenuation = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
 
-            // Attenuation_level
-            strs = split(item->GetValue("attenuation_level"), ' ');
-            if (strs.size() == 3)
-                new_pointlight.attenuation_level = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
-
             // Specular
             new_pointlight.specular = stof(item->GetValue("specular"));
 
@@ -395,11 +390,6 @@ bool reality::ResourceMgr::ImportLight(string filename)
             strs = split(item->GetValue("attenuation"), ' ');
             if (strs.size() == 3)
                 new_spotlight.attenuation = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
-
-            // Attenuation_level
-            strs = split(item->GetValue("attenuation_level"), ' ');
-            if (strs.size() == 3)
-                new_spotlight.attenuation_level = { stof(strs[0]), stof(strs[1]), stof(strs[2]) };
 
             // Specular
             new_spotlight.specular = stof(item->GetValue("specular"));

@@ -172,7 +172,6 @@ void LightingSystem::UpdatePointLights(entt::registry& reg)
 
 		point_light_data.light_color = point_light_comp.point_light.light_color;
 		point_light_data.range = point_light_comp.point_light.range;
-		point_light_data.attenuation_level = point_light_comp.point_light.attenuation_level;
 		point_light_data.attenuation = point_light_comp.point_light.attenuation;
 		point_light_data.specular = point_light_comp.point_light.specular;
 
@@ -215,7 +214,6 @@ void LightingSystem::UpdateSpotLights(entt::registry& reg)
 		spot_light_data.light_color = spot_light_comp.spot_light.light_color;
 
 		spot_light_data.range = spot_light_comp.spot_light.range;
-		spot_light_data.attenuation_level = spot_light_comp.spot_light.attenuation_level;
 		spot_light_data.attenuation = spot_light_comp.spot_light.attenuation;
 		spot_light_data.specular = spot_light_comp.spot_light.specular;
 		spot_light_data.spot = spot_light_comp.spot_light.spot;
