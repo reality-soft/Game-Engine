@@ -1,6 +1,5 @@
 #pragma once
 #include "Animation.h"
-#include "TimeMgr.h"
 
 namespace reality {
 	class AnimationBase {
@@ -13,20 +12,12 @@ namespace reality {
 		}
 
 	protected:
-		virtual void OnUpdate() {
-		};
+		virtual void OnUpdate() {};
 
 	public:
-		virtual void AnimationUpdate() {
-			
-			OnUpdate();
-		}
-		virtual string GetCurAnimationId() {
-			return "";
-		};
-		virtual float GetCurFrame() {
-			return 0.0f;
-		}
+		virtual void AnimationUpdate();
+		virtual string GetCurAnimationId();
+		virtual float GetCurFrame();
 	};
 }
 
