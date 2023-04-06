@@ -27,12 +27,12 @@ namespace reality
 		void UpdateRectTransform();
 	public:
 		void AddChildUI(shared_ptr<UIBase> child_ui);
-		E_UIState GetCurrentState() { return current_state_; }
-		void SetCurrentState(E_UIState state) { current_state_ = state; }
+		E_UIState GetCurrentState();
+		void SetCurrentState(E_UIState state);
 	public:
-		bool GetOnOff() { return onoff_; }
-		void On() { onoff_ = true; }
-		void Off() { onoff_ = false; }
+		bool GetOnOff();
+		void On();
+		void Off();
 	public:
 		void SetLocalRectByMin(XMFLOAT2 min, float width, float height);
 		void SetLocalRectByMax(XMFLOAT2 max, float width, float height);

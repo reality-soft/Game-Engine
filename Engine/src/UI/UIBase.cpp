@@ -192,6 +192,30 @@ void UIBase::AddChildUI(shared_ptr<UIBase> child_ui)
 	child_ui->parent_ui_ = this;
 }
 
+E_UIState UIBase::GetCurrentState()
+{
+	return current_state_;
+}
+
+void UIBase::SetCurrentState(E_UIState state)
+{
+	current_state_ = state;
+}
+
+void UIBase::On()
+{
+	onoff_ = true;
+}
+void UIBase::Off()
+{
+	onoff_ = false;
+}
+
+bool UIBase::GetOnOff()
+{
+	return onoff_;
+}
+
 void UIBase::SetLocalRectByMin(XMFLOAT2 min, float width, float height)
 {
 	rect_transform_.local_rect.min = min;
@@ -235,3 +259,5 @@ void UIBase::SetLocalRectByMinMax(XMFLOAT2 min, XMFLOAT2 max)
 
 	UpdateRectTransform();
 }
+
+
