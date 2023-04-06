@@ -190,8 +190,6 @@ namespace reality
 			float		range;
 			XMFLOAT3	attenuation;
 			float		specular;
-			XMFLOAT3	attenuation_level;
-			float		pad;
 		} data[64];
 
 		ComPtr<ID3D11Buffer> buffer;
