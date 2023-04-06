@@ -94,12 +94,16 @@ void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, fl
 
     FMOD_RESULT hr;
 
-    if(sound_type == MUSIC)
+    if (sound_type == MUSIC)
+    {
         hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->music_channel_group(), false, &sound_data->channel);
-    else    
+        sound_data->channel->setVolume(volume * FMOD_MGR->GetMusicVolume());
+    }
+    else
+    {
         hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->sfx_channel_group(), false, &sound_data->channel);
-        
-    sound_data->channel->setVolume(volume);
+        sound_data->channel->setVolume(volume * FMOD_MGR->GetSFXVolume());
+    }
     sound_data->channel->set3DAttributes(&pos, &vel);
     sound_data->channel->set3DLevel(6);
 
