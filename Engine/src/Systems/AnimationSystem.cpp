@@ -14,8 +14,7 @@ void reality::AnimationSystem::OnUpdate(entt::registry& reg)
 		auto* animation_component = reg.try_get<C_Animation>(ent);
 		
 		for (const auto& anim_slot : animation_component->anim_slots) {
-			anim_slot.second.anim_object_->OnUpdate();
+			anim_slot.second.OnUpdate();
 		}
 	}
-
 }

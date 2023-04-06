@@ -1,4 +1,5 @@
 #pragma once
+#include "Animation.h"
 
 namespace reality {
     class DLL_API AnimationState
@@ -6,19 +7,13 @@ namespace reality {
     private:
         int id_;
 
-    protected:
-        string prev_anim_id_;
-        string post_anim_id_;
-        float blend_time_;
-        float cur_frame = 0.0f;
-
     public:
         AnimationState(int id) : id_(id) {};
 
     public:
-        virtual void Enter() {}
-        virtual void Exit() {}
-        virtual void OnUpdate() {}
+        virtual void Enter(Animation& animation) {}
+        virtual void Exit(Animation& animation) {}
+        virtual void OnUpdate(Animation& animation) {}
 
     public:
         int GetId() {

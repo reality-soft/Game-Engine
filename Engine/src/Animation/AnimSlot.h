@@ -11,8 +11,8 @@ namespace reality {
 		float		 range;
 
 	public:
-		void OnUpdate() {
-			anim_object_->OnUpdate();
+		void OnUpdate() const {
+			anim_object_->AnimationUpdate();
 		};
 	};
 }
