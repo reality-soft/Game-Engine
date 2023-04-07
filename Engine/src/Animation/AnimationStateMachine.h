@@ -7,6 +7,7 @@ namespace reality {
 	class DLL_API AnimationStateMachine : public AnimationBase
 	{
 	public:
+		virtual void OnInit() {};
 		virtual void OnUpdate() override;
 
 	public:

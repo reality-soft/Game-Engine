@@ -5,7 +5,11 @@
 
 void reality::AnimationBase::AnimationUpdate()
 {
-	animation_.cur_frame_ = TM_DELTATIME;
+	if (is_valid_ == false) {
+		return;
+	}
+	animation_.cur_frame_ += 60.0f / TM_FPS;
+	animation_.cur_animation_time_ += TM_DELTATIME;
 
 	OnUpdate();
 
@@ -17,10 +21,60 @@ void reality::AnimationBase::AnimationUpdate()
 }
 string reality::AnimationBase::GetCurAnimationId()
 {
-	return "";
-};
+	return animation_.cur_anim_id_;
+}
+string reality::AnimationBase::GetPrevAnimationId()
+{
+	return animation_.prev_anim_id_;
+}
+float reality::AnimationBase::GetPrevAnimLastFrame()
+{
+	return animation_.prev_anim_last_frame_;
+}
+
+float reality::AnimationBase::GetCurAnimTime()
+{
+	return animation_.cur_animation_time_;
+}
 
 float reality::AnimationBase::GetCurFrame()
 {
-	return 0.0f;
+	return animation_.cur_frame_;
+}
+
+float reality::AnimationBase::GetBlendTime()
+{
+	return animation_.blend_time_;
+}
+
+bool reality::AnimationBase::IsValid()
+{
+	return is_valid_;
+}
+
+void reality::AnimationBase::SetAnimation(string animation_id, float blend_time)
+{
+	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_id);
+	
+	if (anim_resource == nullptr) {
+		is_valid_ = false;
+		return;
+	}
+
+	string prev_animation_id = animation_.cur_anim_id_;
+	float prev_anim_last_frame = animation_.cur_frame_;
+	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(prev_animation_id);
+
+	animation_.cur_anim_id_ = animation_id;
+	animation_.cur_frame_ = anim_resource->start_frame;
+	animation_.cur_animation_time_ = 0.0f;
+	is_valid_ = true;
+
+	if (prev_anim_resource == nullptr) {
+		return;
+	}
+
+	animation_.prev_anim_id_ = prev_animation_id;
+	animation_.prev_anim_last_frame_ = prev_anim_last_frame;
+	animation_.blend_time_ = blend_time;
 }

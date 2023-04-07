@@ -107,30 +107,32 @@ namespace reality
 		vector<pair<string, AnimSlot>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
 
-		virtual void OnConstruct() override {
+		C_Animation(AnimationBase* anim_object) {
 			AnimSlot base_anim_slot;
-
+			base_anim_slot.anim_object_ = make_shared<AnimationBase>(*anim_object);
 			anim_slots.push_back({ "Base", base_anim_slot });
 			name_to_anim_slot_index.insert({ "Base", 0 });
-		};
-		virtual void OnUpdate() override {};
-
-		XMMATRIX GetCurAnimMatrix(int bone_id) {
-		
 		}
 
-		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range, AnimationBase& anim_object) {
+		virtual void OnConstruct() override {};
+		virtual void OnUpdate() override {};
+
+		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range, AnimationBase* anim_object) {
 			AnimSlot anim_slot;
 
 			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
 
 			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons_, anim_slot.bone_id_to_weight_);
-			anim_slot.range = range * 2;
-			anim_slot.anim_object_ = make_shared<AnimationBase>(anim_object);
+			anim_slot.range_ = range * 2;
+			anim_slot.anim_object_ = make_shared<AnimationBase>(*anim_object);
 
 			anim_slots.push_back({ anim_slot_name, anim_slot });
 			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
 		};
+
+		AnimSlot GetAnimSlotByName(string anim_slot_name) {
+			return anim_slots[name_to_anim_slot_index[anim_slot_name]].second;
+		}
 	};
 
 	struct C_SoundListener : public C_Transform
