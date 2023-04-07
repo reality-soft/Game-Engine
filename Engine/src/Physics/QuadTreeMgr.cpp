@@ -31,8 +31,10 @@ void reality::SpaceNode::SetNode(float min_x, float min_z, float max_x, float ma
 	area = AABBShape(min, max);
 }
 
-void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth)
+void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth, entt::registry& reg)
 {
+	registry_ = &reg;
+
 	deviding_level_ = level_to_devide;
 
 	// build tree
@@ -69,10 +71,10 @@ void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth)
 	}
 
 	// regist dynamic capsule
-	const auto& capsule_view = SCENE_MGR->GetRegistry().view<C_CapsuleCollision>();
+	const auto& capsule_view = registry_->view<C_CapsuleCollision>();
 	for (auto& ent : capsule_view)
 	{
-		auto capsule_collision = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(ent);
+		auto capsule_collision = registry_->try_get<C_CapsuleCollision>(ent);
 		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
 	}
 } 
@@ -416,7 +418,7 @@ pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(const R
 
 void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 {
-	auto capsule_collision = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(ent);
+	auto capsule_collision = registry_->try_get<C_CapsuleCollision>(ent);
 	if (capsule_collision != nullptr)
 		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
 }

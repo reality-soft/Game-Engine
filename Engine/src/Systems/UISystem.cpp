@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "UISystem.h"
 #include "Engine.h"
+#include "SceneMgr.h"
 
 using namespace reality;
 
@@ -47,7 +48,11 @@ void UISystem::OnUpdate(entt::registry& reg)
 		C_UI& ui_comp = reg.get<C_UI>(entity);
 		for (auto& pair : ui_comp.ui_list)
 		{
+			if (!pair.second->GetOnOff())
+				continue;
 			pair.second->Update();
+			if (&reg != &SCENE_MGR->GetRegistry())
+				return;
 		}
 
 		for (auto& pair : ui_comp.ui_list)

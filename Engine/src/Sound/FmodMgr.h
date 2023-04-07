@@ -12,6 +12,8 @@ namespace reality
         FMOD::System* fmod_system_;
         FMOD::ChannelGroup* sfx_channel_group_;
         FMOD::ChannelGroup* music_channel_group_;
+        float sfx_volume_;
+        float music_volume_;
     public:
         FMOD::System* fmod_system() {
             return fmod_system_;
@@ -30,7 +32,11 @@ namespace reality
         void CreateFmodSystem();
     public:
         void CreateFmodChannelGroup();
-
+    public:
+        float GetMusicVolume();
+        float GetSFXVolume();
+        void  SetMusicVolume(float volume);
+        void  SetSFXVolume(float volume);
     };
 }
 

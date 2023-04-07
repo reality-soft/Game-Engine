@@ -41,11 +41,14 @@ namespace reality {
 	{
 		SINGLETON(QuadTreeMgr)
 #define QUADTREE QuadTreeMgr::GetInst()
+
+	private:
+		entt::registry* registry_;
+
 	public:
-		void Init(StaticMeshLevel* level_to_devide, int max_depth);
+		void Init(StaticMeshLevel* level_to_devide, int max_depth, entt::registry& reg);
 		void Frame(CameraSystem* applied_camera);
 		void Release();
-
 	public:
 		void UpdateCapsules();
 		RayCallback RaycastAdjustLevel(const RayShape& ray, float max_distance);

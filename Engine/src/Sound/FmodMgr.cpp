@@ -9,6 +9,10 @@ bool FmodMgr::Init()
     CreateFmodSystem();
     // FMOD 채널 그룹 생성
     CreateFmodChannelGroup();
+
+    music_volume_ = 5.0f;
+    sfx_volume_ = 5.0f;
+
     return true;
 }
 
@@ -38,4 +42,24 @@ void FmodMgr::CreateFmodChannelGroup()
     FMOD_RESULT hr;
     hr = fmod_system_->createChannelGroup("sfxChannelGroup", &sfx_channel_group_);
     hr = fmod_system_->createChannelGroup("musicChannelGroup", &music_channel_group_);
+}
+
+float FmodMgr::GetMusicVolume()
+{
+    return music_volume_;
+}
+
+float FmodMgr::GetSFXVolume()
+{
+    return sfx_volume_;
+}
+
+void FmodMgr::SetMusicVolume(float volume)
+{
+    music_volume_ = volume;
+}
+
+void FmodMgr::SetSFXVolume(float volume)
+{
+    sfx_volume_ = volume;
 }
