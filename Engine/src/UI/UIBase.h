@@ -9,8 +9,8 @@ namespace reality
 		bool						onoff_;
 		E_UIState					current_state_;
 	public:
-		UIBase*						parent_ui_;
-		vector<shared_ptr<UIBase>>	child_ui_list_;
+		UIBase*								parent_ui_;
+		unordered_set<shared_ptr<UIBase>>	child_ui_list_;
 	public:
 		RectTransform	rect_transform_;
 		RectRenderData	render_data_;
@@ -27,6 +27,7 @@ namespace reality
 		void UpdateRectTransform();
 	public:
 		void AddChildUI(shared_ptr<UIBase> child_ui);
+		void DeleteChildUI(shared_ptr<UIBase> child_ui);
 		E_UIState GetCurrentState();
 		void SetCurrentState(E_UIState state);
 	public:

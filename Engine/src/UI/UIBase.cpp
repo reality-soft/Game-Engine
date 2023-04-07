@@ -188,8 +188,14 @@ void UIBase::UpdateRectTransform()
 
 void UIBase::AddChildUI(shared_ptr<UIBase> child_ui)
 {
-	child_ui_list_.push_back(child_ui);
+	child_ui_list_.insert(child_ui);
 	child_ui->parent_ui_ = this;
+}
+
+void reality::UIBase::DeleteChildUI(shared_ptr<UIBase> child_ui)
+{
+	child_ui_list_.erase(child_ui);
+	child_ui->parent_ui_ = nullptr;
 }
 
 E_UIState UIBase::GetCurrentState()
