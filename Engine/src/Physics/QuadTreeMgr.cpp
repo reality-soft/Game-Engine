@@ -152,7 +152,7 @@ void reality::QuadTreeMgr::Release()
 
 void reality::QuadTreeMgr::UpdatePhysics()
 {
-	int a = 0;
+	UINT capsule_index = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
 		vector<SpaceNode*> nodes;
@@ -168,14 +168,15 @@ void reality::QuadTreeMgr::UpdatePhysics()
 		if (nodes.empty())
 			break;
 
+		auto capsule_info = dynamic_capsule.second->capsule.GetTipBaseAB();
+		capsule_stbuffer.elements[capsule_index].point_a = _XMFLOAT3(capsule_info[2]);
+		capsule_stbuffer.elements[capsule_index].point_b = _XMFLOAT3(capsule_info[3]);
+		capsule_stbuffer.elements[capsule_index].radius = dynamic_capsule.second->capsule.radius;
+
+		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
+
 		CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
 		CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
-
-		// Add Object to LeafNode
-		for (auto node : nodes)
-		{
-			node->object_list.insert(dynamic_capsule.first);
-		}
 
 		nodes.clear();
 	}
@@ -445,9 +446,7 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 		return false;
 
 	// staging buffer
-
 	HRESULT hr = S_OK;
-
 	D3D11_BUFFER_DESC buffer_desc;
 
 	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
@@ -461,103 +460,6 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 		return false;
 
 	return true;
-	/*
-
-	HRESULT hr = S_OK;
-
-	D3D11_BUFFER_DESC buffer_desc;
-	D3D11_SUBRESOURCE_DATA subdata;
-
-	// triangle data buffer
-	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-	UINT triangle_counts = deviding_level_->level_triangles.size();
-	buffer_desc.ByteWidth = sizeof(TriangleShape) * triangle_counts;
-	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
-	buffer_desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	buffer_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	buffer_desc.StructureByteStride = sizeof(TriangleShape);
-
-	subdata.pSysMem = deviding_level_->level_triangles.data();
-	subdata.SysMemPitch = 0;
-	subdata.SysMemSlicePitch = 0;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&buffer_desc, &subdata, triangle_data_buffer_.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// triangle data srv
-	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
-	ZeroMemory(&srv_desc, sizeof(srv_desc));
-
-	srv_desc.Format = DXGI_FORMAT_UNKNOWN;
-	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-	srv_desc.Buffer.ElementWidth = sizeof(TriangleShape);
-	srv_desc.Buffer.NumElements = triangle_counts;
-
-	hr = DX11APP->GetDevice()->CreateShaderResourceView(triangle_data_buffer_.Get(), &srv_desc, triangle_data_srv_.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// capsule data buffer
-	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-	buffer_desc.ByteWidth = sizeof(CapsuleShape) * 64;
-	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
-	buffer_desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	buffer_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	buffer_desc.StructureByteStride = sizeof(CapsuleShape);
-
-	subdata.pSysMem = capsule_data_pool_.data();
-	subdata.SysMemPitch = 0;
-	subdata.SysMemSlicePitch = 0;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&buffer_desc, &subdata, capsule_data_buffer_.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// capsule data srv
-	ZeroMemory(&srv_desc, sizeof(srv_desc));
-
-	srv_desc.Format = DXGI_FORMAT_UNKNOWN;
-	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-	srv_desc.Buffer.ElementWidth = sizeof(CapsuleShape);
-	srv_desc.Buffer.NumElements = 64;
-
-	hr = DX11APP->GetDevice()->CreateShaderResourceView(capsule_data_buffer_.Get(), &srv_desc, capsule_data_srv_.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// collision result buffer
-	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
-	ZeroMemory(&subdata, sizeof(subdata));
-	buffer_desc.ByteWidth = sizeof(CollisionResult) * 64;
-	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
-	buffer_desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-	buffer_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	buffer_desc.StructureByteStride = sizeof(CollisionResult);
-
-	subdata.pSysMem = collision_result_pool_.data();
-	subdata.SysMemPitch = 0;
-	subdata.SysMemSlicePitch = 0;
-
-	hr = DX11APP->GetDevice()->CreateBuffer(&buffer_desc, &subdata, collision_result_buffer_.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	// collision result uav
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
-	ZeroMemory(&uav_desc, sizeof(uav_desc));
-
-	uav_desc.Format = DXGI_FORMAT_UNKNOWN;
-	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	uav_desc.Buffer.NumElements = 64;
-
-	hr = DX11APP->GetDevice()->CreateUnorderedAccessView(collision_result_buffer_.Get(), &uav_desc, collision_result_uav_.GetAddressOf());
-	if (FAILED(hr))
-		return false;
-
-	*/
 }
 
 void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
@@ -582,9 +484,20 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 		return;
 
 	CollisionResult* sum = (CollisionResult*)mapped_resource.pData;
-	deviding_level_->level_triangles;
 	memcpy(collision_result_pool_.data(), sum, 64 * sizeof(CollisionResult));
 
 	DX11APP->GetDeviceContext()->Unmap(staging_buffer_.Get(), 0);
 
+}
+
+void reality::QuadTreeMgr::MovementByPhysicsCS()
+{
+	collision_result_pool_;
+	for (UINT i = 0; i < 64; ++i)
+	{
+		if (collision_result_pool_[i].is_collide == false)
+			break;
+
+
+	}
 }

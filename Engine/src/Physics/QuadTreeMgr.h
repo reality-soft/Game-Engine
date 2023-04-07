@@ -13,8 +13,9 @@ namespace reality {
 
 	struct CollisionResult
 	{
-		int result;
-		XMFLOAT3 position;
+		bool is_collide;
+		XMFLOAT3 floor_position;
+		XMFLOAT3 blocking_vectors[4];
 	};
 
 	class DLL_API SpaceNode 
@@ -32,7 +33,6 @@ namespace reality {
 		AABBShape area;
 		SpaceNode* child_node_[4] = { 0, };
 		SpaceNode* parent_node = nullptr;
-		std::unordered_set<entt::entity> object_list;
 		vector<TriangleShape> static_triangles;
 
 	};
@@ -57,20 +57,11 @@ namespace reality {
 
 		bool CreatePhysicsCS();
 		void RunPhysicsCS(string cs_id);
-
-		//ComPtr<ID3D11Buffer> triangle_data_buffer_;
-		//ComPtr<ID3D11Buffer> capsule_data_buffer_;
-		//ComPtr<ID3D11Buffer> collision_result_buffer_;
-
-		//ComPtr<ID3D11ShaderResourceView> triangle_data_srv_;
-		//ComPtr<ID3D11ShaderResourceView> capsule_data_srv_;
-		//ComPtr<ID3D11UnorderedAccessView> collision_result_uav_;
+		void MovementByPhysicsCS();
 
 		SbTriangleCollision triangle_stbuffer;
 		SbCapsuleCollision capsule_stbuffer;
 		SbCollisionResult result_stbuffer;
-
-		//array<CapsuleShape, 64> capsule_data_pool_;
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
 		array<CollisionResult, 64> collision_result_pool_;

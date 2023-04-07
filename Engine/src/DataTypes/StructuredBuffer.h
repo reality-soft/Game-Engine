@@ -51,7 +51,6 @@ namespace reality
 			float radius;
 			XMFLOAT3 point_a;
 			XMFLOAT3 point_b;
-			unsigned short triangle_index[1000];
 		};
 
 	public:
@@ -64,8 +63,9 @@ namespace reality
 	public:
 		struct Data
 		{
-			int result;
-			XMFLOAT3 position;
+			bool is_collide;
+			XMFLOAT3 floor_position;
+			XMFLOAT3 blocking_vectors[4];
 		};
 
 	public:

@@ -105,7 +105,6 @@ void reality::SbCapsuleCollision::SetElementArraySize(UINT size)
 		e.radius = 0;
 		e.point_a = { 0 ,0, 0 };
 		e.point_b = { 0, 0, 0 };
-		ZeroMemory(e.triangle_index, sizeof(e.triangle_index));
 	}
 
 	byte_stride = sizeof(SbCapsuleCollision::Data);
@@ -118,8 +117,9 @@ void reality::SbCollisionResult::SetElementArraySize(UINT size)
 
 	for (auto& e : elements)
 	{
-		e.result = 0;
-		e.position = { 0, 0, 0 };
+		e.is_collide = false;
+		e.floor_position = { 0, 0, 0 };
+		ZeroMemory(&e.blocking_vectors, sizeof(e.blocking_vectors));
 	}
 
 	byte_stride = sizeof(SbCollisionResult::Data);
