@@ -179,6 +179,7 @@ void reality::QuadTreeMgr::UpdatePhysics()
 		CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
 
 		nodes.clear();
+		capsule_index++;
 	}
 	int b = 0;
 }
@@ -495,9 +496,9 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 	collision_result_pool_;
 	for (UINT i = 0; i < 64; ++i)
 	{
-		if (collision_result_pool_[i].is_collide == false)
+		if (collision_result_pool_[i].is_collide)
+		{
 			break;
-
-
+		}
 	}
 }
