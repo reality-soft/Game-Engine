@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Shape.h"
+
 namespace reality
 {
 	class StructuredSRV
@@ -51,6 +53,7 @@ namespace reality
 			float radius;
 			XMFLOAT3 point_a;
 			XMFLOAT3 point_b;
+			int entity;
 		};
 
 	public:
@@ -63,9 +66,11 @@ namespace reality
 	public:
 		struct Data
 		{
-			bool is_collide;
+			int entity;
+			int collide_type;
+
 			XMFLOAT3 floor_position;
-			XMFLOAT3 blocking_vectors[4];
+			RayShape blocking_rays[4];
 		};
 
 	public:
