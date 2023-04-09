@@ -59,11 +59,11 @@ void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth,
 			for (UINT i = 1; i < guide_line.line_nodes.size(); ++i)
 			{
 				RayShape blocking_line;
-				blocking_line.start = guide_line.line_nodes.at(i - 1);
-				blocking_line.end = guide_line.line_nodes.at(i);
+				blocking_line.start = _XMFLOAT3(guide_line.line_nodes.at(i - 1));
+				blocking_line.end = _XMFLOAT3(guide_line.line_nodes.at(i));
 
-				blocking_line.start.m128_f32[1] = 0.0f;
-				blocking_line.end.m128_f32[1] = 0.0f;
+				blocking_line.start.y = 0.0f;
+				blocking_line.end.y = 0.0f;
 
 				blocking_lines.push_back(blocking_line);
 			}
@@ -77,6 +77,8 @@ void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth,
 		auto capsule_collision = registry_->try_get<C_CapsuleCollision>(ent);
 		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
 	}
+
+	CreatePhysicsCS();
 } 
 
 SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
@@ -155,33 +157,37 @@ void reality::QuadTreeMgr::UpdatePhysics()
 	UINT capsule_index = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
-		vector<SpaceNode*> nodes;
-		auto query_start_node = total_nodes_.at(dynamic_capsule.second->enclosed_node_index);
-		query_start_node = ParentNodeQuery(dynamic_capsule.second, query_start_node);
+		//vector<SpaceNode*> nodes;
+		//auto query_start_node = total_nodes_.at(dynamic_capsule.second->enclosed_node_index);
+		//query_start_node = ParentNodeQuery(dynamic_capsule.second, query_start_node);
 
-		if (LeafNodeQuery(dynamic_capsule.second, query_start_node, nodes) == false)
-		{
-			SCENE_MGR->DestroyActor(dynamic_capsule.first);
-			break;
-		}
+		//if (LeafNodeQuery(dynamic_capsule.second, query_start_node, nodes) == false)
+		//{
+		//	SCENE_MGR->DestroyActor(dynamic_capsule.first);
+		//	break;
+		//}
 
-		if (nodes.empty())
-			break;
+		//if (nodes.empty())
+		//	break;
 
 		auto capsule_info = dynamic_capsule.second->capsule.GetTipBaseAB();
 		capsule_stbuffer.elements[capsule_index].point_a = _XMFLOAT3(capsule_info[2]);
 		capsule_stbuffer.elements[capsule_index].point_b = _XMFLOAT3(capsule_info[3]);
 		capsule_stbuffer.elements[capsule_index].radius = dynamic_capsule.second->capsule.radius;
+		capsule_stbuffer.elements[capsule_index].entity = (int)dynamic_capsule.first;
 
 		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
 
-		CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
-		CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
+		//CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
+		//CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
 
-		nodes.clear();
+		//nodes.clear();
 		capsule_index++;
 	}
 	int b = 0;
+
+	RunPhysicsCS("CollisionDetectCS.cso");
+	MovementByPhysicsCS();
 }
 
 void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes)
@@ -244,17 +250,17 @@ void reality::QuadTreeMgr::CheckBlockingLine(entt::entity ent, CapsuleShape& cap
 
 		for (auto& blocking_line : blocking_lines)
 		{
-			float distance_from_line = XMVectorGetX(XMVector3LinePointDistance(blocking_line.start, blocking_line.end, _XMVECTOR3(capsule_pos)));
+			float distance_from_line = XMVectorGetX(XMVector3LinePointDistance(_XMVECTOR3(blocking_line.start), _XMVECTOR3(blocking_line.end), _XMVECTOR3(capsule_pos)));
 
 			if (distance_from_line <= dynamic_capsule.second->capsule.radius)
 			{
-				XMVECTOR OB = blocking_line.end - blocking_line.start;
-				XMVECTOR OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - blocking_line.start;
+				XMVECTOR OB = blocking_line.GetRayVector();
+				XMVECTOR OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - _XMVECTOR3(blocking_line.start);
 				float dot = XMVectorGetX(XMVector3Dot(OA, OB));
 				if (dot < 0)
 				{
 					OB *= -1.0f;
-					OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - blocking_line.end;
+					OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - _XMVECTOR3(blocking_line.end);
 				}
 
 				float proj_length = Vector3Length(Vector3Project(OB, OA));
@@ -278,7 +284,7 @@ void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
 	{
 		if (node->is_leaf && node->static_triangles.size() > 0)
 		{
-			float dist = Distance(_XMVECTOR3(node->area.center), ray.start);
+			float dist = Distance(_XMVECTOR3(node->area.center), _XMVECTOR3(ray.start));
 			casted_nodes_.insert(make_pair(dist, node));
 			return;
 		}
@@ -360,7 +366,7 @@ void reality::QuadTreeMgr::UpdateCapsules()
 	}
 }
 
-RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float max_distance)
+RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
 {
 	map<float, RayCallback> callback_list;
 
@@ -388,7 +394,7 @@ RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(const RayShape& ray, float 
 	return callback_list.begin()->second;
 }
 
-pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(const RayShape& ray)
+pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
 {
 	map<float, RayCallback> callback_list;
 
@@ -451,10 +457,9 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 	D3D11_BUFFER_DESC buffer_desc;
 
 	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
-	buffer_desc.ByteWidth = sizeof(CollisionResult) * 64;
+	buffer_desc.ByteWidth = sizeof(SbCollisionResult::Data) * 64;
 	buffer_desc.Usage = D3D11_USAGE_STAGING;
 	buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	buffer_desc.StructureByteStride = sizeof(CollisionResult);
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&buffer_desc, nullptr, staging_buffer_.GetAddressOf());
 	if (FAILED(hr))
@@ -484,21 +489,56 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 	if (FAILED(hr))
 		return;
 
-	CollisionResult* sum = (CollisionResult*)mapped_resource.pData;
-	memcpy(collision_result_pool_.data(), sum, 64 * sizeof(CollisionResult));
-
+	//SbCollisionResult::Data* sum = (SbCollisionResult::Data*)mapped_resource.pData;
+	SbCollisionResult::Data* sum = reinterpret_cast<SbCollisionResult::Data*>(mapped_resource.pData);
+	memcpy(collision_result_pool_.data(), sum, 64 * sizeof(SbCollisionResult::Data));
+	UINT size = 64 * sizeof(SbCollisionResult::Data);
+	mapped_resource.RowPitch;
 	DX11APP->GetDeviceContext()->Unmap(staging_buffer_.Get(), 0);
 
 }
 
 void reality::QuadTreeMgr::MovementByPhysicsCS()
 {
-	collision_result_pool_;
 	for (UINT i = 0; i < 64; ++i)
 	{
-		if (collision_result_pool_[i].is_collide)
-		{
+		auto& result = collision_result_pool_[i];
+		auto character = SCENE_MGR->GetActor<Character>((entt::entity)result.entity);
+		if (character == nullptr)
 			break;
+
+		character->floor_height = result.floor_position.y;
+
+		if (result.collide_type != 0)
+		{
+
+
+			if (result.collide_type == 1)
+			{
+				character->GetMovementComponent()->gravity = 0.0f;
+				character->movement_state_ = MovementState::STAND_ON_FLOOR;
+			}
+			if (result.collide_type == 2)
+			{
+
+			}
+
+
+	
 		}
+		else
+		{
+			character->GravityFall(9.81f);
+			character->movement_state_ = MovementState::GRAVITY_FALL;
+			character->floor_height = result.floor_position.y;
+		}
+
+		//if (result.is_wall_collide)
+		//{
+		//	for (int j = 0; j < 4; ++j)
+		//	{
+		//		character->blocking_walls_.push_back(result.blocking_rays[j]);
+		//	}
+		//}
 	}
 }
