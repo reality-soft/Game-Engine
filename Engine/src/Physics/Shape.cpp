@@ -3,14 +3,26 @@
 
 reality::RayShape::RayShape()
 {
-    start = XMVectorZero();
-    end = XMVectorZero();
+    start = {0, 0, 0};
+    end = {0, 0, 0};
 }
 
 reality::RayShape::RayShape(const XMVECTOR& _start, const XMVECTOR& _end)
 {
+    start = _XMFLOAT3(_start);
+    end = _XMFLOAT3(_end);
+}
+
+reality::RayShape::RayShape(const XMFLOAT3& _start, const XMFLOAT3& _end)
+{
     start = _start;
     end = _end;
+}
+
+
+XMVECTOR reality::RayShape::GetRayVector()
+{
+    return _XMVECTOR3(start) - _XMVECTOR3(end);
 }
 
 reality::TriangleShape::TriangleShape()

@@ -7,7 +7,9 @@ namespace reality {
     {
         RayShape();
         RayShape(const XMVECTOR& _start, const XMVECTOR& _end);
-        XMVECTOR start, end;
+        RayShape(const XMFLOAT3& _start, const XMFLOAT3& _end);
+        XMVECTOR GetRayVector();
+        XMFLOAT3 start, end;
     };
 
     struct DLL_API TriangleShape
