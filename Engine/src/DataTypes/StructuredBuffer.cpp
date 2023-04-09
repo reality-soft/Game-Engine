@@ -2,6 +2,7 @@
 #include "DX11App.h"
 #include "StructuredBuffer.h"
 
+
 using namespace reality;
 
 bool reality::StructuredSRV::Create(void* p_data)
@@ -117,9 +118,10 @@ void reality::SbCollisionResult::SetElementArraySize(UINT size)
 
 	for (auto& e : elements)
 	{
-		e.is_collide = false;
+		e.entity = 0;
+		e.collide_type = 0;
 		e.floor_position = { 0, 0, 0 };
-		ZeroMemory(&e.blocking_vectors, sizeof(e.blocking_vectors));
+		ZeroMemory(&e.blocking_rays, sizeof(e.blocking_rays));
 	}
 
 	byte_stride = sizeof(SbCollisionResult::Data);

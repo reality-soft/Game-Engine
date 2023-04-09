@@ -37,8 +37,8 @@ namespace reality {
 
 			for (auto& block_wall : character->blocking_walls_)
 			{
-				XMVECTOR blocking_vector = block_wall.end - block_wall.start;
-				XMVECTOR start_to_cap = _XMVECTOR3(c_capsule->capsule.base) - block_wall.start; 
+				XMVECTOR blocking_vector = block_wall.GetRayVector();
+				XMVECTOR start_to_cap = _XMVECTOR3(c_capsule->capsule.base) - _XMVECTOR3(block_wall.start);
 				start_to_cap.m128_f32[1] = 0.0f;
 
 				XMVECTOR project = Vector3Project(blocking_vector, start_to_cap);

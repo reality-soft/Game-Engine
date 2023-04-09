@@ -42,7 +42,7 @@ namespace reality {
         return false;
     }
 
-    static RayCallback RayToTriangle(const RayShape& ray, TriangleShape& tri)
+    static RayCallback RayToTriangle(RayShape& ray, TriangleShape& tri)
     {
         XMVECTOR tri_vertex0 = _XMVECTOR3(tri.vertex0);
         XMVECTOR tri_vertex1 = _XMVECTOR3(tri.vertex1);
@@ -50,12 +50,12 @@ namespace reality {
         XMVECTOR tri_normal = _XMVECTOR3(tri.normal);
 
         RayCallback callback;
-        XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri_vertex0, tri_vertex1, tri_vertex2), ray.start, ray.end);
+        XMVECTOR P = XMPlaneIntersectLine(XMPlaneFromPoints(tri_vertex0, tri_vertex1, tri_vertex2), _XMVECTOR3(ray.start), _XMVECTOR3(ray.end));
 
         if (PointInTriangle(P, tri))
         {
-            float distance = Distance(P, ray.start);
-            float ray_length = Distance(ray.end, ray.start);
+            float distance = Distance(P, _XMVECTOR3(ray.start));
+            float ray_length = Vector3Length(ray.GetRayVector());
             if (distance <= ray_length)
             {
                 callback.success = true;
@@ -75,8 +75,8 @@ namespace reality {
         center_to_corner.m128_f32[1] = 0.0f;
         float box_radius = XMVectorGetX(XMVector3Length(center_to_corner));
 
-        XMVECTOR line1 = ray.start; line1.m128_f32[1] = aabb.center.y;
-        XMVECTOR line2 = ray.end; line2.m128_f32[1] = aabb.center.y;
+        XMVECTOR line1 = _XMVECTOR3(ray.start); line1.m128_f32[1] = aabb.center.y;
+        XMVECTOR line2 = _XMVECTOR3(ray.end); line2.m128_f32[1] = aabb.center.y;
         float box_to_line = XMVectorGetX(XMVector3LinePointDistance(line1, line2, _XMVECTOR3(aabb.center)));
 
         if (box_to_line <= box_radius)
@@ -92,7 +92,7 @@ namespace reality {
         return false;
     }
 
-    static RayCallback RayToCapsule(const RayShape& ray, const CapsuleShape& cap)
+    static RayCallback RayToCapsule(RayShape& ray, const CapsuleShape& cap)
     {
         XMVECTOR RC;
         float d;
@@ -103,9 +103,9 @@ namespace reality {
 
         XMVECTOR axis = XMVectorSet(0.0f, 1.0f * cap.height, 0.0f, 0.0f);
 
-        RC = ray.start;
+        RC = _XMVECTOR3(ray.start);
         RC = XMVectorSubtract(RC, _XMVECTOR3(cap.base));
-        XMVECTOR dir = XMVectorSubtract(ray.end, ray.start);
+        XMVECTOR dir = ray.GetRayVector();
         dir = XMVector3Normalize(dir);
         n = XMVector3Cross(dir, axis);
 
@@ -153,7 +153,7 @@ namespace reality {
 
             // Calculate intersection point
             RayCallback raycallback;
-            raycallback.point = ray.start;
+            raycallback.point = _XMVECTOR3(ray.start);
             raycallback.point.m128_f32[0] += dir.m128_f32[0] * lambda;
             raycallback.point.m128_f32[1] += dir.m128_f32[1] * lambda;
             raycallback.point.m128_f32[2] += dir.m128_f32[2] * lambda;

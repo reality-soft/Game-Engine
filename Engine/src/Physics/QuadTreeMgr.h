@@ -11,13 +11,6 @@
 
 namespace reality {
 
-	struct CollisionResult
-	{
-		bool is_collide;
-		XMFLOAT3 floor_position;
-		XMFLOAT3 blocking_vectors[4];
-	};
-
 	class DLL_API SpaceNode 
 	{
 	public:
@@ -51,8 +44,8 @@ namespace reality {
 		void Release();
 	public:
 		void UpdateCapsules();
-		RayCallback RaycastAdjustLevel(const RayShape& ray, float max_distance);
-		pair<RayCallback, entt::entity> RaycastAdjustActor(const RayShape& ray);
+		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
+		pair<RayCallback, entt::entity> RaycastAdjustActor(RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
 
 		bool CreatePhysicsCS();
@@ -64,7 +57,7 @@ namespace reality {
 		SbCollisionResult result_stbuffer;
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
-		array<CollisionResult, 64> collision_result_pool_;
+		array<SbCollisionResult::Data, 64> collision_result_pool_;
 
 	public:
 		int calculating_triagnles;

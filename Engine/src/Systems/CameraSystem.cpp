@@ -132,8 +132,8 @@ RayShape CameraSystem::CreateMouseRay()
 	ray_dir = XMVector3TransformNormal({ndc_x, ndc_y, 1.0f, 0}, inv_view);
 	ray_dir = XMVector3Normalize(ray_dir);
 
-	mouse_ray.start = ray_origin;
-	mouse_ray.end = ray_dir * camera->far_z;
+	mouse_ray.start = _XMFLOAT3(ray_origin);
+	mouse_ray.end = _XMFLOAT3((ray_dir * camera->far_z));
 
 	return mouse_ray;
 }
