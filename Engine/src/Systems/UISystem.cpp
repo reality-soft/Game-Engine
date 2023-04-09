@@ -80,6 +80,9 @@ void UISystem::OnUpdate(entt::registry& reg)
 void UISystem::SetCbData(XMMATRIX world)
 {
 	cb_UI.data.world = world;
+	if (cb_UI.buffer.Get() == nullptr)
+		return;
+
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_UI.buffer.Get(), 0, nullptr, &cb_UI.data, 0, 0);
 	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_UI.buffer.GetAddressOf());
 }
