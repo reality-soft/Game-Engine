@@ -129,6 +129,7 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 		{
 			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixIdentity();
 			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixIdentity();
+			cb_skeletal_mesh.data.bind_pose[bp.first] = XMMatrixIdentity();
 		}
 		return;
 	case ANIM_STATE::ANIM_STATE_CUR_ONLY:
