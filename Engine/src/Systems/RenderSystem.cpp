@@ -23,9 +23,6 @@ RenderSystem::~RenderSystem()
 void reality::RenderSystem::OnCreate(entt::registry& reg)
 {
 	HRESULT hr;
-
-	// Init Transform Buffer
-	cb_transform.data.world_matrix = XMMatrixIdentity();
 	
 	D3D11_BUFFER_DESC desc;
 	D3D11_SUBRESOURCE_DATA subdata;
@@ -44,19 +41,20 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 
 	// Init SkeletonBuffer
 	for (int i = 0; i < 128; ++i) {
-		cb_skeleton.data.bind_pose[i] = XMMatrixIdentity();
-		cb_skeleton.data.animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh.data.bind_pose[i] = XMMatrixIdentity();
+		cb_skeletal_mesh.data.animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh.data.slot_animation[i] = XMMatrixIdentity();
 	}
 
 	ZeroMemory(&desc, sizeof(desc));
 	ZeroMemory(&subdata, sizeof(subdata));
 
-	desc.ByteWidth = sizeof(CbSkeleton::Data);
+	desc.ByteWidth = sizeof(CbSkeletalMesh::Data);
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	subdata.pSysMem = &cb_skeleton.data;
+	subdata.pSysMem = &cb_skeletal_mesh.data;
 
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeleton.buffer.GetAddressOf());
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeletal_mesh.buffer.GetAddressOf());
 
 	// Create Effect Data
 	CreateEffectCB();
@@ -98,39 +96,127 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	// BoxShape Render
 	RenderBoxShape(reg);
 	
-
 	// Emitter Render
 	RenderEffects(reg);
 }
 
-void RenderSystem::SetCbTransform(const C_Transform* const transform)
-{
-	cb_transform.data.world_matrix = XMMatrixTranspose(transform->local * transform->world);
-
-	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
-	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
-}
-
 void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component)
 {
-	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(animation_component.anim_id);
-	if (res_animation == nullptr) {
-		return;
-	}
+	ZeroMemory(cb_skeletal_mesh.data.slot_weights, sizeof(cb_skeletal_mesh.data.slot_weights));
 
-	if (animation_component.cur_frame >= res_animation->end_frame)
-		animation_component.cur_frame = res_animation->start_frame;
-
-	for (auto bp : skeleton.bind_pose_matrices)
+	for (const auto& bp : skeleton.bind_pose_matrices)
 	{
-		cb_skeleton.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
-		cb_skeleton.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[animation_component.cur_frame]);
+		cb_skeletal_mesh.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
 	}
 
-	animation_component.cur_frame += 60.f / TM_FPS;
+	const AnimSlot& base_anim_slot = animation_component.anim_slots[0].second;
+	ANIM_STATE base_anim_slot_state = base_anim_slot.GetCurAnimState();
 
-	device_context->UpdateSubresource(cb_skeleton.buffer.Get(), 0, nullptr, &cb_skeleton.data, 0, 0);
-	device_context->VSSetConstantBuffers(2, 1, cb_skeleton.buffer.GetAddressOf());
+	float base_time_weight = min(1.0f, base_anim_slot.anim_object_->GetCurAnimTime() / base_anim_slot.anim_object_->GetBlendTime());
+
+	XMMATRIX base_cur_animation = XMMatrixIdentity();
+	XMMATRIX base_prev_animation = XMMatrixIdentity();
+	XMMATRIX base_animation = XMMatrixIdentity();
+
+	OutAnimData* res_base_animation = nullptr;
+	OutAnimData* res_base_prev_animation = nullptr;
+
+	float base_cur_frame = base_anim_slot.anim_object_->GetCurFrame();
+	float base_prev_last_frame = base_anim_slot.anim_object_->GetPrevAnimLastFrame();
+	switch (base_anim_slot_state) {
+	case ANIM_STATE::ANIM_STATE_NONE:
+		for (const auto& bp : skeleton.bind_pose_matrices)
+		{
+			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixIdentity();
+			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixIdentity();
+		}
+		return;
+	case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+		res_base_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+		for (const auto& bp : skeleton.bind_pose_matrices)
+		{
+			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+		}
+		break;
+	case ANIM_STATE::ANIM_STATE_CUR_PREV:
+		res_base_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());
+		res_base_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+
+		for (const auto& bp : skeleton.bind_pose_matrices)
+		{
+			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_prev_animation->animations[bp.first][base_prev_last_frame]);
+			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+		}
+		break;
+	}
+
+	cb_skeletal_mesh.data.base_time_weight = base_time_weight;
+
+	int i = animation_component.anim_slots.size() - 1;
+
+	for (i;i >= 1;i--) {
+		AnimSlot& anim_slot = animation_component.anim_slots[i].second;
+		ANIM_STATE slot_anim_state = anim_slot.GetCurAnimState();
+
+		float slot_time_weight = min(1.0f, anim_slot.anim_object_->GetCurAnimTime() / anim_slot.anim_object_->GetBlendTime());
+
+		XMMATRIX slot_cur_animation = XMMatrixIdentity();
+		XMMATRIX slot_prev_animation = XMMatrixIdentity();
+		XMMATRIX slot_animation = XMMatrixIdentity();
+
+		OutAnimData* res_slot_animation = nullptr;
+		OutAnimData* res_slot_prev_animation = nullptr;
+
+		float slot_cur_frame = anim_slot.anim_object_->GetCurFrame();
+		float slot_prev_last_frame = anim_slot.anim_object_->GetPrevAnimLastFrame();
+		switch (slot_anim_state) {
+		case ANIM_STATE::ANIM_STATE_NONE:
+			continue;
+		case ANIM_STATE::ANIM_STATE_PREV_ONLY:
+			res_slot_prev_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+			for (const auto& cur_pair : anim_slot.included_skeletons_) {
+				int depth = cur_pair.first;
+
+				for (const auto& bone_id : cur_pair.second) {
+					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
+					cb_skeletal_mesh.data.slot_animation[bone_id] = cb_skeletal_mesh.data.animation[bone_id];
+
+					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+				}
+			}
+			break;
+		case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+			res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+			for (const auto& cur_pair : anim_slot.included_skeletons_) {
+				int depth = cur_pair.first;
+
+				for (const auto& bone_id : cur_pair.second) {
+					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = cb_skeletal_mesh.data.prev_animation[bone_id];
+					cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
+
+					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+				}
+			}
+			break;
+		case ANIM_STATE::ANIM_STATE_CUR_PREV:
+			res_slot_prev_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+			res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+			for (const auto& cur_pair : anim_slot.included_skeletons_) {
+				int depth = cur_pair.first;
+
+				for (const auto& bone_id : cur_pair.second) {
+					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
+					cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
+
+					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+				}
+			}
+		}
+
+		cb_skeletal_mesh.data.slot_time_weight = slot_time_weight;
+		break;
+	}
 }
 
 void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_component)
@@ -142,7 +228,9 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 		return;
 	}
 
-	SetCbTransform(static_mesh_component);
+	SetTransformCb(static_mesh_component, cb_transform.data.transform);
+	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
+	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 
 	for (auto single_mesh : static_mesh->meshes)
 	{
@@ -167,7 +255,6 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 			device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
 		}
 	}
-
 }
 
 void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, C_Animation* const animation_component)
@@ -180,8 +267,10 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 	}
 
 	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
-
-	SetCbTransform(skeletal_mesh_components);
+	
+	SetTransformCb(skeletal_mesh_components, cb_skeletal_mesh.data.transform);
+	device_context->UpdateSubresource(cb_skeletal_mesh.buffer.Get(), 0, nullptr, &cb_skeletal_mesh.data, 0, 0);
+	device_context->VSSetConstantBuffers(1, 1, cb_skeletal_mesh.buffer.GetAddressOf());
 
 	for (auto& single_mesh : skeletal_mesh->meshes)
 	{
@@ -191,6 +280,7 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
+
 		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		
 		device_context->IASetInputLayout(shader->InputLayout());
@@ -227,6 +317,7 @@ void RenderSystem::CreateEffectCB()
 		desc.Usage = D3D11_USAGE_DEFAULT;
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
+		subdata.pSysMem = &cb_effect.data;
 		subdata.pSysMem = &cb_effect.data;
 
 		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect.buffer.GetAddressOf());
@@ -319,7 +410,11 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 	for (auto ent : view_box)
 	{
 		auto& box = reg.get<C_BoxShape>(ent);
-		SetCbTransform(&box);
+
+		SetTransformCb(&box, cb_transform.data.transform);
+
+		device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
+		device_context->VSSetConstantBuffers(1, 1, cb_skeletal_mesh.buffer.GetAddressOf());
 
 		auto material = RESOURCE->UseResource<Material>(box.material_id);
 		material->Set();
@@ -350,7 +445,9 @@ void RenderSystem::RenderBoundingBox(const C_BoundingBox* const box)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	SetCbTransform(box);
+	SetTransformCb(box, cb_transform.data.transform);
+	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
+	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
 
 	device_context->IASetVertexBuffers(0, 1, box->vertex_buffer.GetAddressOf(), &stride, &offset);
 	device_context->IASetIndexBuffer(box->index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -422,6 +519,12 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
 	device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	device_context->GSSetShader(nullptr, 0, 0);
+}
+
+void reality::RenderSystem::SetTransformCb(const C_Transform* const transform_component, Transform& transform)
+{
+	transform.local_matrix = XMMatrixTranspose(transform_component->local);
+	transform.world_matrix = XMMatrixTranspose(transform_component->world);
 }
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)

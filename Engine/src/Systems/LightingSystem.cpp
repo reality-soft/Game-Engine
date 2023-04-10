@@ -2,8 +2,6 @@
 #include "LightingSystem.h"
 #include "TimeMgr.h"
 #include "SceneMgr.h"
-#include "PointLightActor.h"
-#include "SpotLightActor.h"
 
 using namespace reality;
 
@@ -137,6 +135,16 @@ void LightingSystem::UpdateGlobalLight(XMFLOAT2 world_time, float current_time, 
 
 }
 
+CbGlobalLight::Data reality::LightingSystem::GetGlobalLightData()
+{
+	return global_light.data;
+}
+
+void reality::LightingSystem::SetGlobalLightPos(XMFLOAT3 position)
+{
+	global_light.data.position = position;
+}
+
 void LightingSystem::UpdatePointLights(entt::registry& reg)
 {
 	// 0. Clear the last frame PointLights CBData
@@ -156,13 +164,16 @@ void LightingSystem::UpdatePointLights(entt::registry& reg)
 
 		// 2. if Lifetime remain, Plus Data to CB Array
 		CbPointLight::Data point_light_data;
-		point_light_data.light_color = point_light_comp.light_color;
 
-		point_light_data.position = point_light_comp.position;
-		point_light_data.range = point_light_comp.range;
-		point_light_data.attenuation_level = point_light_comp.attenuation_level;
-		point_light_data.attenuation = point_light_comp.attenuation;
-		point_light_data.specular = point_light_comp.specular;
+		XMVECTOR S, R, T;
+		XMMatrixDecompose(&S, &R, &T, point_light_comp.world);
+
+		XMStoreFloat3(&point_light_data.position, T);
+
+		point_light_data.light_color = point_light_comp.point_light.light_color;
+		point_light_data.range = point_light_comp.point_light.range;
+		point_light_data.attenuation = point_light_comp.point_light.attenuation;
+		point_light_data.specular = point_light_comp.point_light.specular;
 
 		point_lights.data[count++] = point_light_data;
 	}
@@ -193,16 +204,19 @@ void LightingSystem::UpdateSpotLights(entt::registry& reg)
 		// 2. if Lifetime remain, Plus Data to CB Array
 		CbSpotLight::Data spot_light_data;
 
-		spot_light_data.light_color = spot_light_comp.light_color;
+		XMVECTOR S, R, T;
+		XMMatrixDecompose(&S, &R, &T, spot_light_comp.world);
 
-		spot_light_data.position = spot_light_comp.position;
-		spot_light_data.range = spot_light_comp.range;
-		spot_light_data.attenuation_level = spot_light_comp.attenuation_level;
-		spot_light_data.attenuation = spot_light_comp.attenuation;
-		spot_light_data.specular = spot_light_comp.specular;
+		XMStoreFloat3(&spot_light_data.position, T);
+		XMVECTOR direction_vec = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), XMMatrixRotationQuaternion(R));
+		XMStoreFloat3(&spot_light_data.direction, direction_vec);
 
-		spot_light_data.direction = spot_light_comp.direction;
-		spot_light_data.spot = spot_light_comp.spot;
+		spot_light_data.light_color = spot_light_comp.spot_light.light_color;
+
+		spot_light_data.range = spot_light_comp.spot_light.range;
+		spot_light_data.attenuation = spot_light_comp.spot_light.attenuation;
+		spot_light_data.specular = spot_light_comp.spot_light.specular;
+		spot_light_data.spot = spot_light_comp.spot_light.spot;
 
 		spot_lights.data[count++] = spot_light_data;
 	}

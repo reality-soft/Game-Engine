@@ -33,6 +33,7 @@ project "Engine"
 	includedirs
 	{
 		"%{prj.name}/src/Actors",
+		"%{prj.name}/src/Animation",
 		"%{prj.name}/src/Components",
 		"%{prj.name}/src/Core",
 		"%{prj.name}/src/DataTypes",

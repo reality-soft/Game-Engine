@@ -6,6 +6,7 @@ namespace reality
 	class DLL_API UIBase
 	{
 	protected:
+		bool						onoff_;
 		E_UIState					current_state_;
 	public:
 		UIBase*						parent_ui_;
@@ -26,11 +27,17 @@ namespace reality
 		void UpdateRectTransform();
 	public:
 		void AddChildUI(shared_ptr<UIBase> child_ui);
+		E_UIState GetCurrentState();
+		void SetCurrentState(E_UIState state);
 	public:
-		void SetLocalRectByMin(XMFLOAT2 min, float width, float height);
-		void SetLocalRectByMax(XMFLOAT2 max, float width, float height);
-		void SetLocalRectByCenter(XMFLOAT2 center, float width, float height);
-		void SetLocalRectByMinMax(XMFLOAT2 min, XMFLOAT2 max);
+		bool GetOnOff();
+		void On();
+		void Off();
+	public:
+		virtual void SetLocalRectByMin(XMFLOAT2 min, float width, float height);
+		virtual void SetLocalRectByMax(XMFLOAT2 max, float width, float height);
+		virtual void SetLocalRectByCenter(XMFLOAT2 center, float width, float height);
+		virtual void SetLocalRectByMinMax(XMFLOAT2 min, XMFLOAT2 max);
 	};
 }
 

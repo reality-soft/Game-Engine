@@ -3,11 +3,17 @@
 
 namespace reality
 {
+	struct Transform {
+		XMMATRIX    world_matrix;
+		XMMATRIX    local_matrix;
+	};
+
 	struct CbTransform
 	{
 		CbTransform()
 		{
-			data.world_matrix = XMMatrixIdentity();
+			data.transform.world_matrix = XMMatrixIdentity();
+			data.transform.local_matrix = XMMatrixIdentity();
 		}
 		CbTransform(const CbTransform& other)
 		{
@@ -16,7 +22,7 @@ namespace reality
 		}
 		struct Data
 		{
-			XMMATRIX world_matrix;
+			Transform transform;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -70,18 +76,25 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbSkeleton
+	struct CbSkeletalMesh
 	{
-		CbSkeleton() = default;
-		CbSkeleton(const CbSkeleton& other)
+		CbSkeletalMesh() = default;
+		CbSkeletalMesh(const CbSkeletalMesh& other)
 		{
 			data = other.data;
 			other.buffer.CopyTo(buffer.GetAddressOf());
 		}
 		struct Data
 		{
-			XMMATRIX  bind_pose[128];	
-			XMMATRIX  animation[128];
+			Transform   transform;
+			XMMATRIX	bind_pose[128];	
+			XMMATRIX	prev_animation[128];
+			XMMATRIX	animation[128];
+			XMMATRIX	prev_slot_animation[128];
+			XMMATRIX	slot_animation[128];
+			float		slot_weights[128];
+			float		base_time_weight;
+			float		slot_time_weight;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -120,11 +133,27 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
+	struct CbShadowMap
+	{
+		CbShadowMap()
+		{
+			data.shadow_view = XMMatrixIdentity();
+			data.shadow_proj = XMMatrixIdentity();
+		}
+		struct Data
+		{
+			XMMATRIX shadow_view;
+			XMMATRIX shadow_proj;
+		} data;
+
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
 	struct CbGlobalLight
 	{
 		CbGlobalLight()
 		{
-			data.position = XMFLOAT3(5000, 5000, -5000);
+			data.position = XMFLOAT3(15000, 15000, -15000);
 			data.brightness = 1.0f;
 
 			data.direction = XMFLOAT3((-1.0f * XMVector3Normalize(XMLoadFloat3(&data.position))).m128_f32);
@@ -165,8 +194,6 @@ namespace reality
 			float		range;
 			XMFLOAT3	attenuation;
 			float		specular;
-			XMFLOAT3	attenuation_level;
-			float		pad;
 		} data[64];
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -188,8 +215,6 @@ namespace reality
 			float		range;
 			XMFLOAT3	attenuation;
 			float		specular;
-			XMFLOAT3	attenuation_level;
-			float		pad;
 			XMFLOAT3	direction;
 			float		spot;
 		} data[64];

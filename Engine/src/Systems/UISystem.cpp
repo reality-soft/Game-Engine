@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "UISystem.h"
 #include "Engine.h"
+#include "SceneMgr.h"
 
 using namespace reality;
 
@@ -47,7 +48,11 @@ void UISystem::OnUpdate(entt::registry& reg)
 		C_UI& ui_comp = reg.get<C_UI>(entity);
 		for (auto& pair : ui_comp.ui_list)
 		{
+			if (!pair.second->GetOnOff())
+				continue;
 			pair.second->Update();
+			if (&reg != &SCENE_MGR->GetRegistry())
+				return;
 		}
 
 		for (auto& pair : ui_comp.ui_list)
@@ -75,6 +80,9 @@ void UISystem::OnUpdate(entt::registry& reg)
 void UISystem::SetCbData(XMMATRIX world)
 {
 	cb_UI.data.world = world;
+	if (cb_UI.buffer.Get() == nullptr)
+		return;
+
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_UI.buffer.Get(), 0, nullptr, &cb_UI.data, 0, 0);
 	DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, cb_UI.buffer.GetAddressOf());
 }

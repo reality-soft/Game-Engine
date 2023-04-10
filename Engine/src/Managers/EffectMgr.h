@@ -15,18 +15,20 @@ namespace reality
 			auto entity = SCENE_MGR->AddActor<EffectActorClass>();
 			return SCENE_MGR->GetActor<EffectActorClass>(entity);
 		}
+		template<typename EffectActorClass>
+		EffectActorClass* MakeEffectActor(E_SceneType type)
+		{
+			auto entity = SCENE_MGR->GetScene(type)->AddActor<EffectActorClass>();
+			return SCENE_MGR->GetScene(type)->GetActor<EffectActorClass>(entity);
+		}
+	
 	public:
+		// Effect
 		template<typename EffectActorClass>
 		void SpawnEffect(XMVECTOR pos, XMVECTOR rot_q = XMQuaternionIdentity(), XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f))
 		{
 			EffectActorClass* effect_actor = MakeEffectActor<EffectActorClass>();
 			effect_actor->Spawn(pos, rot_q, scale);
-		}
-		template<typename EffectActorClass>
-		void SpawnEffect(XMVECTOR pos, float lifetime, XMVECTOR rot_q = XMQuaternionIdentity(), XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f))
-		{
-			EffectActorClass* effect_actor = MakeEffectActor<EffectActorClass>();
-			effect_actor->Spawn(pos, lifetime, rot_q, scale);
 		}
 		template<typename EffectActorClass>
 		void SpawnEffectFromNormal(XMVECTOR pos, XMVECTOR normal, XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f))
@@ -41,32 +43,22 @@ namespace reality
 			effect_actor->Spawn(pos, rot_q, scale);
 		}
 		template<typename EffectActorClass>
-		void SpawnEffectFromNormal(XMVECTOR pos, XMVECTOR normal, float lifetime, XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f))
+		void SpawnEffect(E_SceneType type, XMVECTOR pos, XMVECTOR rot_q = XMQuaternionIdentity(), XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f))
 		{
-			EffectActorClass* effect_actor = MakeEffectActor<EffectActorClass>();
+			EffectActorClass* effect_actor = MakeEffectActor<EffectActorClass>(type);
+			effect_actor->Spawn(pos, rot_q, scale);
+		}
+		template<typename EffectActorClass>
+		void SpawnEffectFromNormal(E_SceneType type, XMVECTOR pos, XMVECTOR normal, XMVECTOR scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f))
+		{
+			EffectActorClass* effect_actor = MakeEffectActor<EffectActorClass>(type);
 
-			XMVECTOR rot_q;
 			XMVECTOR base = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+			XMVECTOR axis = XMVector3Cross(base, normal);
+			float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
+			XMVECTOR rot_q = XMQuaternionRotationAxis(axis, angle);
 
-			// if base & normal is same, identity quaternion is set
-			if (XMVector3Equal(base, normal) || Vector3Length(normal) < EPSILON)
-			{
-				rot_q = XMQuaternionIdentity();
-			}
-			else
-			{
-				XMVECTOR axis = XMVector3Cross(base, normal);
-				if (Vector3Length(axis) < EPSILON)
-					rot_q = XMQuaternionIdentity();
-				else
-				{
-					float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
-					rot_q = XMQuaternionRotationAxis(axis, angle);
-				}
-				
-			}
-			
-			effect_actor->Spawn(pos, lifetime, rot_q, scale);
+			effect_actor->Spawn(pos, rot_q, scale);
 		}
 	};
 }

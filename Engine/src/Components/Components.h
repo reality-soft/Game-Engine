@@ -10,6 +10,7 @@
 #include "Effect.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"
+#include "AnimSlot.h"
 
 namespace reality
 {
@@ -55,15 +56,16 @@ namespace reality
 	struct C_CapsuleCollision : public C_Transform
 	{
 		reality::CapsuleShape capsule;
+		UINT enclosed_node_index = 0;
 
-		void SetCapsuleData(XMVECTOR offset, float height, float radius) {
+		void SetCapsuleData(XMFLOAT3 offset, float height, float radius) {
 			capsule = reality::CapsuleShape(offset, height, radius);
-			local = XMMatrixTranslationFromVector(capsule.base);
+			local = XMMatrixTranslationFromVector(_XMVECTOR3(capsule.base));
 			world = world * local;
 		}
 		virtual void OnUpdate() override
 		{
-			capsule.base = world.r[3];
+			capsule.base = _XMFLOAT3(world.r[3]);
 		}
 	};
 
@@ -75,6 +77,7 @@ namespace reality
 		XMVECTOR local_pos;
 		XMFLOAT2 pitch_yaw = { 0, 0 };
 		XMVECTOR look, right, up;
+		float rotation = 0.0f, target_rotation = 0.0f;
 		float near_z, far_z, fov, aspect;
 
 		virtual void OnConstruct() override {};
@@ -102,14 +105,120 @@ namespace reality
 
 	struct C_Animation : public Component
 	{
-		string anim_id;
-		float cur_frame = 0.0f;
+		vector<pair<string, AnimSlot>> anim_slots;
+		unordered_map<string, int> name_to_anim_slot_index;
+
+		C_Animation(AnimationBase* anim_object) {
+			AnimSlot base_anim_slot;
+			base_anim_slot.anim_object_ = make_shared<AnimationBase>(*anim_object);
+			anim_slots.push_back({ "Base", base_anim_slot });
+			name_to_anim_slot_index.insert({ "Base", 0 });
+		}
 
 		virtual void OnConstruct() override {};
-		virtual void OnUpdate() override {
-			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
-			//cur_frame = anim_data->start_frame;
+		virtual void OnUpdate() override {};
+
+		template<typename AnimSlotType, typename... Args>
+		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range, Args&&... args) {
+			AnimSlot anim_slot;
+
+			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
+
+			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons_, anim_slot.bone_id_to_weight_);
+			anim_slot.range_ = range * 2;
+			anim_slot.anim_object_ = make_shared<AnimSlotType>(args...);
+			anim_slot.anim_object_->OnInit();
+
+			anim_slots.push_back({ anim_slot_name, anim_slot });
+			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
 		};
+
+		AnimSlot GetAnimSlotByName(string anim_slot_name) {
+			return anim_slots[name_to_anim_slot_index[anim_slot_name]].second;
+		}
+
+		XMMATRIX GetCurAnimMatirixOfBone(int bone_id) {
+			const AnimSlot& base_anim_slot = anim_slots[0].second;
+			ANIM_STATE base_anim_slot_state = base_anim_slot.GetCurAnimState();
+
+			float base_time_weight = min(1.0f, base_anim_slot.anim_object_->GetCurAnimTime() / base_anim_slot.anim_object_->GetBlendTime());
+
+			XMMATRIX base_cur_animation = XMMatrixIdentity();
+			XMMATRIX base_prev_animation = XMMatrixIdentity();
+			XMMATRIX base_animation = XMMatrixIdentity();
+
+			OutAnimData* res_animation = nullptr;
+			OutAnimData* res_prev_animation = nullptr;
+
+			switch (base_anim_slot_state) {
+			case ANIM_STATE::ANIM_STATE_NONE:
+				return XMMatrixIdentity();
+			case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+				res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+				base_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				break;
+			case ANIM_STATE::ANIM_STATE_CUR_PREV:
+				res_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());
+				res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+
+				base_prev_animation = res_prev_animation->animations[bone_id][base_anim_slot.anim_object_->GetPrevAnimLastFrame()];
+				base_cur_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+
+				base_animation = base_cur_animation * base_time_weight + base_prev_animation * (1.0f - base_time_weight);
+				break;
+			}
+
+			int i = anim_slots.size() - 1;
+			float slot_weight = 0.0f;
+
+			XMMATRIX slot_cur_animation = XMMatrixIdentity();
+			XMMATRIX slot_prev_animation = XMMatrixIdentity();
+			XMMATRIX slot_animation = XMMatrixIdentity();
+
+			OutAnimData* res_prev_slot_animation = nullptr;
+			OutAnimData* res_slot_animation = nullptr;
+
+			for (i;i >= 1;i--) {
+				AnimSlot& anim_slot = anim_slots[i].second;
+				ANIM_STATE slot_anim_state = anim_slot.GetCurAnimState();
+
+				float slot_time_weight = min(1.0f, anim_slot.anim_object_->GetCurAnimTime() / anim_slot.anim_object_->GetBlendTime());
+				
+				slot_cur_animation = XMMatrixIdentity();
+				slot_prev_animation = XMMatrixIdentity();
+				slot_animation = XMMatrixIdentity();
+
+				switch (slot_anim_state) {
+				case ANIM_STATE::ANIM_STATE_NONE:
+					continue;
+				case ANIM_STATE::ANIM_STATE_PREV_ONLY:
+					res_prev_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+					slot_prev_animation = res_prev_slot_animation->animations[bone_id][anim_slot.anim_object_->GetPrevAnimLastFrame()];
+
+					slot_animation = base_cur_animation * slot_time_weight + slot_prev_animation * (1.0f - slot_time_weight);
+					break;
+				case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+					res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+					slot_cur_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetCurFrame()];
+
+					slot_animation = slot_cur_animation * slot_time_weight + base_prev_animation * (1.0f - slot_time_weight);
+					break;
+				case ANIM_STATE::ANIM_STATE_CUR_PREV:
+					res_prev_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+					res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+
+					slot_prev_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetPrevAnimLastFrame()];
+					slot_cur_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetCurFrame()];
+
+					slot_animation = slot_cur_animation * slot_time_weight + slot_prev_animation * (1.0f - slot_time_weight);
+				}
+
+				slot_weight = anim_slot.bone_id_to_weight_[bone_id] / anim_slot.range_;
+				break;
+			}
+
+			return base_animation * (1.0f - slot_weight) + slot_animation * slot_weight;
+		}
 	};
 
 	struct C_SoundListener : public C_Transform
@@ -131,9 +240,9 @@ namespace reality
 
 			world = translation;
 
-			aabb.min = XMVector3TransformCoord(aabb.min, translation);
-			aabb.max = XMVector3TransformCoord(aabb.max, translation);
-			aabb.center = (aabb.min + aabb.max) / 2;
+			aabb.min = _XMFLOAT3(XMVector3TransformCoord(_XMVECTOR3(aabb.min), translation));
+			aabb.max = _XMFLOAT3(XMVector3TransformCoord(_XMVECTOR3(aabb.max), translation));
+			aabb.center = _XMFLOAT3(((_XMVECTOR3(aabb.min) + _XMVECTOR3(aabb.max)) / 2));
 		}
 
 		string vs_id = "StaticMeshVS.cso";
@@ -238,8 +347,8 @@ namespace reality
 
 			DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &index_buffer);
 
-			aabb.min = { -static_cast<float>(x) / 2, static_cast<float>(y), -static_cast<float>(z) / 2, 0 };
-			aabb.min = { static_cast<float>(x) / 2, -static_cast<float>(y), static_cast<float>(z) / 2, 0 };
+			aabb.min = { -static_cast<float>(x) / 2, static_cast<float>(y), -static_cast<float>(z) / 2 };
+			aabb.min = { static_cast<float>(x) / 2, -static_cast<float>(y), static_cast<float>(z) / 2 };
 		}
 	};
 
@@ -441,27 +550,20 @@ namespace reality
 		map<string, shared_ptr<UIBase>> ui_list;
 	};
 
-	struct C_BaseLight : public C_Transform
+	// Light
+	struct C_PointLight : public C_Transform
 	{
 		float		timer;
 		float		lifetime;
-
-		XMFLOAT4	light_color;
-		XMFLOAT3	position;
-		float		range;
-		XMFLOAT3	attenuation;
-		XMFLOAT3	attenuation_level;
-		float		specular;
+		string		point_light_id;
+		PointLight	point_light;
 	};
 
-	// Light
-	struct C_PointLight : public C_BaseLight
+	struct C_SpotLight : public C_Transform
 	{
-	};
-
-	struct C_SpotLight : public C_BaseLight
-	{
-		XMFLOAT3	direction;
-		float		spot;
+		float		timer;
+		float		lifetime;
+		string		spot_light_id;
+		SpotLight	spot_light;
 	};
 }

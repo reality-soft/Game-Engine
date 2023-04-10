@@ -1,5 +1,6 @@
 #pragma once
 #include "UIBase.h"
+#include "WriteMgr.h"
 
 namespace reality
 {
@@ -7,10 +8,13 @@ namespace reality
 	{
 	private:
 		string		text_;
+		E_Font		font_;
 		float		size_;
 		XMFLOAT4	color_;
 	public:
-		void InitText(string text, XMFLOAT2 pos = {0.0f, 0.0f}, float size = 1.0f, XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
+		void InitText(string text, E_Font font, XMFLOAT2 pos = {0.0f, 0.0f}, float size = 1.0f, XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
+		void SetText(string text);
+		void SetFont(E_Font font);
 	private:
 		virtual void RenderThisUI() override;
 	};

@@ -18,6 +18,7 @@ namespace reality
 		void Render();
 		void Destroy();
 
+		void SetShadowMap(ID3D11ShaderResourceView* shadow_map, CbShadowMap* cb_shaodow);
 		void RenderCollisionMesh();
 		StaticMesh* GetLevelMesh();
 	public:
@@ -40,7 +41,6 @@ namespace reality
 		map<string, shared_ptr<Material>> mesh_material_map;
 		vector<GuideLine> guide_lines;
 		bool view_collision = true;
-
 	};
 }
 

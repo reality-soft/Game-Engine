@@ -65,3 +65,11 @@ type& operator=(const type&) = delete;
 
 #define RGB_TO_FLOAT(r, g, b) XMFLOAT4(r / 256.f, g / 256.f, b / 256.f, 1.f)
 #define RGBA_TO_FLOAT(r, g, b, a) XMFLOAT4(r / 256.f, g / 256.f, b / 256.f, a / 256.f)
+
+#define _XMFLOAT4(xmvector) (DirectX::XMFLOAT4(xmvector.m128_f32))
+#define _XMFLOAT3(xmvector) (DirectX::XMFLOAT3(xmvector.m128_f32))
+#define _XMFLOAT2(xmvector) (DirectX::XMFLOAT2(xmvector.m128_f32))
+							
+#define _XMVECTOR4(xmfloat) (DirectX::XMLoadFloat4(&xmfloat))
+#define _XMVECTOR3(xmfloat) (DirectX::XMLoadFloat3(&xmfloat))
+#define _XMVECTOR2(xmfloat) (DirectX::XMLoadFloat2(&xmfloat))

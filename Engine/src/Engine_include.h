@@ -12,6 +12,7 @@
 #include "AI/BehaviorTree.h"
 #include "AI/BehaviorTreeNodes.h"
 
+#include "Systems/AnimationSystem.h"
 #include "Systems/RenderSystem.h"
 #include "Systems/CameraSystem.h"
 #include "Systems/SoundSystem.h"
@@ -28,8 +29,6 @@
 #include "Actors/FX_BaseEffectActor.h"
 #include "Actors/UIActor.h"
 #include "Actors/StaticObject.h"
-#include "Actors/PointLightActor.h"
-#include "Actors/SpotLightActor.h"
 
 #include "World/Level.h"
 #include "World/Environment.h"
