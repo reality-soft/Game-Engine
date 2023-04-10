@@ -135,8 +135,6 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	//casted_nodes_.clear();
 	//NodeCasting(applied_camera->CreateFrontRay(), root_node_);
 	//ray_casted_nodes = casted_nodes_.size();
-	map<C_CapsuleCollision*, vector<SpaceNode*>> capsule_nodes;
-	UpdatePhysics();
 
 	//player_capsule_pos = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())->capsule.base;
 }
@@ -152,7 +150,7 @@ void reality::QuadTreeMgr::Release()
 	leaf_nodes_.clear();
 }
 
-void reality::QuadTreeMgr::UpdatePhysics()
+void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 {
 	UINT capsule_index = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
@@ -176,17 +174,15 @@ void reality::QuadTreeMgr::UpdatePhysics()
 		capsule_stbuffer.elements[capsule_index].radius = dynamic_capsule.second->capsule.radius;
 		capsule_stbuffer.elements[capsule_index].entity = (int)dynamic_capsule.first;
 
-		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
-
 		//CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
 		//CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
 
 		//nodes.clear();
 		capsule_index++;
 	}
-	int b = 0;
 
-	RunPhysicsCS("CollisionDetectCS.cso");
+	DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
+	RunPhysicsCS(cs_id);
 	MovementByPhysicsCS();
 }
 
@@ -219,18 +215,18 @@ void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule
 		calculating_triagnles = cal;
 	}
 
-	if (floor_list.empty())
-	{
-		SCENE_MGR->GetActor<Character>(ent)->GravityFall(9.81f);
-		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::GRAVITY_FALL;
-		SCENE_MGR->GetActor<Character>(ent)->floor_height = capsule.base.y;
-	}
-	else
-	{
-		SCENE_MGR->GetActor<Character>(ent)->GetMovementComponent()->gravity = 0.0f;
-		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::STAND_ON_FLOOR;
-		SCENE_MGR->GetActor<Character>(ent)->floor_height = floor_list.rbegin()->first;
-	}
+	//if (floor_list.empty())
+	//{
+	//	SCENE_MGR->GetActor<Character>(ent)->GravityFall(9.81f);
+	//	SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::GRAVITY_FALL;
+	//	SCENE_MGR->GetActor<Character>(ent)->floor_height = capsule.base.y;
+	//}
+	//else
+	//{
+	//	SCENE_MGR->GetActor<Character>(ent)->GetMovementComponent()->gravity = 0.0f;
+	//	SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::STAND_ON_FLOOR;
+	//	SCENE_MGR->GetActor<Character>(ent)->floor_height = floor_list.rbegin()->first;
+	//}
 
 	if (wall_list.size() > 0)
 	{
@@ -507,7 +503,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 		if (character == nullptr)
 			break;
 
-		character->floor_height = result.floor_position.y;
+		character->floor_position = result.floor_position;
 
 		if (result.collide_type != 0)
 		{
@@ -520,7 +516,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 			}
 			if (result.collide_type == 2)
 			{
-
+				
 			}
 
 
@@ -530,7 +526,6 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 		{
 			character->GravityFall(9.81f);
 			character->movement_state_ = MovementState::GRAVITY_FALL;
-			character->floor_height = result.floor_position.y;
 		}
 
 		//if (result.is_wall_collide)

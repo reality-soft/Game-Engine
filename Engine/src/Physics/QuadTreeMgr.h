@@ -41,6 +41,7 @@ namespace reality {
 	public:
 		void Init(StaticMeshLevel* level_to_devide, int max_depth, entt::registry& reg);
 		void Frame(CameraSystem* applied_camera);
+		void UpdatePhysics(string cs_id);
 		void Release();
 	public:
 		void UpdateCapsules();
@@ -67,7 +68,6 @@ namespace reality {
 		vector<RayShape> blocking_lines;
 
 	private:
-		void UpdatePhysics();
 		void CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes);
 		void CheckBlockingLine(entt::entity ent, CapsuleShape& capsule);
 
