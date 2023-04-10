@@ -35,7 +35,7 @@ namespace reality
 	public:
 		struct Data
 		{
-			UINT index;
+			UINT including_node;
 			XMFLOAT3 normal;
 			XMFLOAT3 vertex0, vertex1, vertex2;
 		};
@@ -54,6 +54,7 @@ namespace reality
 			XMFLOAT3 point_a;
 			XMFLOAT3 point_b;
 			int entity;
+			int node_numbers[4];
 		};
 
 	public:
