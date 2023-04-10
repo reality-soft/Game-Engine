@@ -5,19 +5,25 @@
 
 void reality::AnimationBase::AnimationUpdate()
 {
-	if (is_valid_ == false) {
+	OnUpdate();
+
+	animation_.cur_animation_time_ += TM_DELTATIME;
+
+	if (cur_anim_state_ == ANIM_STATE::ANIM_STATE_NONE||
+		cur_anim_state_ == ANIM_STATE::ANIM_STATE_PREV_ONLY) {
 		return;
 	}
 	animation_.cur_frame_ += 60.0f / TM_FPS;
-	animation_.cur_animation_time_ += TM_DELTATIME;
-
-	OnUpdate();
 
 	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
 	if (animation_.cur_frame_ >= anim_resource->end_frame) {
+		animation_ended_ = true;
 		animation_.cur_frame_ = anim_resource->start_frame;
-		animation_.blend_time_ = 0;
 	}
+
+	OnUpdate();
+
+	animation_ended_ = false;
 }
 string reality::AnimationBase::GetCurAnimationId()
 {
@@ -47,34 +53,41 @@ float reality::AnimationBase::GetBlendTime()
 	return animation_.blend_time_;
 }
 
-bool reality::AnimationBase::IsValid()
+reality::ANIM_STATE reality::AnimationBase::GetCurAnimState()
 {
-	return is_valid_;
+	return cur_anim_state_;
 }
 
 void reality::AnimationBase::SetAnimation(string animation_id, float blend_time)
 {
 	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_id);
-	
-	if (anim_resource == nullptr) {
-		is_valid_ = false;
-		return;
-	}
+	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
+
 
 	string prev_animation_id = animation_.cur_anim_id_;
 	float prev_anim_last_frame = animation_.cur_frame_;
-	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(prev_animation_id);
+
 
 	animation_.cur_anim_id_ = animation_id;
-	animation_.cur_frame_ = anim_resource->start_frame;
-	animation_.cur_animation_time_ = 0.0f;
-	is_valid_ = true;
-
-	if (prev_anim_resource == nullptr) {
-		return;
+	if (anim_resource != nullptr) {
+		animation_.cur_frame_ = anim_resource->start_frame;
 	}
+	animation_.cur_animation_time_ = 0.0f;
 
 	animation_.prev_anim_id_ = prev_animation_id;
 	animation_.prev_anim_last_frame_ = prev_anim_last_frame;
 	animation_.blend_time_ = blend_time;
+
+	if (prev_anim_resource == nullptr && anim_resource == nullptr) {
+		cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
+	}
+	else if (prev_anim_resource == nullptr) {
+		cur_anim_state_ = ANIM_STATE::ANIM_STATE_CUR_ONLY;
+	}
+	else if (anim_resource == nullptr) {
+		cur_anim_state_ = ANIM_STATE::ANIM_STATE_PREV_ONLY;
+	}
+	else {
+		cur_anim_state_ = ANIM_STATE::ANIM_STATE_CUR_PREV;
+	}
 }

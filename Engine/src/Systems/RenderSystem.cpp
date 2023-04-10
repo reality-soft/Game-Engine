@@ -104,76 +104,117 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 {
 	ZeroMemory(cb_skeletal_mesh.data.slot_weights, sizeof(cb_skeletal_mesh.data.slot_weights));
 
-	const AnimSlot& base_anim_slot = animation_component.anim_slots[0].second;
-
-	if (base_anim_slot.IsValid() == false) {
-		return;
-	}
-
-	OutAnimData* res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
-
-	for (auto bp : skeleton.bind_pose_matrices)
+	for (const auto& bp : skeleton.bind_pose_matrices)
 	{
 		cb_skeletal_mesh.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
-		float cur_frame = base_anim_slot.anim_object_->GetCurFrame();
-		cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_animation->animations.find(bp.first)->second[cur_frame]);
 	}
 
-	OutAnimData* res_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());
-	if (base_anim_slot.anim_object_->GetBlendTime() > 0.0f) {
-		cb_skeletal_mesh.data.base_time_weight = min(1.0f, base_anim_slot.anim_object_->GetCurAnimTime() / base_anim_slot.anim_object_->GetBlendTime());
-	}
-	else {
-		cb_skeletal_mesh.data.base_time_weight = 1.0f;
-	}
-	if (res_prev_animation != nullptr) {
-		for (auto bp : skeleton.bind_pose_matrices)
+	const AnimSlot& base_anim_slot = animation_component.anim_slots[0].second;
+	ANIM_STATE base_anim_slot_state = base_anim_slot.GetCurAnimState();
+
+	float base_time_weight = min(1.0f, base_anim_slot.anim_object_->GetCurAnimTime() / base_anim_slot.anim_object_->GetBlendTime());
+
+	XMMATRIX base_cur_animation = XMMatrixIdentity();
+	XMMATRIX base_prev_animation = XMMatrixIdentity();
+	XMMATRIX base_animation = XMMatrixIdentity();
+
+	OutAnimData* res_base_animation = nullptr;
+	OutAnimData* res_base_prev_animation = nullptr;
+
+	float base_cur_frame = base_anim_slot.anim_object_->GetCurFrame();
+	float base_prev_last_frame = base_anim_slot.anim_object_->GetPrevAnimLastFrame();
+	switch (base_anim_slot_state) {
+	case ANIM_STATE::ANIM_STATE_NONE:
+		for (const auto& bp : skeleton.bind_pose_matrices)
 		{
-			int prev_anim_last_frame = base_anim_slot.anim_object_->GetPrevAnimLastFrame();
-			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixTranspose(res_prev_animation->animations.find(bp.first)->second[prev_anim_last_frame]);
+			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixIdentity();
+			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixIdentity();
 		}
+		return;
+	case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+		res_base_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+		for (const auto& bp : skeleton.bind_pose_matrices)
+		{
+			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+		}
+		break;
+	case ANIM_STATE::ANIM_STATE_CUR_PREV:
+		res_base_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());
+		res_base_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+
+		for (const auto& bp : skeleton.bind_pose_matrices)
+		{
+			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_prev_animation->animations[bp.first][base_prev_last_frame]);
+			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+		}
+		break;
 	}
+
+	cb_skeletal_mesh.data.base_time_weight = base_time_weight;
 
 	int i = animation_component.anim_slots.size() - 1;
 
 	for (i;i >= 1;i--) {
 		AnimSlot& anim_slot = animation_component.anim_slots[i].second;
-		if (anim_slot.IsValid() == false) {
+		ANIM_STATE slot_anim_state = anim_slot.GetCurAnimState();
+
+		float slot_time_weight = min(1.0f, anim_slot.anim_object_->GetCurAnimTime() / anim_slot.anim_object_->GetBlendTime());
+
+		XMMATRIX slot_cur_animation = XMMatrixIdentity();
+		XMMATRIX slot_prev_animation = XMMatrixIdentity();
+		XMMATRIX slot_animation = XMMatrixIdentity();
+
+		OutAnimData* res_slot_animation = nullptr;
+		OutAnimData* res_slot_prev_animation = nullptr;
+
+		float slot_cur_frame = anim_slot.anim_object_->GetCurFrame();
+		float slot_prev_last_frame = anim_slot.anim_object_->GetPrevAnimLastFrame();
+		switch (slot_anim_state) {
+		case ANIM_STATE::ANIM_STATE_NONE:
 			continue;
-		}
+		case ANIM_STATE::ANIM_STATE_PREV_ONLY:
+			res_slot_prev_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+			for (const auto& cur_pair : anim_slot.included_skeletons_) {
+				int depth = cur_pair.first;
 
-		OutAnimData* res_slot_anim = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+				for (const auto& bone_id : cur_pair.second) {
+					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
+					cb_skeletal_mesh.data.slot_animation[bone_id] = cb_skeletal_mesh.data.animation[bone_id];
 
-		for (auto bp : skeleton.bind_pose_matrices)
-		{
-			int cur_frame = anim_slot.anim_object_->GetCurFrame();
-			cb_skeletal_mesh.data.slot_animation[bp.first] = XMMatrixTranspose(res_slot_anim->animations.find(bp.first)->second[cur_frame]);
-		}
+					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+				}
+			}
+			break;
+		case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+			res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+			for (const auto& cur_pair : anim_slot.included_skeletons_) {
+				int depth = cur_pair.first;
 
-		OutAnimData* res_prev_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
-		if (anim_slot.anim_object_->GetBlendTime() > 0.0f) {
-			cb_skeletal_mesh.data.slot_time_weight = min(1.0f, anim_slot.anim_object_->GetCurAnimTime() / anim_slot.anim_object_->GetBlendTime());
-		}
-		else {
-			cb_skeletal_mesh.data.slot_time_weight = 1.0f;
-		}
-		if (res_prev_slot_animation != nullptr) {
-			for (auto bp : skeleton.bind_pose_matrices)
-			{
-				int prev_slot_anim_last_frame = anim_slot.anim_object_->GetPrevAnimLastFrame();
-				cb_skeletal_mesh.data.prev_slot_animation[bp.first] = XMMatrixTranspose(res_prev_slot_animation->animations.find(bp.first)->second[prev_slot_anim_last_frame]);
+				for (const auto& bone_id : cur_pair.second) {
+					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = cb_skeletal_mesh.data.prev_animation[bone_id];
+					cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
+
+					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+				}
+			}
+			break;
+		case ANIM_STATE::ANIM_STATE_CUR_PREV:
+			res_slot_prev_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+			res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+			for (const auto& cur_pair : anim_slot.included_skeletons_) {
+				int depth = cur_pair.first;
+
+				for (const auto& bone_id : cur_pair.second) {
+					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
+					cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
+
+					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+				}
 			}
 		}
 
-		for (const auto& cur_pair : anim_slot.included_skeletons_) {
-			int depth = cur_pair.first;
-
-			for (const auto& bone_id : cur_pair.second) {
-				cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_anim->animations.find(bone_id)->second[anim_slot.anim_object_->GetCurFrame()]);
-
-				cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
-			}
-		}
+		cb_skeletal_mesh.data.slot_time_weight = slot_time_weight;
 		break;
 	}
 }

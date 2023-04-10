@@ -13,8 +13,8 @@ namespace reality {
 		void OnUpdate() const {
 			anim_object_->AnimationUpdate();
 		};
-		bool IsValid() const {
-			return anim_object_->IsValid();
+		ANIM_STATE GetCurAnimState() const {
+			return anim_object_->GetCurAnimState();
 		}
 	};
 }

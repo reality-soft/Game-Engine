@@ -1,5 +1,5 @@
 #pragma once
-#include "Animation.h"
+#include "AnimationBase.h"
 
 namespace reality {
     class DLL_API AnimationState
@@ -11,9 +11,9 @@ namespace reality {
         AnimationState(int id) : id_(id) {};
 
     public:
-        virtual void Enter(Animation& animation) {}
-        virtual void Exit(Animation& animation) {}
-        virtual void OnUpdate(Animation& animation) {}
+        virtual void Enter(AnimationBase* animation) {}
+        virtual void Exit(AnimationBase* animation) {}
+        virtual void OnUpdate(AnimationBase* animation) {}
 
     public:
         int GetId() {
