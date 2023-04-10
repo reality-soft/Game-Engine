@@ -98,9 +98,21 @@ void UI_Listbox::Update()
 }
 
 
-string UI_Listbox::GetItem()
+string UI_Listbox::GetCurrentItem()
 {
 	return item_list_[selected_item_num_];
+}
+int UI_Listbox::GetCurrentIndex()
+{
+	return selected_item_num_;
+}
+string UI_Listbox::GetItem(int index)
+{
+	return item_list_[index];
+}
+string UI_Listbox::GetItem(string value)
+{
+	return *find(item_list_.begin(), item_list_.end(), value);
 }
 void UI_Listbox::SetItemSelected(int index)
 {

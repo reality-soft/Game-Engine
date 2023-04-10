@@ -41,7 +41,10 @@ namespace reality
 		virtual void Update() override;
 	public:
 		void	AddItem(string value);
-		string	GetItem();
+		string	GetCurrentItem();
+		int		GetCurrentIndex();
+		string	GetItem(int index);
+		string	GetItem(string value);
 		void	SetItemSelected(int index);
 		void	SetItemSelected(string value);
 	private:
