@@ -126,7 +126,7 @@ HRESULT RenderTarget::CreateRenderTargetView()
 		return hr;
 	if (FAILED(hr = DX11APP->GetDevice()->CreateShaderResourceView(render_target_view_texture_.Get(), NULL, render_target_view_srv_.GetAddressOf())))
 		return hr;
-	if (FAILED(hr = DX11APP->GetDevice()->CreateRenderTargetView(render_target_view_texture_.Get(), NULL, &render_target_view_)))
+	if (FAILED(hr = DX11APP->GetDevice()->CreateRenderTargetView(render_target_view_texture_.Get(), NULL, render_target_view_.GetAddressOf())))
 		return hr;
 
 	return hr;
@@ -147,7 +147,7 @@ HRESULT RenderTarget::CreateDepthStencilView()
 
 	dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsv_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	if (FAILED(hr = DX11APP->GetDevice()->CreateDepthStencilView(depth_stencil_view_texture_.Get(), &dsv_desc, &depth_stencil_view_)))
+	if (FAILED(hr = DX11APP->GetDevice()->CreateDepthStencilView(depth_stencil_view_texture_.Get(), &dsv_desc, depth_stencil_view_.GetAddressOf())))
 		return hr;
 
 	ZeroMemory(&srv_desc_, sizeof(srv_desc_));
@@ -168,9 +168,9 @@ bool RenderTarget::SetRenderTarget()
 	ID3D11RenderTargetView* pNullRTV = NULL;
 	ID3D11DepthStencilView* pNullDSV = NULL;
 	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &pNullRTV, pNullDSV);
-	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, &render_target_view_, depth_stencil_view_);
-	DX11APP->GetDeviceContext()->ClearRenderTargetView(render_target_view_, (FLOAT*)&clear_color_);
-	DX11APP->GetDeviceContext()->ClearDepthStencilView(depth_stencil_view_, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	DX11APP->GetDeviceContext()->OMSetRenderTargets(1, render_target_view_.GetAddressOf(), depth_stencil_view_.Get());
+	DX11APP->GetDeviceContext()->ClearRenderTargetView(render_target_view_.Get(), (FLOAT*)&clear_color_);
+	DX11APP->GetDeviceContext()->ClearDepthStencilView(depth_stencil_view_.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	DX11APP->GetDeviceContext()->RSSetViewports(1, &view_port_);
 
 	return false;
@@ -217,6 +217,30 @@ void RenderTarget::RenderingRT()
 	DX11APP->GetDeviceContext()->DrawIndexed(render_data_.index_list.size(), 0, 0);
 }
 
+void RenderTarget::Resize(float width, float height)
+{
+	// Release Original RenderTarget
+	render_target_view_.ReleaseAndGetAddressOf();
+	depth_stencil_view_.ReleaseAndGetAddressOf();
+	render_target_view_texture_.ReleaseAndGetAddressOf();
+	depth_stencil_view_texture_.ReleaseAndGetAddressOf();
+	render_target_view_srv_.ReleaseAndGetAddressOf();
+	depth_stencil_view_srv_.ReleaseAndGetAddressOf();
+
+	HRESULT hr;
+
+	width_ = width;
+	height_ = height;
+
+	SetViewPort();
+
+	if (FAILED(hr = CreateRenderTargetView()))
+		return;
+
+	if (FAILED(hr = CreateDepthStencilView()))
+		return;
+}
+
 
 void RenderTargetMgr::Init()
 {
@@ -255,3 +279,4 @@ void RenderTargetMgr::DeletingRT()
 void RenderTargetMgr::ResettingRT()
 {
 }
+

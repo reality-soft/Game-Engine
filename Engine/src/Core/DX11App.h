@@ -54,7 +54,6 @@ private:
     DirectX::CommonStates*         dx_states;
 
     D3D11_VIEWPORT                 view_port;
-
 };
 
 
