@@ -51,8 +51,6 @@ void UISystem::OnUpdate(entt::registry& reg)
 			if (!pair.second->GetOnOff())
 				continue;
 			pair.second->Update();
-			if (&reg != &SCENE_MGR->GetRegistry())
-				return;
 		}
 
 		for (auto& pair : ui_comp.ui_list)
