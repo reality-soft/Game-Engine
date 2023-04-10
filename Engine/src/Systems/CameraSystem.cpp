@@ -257,7 +257,7 @@ void CameraSystem::CreateMatrix()
 
 	cb_camera_info.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_camera_info.data.projection_matrix = XMMatrixTranspose(projection_matrix);
-	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(camera->camera_pos));
+	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(cb_camera_info.data.camera_position));
 	cb_camera_info.data.camera_position = XMMatrixInverse(nullptr, this->view_matrix).r[3];
 	cb_camera_info.data.camera_position.m128_f32[3] = camera->far_z;
 	cb_camera_info.data.camera_look = XMVector3Normalize(XMMatrixInverse(nullptr, this->view_matrix).r[2]);

@@ -97,7 +97,7 @@ namespace reality
 			target_height = capsule_collision.capsule.GetTipBaseAB()[0].m128_f32[1];
 			pitch_yaw = { 0, 0};
 			near_z = 1.f;
-			far_z = 100000.f;
+			far_z = 6000.f;
 			fov = XMConvertToRadians(90);
 			tag = "Player";
 		}
