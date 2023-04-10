@@ -86,7 +86,7 @@ void reality::SbTriangleCollision::SetElementArraySize(UINT size)
 
 	for (auto& e : elements)
 	{
-		e.index = 0;
+		e.including_node = 0;
 		e.normal = { 0, 0, 0 };
 		e.vertex0 = { 0, 0, 0 };
 		e.vertex1 = { 0, 0, 0 };

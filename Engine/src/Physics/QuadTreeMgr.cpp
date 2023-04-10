@@ -6,13 +6,13 @@
 
 using namespace reality;
 
-reality::SpaceNode::SpaceNode(UINT num, UINT depth)
+reality::PhysicsNode::PhysicsNode(UINT num, UINT depth)
 {
 	node_num = num;
 	node_depth = depth;
 }
 
-reality::SpaceNode::~SpaceNode()
+reality::PhysicsNode::~PhysicsNode()
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -24,12 +24,38 @@ reality::SpaceNode::~SpaceNode()
 	}
 }
 
-void reality::SpaceNode::SetNode(float min_x, float min_z, float max_x, float max_z)
+void reality::PhysicsNode::SetNode(float min_x, float min_z, float max_x, float max_z)
 {
 	XMFLOAT3 min = XMFLOAT3(min_x, MIN_HEIGHT, min_z);
 	XMFLOAT3 max = XMFLOAT3(max_x, MAX_HEIGHT, max_z);
 	area = AABBShape(min, max);
 }
+
+reality::MeshNode::MeshNode(UINT num, UINT depth)
+{
+	node_num = num;
+	node_depth = depth;
+}
+
+reality::MeshNode::~MeshNode()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (child_node_[i])
+		{
+			delete child_node_[i];
+			child_node_[i] = nullptr;
+		}
+	}
+}
+
+void reality::MeshNode::SetNode(float min_x, float min_z, float max_x, float max_z)
+{
+	XMFLOAT3 min = XMFLOAT3(min_x, MIN_HEIGHT, min_z);
+	XMFLOAT3 max = XMFLOAT3(max_x, MAX_HEIGHT, max_z);
+	area = AABBShape(min, max);
+}
+
 
 void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth, entt::registry& reg)
 {
@@ -49,7 +75,7 @@ void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth,
 		max_z = max(max_z, tri.vertex0.z);
 	}
 	this->max_depth = max_depth;
-	root_node_ = BuildTree(0, min_x, min_z, max_x, max_z);
+	root_physics_node_ = BuildPhysicsTree(0, min_x, min_z, max_x, max_z);
 
 	// set blocking field
 	for (auto& guide_line : deviding_level_->GetGuideLines(GuideLine::GuideType::eBlocking))
@@ -79,21 +105,44 @@ void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth,
 	}
 
 	CreatePhysicsCS();
+
+	// generate level mesh to triangles
+	auto level_mesh = deviding_level_->GetLevelMesh();
+	for (auto& mesh : level_mesh->meshes)
+	{
+		UINT num_triangle = mesh.vertices.size() / 3;
+		UINT index = 0;
+		for (UINT t = 0; t < num_triangle; t++)
+		{
+			array<Vertex, 3> triangle_mesh;
+			triangle_mesh[0] = mesh.vertices[index + 0];
+			triangle_mesh[1] = mesh.vertices[index + 1];
+			triangle_mesh[2] = mesh.vertices[index + 2];
+
+			level_triangle_meshes_.insert(make_pair(true, triangle_mesh));
+			index += 3;
+		}
+	}
+	min_x = -10000;
+	min_z = -10000;
+	max_x = 10000;
+	max_z = 10000;
+	root_mesh_node_ = BuildMeshTree(0, min_x, min_z, max_x, max_z);
 } 
 
-SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
+PhysicsNode* reality::QuadTreeMgr::BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
 {
-	SpaceNode* new_node = new SpaceNode(node_count++, depth);
+	PhysicsNode* new_node = new PhysicsNode(node_count++, depth);
 
 	new_node->SetNode(min_x, min_z, max_x, max_z);
-	total_nodes_.insert(make_pair(new_node->node_num, new_node));
+	total_physics_nodes_.insert(make_pair(new_node->node_num, new_node));
 
 	if (new_node->node_depth == max_depth)
 	{
 		new_node->is_leaf = true;
 		SetStaticTriangles(new_node);
 		if (new_node->static_triangles.size() > 0)
-			leaf_nodes_.insert(make_pair(new_node->node_num, new_node));
+			leaf_physics_nodes_.insert(make_pair(new_node->node_num, new_node));
 	}
 
 	if (depth < max_depth)
@@ -101,29 +150,85 @@ SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z,
 		float row_mid = (min_x + max_x) / 2;
 		float col_mid = (min_z + max_z) / 2;
 
-		new_node->child_node_[0] = BuildTree(depth + 1, min_x, min_z,	row_mid, col_mid);
+		new_node->child_node_[0] = BuildPhysicsTree(depth + 1, min_x, min_z,	row_mid, col_mid);
 		new_node->child_node_[0]->parent_node = new_node;
 
-		new_node->child_node_[1] = BuildTree(depth + 1, row_mid, min_z, max_x,    col_mid);
+		new_node->child_node_[1] = BuildPhysicsTree(depth + 1, row_mid, min_z, max_x,    col_mid);
 		new_node->child_node_[1]->parent_node = new_node;
 
-		new_node->child_node_[2] = BuildTree(depth + 1, min_x,    col_mid, row_mid, max_z);
+		new_node->child_node_[2] = BuildPhysicsTree(depth + 1, min_x,    col_mid, row_mid, max_z);
 		new_node->child_node_[2]->parent_node = new_node;
 
-		new_node->child_node_[3] = BuildTree(depth + 1, row_mid, col_mid, max_x, max_z);
+		new_node->child_node_[3] = BuildPhysicsTree(depth + 1, row_mid, col_mid, max_x, max_z);
 		new_node->child_node_[3]->parent_node = new_node;
 	}
 
 	return new_node;
 }
 
-void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
+void reality::QuadTreeMgr::SetStaticTriangles(PhysicsNode* node)
 {
 	for (auto& tri : deviding_level_->level_triangles)
 	{
 		CollideType result = AABBToTriagnle(node->area, tri);
 		if (result != CollideType::OUTSIDE)
+		{
 			node->static_triangles.push_back(tri);
+		}
+	}
+}
+
+MeshNode* reality::QuadTreeMgr::BuildMeshTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
+{
+	MeshNode* new_node = new MeshNode(node_count++, depth);
+
+	new_node->SetNode(min_x, min_z, max_x, max_z);
+	total_mesh_nodes_.insert(make_pair(new_node->node_num, new_node));
+
+	if (new_node->node_depth == max_depth)
+	{
+		new_node->is_leaf = true;
+		SetMeshes(new_node);
+		leaf_mesh_nodes_.insert(make_pair(new_node->node_num, new_node));
+	}
+
+	if (depth < max_depth)
+	{
+		float row_mid = (min_x + max_x) / 2;
+		float col_mid = (min_z + max_z) / 2;
+
+		new_node->child_node_[0] = BuildMeshTree(depth + 1, min_x, min_z, row_mid, col_mid);
+		new_node->child_node_[0]->parent_node = new_node;
+
+		new_node->child_node_[1] = BuildMeshTree(depth + 1, row_mid, min_z, max_x, col_mid);
+		new_node->child_node_[1]->parent_node = new_node;
+
+		new_node->child_node_[2] = BuildMeshTree(depth + 1, min_x, col_mid, row_mid, max_z);
+		new_node->child_node_[2]->parent_node = new_node;
+
+		new_node->child_node_[3] = BuildMeshTree(depth + 1, row_mid, col_mid, max_x, max_z);
+		new_node->child_node_[3]->parent_node = new_node;
+	}
+
+	return new_node;
+}
+
+void reality::QuadTreeMgr::SetMeshes(MeshNode* node)
+{
+	for (auto& tri_mesh : level_triangle_meshes_)
+	{
+		TriangleShape mesh_shape(tri_mesh.second[0].p, tri_mesh.second[1].p, tri_mesh.second[2].p);
+		auto result = AABBToTriagnle(node->area, mesh_shape);
+		if (tri_mesh.first == true && result != CollideType::OUTSIDE)
+		{
+			SingleMesh<Vertex> single_mesh_in_node;
+			single_mesh_in_node.vertices.push_back(tri_mesh.second[0]);
+			single_mesh_in_node.vertices.push_back(tri_mesh.second[1]);
+			single_mesh_in_node.vertices.push_back(tri_mesh.second[2]);
+
+			//single_mesh_in_node.mesh_name = tri_mesh.second;
+
+		}
 	}
 }
 
@@ -131,23 +236,17 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
 	camera_frustum_ = Frustum(applied_camera->GetViewProj());
 	UpdateCapsules();
-
-	//casted_nodes_.clear();
-	//NodeCasting(applied_camera->CreateFrontRay(), root_node_);
-	//ray_casted_nodes = casted_nodes_.size();
-
-	//player_capsule_pos = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())->capsule.base;
 }
 
 void reality::QuadTreeMgr::Release()
 {
-	if (root_node_)
+	if (root_physics_node_)
 	{
-		delete root_node_;
-		root_node_ = nullptr;
+		delete root_physics_node_;
+		root_physics_node_ = nullptr;
 	}
-	total_nodes_.clear();
-	leaf_nodes_.clear();
+	total_physics_nodes_.clear();
+	leaf_physics_nodes_.clear();
 }
 
 void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
@@ -155,18 +254,14 @@ void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 	UINT capsule_index = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
-		//vector<SpaceNode*> nodes;
-		//auto query_start_node = total_nodes_.at(dynamic_capsule.second->enclosed_node_index);
-		//query_start_node = ParentNodeQuery(dynamic_capsule.second, query_start_node);
+		PhysicsNode* query_start = total_physics_nodes_.find(dynamic_capsule.second->enclosed_node_index)->second;
+		query_start = ParentNodeQuery(dynamic_capsule.second, query_start);
 
-		//if (LeafNodeQuery(dynamic_capsule.second, query_start_node, nodes) == false)
-		//{
-		//	SCENE_MGR->DestroyActor(dynamic_capsule.first);
-		//	break;
-		//}
+		vector<PhysicsNode*> queried_nodes;
+		LeafNodeQuery(dynamic_capsule.second, query_start, queried_nodes);
 
-		//if (nodes.empty())
-		//	break;
+		if (queried_nodes.empty())
+			continue;
 
 		auto capsule_info = dynamic_capsule.second->capsule.GetTipBaseAB();
 		capsule_stbuffer.elements[capsule_index].point_a = _XMFLOAT3(capsule_info[2]);
@@ -174,10 +269,16 @@ void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 		capsule_stbuffer.elements[capsule_index].radius = dynamic_capsule.second->capsule.radius;
 		capsule_stbuffer.elements[capsule_index].entity = (int)dynamic_capsule.first;
 
-		//CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
-		//CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
+		for (int i = 0; i < 4; ++i)
+		{
+			if (i >= queried_nodes.size())
+				capsule_stbuffer.elements[capsule_index].node_numbers[i] = 0;
 
-		//nodes.clear();
+			else
+				capsule_stbuffer.elements[capsule_index].node_numbers[i] = queried_nodes[i]->node_num;
+		}
+
+
 		capsule_index++;
 	}
 
@@ -186,92 +287,7 @@ void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 	MovementByPhysicsCS();
 }
 
-void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes)
-{
-	map<float, CapsuleCallback> floor_list;
-	vector<RayShape> wall_list;
-
-	int cal = 0;
-	for (auto node : nodes)
-	{
-		including_nodes_num.insert(node->node_num);
-		for (auto& tri : node->static_triangles)
-		{
-			auto result = CapsuleToTriangleEx(capsule, tri);
-			if (result.reaction == CapsuleCallback::FLOOR)
-				floor_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));
-			if (result.reaction == CapsuleCallback::WALL)
-				wall_list.push_back(RayShape(tri.GetMinXZ(), tri.GetMaxXZ()));
-			
-			if (ent == SCENE_MGR->GetPlayer<Character>(0)->entity_id_)
-			{
-				cal++;
-			}
-		}
-	}
-
-	if (ent == SCENE_MGR->GetPlayer<Character>(0)->entity_id_)
-	{
-		calculating_triagnles = cal;
-	}
-
-	//if (floor_list.empty())
-	//{
-	//	SCENE_MGR->GetActor<Character>(ent)->GravityFall(9.81f);
-	//	SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::GRAVITY_FALL;
-	//	SCENE_MGR->GetActor<Character>(ent)->floor_height = capsule.base.y;
-	//}
-	//else
-	//{
-	//	SCENE_MGR->GetActor<Character>(ent)->GetMovementComponent()->gravity = 0.0f;
-	//	SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::STAND_ON_FLOOR;
-	//	SCENE_MGR->GetActor<Character>(ent)->floor_height = floor_list.rbegin()->first;
-	//}
-
-	if (wall_list.size() > 0)
-	{
-		SCENE_MGR->GetActor<Character>(ent)->blocking_walls_ = wall_list;
-	}	
-}
-
-void reality::QuadTreeMgr::CheckBlockingLine(entt::entity ent, CapsuleShape& capsule)
-{
-	for (auto& dynamic_capsule : dynamic_capsule_list)
-	{
-		if (dynamic_capsule.second->tag == "Enemy")
-			continue;
-
-		XMFLOAT3 capsule_pos = dynamic_capsule.second->capsule.base;
-		capsule_pos.y = 0.0f;
-
-		for (auto& blocking_line : blocking_lines)
-		{
-			float distance_from_line = XMVectorGetX(XMVector3LinePointDistance(_XMVECTOR3(blocking_line.start), _XMVECTOR3(blocking_line.end), _XMVECTOR3(capsule_pos)));
-
-			if (distance_from_line <= dynamic_capsule.second->capsule.radius)
-			{
-				XMVECTOR OB = blocking_line.GetRayVector();
-				XMVECTOR OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - _XMVECTOR3(blocking_line.start);
-				float dot = XMVectorGetX(XMVector3Dot(OA, OB));
-				if (dot < 0)
-				{
-					OB *= -1.0f;
-					OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - _XMVECTOR3(blocking_line.end);
-				}
-
-				float proj_length = Vector3Length(Vector3Project(OB, OA));
-				float line_length = Vector3Length(OB) + dynamic_capsule.second->capsule.radius;
-
-				if (proj_length <= line_length)
-				{
-					SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->blocking_walls_.push_back(blocking_line);
-				}
-			}
-		}
-	}
-}
-
-void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
+void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, PhysicsNode* node)
 {
 	if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
 		return;
@@ -281,7 +297,7 @@ void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
 		if (node->is_leaf && node->static_triangles.size() > 0)
 		{
 			float dist = Distance(_XMVECTOR3(node->area.center), _XMVECTOR3(ray.start));
-			casted_nodes_.insert(make_pair(dist, node));
+			casted_physics_nodes_.insert(make_pair(dist, node));
 			return;
 		}
 		if (!node->is_leaf)
@@ -294,10 +310,10 @@ void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
 	}
 }
 
-SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node)
+PhysicsNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node)
 {
 	if (node == nullptr)
-		return root_node_;
+		return root_physics_node_;
 
 	auto capsule_shape = c_capsule->capsule;
 	auto result = CapsuleToAABB(node->area, capsule_shape);
@@ -309,12 +325,12 @@ SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, 
 		return ParentNodeQuery(c_capsule, node->parent_node);
 }
 
-bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& node_list)
+bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node, vector<PhysicsNode*>& node_list)
 {
 	auto capsule_shape = c_capsule->capsule;
 	auto result = CapsuleToAABB(node->area, capsule_shape);
 
-	if (node == root_node_ && result != CollideType::INSIDE)
+	if (node == root_physics_node_ && result != CollideType::INSIDE)
 	{
 		return false;
 	}
@@ -362,62 +378,34 @@ void reality::QuadTreeMgr::UpdateCapsules()
 	}
 }
 
-RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
-{
-	map<float, RayCallback> callback_list;
-
-	int cal = 0;
-	for (auto& node : casted_nodes_)
-	{
-		if (node.first > max_distance)
-			break;
-
-		for (auto& tri : node.second->static_triangles)
-		{
-			cal++;
-			const auto& callback = RayToTriangle(ray, tri);
-			if (callback.success)
-			{
-				callback_list.insert(make_pair(callback.distance, callback));
-			}
-		}
-	}
-	cal = 0;
-
-	if (callback_list.begin() == callback_list.end())
-		return RayCallback();
-
-	return callback_list.begin()->second;
-}
-
-pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
-{
-	map<float, RayCallback> callback_list;
-
-	entt::entity selected_entity = entt::null;
-
-	auto level_callback = RaycastAdjustLevel(ray, 15000);
-	for (auto& capsule : dynamic_capsule_list)
-	{
-		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
-			continue;
-
-		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
-		if (capsule_callback.success)
-		{
-			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
-			selected_entity = capsule.first;
-		}
-	}
-
-	if (callback_list.begin() == callback_list.end())
-		return make_pair(RayCallback(), entt::null);
-
-	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
-		return make_pair(RayCallback(), entt::null);
-
-	return make_pair(callback_list.begin()->second, selected_entity);
-}
+//pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
+//{
+//	map<float, RayCallback> callback_list;
+//
+//	entt::entity selected_entity = entt::null;
+//
+//	auto level_callback = RaycastAdjustLevel(ray, 15000);
+//	for (auto& capsule : dynamic_capsule_list)
+//	{
+//		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
+//			continue;
+//
+//		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
+//		if (capsule_callback.success)
+//		{
+//			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
+//			selected_entity = capsule.first;
+//		}
+//	}
+//
+//	if (callback_list.begin() == callback_list.end())
+//		return make_pair(RayCallback(), entt::null);
+//
+//	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
+//		return make_pair(RayCallback(), entt::null);
+//
+//	return make_pair(callback_list.begin()->second, selected_entity);
+//}
 
 void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 {
@@ -428,15 +416,36 @@ void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 
 bool reality::QuadTreeMgr::CreatePhysicsCS()
 {
-	triangle_stbuffer.SetElementArraySize(deviding_level_->level_triangles.size());
-	for (auto& tri : deviding_level_->level_triangles)
+	UINT total_size = 0;
+	for (auto& leaf_node : leaf_physics_nodes_)
 	{
-		triangle_stbuffer.elements[tri.index].index = tri.index;
-		triangle_stbuffer.elements[tri.index].normal = tri.normal;
-		triangle_stbuffer.elements[tri.index].vertex0 = tri.vertex0;
-		triangle_stbuffer.elements[tri.index].vertex1 = tri.vertex1;
-		triangle_stbuffer.elements[tri.index].vertex2 = tri.vertex2;
+		total_size += leaf_node.second->static_triangles.size();
 	}
+
+	triangle_stbuffer.SetElementArraySize(total_size);
+
+	UINT index = 0;
+	for (auto& leaf_node : leaf_physics_nodes_)
+	{
+		for (auto& tri : leaf_node.second->static_triangles)
+		{
+			triangle_stbuffer.elements[index].including_node = leaf_node.second->node_num;
+			triangle_stbuffer.elements[index].normal = tri.normal;
+			triangle_stbuffer.elements[index].vertex0 = tri.vertex0;
+			triangle_stbuffer.elements[index].vertex1 = tri.vertex1;
+			triangle_stbuffer.elements[index].vertex2 = tri.vertex2;
+
+			index++;
+		}		
+	}
+	//for (auto& tri : deviding_level_->level_triangles)
+	//{
+	//	triangle_stbuffer.elements[tri.index].index = tri.index;
+	//	triangle_stbuffer.elements[tri.index].normal = tri.normal;
+	//	triangle_stbuffer.elements[tri.index].vertex0 = tri.vertex0;
+	//	triangle_stbuffer.elements[tri.index].vertex1 = tri.vertex1;
+	//	triangle_stbuffer.elements[tri.index].vertex2 = tri.vertex2;
+	//}
 	if (triangle_stbuffer.Create(triangle_stbuffer.elements.data()) == false)
 		return false;
 
@@ -485,7 +494,6 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 	if (FAILED(hr))
 		return;
 
-	//SbCollisionResult::Data* sum = (SbCollisionResult::Data*)mapped_resource.pData;
 	SbCollisionResult::Data* sum = reinterpret_cast<SbCollisionResult::Data*>(mapped_resource.pData);
 	memcpy(collision_result_pool_.data(), sum, 64 * sizeof(SbCollisionResult::Data));
 	UINT size = 64 * sizeof(SbCollisionResult::Data);
@@ -501,14 +509,12 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 		auto& result = collision_result_pool_[i];
 		auto character = SCENE_MGR->GetActor<Character>((entt::entity)result.entity);
 		if (character == nullptr)
-			break;
+			continue;
 
 		character->floor_position = result.floor_position;
 
 		if (result.collide_type != 0)
 		{
-
-
 			if (result.collide_type == 1)
 			{
 				character->GetMovementComponent()->gravity = 0.0f;
@@ -517,10 +523,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 			if (result.collide_type == 2)
 			{
 				
-			}
-
-
-	
+			}	
 		}
 		else
 		{

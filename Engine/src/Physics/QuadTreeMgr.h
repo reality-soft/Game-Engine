@@ -6,28 +6,43 @@
 
 #define MIN_HEIGHT -10000.f
 #define MAX_HEIGHT  10000.f
-#define TIMESTEP_30FPS 1.0f / 30.0f
-#define TIMESTEP_60FPS 1.0f / 60.0f
 
 namespace reality {
 
-	class DLL_API SpaceNode 
+	class DLL_API PhysicsNode 
 	{
 	public:
-		SpaceNode(UINT num, UINT depth);
-		~SpaceNode();
+		PhysicsNode(UINT num, UINT depth);
+		~PhysicsNode();
 
 	public:
 		void SetNode(float min_x, float min_z, float max_x, float max_z);
 
 	public:
 		bool is_leaf = false;
-		UINT node_num, node_depth;
+		UINT node_num;
+		UINT node_depth;
 		AABBShape area;
-		SpaceNode* child_node_[4] = { 0, };
-		SpaceNode* parent_node = nullptr;
+		PhysicsNode* child_node_[4] = { 0, };
+		PhysicsNode* parent_node = nullptr;
 		vector<TriangleShape> static_triangles;
+	};
 
+	class DLL_API MeshNode
+	{
+	public:
+		MeshNode(UINT num, UINT depth);
+		~MeshNode();
+
+		void SetNode(float min_x, float min_z, float max_x, float max_z);
+
+		bool is_leaf = false;
+		UINT node_num;
+		UINT node_depth;
+		AABBShape area;
+		MeshNode* child_node_[4] = { 0, };
+		MeshNode* parent_node = nullptr;
+		StaticMesh node_mesh;
 	};
 
 	class DLL_API QuadTreeMgr
@@ -45,13 +60,8 @@ namespace reality {
 		void Release();
 	public:
 		void UpdateCapsules();
-		RayCallback RaycastAdjustLevel(RayShape& ray, float max_distance);
-		pair<RayCallback, entt::entity> RaycastAdjustActor(RayShape& ray);
+		//pair<RayCallback, entt::entity> RaycastAdjustActor(RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
-
-		bool CreatePhysicsCS();
-		void RunPhysicsCS(string cs_id);
-		void MovementByPhysicsCS();
 
 		SbTriangleCollision triangle_stbuffer;
 		SbCapsuleCollision capsule_stbuffer;
@@ -67,28 +77,38 @@ namespace reality {
 
 		vector<RayShape> blocking_lines;
 
+		// Physics Tree
 	private:
-		void CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes);
-		void CheckBlockingLine(entt::entity ent, CapsuleShape& capsule);
+		bool CreatePhysicsCS();
+		void RunPhysicsCS(string cs_id);
+		void MovementByPhysicsCS();
 
-		SpaceNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node);
-		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& node_list);
-		void	   NodeCasting(const RayShape& ray, SpaceNode* node);
+		PhysicsNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node);
+		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node, vector<PhysicsNode*>& node_list);
+		void	   NodeCasting(const RayShape& ray, PhysicsNode* node);
 
 		UINT max_depth;
 		UINT node_count = 0;
-		float physics_timestep = 1.0f / 120.0f;
 
-		SpaceNode* root_node_ = nullptr;
-		map<UINT, SpaceNode*> total_nodes_;
-		map<UINT, SpaceNode*> leaf_nodes_;
-		map<float, SpaceNode*> casted_nodes_;
+		PhysicsNode* root_physics_node_ = nullptr;
+		map<UINT, PhysicsNode*> total_physics_nodes_;
+		map<UINT, PhysicsNode*> leaf_physics_nodes_;
+		map<float, PhysicsNode*> casted_physics_nodes_;
 
 		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
 
 	private:
-		SpaceNode* BuildTree(UINT depth, float row1, float col1, float row2, float col2);
-		void SetStaticTriangles(SpaceNode* node);
+		PhysicsNode* BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
+		void SetStaticTriangles(PhysicsNode* node);
+
+		// MeshTree
+	private:
+		MeshNode* root_mesh_node_ = nullptr;
+		map<UINT, MeshNode*> total_mesh_nodes_;
+		map<UINT, MeshNode*> leaf_mesh_nodes_;
+		MeshNode* BuildMeshTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
+		void SetMeshes(MeshNode* node);
+		map<bool, array<Vertex, 3>> level_triangle_meshes_;
 
 	public:
 		StaticMeshLevel* deviding_level_ = nullptr;
