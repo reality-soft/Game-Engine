@@ -12,6 +12,7 @@
 #include "AI/BehaviorTree.h"
 #include "AI/BehaviorTreeNodes.h"
 
+#include "Systems/AnimationSystem.h"
 #include "Systems/RenderSystem.h"
 #include "Systems/CameraSystem.h"
 #include "Systems/SoundSystem.h"
