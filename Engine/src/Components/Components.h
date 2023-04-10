@@ -77,6 +77,7 @@ namespace reality
 		XMVECTOR local_pos;
 		XMFLOAT2 pitch_yaw = { 0, 0 };
 		XMVECTOR look, right, up;
+		float rotation = 0.0f, target_rotation = 0.0f;
 		float near_z, far_z, fov, aspect;
 
 		virtual void OnConstruct() override {};
@@ -104,102 +105,121 @@ namespace reality
 
 	struct C_Animation : public Component
 	{
-		string anim_id = "";
 		vector<pair<string, AnimSlot>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
-		float cur_frame = 0.0f;
 
-		virtual void OnConstruct() override {};
-		virtual void OnUpdate() override {
-			OutAnimData* anim_data = RESOURCE->UseResource<OutAnimData>(anim_id);
-
-			if (anim_data == nullptr) {
-				return;
-			}
-
-			cur_frame = anim_data->start_frame;
-		};
-
-		XMMATRIX GetCurAnimMatrix(int bone_id) {
-			if (anim_slots.size() == 0) {
-				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_id);
-				if (base_animation == nullptr) {
-					return XMMatrixIdentity();
-				}
-
-				int cur_frame_revised = min(cur_frame, base_animation->end_frame - 1);
-				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
-
-				return base_animation_matrix;
-			}
-			else if (anim_slots.size() == 1) {
-				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_id);
-				if (base_animation == nullptr) {
-					return XMMatrixIdentity();
-				}
-
-				int cur_frame_revised = min(cur_frame, base_animation->end_frame - 1);
-				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
-
-				OutAnimData* slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[0].second.anim_id);
-				if (slot_animation == nullptr) {
-					return base_animation_matrix;
-				}
-
-				cur_frame_revised = min(anim_slots[0].second.cur_frame, slot_animation->end_frame - 1);
-				XMMATRIX slot_animation_matrix = slot_animation->animations[bone_id][cur_frame_revised];
-
-				float weight = anim_slots[0].second.bone_id_to_weight[bone_id] / anim_slots[0].second.range;
-				
-				return base_animation_matrix * (1.0f - weight) + slot_animation_matrix * weight;
-			}
-			else {
-				int end_index = anim_slots.size() - 1;
-				
-				OutAnimData* base_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index - 1].second.anim_id);
-				if (base_animation == nullptr) {
-					return XMMatrixIdentity();
-				}
-
-
-				int cur_frame_revised = min(anim_slots[end_index - 1].second.cur_frame, base_animation->end_frame - 1);
-				XMMATRIX base_animation_matrix = base_animation->animations[bone_id][cur_frame_revised];
-
-				OutAnimData* slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slots[end_index].second.anim_id);
-				if (slot_animation == nullptr) {
-					return base_animation_matrix;
-				}
-
-				cur_frame_revised = min(anim_slots[end_index].second.cur_frame, slot_animation->end_frame - 1);
-				XMMATRIX slot_animation_matrix = slot_animation->animations[bone_id][cur_frame_revised];
-			
-				float weight = anim_slots[end_index].second.bone_id_to_weight[bone_id] / anim_slots[end_index].second.range;
-				return base_animation_matrix * (1.0f - weight) + slot_animation_matrix * weight;
-			}
+		C_Animation(AnimationBase* anim_object) {
+			AnimSlot base_anim_slot;
+			base_anim_slot.anim_object_ = make_shared<AnimationBase>(*anim_object);
+			anim_slots.push_back({ "Base", base_anim_slot });
+			name_to_anim_slot_index.insert({ "Base", 0 });
 		}
 
-		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range) {
+		virtual void OnConstruct() override {};
+		virtual void OnUpdate() override {};
+
+		template<typename AnimSlotType, typename... Args>
+		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range, Args&&... args) {
 			AnimSlot anim_slot;
 
 			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
 
-			anim_slot.anim_id = "";
-			anim_slot.cur_frame = 0.0f;
-			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons, anim_slot.bone_id_to_weight);
-			anim_slot.range = range * 2;
+			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons_, anim_slot.bone_id_to_weight_);
+			anim_slot.range_ = range * 2;
+			anim_slot.anim_object_ = make_shared<AnimSlotType>(args...);
+			anim_slot.anim_object_->OnInit();
 
-			
 			anim_slots.push_back({ anim_slot_name, anim_slot });
 			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
 		};
 
-		void SetAnimSlotAnimation(string anim_slot_name, string animation_name) {
-			for (int i = 0;i < anim_slots.size();i++) {
-				if (anim_slot_name == anim_slots[i].first) {
-					anim_slots[i].second.anim_id = animation_name;
-					return;
-				}
+		AnimSlot GetAnimSlotByName(string anim_slot_name) {
+			return anim_slots[name_to_anim_slot_index[anim_slot_name]].second;
+		}
+
+		XMMATRIX GetCurAnimMatirixOfBone(int bone_id) {
+			const AnimSlot& base_anim_slot = anim_slots[0].second;
+			ANIM_STATE base_anim_slot_state = base_anim_slot.GetCurAnimState();
+
+			float base_time_weight = min(1.0f, base_anim_slot.anim_object_->GetCurAnimTime() / base_anim_slot.anim_object_->GetBlendTime());
+
+			XMMATRIX base_cur_animation = XMMatrixIdentity();
+			XMMATRIX base_prev_animation = XMMatrixIdentity();
+			XMMATRIX base_animation = XMMatrixIdentity();
+
+			OutAnimData* res_animation = nullptr;
+			OutAnimData* res_prev_animation = nullptr;
+
+			switch (base_anim_slot_state) {
+			case ANIM_STATE::ANIM_STATE_NONE:
+				return XMMatrixIdentity();
+			case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+				res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+				base_prev_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_cur_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_animation = base_cur_animation;
+				break;
+			case ANIM_STATE::ANIM_STATE_CUR_PREV:
+				res_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());
+				res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
+
+				base_prev_animation = res_prev_animation->animations[bone_id][base_anim_slot.anim_object_->GetPrevAnimLastFrame()];
+				base_cur_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+
+				base_animation = base_cur_animation * base_time_weight + base_prev_animation * (1.0f - base_time_weight);
+				break;
 			}
+
+			int i = anim_slots.size() - 1;
+			float slot_weight = 0.0f;
+
+			XMMATRIX slot_cur_animation = XMMatrixIdentity();
+			XMMATRIX slot_prev_animation = XMMatrixIdentity();
+			XMMATRIX slot_animation = XMMatrixIdentity();
+
+			OutAnimData* res_prev_slot_animation = nullptr;
+			OutAnimData* res_slot_animation = nullptr;
+
+			for (i;i >= 1;i--) {
+				AnimSlot& anim_slot = anim_slots[i].second;
+				ANIM_STATE slot_anim_state = anim_slot.GetCurAnimState();
+
+				float slot_time_weight = min(1.0f, anim_slot.anim_object_->GetCurAnimTime() / anim_slot.anim_object_->GetBlendTime());
+				
+				slot_cur_animation = XMMatrixIdentity();
+				slot_prev_animation = XMMatrixIdentity();
+				slot_animation = XMMatrixIdentity();
+
+				switch (slot_anim_state) {
+				case ANIM_STATE::ANIM_STATE_NONE:
+					continue;
+				case ANIM_STATE::ANIM_STATE_PREV_ONLY:
+					res_prev_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+					slot_prev_animation = res_prev_slot_animation->animations[bone_id][anim_slot.anim_object_->GetPrevAnimLastFrame()];
+
+					slot_animation = base_cur_animation * slot_time_weight + slot_prev_animation * (1.0f - slot_time_weight);
+					break;
+				case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+					res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+					slot_cur_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetCurFrame()];
+
+					slot_animation = slot_cur_animation * slot_time_weight + base_prev_animation * (1.0f - slot_time_weight);
+					break;
+				case ANIM_STATE::ANIM_STATE_CUR_PREV:
+					res_prev_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
+					res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
+
+					slot_prev_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetPrevAnimLastFrame()];
+					slot_cur_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetCurFrame()];
+
+					slot_animation = slot_cur_animation * slot_time_weight + slot_prev_animation * (1.0f - slot_time_weight);
+				}
+
+				slot_weight = anim_slot.bone_id_to_weight_[bone_id] / anim_slot.range_;
+				break;
+			}
+
+			return base_animation * (1.0f - slot_weight) + slot_animation * slot_weight;
 		}
 	};
 
