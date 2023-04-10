@@ -155,7 +155,9 @@ namespace reality
 				return XMMatrixIdentity();
 			case ANIM_STATE::ANIM_STATE_CUR_ONLY:
 				res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
-				base_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_prev_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_cur_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_animation = base_cur_animation;
 				break;
 			case ANIM_STATE::ANIM_STATE_CUR_PREV:
 				res_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());
