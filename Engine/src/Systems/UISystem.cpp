@@ -39,6 +39,10 @@ void UISystem::OnCreate(entt::registry& reg)
 
 void UISystem::OnUpdate(entt::registry& reg)
 {
+	auto current_rt = RENDER_TARGET->LoadRT("UI");
+	if (render_target_.get() != current_rt.get())
+		render_target_ = current_rt;
+
 	// UI 랜더타겟으로 변경 후 UI들 랜더링
 	render_target_->SetRenderTarget();
 	
@@ -48,8 +52,6 @@ void UISystem::OnUpdate(entt::registry& reg)
 		C_UI& ui_comp = reg.get<C_UI>(entity);
 		for (auto& pair : ui_comp.ui_list)
 		{
-			if (!pair.second->GetOnOff())
-				continue;
 			pair.second->Update();
 		}
 
@@ -62,8 +64,8 @@ void UISystem::OnUpdate(entt::registry& reg)
 	// 백버퍼에 UI 랜더타겟 랜더링
 	float scale_x = render_target_->rect_.width / ENGINE->GetWindowSize().x;
 	float scale_y = render_target_->rect_.height / ENGINE->GetWindowSize().y;
-	float pos_x = render_target_->rect_.center.x / ENGINE->GetWindowSize().x;
-	float pos_y = render_target_->rect_.center.y / ENGINE->GetWindowSize().y;
+	float pos_x = 0.5f;
+	float pos_y = 0.5f;
 
 	
 	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
