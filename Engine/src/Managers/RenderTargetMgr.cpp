@@ -27,7 +27,7 @@ bool RenderTarget::Create(float width, float height)
 	return false;
 }
 
-void RenderTarget::CreateRenderData()
+void RenderTarget::CreateRenderData() 
 {
 	rect_.SetRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, ENGINE->GetWindowSize().x, ENGINE->GetWindowSize().y);
 
@@ -231,6 +231,8 @@ void RenderTarget::Resize(float width, float height)
 
 	width_ = width;
 	height_ = height;
+
+	rect_.SetRectByCenter({ ENGINE->GetWindowSize().x / 2.0f, ENGINE->GetWindowSize().y / 2.0f }, ENGINE->GetWindowSize().x, ENGINE->GetWindowSize().y);
 
 	SetViewPort();
 
