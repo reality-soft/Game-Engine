@@ -3,16 +3,18 @@
 
 namespace reality
 {
+	enum E_Resolution;
+
 	class DLL_API UIBase
 	{
 	protected:
-		bool						onoff_;
-		E_UIState					current_state_;
+		bool		onoff_;
+		E_UIState	current_state_;
 	public:
 		UIBase*								parent_ui_;
 		unordered_set<shared_ptr<UIBase>>	child_ui_list_;
 	public:
-		RectTransform	rect_transform_;
+		vector<RectTransform> rect_transform_;
 		RectRenderData	render_data_;
 	protected:
 		virtual void Init();
@@ -39,6 +41,11 @@ namespace reality
 		virtual void SetLocalRectByMax(XMFLOAT2 max, float width, float height);
 		virtual void SetLocalRectByCenter(XMFLOAT2 center, float width, float height);
 		virtual void SetLocalRectByMinMax(XMFLOAT2 min, XMFLOAT2 max);
+	private:
+		virtual void ComputeLocalRectByMin(E_Resolution resolution, XMFLOAT2 min, float width, float height);
+		virtual void ComputeLocalRectByMax(E_Resolution resolution, XMFLOAT2 max, float width, float height);
+		virtual void ComputeLocalRectByCenter(E_Resolution resolution, XMFLOAT2 center, float width, float height);
+		virtual void ComputeLocalRectByMinMax(E_Resolution resolution, XMFLOAT2 min, XMFLOAT2 max);
 	};
 }
 

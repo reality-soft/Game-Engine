@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UI_Button.h"
+#include "Engine.h"
 #include "InputMgr.h"
 
 using namespace reality;
@@ -38,7 +39,10 @@ bool UI_Button::MouseOnButton(const Rect& button_rect, const POINT& mouse_point)
 
 void UI_Button::UpdateButtonState()
 {
-	if (MouseOnButton(rect_transform_.world_rect, DINPUT->GetMousePosition()))
+	if (!onoff_)
+		return;
+	auto resolution = ENGINE->GetWindowResolution();
+	if (MouseOnButton(rect_transform_[resolution].world_rect, DINPUT->GetMousePosition()))
 	{
 		current_state_ = E_UIState::UI_HOVER;
 		if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH || DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_HOLD)

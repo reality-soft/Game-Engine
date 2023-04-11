@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UI_Listbox.h"
+#include "Engine.h"
 #include "InputMgr.h"
 
 using namespace reality;
@@ -15,7 +16,7 @@ void UI_Listbox::InitListBox(string open_panel,
 	UI_Button::Init();
 
 	current_item_text_ = make_shared<UI_Text>();
-	current_item_text_->InitText("", E_Font::ROTUNDA, { 0.0f, 10.0f });
+		current_item_text_->InitText("", E_Font::ROTUNDA, { 0.0f, 10.0f });
 	AddChildUI(current_item_text_);
 
 	open_panel_ = make_shared<UI_Image>();
@@ -156,7 +157,7 @@ void UI_Listbox::AddItem(string value)
 	);
 	open_panel_->AddChildUI(new_item_button);
 	XMFLOAT2 min = { item_button_min_.x, item_button_min_.y + item_button_height_space_ * (item_button_list_.size() - 1) };
-	new_item_button->SetLocalRectByMin(min,	item_button_width_, item_button_height_);
+	new_item_button->SetLocalRectByMin(min, item_button_width_, item_button_height_);
 
 	auto new_item_text = make_shared<UI_Text>();
 	new_item_text->InitText(value, E_Font::ROTUNDA, {0.0f, 10.0f});
@@ -192,6 +193,6 @@ void UI_Listbox::CloseListBox()
 
 void reality::UI_Listbox::SetListBoxText(string text)
 {
-	current_item_text_->InitText(text, E_Font::ROTUNDA, { 5.0f, 20.0f });
+	current_item_text_->SetText(text);
 }
 
