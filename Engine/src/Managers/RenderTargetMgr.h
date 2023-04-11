@@ -1,5 +1,5 @@
 #pragma once
-#include "Components.h"
+#include "UI.h"
 
 namespace reality
 {
@@ -9,8 +9,8 @@ namespace reality
 		float								width_;
 		float								height_;
 	public:
-		ID3D11RenderTargetView*				render_target_view_;
-		ID3D11DepthStencilView*				depth_stencil_view_;
+		ComPtr<ID3D11RenderTargetView>		render_target_view_;
+		ComPtr<ID3D11DepthStencilView>		depth_stencil_view_;
 	public:
 		ComPtr<ID3D11Texture2D>				render_target_view_texture_;
 		ComPtr<ID3D11Texture2D>				depth_stencil_view_texture_;
@@ -43,6 +43,7 @@ namespace reality
 	public:
 		bool		SetRenderTarget();
 		void		RenderingRT();
+		void		Resize(float width, float height);
 	private:
 		void		CreateRenderData();
 	};

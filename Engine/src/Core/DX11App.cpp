@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "DX11App.h"
-
+#include "RenderTargetMgr.h"
 
 void DX11App::SetWireframes()
 {
@@ -223,6 +223,9 @@ bool DX11App::Resize(UINT new_x, UINT new_y)
     view_port.TopLeftX = 0.0f;
     view_port.TopLeftY = 0.0f;
     dx11_context.Get()->RSSetViewports(1, &view_port);
+
+    // UI 랜더타겟 리사이즈
+    reality::RENDER_TARGET->LoadRT("UI")->Resize((float)new_x, (float)new_y);
 
     return true;
 }
