@@ -41,8 +41,8 @@ namespace reality
 	{
 		unordered_map<string, Socket> sockets;
 
-		void AddSocket(string socket_name, string bone_name, XMMATRIX local_offset) {
-			sockets.insert({ socket_name, Socket(bone_name, local_offset) });
+		void AddSocket(string socket_name, UINT bone_id, XMMATRIX local_offset) {
+			sockets.insert({ socket_name, Socket(bone_id, local_offset) });
 		}
 	};
 
