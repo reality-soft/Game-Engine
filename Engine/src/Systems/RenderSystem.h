@@ -28,7 +28,10 @@ namespace reality
 		void RenderBoxShape(entt::registry& reg);
 		void RenderBoundingBox(const C_BoundingBox* const);
 		void RenderEffects(entt::registry& reg);
-		void SetTransformCb(const C_Transform* const transform_component, Transform& transform);
+
+	public:
+		void SetTransformCB(const C_Transform* const transform_component, Transform& transform);
+		void SetSocketCB(const Socket& socket);
 		void SetEffectCB(Effect& effect, XMMATRIX& world);
 		void SetEmitterCB(Emitter& emitter);
 		void SetShaderAndMaterial(Emitter& emitter);

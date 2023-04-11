@@ -71,18 +71,36 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 	for (auto ent : view_stm)
 	{
-		auto* static_mesh = reg.try_get<C_StaticMesh>(ent);
-		RenderStaticMesh(static_mesh);
+		auto* static_mesh_component = reg.try_get<C_StaticMesh>(ent);
+		C_Socket* socket_component = nullptr;
+		if (static_mesh_component->socket_name != "") {
+			socket_component = reg.try_get<C_Socket>(ent);
+		}
+
+		if (socket_component != nullptr) {
+			SetTransformCB(socket_component, cb_static_mesh_.data.transform);
+
+			auto socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
+			if (socket_it != socket_component->sockets.end()) {
+				SetSocketCB(socket_it->second);
+			}
+		}
+		else {
+			SetTransformCB(static_mesh_component, cb_static_mesh_.data.transform);
+		}
+
+		RenderStaticMesh(static_mesh_component);
 	}
 
 	for (auto ent : view_skm)
 	{
-		auto* skeletal_mesh = reg.try_get<C_SkeletalMesh>(ent);
-		auto* animation = reg.try_get<C_Animation>(ent);
-		if (skeletal_mesh == nullptr || animation == nullptr) {
+		auto* skeletal_mesh_component = reg.try_get<C_SkeletalMesh>(ent);
+		auto* animation_component = reg.try_get<C_Animation>(ent);
+		if (skeletal_mesh_component == nullptr || animation_component == nullptr) {
 			continue;
 		}
-		RenderSkeletalMesh(skeletal_mesh, animation);
+		SetTransformCB(skeletal_mesh_component, cb_skeletal_mesh_.data.transform);
+		RenderSkeletalMesh(skeletal_mesh_component, animation_component);
 	}
 
 	DX11APP->GetDeviceContext()->RSSetState(DXStates::rs_wireframe_cull_none());
@@ -229,7 +247,6 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 		return;
 	}
 
-	SetTransformCb(static_mesh_component, cb_transform_.data.transform);
 	device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
 	device_context_->VSSetConstantBuffers(1, 1, cb_transform_.buffer.GetAddressOf());
 
@@ -269,7 +286,6 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 
 	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
 	
-	SetTransformCb(skeletal_mesh_components, cb_skeletal_mesh_.data.transform);
 	device_context_->UpdateSubresource(cb_skeletal_mesh_.buffer.Get(), 0, nullptr, &cb_skeletal_mesh_.data, 0, 0);
 	device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
 
@@ -412,7 +428,7 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 	{
 		auto& box = reg.get<C_BoxShape>(ent);
 
-		SetTransformCb(&box, cb_transform_.data.transform);
+		SetTransformCB(&box, cb_transform_.data.transform);
 
 		device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
 		device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
@@ -446,7 +462,7 @@ void RenderSystem::RenderBoundingBox(const C_BoundingBox* const box)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	SetTransformCb(box, cb_transform_.data.transform);
+	SetTransformCB(box, cb_transform_.data.transform);
 	device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
 	device_context_->VSSetConstantBuffers(1, 1, cb_transform_.buffer.GetAddressOf());
 
@@ -522,10 +538,16 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	device_context_->GSSetShader(nullptr, 0, 0);
 }
 
-void reality::RenderSystem::SetTransformCb(const C_Transform* const transform_component, Transform& transform)
+void reality::RenderSystem::SetTransformCB(const C_Transform* const transform_component, Transform& transform)
 {
 	transform.local_matrix = XMMatrixTranspose(transform_component->local);
 	transform.world_matrix = XMMatrixTranspose(transform_component->world);
+}
+
+void reality::RenderSystem::SetSocketCB(const Socket& socket)
+{
+	cb_static_mesh_.data.transform.local_matrix = socket.local_offset;
+	cb_static_mesh_.data.socket_animation = socket.animation_matrix;
 }
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)

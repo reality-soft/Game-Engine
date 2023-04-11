@@ -50,6 +50,7 @@ namespace reality
 	{
 		string static_mesh_id;
 		string vertex_shader_id = "StaticMeshVS.cso";
+		string socket_name = "";
 
 		virtual void OnConstruct() override {};
 	};
