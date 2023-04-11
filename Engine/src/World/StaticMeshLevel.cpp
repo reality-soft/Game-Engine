@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "DXStates.h"
 #include "StaticMeshLevel.h"
 #include "Components.h"
 #include "FileTransfer.h"
@@ -48,6 +49,8 @@ bool reality::StaticMeshLevel::Create(string mesh_id, string vs_id, string colli
         }        
     }
 
+    clipping_rs = DXStates::rs_solid_cull_front();
+
     return true;
 }
 
@@ -64,6 +67,7 @@ void reality::StaticMeshLevel::Update()
 void reality::StaticMeshLevel::Render()
 {
     DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
+    DX11APP->GetDeviceContext()->RSSetState(clipping_rs);
 
     DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader.get()->InputLayout());
     DX11APP->GetDeviceContext()->VSSetShader(vertex_shader.get()->Get(), nullptr, 0);
@@ -83,6 +87,8 @@ void reality::StaticMeshLevel::Render()
 
     if (view_collision)
         RenderCollisionMesh();
+
+    DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
 void reality::StaticMeshLevel::Destroy()
@@ -120,6 +126,11 @@ void reality::StaticMeshLevel::RenderCollisionMesh()
 StaticMesh* reality::StaticMeshLevel::GetLevelMesh()
 {
     return level_mesh.get();
+}
+
+VertexShader* reality::StaticMeshLevel::GetVertexShader()
+{
+    return vertex_shader.get();
 }
 
 bool reality::StaticMeshLevel::SetMaterialToMesh(string mesh_name, string material_id)
