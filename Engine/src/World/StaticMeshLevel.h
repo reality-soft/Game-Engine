@@ -21,6 +21,7 @@ namespace reality
 		void SetShadowMap(ID3D11ShaderResourceView* shadow_map, CbShadowMap* cb_shaodow);
 		void RenderCollisionMesh();
 		StaticMesh* GetLevelMesh();
+		VertexShader* GetVertexShader();
 	public:
 		CbTransform level_transform;
 		vector<TriangleShape> level_triangles;
@@ -30,6 +31,7 @@ namespace reality
 		shared_ptr<StaticMesh> collision_mesh;
 		shared_ptr<VertexShader> vertex_shader;
 
+
 		bool SetMaterialToMesh(string mesh_name, string material_id);
 		bool SetRandomMaterialToMesh(string mesh_name, string keyward);
 
@@ -38,6 +40,7 @@ namespace reality
 		vector<GuideLine> GetGuideLines(GuideLine::GuideType guide_type);
 
 	private:
+		ID3D11RasterizerState* clipping_rs = nullptr;
 		map<string, shared_ptr<Material>> mesh_material_map;
 		vector<GuideLine> guide_lines;
 		bool view_collision = true;
