@@ -1,5 +1,6 @@
 #pragma once
 #include "Shape.h"
+#include "SimpleMath.h"
 
 namespace reality {
     struct RayCallback
@@ -82,13 +83,6 @@ namespace reality {
         if (box_to_line <= box_radius)
             return true;
 
-        //for (int i = 0; i < 12; ++i)
-        //{
-        //    auto& callback = RayToTriangle(ray, aabb.triangle[i]);
-        //    if (callback.success)
-        //        return true;
-        //}
-
         return false;
     }
 
@@ -161,10 +155,6 @@ namespace reality {
 
             XMVectorSubtract(hb, _XMVECTOR3(cap.base));
 
-            //float scale = XMVector3Dot(hb, axis).m128_f32[0];
-            //raycallback.normal.m128_f32[0] = hb.m128_f32[0] - axis.m128_f32[0] * scale;
-            //raycallback.normal.m128_f32[1] = hb.m128_f32[1] - axis.m128_f32[1] * scale;
-            //raycallback.normal.m128_f32[2] = hb.m128_f32[2] - axis.m128_f32[2] * scale;
             raycallback.normal = XMVector3Normalize(-dir);
             raycallback.distance = lambda;
             raycallback.success = true;
@@ -177,32 +167,53 @@ namespace reality {
 
     static CollideType FrustumToAABB(Frustum& frustum, AABBShape& aabb)
     {
-        int in_axies = 0;
-        int out_axies = 0;
+        CollideType result = CollideType::INSIDE;
+        XMFLOAT3 vmin, vmax;
 
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 6; ++i)
         {
-            for (int j = 0; j < 4; ++j)
+            // X Axis
+            if (XMVectorGetX(frustum.frustum_plane[i].normal) > 0)
             {
-                bool success = RayToTriangle(aabb.vertical_ray[i], frustum.topbottom_tries[j]).success;
-
-                if (success)
-                    in_axies++;
-                else
-                    out_axies++;
+                vmin.x = aabb.min.x;
+                vmax.x = aabb.max.x;
             }
-        }
+            else 
+            {
+                vmin.x = aabb.max.x;
+                vmax.x = aabb.min.x;
+            }
 
-        if (in_axies == 0)
-        {
-            return CollideType::OUTSIDE;
-        }
+            // Y Axis
+            if (XMVectorGetY(frustum.frustum_plane[i].normal) > 0) 
+            {
+                vmin.y = aabb.min.y;
+                vmax.y = aabb.max.y;
+            }
+            else 
+            {
+                vmin.y = aabb.max.y;
+                vmax.y = aabb.min.y;
+            }
 
-        if (out_axies == 0)
-        {
-            return CollideType::INSIDE;
+            // Z axis 
+            if (XMVectorGetZ(frustum.frustum_plane[i].normal) > 0) 
+            {
+                vmin.z = aabb.min.z;
+                vmax.z = aabb.max.z;
+            }
+            else 
+            {
+                vmin.z = aabb.max.z;
+                vmax.z = aabb.min.z;
+            }
+
+            if (XMVectorGetX(XMVector3Dot(frustum.frustum_plane[i].normal, _XMVECTOR3(vmin))) + frustum.frustum_plane[i].d > 0)
+                return CollideType::OUTSIDE;
+            if (XMVectorGetX(XMVector3Dot(frustum.frustum_plane[i].normal, _XMVECTOR3(vmax))) + frustum.frustum_plane[i].d >= 0)
+                result = CollideType::INTERSECT;
         }
-        return CollideType::INTERSECT;
+        return result;
     }
 
 	static CollideType AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2)
@@ -231,20 +242,6 @@ namespace reality {
     {
         auto cap_to_aabb = capsule.GetAsAABB();
         return AABBtoAABB(cap_to_aabb, aabb);
-        //RayShape box_to_capsule_ray(aabb.center, capsule.base);
-        //box_to_capsule_ray.start.m128_f32[1] = 0.0f;
-        //box_to_capsule_ray.end.m128_f32[1] = 0.0f;
-
-        //float box_to_capsule_distance = Distance(box_to_capsule_ray.start, box_to_capsule_ray.end) - capsule.radius;
-
-        //XMVECTOR center_to_corner = aabb.max - aabb.center;
-        //center_to_corner.m128_f32[1] = 0.0f;
-        //float box_radius = XMVectorGetX(XMVector3Length(center_to_corner));
-
-        //if (box_to_capsule_distance <= box_radius)
-        //    return true;
-
-        //return false;
     }
 
     static CollideType CapsuleToCapsule(CapsuleShape& cap1, CapsuleShape& cap2)
@@ -298,9 +295,11 @@ namespace reality {
 
         // Chect if 3 vertices are out of aabb but aabb corner intersecs with triangle.
         // it also can detect if aabb is completely inside of triangle 
+        auto vertical_rays = aabb.GetYAxisRay();
+
         for (int i = 0; i < 4; ++i)
         {
-            bool success = RayToTriangle(aabb.vertical_ray[i], triangle).success;
+            bool success = RayToTriangle(vertical_rays[i], triangle).success;
 
             if (success)
                 return CollideType::INTERSECT;
