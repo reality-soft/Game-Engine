@@ -1,4 +1,5 @@
 #pragma once
+#include "DX11App.h"
 #include "Vertex.h"
 #include "Skeleton.h"
 
@@ -20,6 +21,14 @@ namespace reality
 
 			other.vertex_buffer.CopyTo(vertex_buffer.GetAddressOf());
 			other.index_buffer.CopyTo(index_buffer.GetAddressOf());
+		}
+		~SingleMesh()
+		{
+
+			vertices.clear();
+			indices.clear();
+			vertex_buffer.ReleaseAndGetAddressOf();
+			index_buffer.ReleaseAndGetAddressOf();
 		}
 
 		string mesh_name;
@@ -62,6 +71,32 @@ namespace reality
 			}
 		}
 		return max_xyz;
+	}
+
+	static bool CreateVertexBuffer(SingleMesh<Vertex>& single_mesh)
+	{
+		single_mesh.vertex_buffer.ReleaseAndGetAddressOf();
+		single_mesh.vertex_buffer = nullptr;
+
+		HRESULT hr;
+
+		// VertexBuffer
+		D3D11_BUFFER_DESC desc;
+		D3D11_SUBRESOURCE_DATA subdata;
+
+		ZeroMemory(&desc, sizeof(desc));
+		ZeroMemory(&subdata, sizeof(subdata));
+
+		desc.ByteWidth = sizeof(Vertex) * single_mesh.vertices.size();
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		subdata.pSysMem = single_mesh.vertices.data();
+
+		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, single_mesh.vertex_buffer.GetAddressOf());
+		if (FAILED(hr))
+			return false;
+
+		return true;
 	}
 }
 
