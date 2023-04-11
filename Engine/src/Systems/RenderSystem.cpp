@@ -9,14 +9,14 @@ using namespace reality;
 
 RenderSystem::RenderSystem()
 {
-	device = DX11APP->GetDevice();
-	device_context = DX11APP->GetDeviceContext();
+	device_ = DX11APP->GetDevice();
+	device_context_ = DX11APP->GetDeviceContext();
 }
 
 RenderSystem::~RenderSystem()
 {
-	device = nullptr;
-	device_context = nullptr;
+	device_ = nullptr;
+	device_context_ = nullptr;
 }
 
 
@@ -35,15 +35,15 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	subdata.pSysMem = &cb_transform.data;
+	subdata.pSysMem = &cb_transform_.data;
 
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_transform.buffer.GetAddressOf());
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_transform_.buffer.GetAddressOf());
 
 	// Init SkeletonBuffer
 	for (int i = 0; i < 128; ++i) {
-		cb_skeletal_mesh.data.bind_pose[i] = XMMatrixIdentity();
-		cb_skeletal_mesh.data.animation[i] = XMMatrixIdentity();
-		cb_skeletal_mesh.data.slot_animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh_.data.bind_pose[i] = XMMatrixIdentity();
+		cb_skeletal_mesh_.data.animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh_.data.slot_animation[i] = XMMatrixIdentity();
 	}
 
 	ZeroMemory(&desc, sizeof(desc));
@@ -52,9 +52,9 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 	desc.ByteWidth = sizeof(CbSkeletalMesh::Data);
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	subdata.pSysMem = &cb_skeletal_mesh.data;
+	subdata.pSysMem = &cb_skeletal_mesh_.data;
 
-	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeletal_mesh.buffer.GetAddressOf());
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_skeletal_mesh_.buffer.GetAddressOf());
 
 	// Create Effect Data
 	CreateEffectCB();
@@ -102,11 +102,11 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component)
 {
-	ZeroMemory(cb_skeletal_mesh.data.slot_weights, sizeof(cb_skeletal_mesh.data.slot_weights));
+	ZeroMemory(cb_skeletal_mesh_.data.slot_weights, sizeof(cb_skeletal_mesh_.data.slot_weights));
 
 	for (const auto& bp : skeleton.bind_pose_matrices)
 	{
-		cb_skeletal_mesh.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
+		cb_skeletal_mesh_.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
 	}
 
 	const AnimSlot& base_anim_slot = animation_component.anim_slots[0].second;
@@ -127,17 +127,17 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 	case ANIM_STATE::ANIM_STATE_NONE:
 		for (const auto& bp : skeleton.bind_pose_matrices)
 		{
-			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixIdentity();
-			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixIdentity();
-			cb_skeletal_mesh.data.bind_pose[bp.first] = XMMatrixIdentity();
+			cb_skeletal_mesh_.data.animation[bp.first] = XMMatrixIdentity();
+			cb_skeletal_mesh_.data.prev_animation[bp.first] = XMMatrixIdentity();
+			cb_skeletal_mesh_.data.bind_pose[bp.first] = XMMatrixIdentity();
 		}
 		return;
 	case ANIM_STATE::ANIM_STATE_CUR_ONLY:
 		res_base_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
 		for (const auto& bp : skeleton.bind_pose_matrices)
 		{
-			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
-			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+			cb_skeletal_mesh_.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+			cb_skeletal_mesh_.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
 		}
 		break;
 	case ANIM_STATE::ANIM_STATE_CUR_PREV:
@@ -146,13 +146,13 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 
 		for (const auto& bp : skeleton.bind_pose_matrices)
 		{
-			cb_skeletal_mesh.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_prev_animation->animations[bp.first][base_prev_last_frame]);
-			cb_skeletal_mesh.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
+			cb_skeletal_mesh_.data.prev_animation[bp.first] = XMMatrixTranspose(res_base_prev_animation->animations[bp.first][base_prev_last_frame]);
+			cb_skeletal_mesh_.data.animation[bp.first] = XMMatrixTranspose(res_base_animation->animations[bp.first][base_cur_frame]);
 		}
 		break;
 	}
 
-	cb_skeletal_mesh.data.base_time_weight = base_time_weight;
+	cb_skeletal_mesh_.data.base_time_weight = base_time_weight;
 
 	int i = animation_component.anim_slots.size() - 1;
 
@@ -180,10 +180,10 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 				int depth = cur_pair.first;
 
 				for (const auto& bone_id : cur_pair.second) {
-					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
-					cb_skeletal_mesh.data.slot_animation[bone_id] = cb_skeletal_mesh.data.animation[bone_id];
+					cb_skeletal_mesh_.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
+					cb_skeletal_mesh_.data.slot_animation[bone_id] = cb_skeletal_mesh_.data.animation[bone_id];
 
-					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+					cb_skeletal_mesh_.data.slot_weights[bone_id] = depth / anim_slot.range_;
 				}
 			}
 			break;
@@ -193,10 +193,10 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 				int depth = cur_pair.first;
 
 				for (const auto& bone_id : cur_pair.second) {
-					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = cb_skeletal_mesh.data.prev_animation[bone_id];
-					cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
+					cb_skeletal_mesh_.data.prev_slot_animation[bone_id] = cb_skeletal_mesh_.data.prev_animation[bone_id];
+					cb_skeletal_mesh_.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
 
-					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+					cb_skeletal_mesh_.data.slot_weights[bone_id] = depth / anim_slot.range_;
 				}
 			}
 			break;
@@ -207,15 +207,15 @@ void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animatio
 				int depth = cur_pair.first;
 
 				for (const auto& bone_id : cur_pair.second) {
-					cb_skeletal_mesh.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
-					cb_skeletal_mesh.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
+					cb_skeletal_mesh_.data.prev_slot_animation[bone_id] = XMMatrixTranspose(res_slot_prev_animation->animations[bone_id][slot_prev_last_frame]);
+					cb_skeletal_mesh_.data.slot_animation[bone_id] = XMMatrixTranspose(res_slot_animation->animations[bone_id][slot_cur_frame]);
 
-					cb_skeletal_mesh.data.slot_weights[bone_id] = depth / anim_slot.range_;
+					cb_skeletal_mesh_.data.slot_weights[bone_id] = depth / anim_slot.range_;
 				}
 			}
 		}
 
-		cb_skeletal_mesh.data.slot_time_weight = slot_time_weight;
+		cb_skeletal_mesh_.data.slot_time_weight = slot_time_weight;
 		break;
 	}
 }
@@ -229,9 +229,9 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 		return;
 	}
 
-	SetTransformCb(static_mesh_component, cb_transform.data.transform);
-	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
-	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+	SetTransformCb(static_mesh_component, cb_transform_.data.transform);
+	device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
+	device_context_->VSSetConstantBuffers(1, 1, cb_transform_.buffer.GetAddressOf());
 
 	for (auto single_mesh : static_mesh->meshes)
 	{
@@ -242,18 +242,18 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 
-		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		device_context_->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 
-		device_context->IASetInputLayout(shader->InputLayout());
-		device_context->VSSetShader(shader->Get(), 0, 0);
+		device_context_->IASetInputLayout(shader->InputLayout());
+		device_context_->VSSetShader(shader->Get(), 0, 0);
 
 		ID3D11Buffer* index_buffer = single_mesh.index_buffer.Get();
 		if (index_buffer == nullptr) {
-			device_context->Draw(single_mesh.vertices.size(), 0);
+			device_context_->Draw(single_mesh.vertices.size(), 0);
 		}
 		else {
-			device_context->IASetIndexBuffer(index_buffer, DXGI_FORMAT_R32_UINT, 0);
-			device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+			device_context_->IASetIndexBuffer(index_buffer, DXGI_FORMAT_R32_UINT, 0);
+			device_context_->DrawIndexed(single_mesh.indices.size(), 0, 0);
 		}
 	}
 }
@@ -269,9 +269,9 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 
 	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
 	
-	SetTransformCb(skeletal_mesh_components, cb_skeletal_mesh.data.transform);
-	device_context->UpdateSubresource(cb_skeletal_mesh.buffer.Get(), 0, nullptr, &cb_skeletal_mesh.data, 0, 0);
-	device_context->VSSetConstantBuffers(1, 1, cb_skeletal_mesh.buffer.GetAddressOf());
+	SetTransformCb(skeletal_mesh_components, cb_skeletal_mesh_.data.transform);
+	device_context_->UpdateSubresource(cb_skeletal_mesh_.buffer.Get(), 0, nullptr, &cb_skeletal_mesh_.data, 0, 0);
+	device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
 
 	for (auto& single_mesh : skeletal_mesh->meshes)
 	{
@@ -282,18 +282,18 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 		UINT stride = sizeof(SkinnedVertex);
 		UINT offset = 0;
 
-		device_context->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		device_context_->IASetVertexBuffers(0, 1, single_mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
 		
-		device_context->IASetInputLayout(shader->InputLayout());
-		device_context->VSSetShader(shader->Get(), 0, 0);
+		device_context_->IASetInputLayout(shader->InputLayout());
+		device_context_->VSSetShader(shader->Get(), 0, 0);
 		
 		ID3D11Buffer* index_buffer = single_mesh.index_buffer.Get();
 		if (index_buffer == nullptr) {
-			device_context->Draw(single_mesh.vertices.size(), 0);
+			device_context_->Draw(single_mesh.vertices.size(), 0);
 		}
 		else {
-			device_context->IASetIndexBuffer(index_buffer, DXGI_FORMAT_R32_UINT, 0);
-			device_context->DrawIndexed(single_mesh.indices.size(), 0, 0);
+			device_context_->IASetIndexBuffer(index_buffer, DXGI_FORMAT_R32_UINT, 0);
+			device_context_->DrawIndexed(single_mesh.indices.size(), 0, 0);
 		}
 	}
 }
@@ -306,43 +306,43 @@ void RenderSystem::CreateEffectCB()
 
 	// Init Effect Buffer
 	{
-		ZeroMemory(&cb_effect.data, sizeof(CbEffect::Data));
+		ZeroMemory(&cb_effect_.data, sizeof(CbEffect::Data));
 
 		ZeroMemory(&desc, sizeof(desc));
 		ZeroMemory(&subdata, sizeof(subdata));
 
-		cb_effect.data.world = XMMatrixIdentity();
+		cb_effect_.data.world = XMMatrixIdentity();
 
 		desc.ByteWidth = sizeof(CbEffect::Data);
 
 		desc.Usage = D3D11_USAGE_DEFAULT;
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-		subdata.pSysMem = &cb_effect.data;
-		subdata.pSysMem = &cb_effect.data;
+		subdata.pSysMem = &cb_effect_.data;
+		subdata.pSysMem = &cb_effect_.data;
 
-		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect.buffer.GetAddressOf());
+		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_effect_.buffer.GetAddressOf());
 	}
 
 	// Init Emitter Buffer
 	{
-		ZeroMemory(&cb_emitter.data, sizeof(CbEmitter::Data));
+		ZeroMemory(&cb_emitter_.data, sizeof(CbEmitter::Data));
 
 		ZeroMemory(&desc, sizeof(desc));
 		ZeroMemory(&subdata, sizeof(subdata));
 
-		cb_emitter.data.world = XMMatrixIdentity();
-		ZeroMemory(&cb_emitter.data.value, sizeof(XMINT4) * 4);
-		ZeroMemory(&cb_emitter.data.value2, sizeof(XMFLOAT4) * 4);
+		cb_emitter_.data.world = XMMatrixIdentity();
+		ZeroMemory(&cb_emitter_.data.value, sizeof(XMINT4) * 4);
+		ZeroMemory(&cb_emitter_.data.value2, sizeof(XMFLOAT4) * 4);
 
 		desc.ByteWidth = sizeof(CbEmitter::Data);
 
 		desc.Usage = D3D11_USAGE_DEFAULT;
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-		subdata.pSysMem = &cb_emitter.data;
+		subdata.pSysMem = &cb_emitter_.data;
 
-		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_emitter.buffer.GetAddressOf());
+		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_emitter_.buffer.GetAddressOf());
 	}
 	
 	// Init Particle Buffer
@@ -412,10 +412,10 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 	{
 		auto& box = reg.get<C_BoxShape>(ent);
 
-		SetTransformCb(&box, cb_transform.data.transform);
+		SetTransformCb(&box, cb_transform_.data.transform);
 
-		device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
-		device_context->VSSetConstantBuffers(1, 1, cb_skeletal_mesh.buffer.GetAddressOf());
+		device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
+		device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
 
 		auto material = RESOURCE->UseResource<Material>(box.material_id);
 		material->Set();
@@ -427,13 +427,13 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 
-		device_context->IASetVertexBuffers(0, 1, box.vertex_buffer.GetAddressOf(), &stride, &offset);
-		device_context->IASetIndexBuffer(box.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		device_context_->IASetVertexBuffers(0, 1, box.vertex_buffer.GetAddressOf(), &stride, &offset);
+		device_context_->IASetIndexBuffer(box.index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		device_context->IASetInputLayout(shader->InputLayout());
-		device_context->VSSetShader(shader->Get(), 0, 0);
+		device_context_->IASetInputLayout(shader->InputLayout());
+		device_context_->VSSetShader(shader->Get(), 0, 0);
 
-		device_context->DrawIndexed(box.index_list.size(), 0, 0);
+		device_context_->DrawIndexed(box.index_list.size(), 0, 0);
 	}
 }
 
@@ -446,17 +446,17 @@ void RenderSystem::RenderBoundingBox(const C_BoundingBox* const box)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	SetTransformCb(box, cb_transform.data.transform);
-	device_context->UpdateSubresource(cb_transform.buffer.Get(), 0, nullptr, &cb_transform.data, 0, 0);
-	device_context->VSSetConstantBuffers(1, 1, cb_transform.buffer.GetAddressOf());
+	SetTransformCb(box, cb_transform_.data.transform);
+	device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
+	device_context_->VSSetConstantBuffers(1, 1, cb_transform_.buffer.GetAddressOf());
 
-	device_context->IASetVertexBuffers(0, 1, box->vertex_buffer.GetAddressOf(), &stride, &offset);
-	device_context->IASetIndexBuffer(box->index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	device_context_->IASetVertexBuffers(0, 1, box->vertex_buffer.GetAddressOf(), &stride, &offset);
+	device_context_->IASetIndexBuffer(box->index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	device_context->IASetInputLayout(shader->InputLayout());
-	device_context->VSSetShader(shader->Get(), 0, 0);
+	device_context_->IASetInputLayout(shader->InputLayout());
+	device_context_->VSSetShader(shader->Get(), 0, 0);
 
-	device_context->DrawIndexed(box->index_list.size(), 0, 0);
+	device_context_->DrawIndexed(box->index_list.size(), 0, 0);
 }
 
 void RenderSystem::RenderEffects(entt::registry& reg)
@@ -464,7 +464,7 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	auto view_effect = reg.view<C_Effect>();
 	for (auto ent : view_effect)
 	{
-		device_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
+		device_context_->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
  		auto& effect_comp = reg.get<C_Effect>(ent);
 
 		auto& effect = effect_comp.effect;
@@ -500,7 +500,7 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 					TextureSprite* tex_sprite = (TextureSprite*)sprite;
 					Texture* texture = RESOURCE->UseResource<Texture>(tex_sprite->tex_id_list[particle.timer]);
 					if (texture != nullptr)
-						device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+						device_context_->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 				}
 
 				SetParticleCB(particle);
@@ -508,18 +508,18 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 				// VertexBuffer 설정
 				UINT stride = sizeof(EffectVertex);
 				UINT offset = 0;
-				device_context->IASetVertexBuffers(0, 1, vertex_buffer_.GetAddressOf(), &stride, &offset);
-				device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
-				device_context->Draw(1, 0);
+				device_context_->IASetVertexBuffers(0, 1, vertex_buffer_.GetAddressOf(), &stride, &offset);
+				device_context_->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST);
+				device_context_->Draw(1, 0);
 			}
 		}
 	}
 
 	// BS, DS 복구 작업
-	device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
-	device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
-	device_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	device_context->GSSetShader(nullptr, 0, 0);
+	device_context_->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+	device_context_->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
+	device_context_->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	device_context_->GSSetShader(nullptr, 0, 0);
 }
 
 void reality::RenderSystem::SetTransformCb(const C_Transform* const transform_component, Transform& transform)
@@ -530,10 +530,10 @@ void reality::RenderSystem::SetTransformCb(const C_Transform* const transform_co
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
 {
-	cb_effect.data.world = XMMatrixTranspose(world);
+	cb_effect_.data.world = XMMatrixTranspose(world);
 
-	device_context->UpdateSubresource(cb_effect.buffer.Get(), 0, nullptr, &cb_effect.data, 0, 0);
-	device_context->GSSetConstantBuffers(1, 1, cb_effect.buffer.GetAddressOf());
+	device_context_->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
+	device_context_->GSSetConstantBuffers(1, 1, cb_effect_.buffer.GetAddressOf());
 }
 
 void RenderSystem::SetEmitterCB(Emitter& emitter)
@@ -543,9 +543,9 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 
 	// gravity
 	if (emitter.gravity_on_off)
-		cb_emitter.data.value.w = 1;
+		cb_emitter_.data.value.w = 1;
 	else
-		cb_emitter.data.value.w = 0;
+		cb_emitter_.data.value.w = 0;
 
 	switch (sprite->type)
 	{
@@ -553,36 +553,36 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	case UV_SPRITE:
 	{
 		// type
-		cb_emitter.data.value.x = 0;
+		cb_emitter_.data.value.x = 0;
 
 		UVSprite* uv_sprite = (UVSprite*)sprite;
 
 		Texture* texture = RESOURCE->UseResource<Texture>(uv_sprite->tex_id);
 		if (texture != nullptr)
-			device_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
+			device_context_->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 
-		cb_emitter.data.value.z = uv_sprite->uv_list.size();
+		cb_emitter_.data.value.z = uv_sprite->uv_list.size();
 
 		for (int i = 0; i < uv_sprite->uv_list.size(); i++)
 		{
-			cb_emitter.data.value2[i].x = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
-			cb_emitter.data.value2[i].y = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
-			cb_emitter.data.value2[i].z = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
-			cb_emitter.data.value2[i].w = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
+			cb_emitter_.data.value2[i].x = (float)uv_sprite->uv_list[i].first.x / (float)texture->texture_desc.Width;
+			cb_emitter_.data.value2[i].y = (float)uv_sprite->uv_list[i].first.y / (float)texture->texture_desc.Height;
+			cb_emitter_.data.value2[i].z = (float)uv_sprite->uv_list[i].second.x / (float)texture->texture_desc.Width;
+			cb_emitter_.data.value2[i].w = (float)uv_sprite->uv_list[i].second.y / (float)texture->texture_desc.Height;
 		}
 	}break;
 	// Tex
 	case TEX_SPRITE:
 	{
 		// type
-		cb_emitter.data.value.x = 1;
+		cb_emitter_.data.value.x = 1;
 
 
 	}break;
 	}
 
-	device_context->UpdateSubresource(cb_emitter.buffer.Get(), 0, nullptr, &cb_emitter.data, 0, 0);
-	device_context->GSSetConstantBuffers(2, 1, cb_emitter.buffer.GetAddressOf());
+	device_context_->UpdateSubresource(cb_emitter_.buffer.Get(), 0, nullptr, &cb_emitter_.data, 0, 0);
+	device_context_->GSSetConstantBuffers(2, 1, cb_emitter_.buffer.GetAddressOf());
 }
 
 void RenderSystem::SetShaderAndMaterial(Emitter& emitter)
@@ -591,13 +591,13 @@ void RenderSystem::SetShaderAndMaterial(Emitter& emitter)
 	VertexShader* vs = RESOURCE->UseResource<VertexShader>(emitter.vs_id);
 	if (vs)
 	{
-		device_context->IASetInputLayout(vs->InputLayout());
-		device_context->VSSetShader(vs->Get(), 0, 0);
+		device_context_->IASetInputLayout(vs->InputLayout());
+		device_context_->VSSetShader(vs->Get(), 0, 0);
 	}
 
 	GeometryShader* gs = RESOURCE->UseResource<GeometryShader>(emitter.geo_id);
 	if (gs)
-		device_context->GSSetShader(gs->GetDefaultGS(), 0, 0);
+		device_context_->GSSetShader(gs->GetDefaultGS(), 0, 0);
 
 	Material* material = RESOURCE->UseResource<Material>(emitter.mat_id);
 
@@ -611,19 +611,19 @@ void RenderSystem::SetStates(Emitter& emitter)
 	switch (emitter.bs_state)
 	{
 	case DEFAULT_BS:
-		device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+		device_context_->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
 		break;
 	case NO_BLEND:
-		device_context->OMSetBlendState(nullptr, nullptr, -1);
+		device_context_->OMSetBlendState(nullptr, nullptr, -1);
 		break;
 	case ALPHA_BLEND:
-		device_context->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+		device_context_->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
 		break;
 	case DUALSOURCE_BLEND:
-		device_context->OMSetBlendState(DXStates::bs_dual_source_blend(), nullptr, -1);
+		device_context_->OMSetBlendState(DXStates::bs_dual_source_blend(), nullptr, -1);
 		break;
 	case HIGHER_RGB:
-		device_context->OMSetBlendState(DXStates::bs_blend_higher_rgb(), nullptr, -1);
+		device_context_->OMSetBlendState(DXStates::bs_blend_higher_rgb(), nullptr, -1);
 		break;
 
 	}
@@ -632,13 +632,13 @@ void RenderSystem::SetStates(Emitter& emitter)
 	switch (emitter.ds_state)
 	{
 	case DEFAULT_NONE:
-		device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
+		device_context_->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
 		break;
 	case DEPTH_COMP_NOWRITE:
-		device_context->OMSetDepthStencilState(DXStates::ds_depth_enable_no_write(), 0xff);
+		device_context_->OMSetDepthStencilState(DXStates::ds_depth_enable_no_write(), 0xff);
 		break;
 	case DEPTH_COMP_WRITE:
-		device_context->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
+		device_context_->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
 		break;
 	}
 }
@@ -665,7 +665,7 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	// SRT for Billboard
 	// multiply world rotation's inverse matrix
 	XMVECTOR world_scale, world_rot, world_trans;
-	XMMatrixDecompose(&world_scale, &world_rot, &world_trans, cb_effect.data.world);
+	XMMatrixDecompose(&world_scale, &world_rot, &world_trans, cb_effect_.data.world);
 	auto world_inv_rot = XMMatrixRotationQuaternion(world_rot);
 	r = XMMatrixMultiply(r, world_inv_rot);
 	sr = XMMatrixMultiply(s, r);
@@ -673,7 +673,7 @@ void RenderSystem::SetParticleCB(Particle& particle)
 
 	cb_particle_.data.transform_for_billboard = XMMatrixTranspose(srt);
 
-	device_context->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
-	device_context->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());
+	device_context_->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
+	device_context_->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());
 }
 
