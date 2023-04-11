@@ -28,7 +28,10 @@ namespace reality
 		void RenderBoxShape(entt::registry& reg);
 		void RenderBoundingBox(const C_BoundingBox* const);
 		void RenderEffects(entt::registry& reg);
-		void SetTransformCb(const C_Transform* const transform_component, Transform& transform);
+
+	public:
+		void SetTransformCB(const C_Transform* const transform_component, Transform& transform);
+		void SetSocketCB(const Socket& socket);
 		void SetEffectCB(Effect& effect, XMMATRIX& world);
 		void SetEmitterCB(Emitter& emitter);
 		void SetShaderAndMaterial(Emitter& emitter);
@@ -37,18 +40,19 @@ namespace reality
 	public:
 
 	private:
-		ID3D11Device* device = nullptr;
-		ID3D11DeviceContext* device_context = nullptr;
+		ID3D11Device* device_ = nullptr;
+		ID3D11DeviceContext* device_context_ = nullptr;
 
 	private:
-		CbTransform cb_transform;
-		CbSkeletalMesh cb_skeletal_mesh;
+		CbTransform cb_transform_;
+		CbStaticMesh cb_static_mesh_;
+		CbSkeletalMesh cb_skeletal_mesh_;
 
 		// Effect
 		EffectVertex			effect_vertex_;
 		ComPtr<ID3D11Buffer>	vertex_buffer_;
-		CbEffect	cb_effect;
-		CbEmitter	cb_emitter;
+		CbEffect	cb_effect_;
+		CbEmitter	cb_emitter_;
 		CbParticle	cb_particle_;
 	};
 }
