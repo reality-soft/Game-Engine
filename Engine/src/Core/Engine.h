@@ -10,7 +10,7 @@ namespace reality {
 	};
 
 	static const string E_Resolution_String[] = { "1920 X 1080", "1280 X 720" };
-	static POINT  E_Resolution_Size[] = { { 1920, 1061 }, { 1264, 681 } };
+	static POINT  E_Resolution_Size[] = { { 1920, 1080 }, { 1280, 720 } };
 	static const float  E_Resolution_Multiply[] = { 1.0f, 2.0f / 3.0f };
 
 	class DLL_API Engine

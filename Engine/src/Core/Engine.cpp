@@ -25,7 +25,7 @@ LRESULT CALLBACK WindowProc(
 		return 0;
 
 	case WM_SIZE:
-		ENGINE->OnResized();
+		//ENGINE->OnResized();
 		break;
 
 	case WM_DPICHANGED:
@@ -145,7 +145,7 @@ namespace reality {
 			break;
 		}
 
-		SetWindowPos(hwnd, NULL, 0, 0, screen_size.x, screen_size.y, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+		SetWindowPos(hwnd, NULL, GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2, screen_size.x, screen_size.y, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
 		RECT new_rc;
 		GetClientRect(hwnd, &new_rc);
@@ -162,8 +162,9 @@ namespace reality {
 		this->hinstance = hinstance;
 		this->title = title;
 
-		auto style = WS_OVERLAPPEDWINDOW;
-		style &= ~WS_THICKFRAME;
+		//auto style = WS_OVERLAPPEDWINDOW;
+		//style &= ~WS_THICKFRAME;
+		auto style = WS_POPUP;
 
 		RECT rc = { 0, 0, screen_size.x, screen_size.y };
 		AdjustWindowRect(&rc, style, false);
