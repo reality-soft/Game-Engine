@@ -152,6 +152,8 @@ namespace reality {
 		wnd_size.x = new_rc.right - new_rc.left;
 		wnd_size.y = new_rc.bottom - new_rc.top;
 
+		E_Resolution_Size[new_resolution] = { wnd_size.x, wnd_size.y };
+
 		DX11APP->Resize(wnd_size.x, wnd_size.y);
 	}
 
