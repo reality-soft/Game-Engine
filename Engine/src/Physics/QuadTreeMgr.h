@@ -25,6 +25,8 @@ namespace reality {
 		AABBShape area;
 		PhysicsNode* child_node_[4] = { 0, };
 		PhysicsNode* parent_node = nullptr;
+		UINT parent_node_index = 0;
+		UINT child_node_index[4] = {0, 0, 0, 0};
 		vector<TriangleShape> static_triangles;
 	};
 
@@ -42,7 +44,9 @@ namespace reality {
 		AABBShape area;
 		MeshNode* child_node_[4] = { 0, };
 		MeshNode* parent_node = nullptr;
-		StaticMesh node_mesh;
+		UINT parent_node_index = 0;
+		UINT child_node_index[4] = { 0, 0, 0, 0 };
+		StaticMesh separated_level_mesh_;
 	};
 
 	class DLL_API QuadTreeMgr
@@ -54,7 +58,12 @@ namespace reality {
 		entt::registry* registry_;
 
 	public:
-		void Init(StaticMeshLevel* level_to_devide, int max_depth, entt::registry& reg);
+		void Init(StaticMeshLevel* level_to_devide, entt::registry& reg);
+
+		void CreateQuadTreeData(int max_depth);
+		void ImportQuadTreeData(string filename);
+		bool CreatePhysicsCS();
+
 		void Frame(CameraSystem* applied_camera);
 		void UpdatePhysics(string cs_id);
 		void Release();
@@ -79,7 +88,6 @@ namespace reality {
 
 		// Physics Tree
 	private:
-		bool CreatePhysicsCS();
 		void RunPhysicsCS(string cs_id);
 		void MovementByPhysicsCS();
 
@@ -108,12 +116,14 @@ namespace reality {
 		map<UINT, MeshNode*> leaf_mesh_nodes_;
 		MeshNode* BuildMeshTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
 		void SetMeshes(MeshNode* node);
-		map<bool, array<Vertex, 3>> level_triangle_meshes_;
 
 	public:
 		StaticMeshLevel* deviding_level_ = nullptr;
 		Frustum camera_frustum_;
-
 		bool wire_frame = false;
+		void ExportQuadTreeData(string filename);
+
+	private:
+		void InitImported();
 	};
 }
