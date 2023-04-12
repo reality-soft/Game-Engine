@@ -451,6 +451,15 @@ bool reality::QuadTreeMgr::IncludingNodeQuery(C_SphereCollision* c_sphere, Space
 	return true;
 }
 
+void reality::QuadTreeMgr::SetSpaceHeight(float min_y, float max_y)
+{
+	for (auto& node : total_nodes_)
+	{
+		node.second->area.min.y = min_y;
+		node.second->area.max.y = max_y;
+	}
+}
+
 void reality::QuadTreeMgr::UpdateCapsules()
 {
 	vector<entt::entity> destroied_actors;
@@ -470,34 +479,36 @@ void reality::QuadTreeMgr::UpdateCapsules()
 	}
 }
 
-//pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
-//{
-//	map<float, RayCallback> callback_list;
-//
-//	entt::entity selected_entity = entt::null;
-//
-//	auto level_callback = RaycastAdjustLevel(ray, 15000);
-//	for (auto& capsule : dynamic_capsule_list)
-//	{
-//		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
-//			continue;
-//
-//		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
-//		if (capsule_callback.success)
-//		{
-//			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
-//			selected_entity = capsule.first;
-//		}
-//	}
-//
-//	if (callback_list.begin() == callback_list.end())
-//		return make_pair(RayCallback(), entt::null);
-//
-//	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
-//		return make_pair(RayCallback(), entt::null);
-//
-//	return make_pair(callback_list.begin()->second, selected_entity);
-//}
+RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
+{
+	map<float, RayCallback> callback_list;
+
+	for (auto& tri : deviding_level_->level_triangles)
+	{
+		auto callback = RayToTriangle(ray, tri);
+		if (callback.success)
+		{
+			callback.is_actor = false;
+			callback_list.insert(make_pair(callback.distance, callback));
+		}
+	}
+	for (auto& item : dynamic_capsule_list)
+	{
+		const auto& capsule = item.second->capsule;
+		auto callback = RayToCapsule(ray, capsule);
+		if (callback.success)
+		{
+			callback.is_actor = true;
+			callback.ent = item.first;
+			callback_list.insert(make_pair(callback.distance, callback));
+		}
+	}
+
+	if (callback_list.empty())
+		return RayCallback();
+
+	return callback_list.begin()->second;
+}
 
 void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 {
