@@ -39,7 +39,18 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_transform_.buffer.GetAddressOf());
 
-	// Init SkeletonBuffer
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbStaticMesh::Data);
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &cb_static_mesh_.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_static_mesh_.buffer.GetAddressOf());
+
 	for (int i = 0; i < 128; ++i) {
 		cb_skeletal_mesh_.data.bind_pose[i] = XMMatrixIdentity();
 		cb_skeletal_mesh_.data.animation[i] = XMMatrixIdentity();
@@ -77,16 +88,17 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 			socket_component = reg.try_get<C_Socket>(ent);
 		}
 
-		if (socket_component != nullptr) {
-			SetTransformCB(socket_component, cb_static_mesh_.data.transform);
+		SetTransformCB(socket_component, cb_static_mesh_.data.transform);
 
+		if (socket_component != nullptr) {
 			auto socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
 			if (socket_it != socket_component->sockets.end()) {
 				SetSocketCB(socket_it->second);
 			}
 		}
 		else {
-			SetTransformCB(static_mesh_component, cb_static_mesh_.data.transform);
+			cb_static_mesh_.data.socket_transform.animation_matrix = XMMatrixIdentity();
+			cb_static_mesh_.data.socket_transform.local_offset = XMMatrixIdentity();
 		}
 
 		RenderStaticMesh(static_mesh_component);
@@ -247,8 +259,8 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 		return;
 	}
 
-	device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
-	device_context_->VSSetConstantBuffers(1, 1, cb_transform_.buffer.GetAddressOf());
+	device_context_->UpdateSubresource(cb_static_mesh_.buffer.Get(), 0, nullptr, &cb_static_mesh_.data, 0, 0);
+	device_context_->VSSetConstantBuffers(1, 1, cb_static_mesh_.buffer.GetAddressOf());
 
 	for (auto single_mesh : static_mesh->meshes)
 	{
@@ -546,8 +558,8 @@ void reality::RenderSystem::SetTransformCB(const C_Transform* const transform_co
 
 void reality::RenderSystem::SetSocketCB(const Socket& socket)
 {
-	cb_static_mesh_.data.transform.local_matrix = socket.local_offset;
-	cb_static_mesh_.data.socket_animation = socket.animation_matrix;
+	cb_static_mesh_.data.socket_transform.local_offset = XMMatrixTranspose(socket.local_offset);
+	cb_static_mesh_.data.socket_transform.animation_matrix = XMMatrixTranspose(socket.animation_matrix);
 }
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)

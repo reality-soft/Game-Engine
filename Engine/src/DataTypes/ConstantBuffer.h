@@ -9,8 +9,8 @@ namespace reality
 	};
 
 	struct SocketTransform {
-		Transform	transform;
-		XMMATRIX	animatinon_matrix;
+		XMMATRIX	local_offset;
+		XMMATRIX	animation_matrix;
 	};
 
 	struct CbTransform
@@ -44,7 +44,7 @@ namespace reality
 		struct Data
 		{
 			Transform		transform;
-			XMMATRIX		socket_animation;
+			SocketTransform	socket_transform;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
