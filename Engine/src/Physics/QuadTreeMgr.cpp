@@ -586,6 +586,95 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 	return true;
 }
 
+bool reality::QuadTreeMgr::InitCollisionMeshes()
+{
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC desc;
+	D3D11_SUBRESOURCE_DATA subdata;
+
+	ZeroMemory(&desc, sizeof(desc));
+	ZeroMemory(&subdata, sizeof(subdata));
+
+	desc.ByteWidth = sizeof(CbTransform::Data);
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	subdata.pSysMem = &capsule_mesh_transform.data;
+
+	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, capsule_mesh_transform.buffer.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+
+	return true;
+}
+
+void reality::QuadTreeMgr::RenderCollisionMeshes()
+{
+	if (DINPUT->GetKeyState(DIK_C) == KEY_PUSH)
+		view_collisions_ = !view_collisions_;
+
+	if (!view_collisions_)
+		return;
+
+
+	StaticMesh* capsule_mesh = RESOURCE->UseResource<StaticMesh>("CapsuleMesh.stmesh");
+	VertexShader* vertex_shader = RESOURCE->UseResource<VertexShader>("CollisionMeshVS.cso");
+	Material* material = RESOURCE->UseResource<Material>("Capsule.mat");
+
+	if (capsule_mesh == nullptr || vertex_shader == nullptr || material == nullptr)
+		return;
+
+	DX11APP->GetDeviceContext()->VSSetShader(nullptr, nullptr, 0);
+	DX11APP->GetDeviceContext()->GSSetShader(nullptr, nullptr, 0);
+	DX11APP->GetDeviceContext()->PSSetShader(nullptr, nullptr, 0);
+
+	DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader->InputLayout());
+	DX11APP->GetDeviceContext()->VSSetShader(vertex_shader->Get(), nullptr, 0);
+	DX11APP->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
+	
+	material->Set();
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+
+	for (auto& item : dynamic_capsule_list)
+	{
+		const auto& capsule = item.second->capsule;
+		
+		auto capsule_info = GetTipBaseAB(capsule);
+
+		XMMATRIX a_sphere_world = XMMatrixScaling(capsule.radius, capsule.radius, capsule.radius) * XMMatrixTranslationFromVector(capsule_info[2]);
+		XMMATRIX b_sphere_world = XMMatrixScaling(capsule.radius, capsule.radius, capsule.radius) * XMMatrixTranslationFromVector(capsule_info[3]);
+
+		capsule_mesh_transform.data.transform.world_matrix = XMMatrixTranspose(a_sphere_world);
+		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_mesh_transform.buffer.Get(), 0, 0, &capsule_mesh_transform.data, 0, 0);
+		DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, capsule_mesh_transform.buffer.GetAddressOf());
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, capsule_mesh->meshes[0].vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(capsule_mesh->meshes[0].index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(capsule_mesh->meshes[0].indices.size(), 0, 0);
+
+		capsule_mesh_transform.data.transform.world_matrix = XMMatrixTranspose(b_sphere_world);
+		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_mesh_transform.buffer.Get(), 0, 0, &capsule_mesh_transform.data, 0, 0);
+		DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, capsule_mesh_transform.buffer.GetAddressOf());
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, capsule_mesh->meshes[1].vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->IASetIndexBuffer(capsule_mesh->meshes[0].index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		DX11APP->GetDeviceContext()->DrawIndexed(capsule_mesh->meshes[1].indices.size(), 0, 0);
+	}
+
+	capsule_mesh = nullptr;
+	vertex_shader = nullptr;
+	material = nullptr;
+
+	deviding_level_->RenderCollisionMesh();
+
+	DX11APP->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
 void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 {
 	auto compute_shader = RESOURCE->UseResource<ComputeShader>(cs_id);
