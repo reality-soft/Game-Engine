@@ -14,13 +14,22 @@ namespace reality
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
+
 		RayShape CreateMouseRay();
 		RayShape CreateFrontRay();
 		C_Camera* GetCamera();
 		XMMATRIX GetViewProj();
 		void SetSpeed(float speed) { this->speed = speed; };
 		void SetFov(float dgree) { camera->fov = XMConvertToRadians(dgree); };
+		void SetFarZ(float z) { camera->far_z = z; };
 		XMFLOAT2 ndc;
+
+		void CreateFrustum();
+		BoundingFrustum frustum;
+		XMMATRIX world_matrix;
+		XMMATRIX view_matrix;
+		XMMATRIX projection_matrix;
+
 	private:
 		void DebugCameraMovement();
 		void PlayerCameraMovement();
@@ -31,10 +40,6 @@ namespace reality
 	private:
 		C_Camera* camera = nullptr;
 		D3D11_VIEWPORT* viewport;
-
-		XMMATRIX world_matrix;
-		XMMATRIX view_matrix;
-		XMMATRIX projection_matrix;
 
 		CbCameraInfo	cb_camera_info;
 		CbCameraEffect	cb_effect;

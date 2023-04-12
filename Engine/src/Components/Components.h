@@ -11,6 +11,7 @@
 #include "DX11App.h"
 #include "ResourceMgr.h"
 #include "AnimSlot.h"
+#include "Socket.h"
 
 namespace reality
 {
@@ -36,10 +37,20 @@ namespace reality
 		}
 	};
 
+	struct C_Socket : public C_Transform
+	{
+		unordered_map<string, Socket> sockets;
+
+		void AddSocket(string socket_name, UINT bone_id, XMMATRIX local_offset) {
+			sockets.insert({ socket_name, Socket(bone_id, local_offset) });
+		}
+	};
+
 	struct C_StaticMesh : public C_Transform
 	{
 		string static_mesh_id;
 		string vertex_shader_id = "StaticMeshVS.cso";
+		string socket_name = "";
 
 		virtual void OnConstruct() override {};
 	};
@@ -97,7 +108,7 @@ namespace reality
 			target_height = capsule_collision.capsule.GetTipBaseAB()[0].m128_f32[1];
 			pitch_yaw = { 0, 0};
 			near_z = 1.f;
-			far_z = 6000.f;
+			far_z = 10000.f;
 			fov = XMConvertToRadians(90);
 			tag = "Player";
 		}

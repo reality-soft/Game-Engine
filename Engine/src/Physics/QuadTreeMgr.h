@@ -42,6 +42,7 @@ namespace reality {
 		UINT node_num;
 		UINT node_depth;
 		AABBShape area;
+		BoundingBox culling_aabb;
 		MeshNode* child_node_[4] = { 0, };
 		MeshNode* parent_node = nullptr;
 		UINT parent_node_index = 0;
@@ -66,6 +67,9 @@ namespace reality {
 
 		void Frame(CameraSystem* applied_camera);
 		void UpdatePhysics(string cs_id);
+
+		void Render();
+
 		void Release();
 	public:
 		void UpdateCapsules();
@@ -80,10 +84,7 @@ namespace reality {
 		array<SbCollisionResult::Data, 64> collision_result_pool_;
 
 	public:
-		int calculating_triagnles;
-		set<UINT> including_nodes_num;
-		XMVECTOR player_capsule_pos;
-
+		UINT culling_nodes = 0;
 		vector<RayShape> blocking_lines;
 
 		// Physics Tree
@@ -94,6 +95,7 @@ namespace reality {
 		PhysicsNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node);
 		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node, vector<PhysicsNode*>& node_list);
 		void	   NodeCasting(const RayShape& ray, PhysicsNode* node);
+		void NodeCulling(MeshNode* node);
 
 		UINT max_depth;
 		UINT node_count = 0;
@@ -119,11 +121,12 @@ namespace reality {
 
 	public:
 		StaticMeshLevel* deviding_level_ = nullptr;
-		Frustum camera_frustum_;
+		BoundingFrustum camera_frustum_;
 		bool wire_frame = false;
 		void ExportQuadTreeData(string filename);
 
 	private:
 		void InitImported();
+		void RenderNode(MeshNode* node);
 	};
 }

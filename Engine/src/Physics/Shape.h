@@ -37,9 +37,6 @@ namespace reality {
         array<RayShape, 4> GetYAxisRay();
 
         XMFLOAT3 min, max, center;
-        array<XMFLOAT3, 8>       corner;
-        array<TriangleShape, 12> triangle;
-        array<RayShape, 4>       vertical_ray;
     };
 
     struct DLL_API SphereShape

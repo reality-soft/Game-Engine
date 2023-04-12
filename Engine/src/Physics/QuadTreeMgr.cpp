@@ -55,6 +55,8 @@ void reality::MeshNode::SetNode(float min_x, float min_z, float max_x, float max
 	XMFLOAT3 min = XMFLOAT3(min_x, MIN_HEIGHT, min_z);
 	XMFLOAT3 max = XMFLOAT3(max_x, MAX_HEIGHT, max_z);
 	area = AABBShape(min, max);
+
+	culling_aabb.CreateFromPoints(culling_aabb, _XMVECTOR3(area.min), _XMVECTOR3(area.max));
 }
 
 void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, entt::registry& reg)
@@ -270,12 +272,15 @@ void reality::QuadTreeMgr::ImportQuadTreeData(string filename)
 			auto& mesh = new_node->separated_level_mesh_.meshes[m];
 
 			UINT vertex_size;
-
 			read_file.ReadBinary<UINT>(vertex_size);
-			read_file.ReadBinary<string>(mesh.mesh_name);
 
 			mesh.vertices.resize(vertex_size);
 			read_file.ReadBinary<Vertex>(mesh.vertices);
+
+			vector<char> str_buffer;
+			str_buffer.resize(128);
+			read_file.ReadBinary<char>(str_buffer);
+			mesh.mesh_name = str_buffer.data();
 		}
 	}
 
@@ -290,6 +295,11 @@ void reality::QuadTreeMgr::InitImported()
 		{
 			physics_node.second->parent_node = total_physics_nodes_.find(physics_node.second->parent_node_index)->second;
 		}
+		else
+		{
+			root_physics_node_ = physics_node.second;
+		}
+
 		if (physics_node.second->child_node_index[0] != 99999)
 		{
 			physics_node.second->child_node_[0] = total_physics_nodes_.find(physics_node.second->child_node_index[0])->second;
@@ -304,10 +314,19 @@ void reality::QuadTreeMgr::InitImported()
 
 	for (auto& mesh_node : total_mesh_nodes_)
 	{
+		float node_min_y = 0.0f;
+		float node_max_y = 0.0f;
+
 		if (mesh_node.second->parent_node_index != 99999)
 		{
 			mesh_node.second->parent_node = total_mesh_nodes_.find(mesh_node.second->parent_node_index)->second;
 		}
+		else
+		{
+			root_mesh_node_ = mesh_node.second;
+		}
+
+
 		if (mesh_node.second->child_node_index[0] != 99999)
 		{
 			mesh_node.second->child_node_[0] = total_mesh_nodes_.find(mesh_node.second->child_node_index[0])->second;
@@ -319,10 +338,40 @@ void reality::QuadTreeMgr::InitImported()
 		{
 			if (mesh.vertices.size() > 0)
 				bool buffer_created = CreateVertexBuffer(mesh);
+
+			for (auto& vertex : mesh.vertices)
+			{
+				node_min_y = min(vertex.p.y, node_min_y);
+				node_max_y = max(vertex.p.y, node_max_y);
+			}
 		}
 
 		if (mesh_node.second->is_leaf)
 			leaf_mesh_nodes_.insert(mesh_node);
+
+		mesh_node.second->area.min.y = node_min_y;
+		mesh_node.second->area.max.y = node_max_y;
+		mesh_node.second->culling_aabb.CreateFromPoints(mesh_node.second->culling_aabb, _XMVECTOR3(mesh_node.second->area.min), _XMVECTOR3(mesh_node.second->area.max));
+	}
+}
+
+void reality::QuadTreeMgr::RenderNode(MeshNode* node)
+{
+	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
+	DX11APP->GetDeviceContext()->IASetInputLayout(deviding_level_->GetVertexShader()->InputLayout());
+	DX11APP->GetDeviceContext()->VSSetShader(deviding_level_->GetVertexShader()->Get(), nullptr, 0);
+
+	for (auto& mesh : node->separated_level_mesh_.meshes)
+	{
+		Material* material = RESOURCE->UseResource<Material>(mesh.mesh_name + ".mat");
+		if (material)
+			material->Set();
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);
 	}
 }
 
@@ -419,6 +468,7 @@ void reality::QuadTreeMgr::SetMeshes(MeshNode* node)
 		{
 			SingleMesh<Vertex> new_single_mesh;
 
+			new_single_mesh.mesh_name = mesh.mesh_name;
 			UINT num_triangle = mesh.vertices.size() / 3;
 			UINT index = 0;
 			for (UINT t = 0; t < num_triangle; t++)
@@ -458,7 +508,8 @@ void reality::QuadTreeMgr::SetMeshes(MeshNode* node)
 
 void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
-	camera_frustum_ = Frustum(applied_camera->GetViewProj());
+	camera_frustum_.CreateFromMatrix(camera_frustum_, applied_camera->projection_matrix);
+	camera_frustum_.Transform(camera_frustum_, applied_camera->world_matrix);
 	UpdateCapsules();
 }
 
@@ -511,10 +562,16 @@ void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 	MovementByPhysicsCS();
 }
 
+void reality::QuadTreeMgr::Render()
+{
+	culling_nodes = 0;
+	NodeCulling(root_mesh_node_);
+}
+
 void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, PhysicsNode* node)
 {
-	if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
-		return;
+	//if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
+	//	return;
 	
 	if (RayToAABB(ray, node->area))
 	{
@@ -530,6 +587,29 @@ void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, PhysicsNode* node)
 			NodeCasting(ray, node->child_node_[1]);
 			NodeCasting(ray, node->child_node_[2]);
 			NodeCasting(ray, node->child_node_[3]);
+		}
+	}
+}
+
+void reality::QuadTreeMgr::NodeCulling(MeshNode* node)
+{
+	auto result = camera_frustum_.Contains(node->culling_aabb);
+
+	if (result == ContainmentType::CONTAINS)
+	{
+		RenderNode(node);
+	}
+	else if (result == ContainmentType::INTERSECTS)
+	{
+		if (node->is_leaf)
+			RenderNode(node);
+
+		else
+		{
+			NodeCulling(node->child_node_[0]);
+			NodeCulling(node->child_node_[1]);
+			NodeCulling(node->child_node_[2]);
+			NodeCulling(node->child_node_[3]);
 		}
 	}
 }
@@ -707,15 +787,17 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 	DX11APP->GetDeviceContext()->CopyResource(staging_buffer_.Get(), result_stbuffer.buffer.Get());
 
 	D3D11_MAPPED_SUBRESOURCE mapped_resource = { 0, };
+	
 	HRESULT hr = DX11APP->GetDeviceContext()->Map(staging_buffer_.Get(), 0, D3D11_MAP_READ, 0, &mapped_resource);
 	if (FAILED(hr))
 		return;
+
+	DX11APP->GetDeviceContext()->Unmap(staging_buffer_.Get(), 0);
 
 	SbCollisionResult::Data* sum = reinterpret_cast<SbCollisionResult::Data*>(mapped_resource.pData);
 	memcpy(collision_result_pool_.data(), sum, 64 * sizeof(SbCollisionResult::Data));
 	UINT size = 64 * sizeof(SbCollisionResult::Data);
 	mapped_resource.RowPitch;
-	DX11APP->GetDeviceContext()->Unmap(staging_buffer_.Get(), 0);
 
 }
 
@@ -866,8 +948,8 @@ void reality::QuadTreeMgr::ExportQuadTreeData(string filename)
 		{
 			UINT vertex_size = mesh.vertices.size();
 			outdata_file.WriteBinary<UINT>(&vertex_size, 1);
-			outdata_file.WriteBinary<string>(&mesh.mesh_name, 1);
 			outdata_file.WriteBinary<Vertex>(mesh.vertices.data(), vertex_size);
+			outdata_file.WriteBinary<char>(mesh.mesh_name.data(), 128);
 		}
 	}
 }

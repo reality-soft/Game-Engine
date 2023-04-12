@@ -98,9 +98,6 @@ reality::AABBShape::AABBShape(const XMFLOAT3& _min, const XMFLOAT3& _max)
     min = _min;
     max = _max;
     center = _XMFLOAT3((_XMVECTOR3(_min) + _XMVECTOR3(_max) / 2));
-    corner = GetCorners();
-    triangle = GetTriangles();
-    vertical_ray = GetYAxisRay();
 }
 
 reality::AABBShape::AABBShape(const XMFLOAT3& _center, const float& scale)
@@ -108,9 +105,6 @@ reality::AABBShape::AABBShape(const XMFLOAT3& _center, const float& scale)
     center = _center;
     min = _XMFLOAT3((_XMVECTOR3(center) - XMVectorSet(scale / 2, scale / 2, scale / 2, 0)));
     max = _XMFLOAT3((_XMVECTOR3(center) + XMVectorSet(scale / 2, scale / 2, scale / 2, 0)));
-    corner = GetCorners();
-    triangle = GetTriangles();
-    vertical_ray = GetYAxisRay();
 }
 
 array<XMFLOAT3, 8> reality::AABBShape::GetCorners()
