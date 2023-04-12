@@ -69,8 +69,12 @@ namespace reality {
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
 		array<SbCollisionResult::Data, 64> collision_result_pool_;
-		queue<RayShape> raycast_queue_;
 
+		CbTransform capsule_mesh_transform;
+		bool InitCollisionMeshes();
+		void RenderCollisionMeshes();
+		bool view_collisions_ = false;
+		
 	public:
 		UINT visible_nodes = 0;
 		vector<RayShape> blocking_lines;

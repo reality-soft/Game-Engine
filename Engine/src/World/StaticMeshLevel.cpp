@@ -56,9 +56,6 @@ bool reality::StaticMeshLevel::Create(string mesh_id, string vs_id, string colli
 
 void reality::StaticMeshLevel::Update()
 {
-    if (DINPUT->GetKeyState(DIK_C) == KEY_PUSH)
-        view_collision = !view_collision;
-
     DX11APP->GetDeviceContext()->VSSetShader(nullptr, nullptr, 0);
     DX11APP->GetDeviceContext()->GSSetShader(nullptr, nullptr, 0);
     DX11APP->GetDeviceContext()->PSSetShader(nullptr, nullptr, 0);
@@ -85,9 +82,6 @@ void reality::StaticMeshLevel::Render()
         DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);
     }
 
-    if (view_collision)
-        RenderCollisionMesh();
-
     DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
@@ -105,7 +99,12 @@ void reality::StaticMeshLevel::SetShadowMap(ID3D11ShaderResourceView* shadow_map
 
 void reality::StaticMeshLevel::RenderCollisionMesh()
 {
-    DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->Wireframe());
+    DX11APP->GetDeviceContext()->VSSetShader(nullptr, nullptr, 0);
+    DX11APP->GetDeviceContext()->GSSetShader(nullptr, nullptr, 0);
+    DX11APP->GetDeviceContext()->PSSetShader(nullptr, nullptr, 0);
+
+    DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader.get()->InputLayout());
+    DX11APP->GetDeviceContext()->VSSetShader(vertex_shader.get()->Get(), nullptr, 0);
 
     for (auto& mesh : collision_mesh.get()->meshes)
     {
@@ -119,8 +118,6 @@ void reality::StaticMeshLevel::RenderCollisionMesh()
         DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
         DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);        
     }
-
-    DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
 StaticMesh* reality::StaticMeshLevel::GetLevelMesh()

@@ -43,7 +43,6 @@ namespace reality
 		ID3D11RasterizerState* clipping_rs = nullptr;
 		map<string, shared_ptr<Material>> mesh_material_map;
 		vector<GuideLine> guide_lines;
-		bool view_collision = true;
 	};
 }
 
