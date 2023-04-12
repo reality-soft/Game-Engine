@@ -25,7 +25,7 @@ LRESULT CALLBACK WindowProc(
 		return 0;
 
 	case WM_SIZE:
-		ENGINE->OnResized();
+		//ENGINE->OnResized();
 		break;
 
 	case WM_DPICHANGED:
@@ -42,10 +42,27 @@ LRESULT CALLBACK WindowProc(
 }
 
 namespace reality {
-	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
+	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, E_Resolution resolution, bool titlebar)
 	{
+		POINT screen_size = { 0, 0 };
+		
+		current_resolution = resolution;
+
+		switch (resolution)
+		{
+		case E_Resolution::R1920x1080:
+			screen_size = { 1920, 1080 };
+			break;
+		case E_Resolution::R1280x720:
+			screen_size = { 1280, 720 };
+			break;
+		default:
+			screen_size = { 1920, 1080 };
+			break;
+		}
+
 		// À©µµ¿ì ÃÊ±âÈ­
-		if (InitWindow(hinstance, title, screen_size) == false)
+		if (InitWindow(hinstance, title, screen_size, titlebar) == false)
 			return false;
 
 		// DX ÃÊ±âÈ­
@@ -109,13 +126,46 @@ namespace reality {
 		DX11APP->OnRelease();
 	}
 
-	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
+	void Engine::Resize(E_Resolution new_resolution)
+	{
+		POINT screen_size = { 0, 0 };
+
+		current_resolution = new_resolution;
+
+		switch (new_resolution)
+		{
+		case E_Resolution::R1920x1080:
+			screen_size = { 1920, 1080 };
+			break;
+		case E_Resolution::R1280x720:
+			screen_size = { 1280, 720 };
+			break;
+		default:
+			screen_size = { 1920, 1080 };
+			break;
+		}
+
+		SetWindowPos(hwnd, NULL, GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2, screen_size.x, screen_size.y, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+		RECT new_rc;
+		GetClientRect(hwnd, &new_rc);
+		wnd_size.x = new_rc.right - new_rc.left;
+		wnd_size.y = new_rc.bottom - new_rc.top;
+
+		E_Resolution_Size[new_resolution] = { wnd_size.x, wnd_size.y };
+
+		DX11APP->Resize(wnd_size.x, wnd_size.y);
+	}
+
+	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size, bool titlebar)
 	{
 		this->hinstance = hinstance;
 		this->title = title;
 
+		auto style = titlebar ? WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME :  WS_POPUP;
+
 		RECT rc = { 0, 0, screen_size.x, screen_size.y };
-		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
+		AdjustWindowRect(&rc, style, false);
 		this->wnd_size.x = rc.right - rc.left;
 		this->wnd_size.y = rc.bottom - rc.top;
 
@@ -135,7 +185,7 @@ namespace reality {
 		hwnd = CreateWindow(
 			window_class.lpszClassName,
 			title,
-			WS_OVERLAPPEDWINDOW,
+			style,
 			GetSystemMetrics(SM_CXSCREEN) / 2 - wnd_size.x / 2,
 			GetSystemMetrics(SM_CYSCREEN) / 2 - wnd_size.y / 2,
 			wnd_size.x, wnd_size.y,

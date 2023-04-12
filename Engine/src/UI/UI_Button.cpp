@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UI_Button.h"
+#include "Engine.h"
 #include "InputMgr.h"
 
 using namespace reality;
@@ -8,11 +9,11 @@ using namespace reality;
 void UI_Button::InitButton(string normal, string hover, string push, string select, string disable)
 {
 	UIBase::Init();
-	button_texture_list.insert({ E_UIState::UI_NORMAL, normal });
-	button_texture_list.insert({ E_UIState::UI_HOVER, hover });
-	button_texture_list.insert({ E_UIState::UI_PUSH, push });
-	button_texture_list.insert({ E_UIState::UI_SELECT, select });
-	button_texture_list.insert({ E_UIState::UI_DISABLED, disable });
+	button_texture_list[E_UIState::UI_NORMAL] = normal;
+	button_texture_list[E_UIState::UI_HOVER] = hover;
+	button_texture_list[E_UIState::UI_PUSH] = push;
+	button_texture_list[E_UIState::UI_SELECT] = select;
+	button_texture_list[E_UIState::UI_DISABLED] = disable;
 }
 
 void UI_Button::Update()
@@ -38,7 +39,10 @@ bool UI_Button::MouseOnButton(const Rect& button_rect, const POINT& mouse_point)
 
 void UI_Button::UpdateButtonState()
 {
-	if (MouseOnButton(rect_transform_.world_rect, DINPUT->GetMousePosition()))
+	if (!onoff_)
+		return;
+	auto resolution = ENGINE->GetWindowResolution();
+	if (MouseOnButton(rect_transform_[resolution].world_rect, DINPUT->GetMousePosition()))
 	{
 		current_state_ = E_UIState::UI_HOVER;
 		if (DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_PUSH || DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_HOLD)
@@ -49,6 +53,10 @@ void UI_Button::UpdateButtonState()
 		{
 			current_state_ = E_UIState::UI_SELECT;
 		}
+	}
+	else if (current_state_ == E_UIState::UI_PUSH && DINPUT->GetMouseState(L_BUTTON) == KeyState::KEY_HOLD)
+	{
+		current_state_ = E_UIState::UI_PUSH;
 	}
 	else
 	{

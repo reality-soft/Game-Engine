@@ -106,6 +106,11 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 	DX11APP->GetDeviceContext()->GSSetConstantBuffers(0, 1, cb_effect.buffer.GetAddressOf());
 }
 
+void reality::CameraSystem::CreateFrustum()
+{
+	frustum.CreateFromMatrix(frustum, projection_matrix);
+}
+
 RayShape CameraSystem::CreateMouseRay()
 {
 	RayShape mouse_ray;
@@ -253,11 +258,11 @@ void CameraSystem::CreateMatrix()
 	}
 
 	this->view_matrix = view_matrix;
-	this->world_matrix = rotation_matrix;
+	this->world_matrix = XMMatrixInverse(0, view_matrix);
 
 	cb_camera_info.data.view_matrix = XMMatrixTranspose(view_matrix);
 	cb_camera_info.data.projection_matrix = XMMatrixTranspose(projection_matrix);
-	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(camera->camera_pos));
+	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(cb_camera_info.data.camera_position));
 	cb_camera_info.data.camera_position = XMMatrixInverse(nullptr, this->view_matrix).r[3];
 	cb_camera_info.data.camera_position.m128_f32[3] = camera->far_z;
 	cb_camera_info.data.camera_look = XMVector3Normalize(XMMatrixInverse(nullptr, this->view_matrix).r[2]);
@@ -307,5 +312,4 @@ void CameraSystem::CreateMatrix()
 	billboard.r[3].m128_f32[1] = 0.0f;
 	billboard.r[3].m128_f32[2] = 0.0f;
 	cb_effect.data.y_billboard = XMMatrixTranspose(billboard);
-
 }

@@ -21,7 +21,7 @@ namespace reality
 		XMVECTOR	 jump_ =  { 0, 1, 0, 0 };
 
 	public:
-		float floor_height = 0.0f;
+		XMFLOAT3 floor_position = {0, 0, 0};
 		MovementState movement_state_;
 		vector<RayShape> blocking_walls_;
 

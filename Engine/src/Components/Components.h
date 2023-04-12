@@ -11,6 +11,7 @@
 #include "DX11App.h"
 #include "ResourceMgr.h"
 #include "AnimSlot.h"
+#include "Socket.h"
 
 namespace reality
 {
@@ -36,10 +37,20 @@ namespace reality
 		}
 	};
 
+	struct C_Socket : public C_Transform
+	{
+		unordered_map<string, Socket> sockets;
+
+		void AddSocket(string socket_name, UINT bone_id, XMMATRIX owner_local, XMMATRIX local_offset) {
+			sockets.insert({ socket_name, Socket(bone_id, owner_local, local_offset) });
+		}
+	};
+
 	struct C_StaticMesh : public C_Transform
 	{
 		string static_mesh_id;
 		string vertex_shader_id = "StaticMeshVS.cso";
+		string socket_name = "";
 
 		virtual void OnConstruct() override {};
 	};
@@ -97,7 +108,7 @@ namespace reality
 			target_height = capsule_collision.capsule.GetTipBaseAB()[0].m128_f32[1];
 			pitch_yaw = { 0, 0};
 			near_z = 1.f;
-			far_z = 100000.f;
+			far_z = 10000.f;
 			fov = XMConvertToRadians(90);
 			tag = "Player";
 		}
@@ -155,7 +166,9 @@ namespace reality
 				return XMMatrixIdentity();
 			case ANIM_STATE::ANIM_STATE_CUR_ONLY:
 				res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
-				base_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_prev_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_cur_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
+				base_animation = base_cur_animation;
 				break;
 			case ANIM_STATE::ANIM_STATE_CUR_PREV:
 				res_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());

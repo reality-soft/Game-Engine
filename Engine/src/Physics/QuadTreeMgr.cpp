@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "FileTransfer.h"
 #include "QuadTreeMgr.h"
 #include "TimeMgr.h"
 #include "SceneMgr.h"
@@ -6,13 +7,13 @@
 
 using namespace reality;
 
-reality::SpaceNode::SpaceNode(UINT num, UINT depth)
+reality::PhysicsNode::PhysicsNode(UINT num, UINT depth)
 {
 	node_num = num;
 	node_depth = depth;
 }
 
-reality::SpaceNode::~SpaceNode()
+reality::PhysicsNode::~PhysicsNode()
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -24,32 +25,70 @@ reality::SpaceNode::~SpaceNode()
 	}
 }
 
-void reality::SpaceNode::SetNode(float min_x, float min_z, float max_x, float max_z)
+void reality::PhysicsNode::SetNode(float min_x, float min_z, float max_x, float max_z)
 {
 	XMFLOAT3 min = XMFLOAT3(min_x, MIN_HEIGHT, min_z);
 	XMFLOAT3 max = XMFLOAT3(max_x, MAX_HEIGHT, max_z);
 	area = AABBShape(min, max);
 }
 
-void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth, entt::registry& reg)
+reality::MeshNode::MeshNode(UINT num, UINT depth)
 {
+	node_num = num;
+	node_depth = depth;
+}
+
+reality::MeshNode::~MeshNode()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (child_node_[i])
+		{
+			delete child_node_[i];
+			child_node_[i] = nullptr;
+		}
+	}
+}
+
+void reality::MeshNode::SetNode(float min_x, float min_z, float max_x, float max_z)
+{
+	XMFLOAT3 min = XMFLOAT3(min_x, MIN_HEIGHT, min_z);
+	XMFLOAT3 max = XMFLOAT3(max_x, MAX_HEIGHT, max_z);
+	area = AABBShape(min, max);
+
+	culling_aabb.CreateFromPoints(culling_aabb, _XMVECTOR3(area.min), _XMVECTOR3(area.max));
+}
+
+void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, entt::registry& reg)
+{
+	deviding_level_ = level_to_devide;
 	registry_ = &reg;
 
-	deviding_level_ = level_to_devide;
+	// regist dynamic capsule
+	const auto& capsule_view = registry_->view<C_CapsuleCollision>();
+	for (auto& ent : capsule_view)
+	{
+		auto capsule_collision = registry_->try_get<C_CapsuleCollision>(ent);
+		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
+	}
+}
 
+void reality::QuadTreeMgr::CreateQuadTreeData(int max_depth)
+{
 	// build tree
 	float min_x = 0, min_z = 0;
 	float max_x = 0, max_z = 0;
-	for (auto& tri : level_to_devide->level_triangles)
+	for (auto& tri : deviding_level_->level_triangles)
 	{
 		min_x = min(min_x, tri.vertex0.x);
 		min_z = min(min_z, tri.vertex0.z);
-									  
+
 		max_x = max(max_x, tri.vertex0.x);
 		max_z = max(max_z, tri.vertex0.z);
 	}
 	this->max_depth = max_depth;
-	root_node_ = BuildTree(0, min_x, min_z, max_x, max_z);
+	node_count = 0;
+	root_physics_node_ = BuildPhysicsTree(0, min_x, min_z, max_x, max_z);
 
 	// set blocking field
 	for (auto& guide_line : deviding_level_->GetGuideLines(GuideLine::GuideType::eBlocking))
@@ -70,30 +109,285 @@ void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, int max_depth,
 		}
 	}
 
-	// regist dynamic capsule
-	const auto& capsule_view = registry_->view<C_CapsuleCollision>();
-	for (auto& ent : capsule_view)
+	// generate level mesh to triangles
+	min_x = -10000;
+	min_z = -10000;
+	max_x = 10000;
+	max_z = 10000;
+	node_count = 0;
+	root_mesh_node_ = BuildMeshTree(0, min_x, min_z, max_x, max_z);
+
+	SetMeshes(root_mesh_node_);
+}
+
+void reality::QuadTreeMgr::ImportQuadTreeData(string filename)
+{
+	FileTransfer read_file(filename, READ);
+
+	UINT null_node_index = 99999;
+
+	// physics tree data
+	UINT physics_node_count;
+	read_file.ReadBinary<UINT>(physics_node_count);
+
+	for (UINT n = 0; n < physics_node_count; ++n)
 	{
-		auto capsule_collision = registry_->try_get<C_CapsuleCollision>(ent);
-		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
+		// index data
+		PhysicsNode* new_node = new PhysicsNode(n, 0);
+		total_physics_nodes_.insert(make_pair(n, new_node));
+
+		UINT node_num; bool is_leaf;
+		read_file.ReadBinary<UINT>(node_num);
+		read_file.ReadBinary<bool>(is_leaf);
+
+		new_node->node_num = node_num;
+		new_node->is_leaf = is_leaf;
+
+		UINT parent_node_num;
+		read_file.ReadBinary<UINT>(parent_node_num);
+		if (parent_node_num != null_node_index)
+		{
+			new_node->parent_node_index = parent_node_num;
+		}
+		else
+		{
+			new_node->parent_node_index = null_node_index;
+		}
+
+		UINT child_node_index[4] = { 0, };
+		read_file.ReadBinary<UINT>(child_node_index[0]);
+		read_file.ReadBinary<UINT>(child_node_index[1]);
+		read_file.ReadBinary<UINT>(child_node_index[2]);
+		read_file.ReadBinary<UINT>(child_node_index[3]);
+
+		if (child_node_index[0] != null_node_index)
+		{
+			new_node->child_node_index[0] = child_node_index[0];
+			new_node->child_node_index[1] = child_node_index[1];
+			new_node->child_node_index[2] = child_node_index[2];
+			new_node->child_node_index[3] = child_node_index[3];
+		}
+		else
+		{
+			new_node->child_node_index[0] = null_node_index;
+			new_node->child_node_index[1] = null_node_index;
+			new_node->child_node_index[2] = null_node_index;
+			new_node->child_node_index[3] = null_node_index;
+		}
+
+		// aabb data
+		XMFLOAT3 min, max, center;
+		read_file.ReadBinary<XMFLOAT3>(min);
+		read_file.ReadBinary<XMFLOAT3>(max);
+		read_file.ReadBinary<XMFLOAT3>(center);
+
+		new_node->area = AABBShape(min, max);
+
+		// collision data
+		UINT triangles_count = 0;
+		read_file.ReadBinary<UINT>(triangles_count);
+
+		for (UINT t = 0; t < triangles_count; ++t)
+		{
+			UINT tri_index;
+			XMFLOAT3 normal, vertex0, vertex1, vertex2;
+
+			read_file.ReadBinary<UINT>(tri_index);
+			read_file.ReadBinary<XMFLOAT3>(normal);
+			read_file.ReadBinary<XMFLOAT3>(vertex0);
+			read_file.ReadBinary<XMFLOAT3>(vertex1);
+			read_file.ReadBinary<XMFLOAT3>(vertex2);
+
+			TriangleShape new_triangle(vertex0, vertex1, vertex2);
+			new_triangle.index = tri_index;
+
+			new_node->static_triangles.push_back(new_triangle);
+		}
 	}
 
-	CreatePhysicsCS();
-} 
+	// physics tree data
+	UINT mesh_node_count;
+	read_file.ReadBinary<UINT>(mesh_node_count);
 
-SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
+	for (UINT n = 0; n < mesh_node_count; ++n)
+	{
+		// index data
+		MeshNode* new_node = new MeshNode(n, 0);
+		total_mesh_nodes_.insert(make_pair(n, new_node));
+
+		UINT node_num; bool is_leaf;
+		read_file.ReadBinary<UINT>(node_num);
+		read_file.ReadBinary<bool>(is_leaf);
+
+		new_node->node_num = node_num;
+		new_node->is_leaf = is_leaf;
+
+		UINT parent_node_num;
+		read_file.ReadBinary<UINT>(parent_node_num);
+		if (parent_node_num != null_node_index)
+		{
+			new_node->parent_node_index = parent_node_num;
+		}
+		else
+		{
+			new_node->parent_node_index = null_node_index;
+		}
+
+		UINT child_node_index[4] = { 0, };
+		read_file.ReadBinary<UINT>(child_node_index[0]);
+		read_file.ReadBinary<UINT>(child_node_index[1]);
+		read_file.ReadBinary<UINT>(child_node_index[2]);
+		read_file.ReadBinary<UINT>(child_node_index[3]);
+
+		if (child_node_index[0] != null_node_index)
+		{
+			new_node->child_node_index[0] = child_node_index[0];
+			new_node->child_node_index[1] = child_node_index[1];
+			new_node->child_node_index[2] = child_node_index[2];
+			new_node->child_node_index[3] = child_node_index[3];
+		}
+		else
+		{
+			new_node->child_node_index[0] = null_node_index;
+			new_node->child_node_index[1] = null_node_index;
+			new_node->child_node_index[2] = null_node_index;
+			new_node->child_node_index[3] = null_node_index;
+		}
+
+		// aabb data
+		XMFLOAT3 min, max, center;
+		read_file.ReadBinary<XMFLOAT3>(min);
+		read_file.ReadBinary<XMFLOAT3>(max);
+		read_file.ReadBinary<XMFLOAT3>(center);
+
+		new_node->area = AABBShape(min, max);
+
+		// mesh data
+		UINT mesh_size = 0;
+		read_file.ReadBinary<UINT>(mesh_size);
+		new_node->separated_level_mesh_.meshes.resize(mesh_size);
+
+		for (UINT m = 0; m < mesh_size; ++m)
+		{
+			auto& mesh = new_node->separated_level_mesh_.meshes[m];
+
+			UINT vertex_size;
+			read_file.ReadBinary<UINT>(vertex_size);
+
+			mesh.vertices.resize(vertex_size);
+			read_file.ReadBinary<Vertex>(mesh.vertices);
+
+			vector<char> str_buffer;
+			str_buffer.resize(128);
+			read_file.ReadBinary<char>(str_buffer);
+			mesh.mesh_name = str_buffer.data();
+		}
+	}
+
+	InitImported();
+}
+
+void reality::QuadTreeMgr::InitImported()
 {
-	SpaceNode* new_node = new SpaceNode(node_count++, depth);
+	for (auto& physics_node : total_physics_nodes_)
+	{
+		if (physics_node.second->parent_node_index != 99999)
+		{
+			physics_node.second->parent_node = total_physics_nodes_.find(physics_node.second->parent_node_index)->second;
+		}
+		else
+		{
+			root_physics_node_ = physics_node.second;
+		}
+
+		if (physics_node.second->child_node_index[0] != 99999)
+		{
+			physics_node.second->child_node_[0] = total_physics_nodes_.find(physics_node.second->child_node_index[0])->second;
+			physics_node.second->child_node_[1] = total_physics_nodes_.find(physics_node.second->child_node_index[1])->second;
+			physics_node.second->child_node_[2] = total_physics_nodes_.find(physics_node.second->child_node_index[2])->second;
+			physics_node.second->child_node_[3] = total_physics_nodes_.find(physics_node.second->child_node_index[3])->second;
+		}
+
+		if (physics_node.second->is_leaf)
+			leaf_physics_nodes_.insert(physics_node);
+	}
+
+	for (auto& mesh_node : total_mesh_nodes_)
+	{
+		float node_min_y = 0.0f;
+		float node_max_y = 0.0f;
+
+		if (mesh_node.second->parent_node_index != 99999)
+		{
+			mesh_node.second->parent_node = total_mesh_nodes_.find(mesh_node.second->parent_node_index)->second;
+		}
+		else
+		{
+			root_mesh_node_ = mesh_node.second;
+		}
+
+
+		if (mesh_node.second->child_node_index[0] != 99999)
+		{
+			mesh_node.second->child_node_[0] = total_mesh_nodes_.find(mesh_node.second->child_node_index[0])->second;
+			mesh_node.second->child_node_[1] = total_mesh_nodes_.find(mesh_node.second->child_node_index[1])->second;
+			mesh_node.second->child_node_[2] = total_mesh_nodes_.find(mesh_node.second->child_node_index[2])->second;
+			mesh_node.second->child_node_[3] = total_mesh_nodes_.find(mesh_node.second->child_node_index[3])->second;
+		}
+		for (auto& mesh : mesh_node.second->separated_level_mesh_.meshes)
+		{
+			if (mesh.vertices.size() > 0)
+				bool buffer_created = CreateVertexBuffer(mesh);
+
+			for (auto& vertex : mesh.vertices)
+			{
+				node_min_y = min(vertex.p.y, node_min_y);
+				node_max_y = max(vertex.p.y, node_max_y);
+			}
+		}
+
+		if (mesh_node.second->is_leaf)
+			leaf_mesh_nodes_.insert(mesh_node);
+
+		mesh_node.second->area.min.y = node_min_y;
+		mesh_node.second->area.max.y = node_max_y;
+		mesh_node.second->culling_aabb.CreateFromPoints(mesh_node.second->culling_aabb, _XMVECTOR3(mesh_node.second->area.min), _XMVECTOR3(mesh_node.second->area.max));
+	}
+}
+
+void reality::QuadTreeMgr::RenderNode(MeshNode* node)
+{
+	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->Opaque(), 0, -1);
+	DX11APP->GetDeviceContext()->IASetInputLayout(deviding_level_->GetVertexShader()->InputLayout());
+	DX11APP->GetDeviceContext()->VSSetShader(deviding_level_->GetVertexShader()->Get(), nullptr, 0);
+
+	for (auto& mesh : node->separated_level_mesh_.meshes)
+	{
+		Material* material = RESOURCE->UseResource<Material>(mesh.mesh_name + ".mat");
+		if (material)
+			material->Set();
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+		DX11APP->GetDeviceContext()->IASetVertexBuffers(0, 1, mesh.vertex_buffer.GetAddressOf(), &stride, &offset);
+		DX11APP->GetDeviceContext()->Draw(mesh.vertices.size(), 0);
+	}
+}
+
+PhysicsNode* reality::QuadTreeMgr::BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
+{
+	PhysicsNode* new_node = new PhysicsNode(node_count++, depth);
 
 	new_node->SetNode(min_x, min_z, max_x, max_z);
-	total_nodes_.insert(make_pair(new_node->node_num, new_node));
+	total_physics_nodes_.insert(make_pair(new_node->node_num, new_node));
 
 	if (new_node->node_depth == max_depth)
 	{
 		new_node->is_leaf = true;
 		SetStaticTriangles(new_node);
 		if (new_node->static_triangles.size() > 0)
-			leaf_nodes_.insert(make_pair(new_node->node_num, new_node));
+			leaf_physics_nodes_.insert(make_pair(new_node->node_num, new_node));
 	}
 
 	if (depth < max_depth)
@@ -101,74 +395,148 @@ SpaceNode* reality::QuadTreeMgr::BuildTree(UINT depth, float min_x, float min_z,
 		float row_mid = (min_x + max_x) / 2;
 		float col_mid = (min_z + max_z) / 2;
 
-		new_node->child_node_[0] = BuildTree(depth + 1, min_x, min_z,	row_mid, col_mid);
+		new_node->child_node_[0] = BuildPhysicsTree(depth + 1, min_x, min_z,	row_mid, col_mid);
 		new_node->child_node_[0]->parent_node = new_node;
 
-		new_node->child_node_[1] = BuildTree(depth + 1, row_mid, min_z, max_x,    col_mid);
+		new_node->child_node_[1] = BuildPhysicsTree(depth + 1, row_mid, min_z, max_x,    col_mid);
 		new_node->child_node_[1]->parent_node = new_node;
 
-		new_node->child_node_[2] = BuildTree(depth + 1, min_x,    col_mid, row_mid, max_z);
+		new_node->child_node_[2] = BuildPhysicsTree(depth + 1, min_x,    col_mid, row_mid, max_z);
 		new_node->child_node_[2]->parent_node = new_node;
 
-		new_node->child_node_[3] = BuildTree(depth + 1, row_mid, col_mid, max_x, max_z);
+		new_node->child_node_[3] = BuildPhysicsTree(depth + 1, row_mid, col_mid, max_x, max_z);
 		new_node->child_node_[3]->parent_node = new_node;
 	}
 
 	return new_node;
 }
 
-void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
+void reality::QuadTreeMgr::SetStaticTriangles(PhysicsNode* node)
 {
 	for (auto& tri : deviding_level_->level_triangles)
 	{
 		CollideType result = AABBToTriagnle(node->area, tri);
 		if (result != CollideType::OUTSIDE)
+		{
 			node->static_triangles.push_back(tri);
+		}
 	}
+}
+
+MeshNode* reality::QuadTreeMgr::BuildMeshTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
+{
+	MeshNode* new_node = new MeshNode(node_count++, depth);
+
+	new_node->SetNode(min_x, min_z, max_x, max_z);
+	total_mesh_nodes_.insert(make_pair(new_node->node_num, new_node));
+
+	if (new_node->node_depth == max_depth)
+	{
+		new_node->is_leaf = true;
+		leaf_mesh_nodes_.insert(make_pair(new_node->node_num, new_node));
+	}
+
+	if (depth < max_depth)
+	{
+		float row_mid = (min_x + max_x) / 2;
+		float col_mid = (min_z + max_z) / 2;
+
+		new_node->child_node_[0] = BuildMeshTree(depth + 1, min_x, min_z, row_mid, col_mid);
+		new_node->child_node_[0]->parent_node = new_node;
+
+		new_node->child_node_[1] = BuildMeshTree(depth + 1, row_mid, min_z, max_x, col_mid);
+		new_node->child_node_[1]->parent_node = new_node;
+
+		new_node->child_node_[2] = BuildMeshTree(depth + 1, min_x, col_mid, row_mid, max_z);
+		new_node->child_node_[2]->parent_node = new_node;
+
+		new_node->child_node_[3] = BuildMeshTree(depth + 1, row_mid, col_mid, max_x, max_z);
+		new_node->child_node_[3]->parent_node = new_node;
+	}
+
+	return new_node;
+}
+
+void reality::QuadTreeMgr::SetMeshes(MeshNode* node)
+{
+	if (node == root_mesh_node_)
+		node->separated_level_mesh_ = *deviding_level_->GetLevelMesh();
+
+	else
+	{
+		for (auto& mesh : node->parent_node->separated_level_mesh_.meshes)
+		{
+			SingleMesh<Vertex> new_single_mesh;
+
+			new_single_mesh.mesh_name = mesh.mesh_name;
+			UINT num_triangle = mesh.vertices.size() / 3;
+			UINT index = 0;
+			for (UINT t = 0; t < num_triangle; t++)
+			{
+				TriangleShape mesh_tri = TriangleShape(
+					mesh.vertices[index + 0].p,
+					mesh.vertices[index + 1].p,
+					mesh.vertices[index + 2].p
+				);
+
+				if (AABBToTriagnle(node->area, mesh_tri) != CollideType::OUTSIDE)
+				{
+					new_single_mesh.vertices.push_back(mesh.vertices[index + 0]);
+					new_single_mesh.vertices.push_back(mesh.vertices[index + 1]);
+					new_single_mesh.vertices.push_back(mesh.vertices[index + 2]);
+				}
+
+				index += 3;
+			}
+
+			if (new_single_mesh.vertices.empty())
+				continue;
+
+			if (CreateVertexBuffer(new_single_mesh))
+				node->separated_level_mesh_.meshes.push_back(new_single_mesh); 
+		}
+	}
+
+	if (node->is_leaf)
+		return;
+
+	SetMeshes(node->child_node_[0]);
+	SetMeshes(node->child_node_[1]);
+	SetMeshes(node->child_node_[2]);
+	SetMeshes(node->child_node_[3]);
 }
 
 void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
-	camera_frustum_ = Frustum(applied_camera->GetViewProj());
+	camera_frustum_.CreateFromMatrix(camera_frustum_, applied_camera->projection_matrix);
+	camera_frustum_.Transform(camera_frustum_, applied_camera->world_matrix);
 	UpdateCapsules();
-
-	//casted_nodes_.clear();
-	//NodeCasting(applied_camera->CreateFrontRay(), root_node_);
-	//ray_casted_nodes = casted_nodes_.size();
-	map<C_CapsuleCollision*, vector<SpaceNode*>> capsule_nodes;
-	UpdatePhysics();
-
-	//player_capsule_pos = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())->capsule.base;
 }
 
 void reality::QuadTreeMgr::Release()
 {
-	if (root_node_)
+	if (root_physics_node_)
 	{
-		delete root_node_;
-		root_node_ = nullptr;
+		delete root_physics_node_;
+		root_physics_node_ = nullptr;
 	}
-	total_nodes_.clear();
-	leaf_nodes_.clear();
+	total_physics_nodes_.clear();
+	leaf_physics_nodes_.clear();
 }
 
-void reality::QuadTreeMgr::UpdatePhysics()
+void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 {
 	UINT capsule_index = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
-		//vector<SpaceNode*> nodes;
-		//auto query_start_node = total_nodes_.at(dynamic_capsule.second->enclosed_node_index);
-		//query_start_node = ParentNodeQuery(dynamic_capsule.second, query_start_node);
+		PhysicsNode* query_start = total_physics_nodes_.find(dynamic_capsule.second->enclosed_node_index)->second;
+		query_start = ParentNodeQuery(dynamic_capsule.second, query_start);
 
-		//if (LeafNodeQuery(dynamic_capsule.second, query_start_node, nodes) == false)
-		//{
-		//	SCENE_MGR->DestroyActor(dynamic_capsule.first);
-		//	break;
-		//}
+		vector<PhysicsNode*> queried_nodes;
+		LeafNodeQuery(dynamic_capsule.second, query_start, queried_nodes);
 
-		//if (nodes.empty())
-		//	break;
+		if (queried_nodes.empty())
+			continue;
 
 		auto capsule_info = dynamic_capsule.second->capsule.GetTipBaseAB();
 		capsule_stbuffer.elements[capsule_index].point_a = _XMFLOAT3(capsule_info[2]);
@@ -176,116 +544,41 @@ void reality::QuadTreeMgr::UpdatePhysics()
 		capsule_stbuffer.elements[capsule_index].radius = dynamic_capsule.second->capsule.radius;
 		capsule_stbuffer.elements[capsule_index].entity = (int)dynamic_capsule.first;
 
-		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
+		for (int i = 0; i < 4; ++i)
+		{
+			if (i >= queried_nodes.size())
+				capsule_stbuffer.elements[capsule_index].node_numbers[i] = 0;
 
-		//CheckTriangle(dynamic_capsule.first, dynamic_capsule.second->capsule, nodes);
-		//CheckBlockingLine(dynamic_capsule.first, dynamic_capsule.second->capsule);
+			else
+				capsule_stbuffer.elements[capsule_index].node_numbers[i] = queried_nodes[i]->node_num;
+		}
 
-		//nodes.clear();
+
 		capsule_index++;
 	}
-	int b = 0;
 
-	RunPhysicsCS("CollisionDetectCS.cso");
+	DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
+	RunPhysicsCS(cs_id);
 	MovementByPhysicsCS();
 }
 
-void reality::QuadTreeMgr::CheckTriangle(entt::entity ent, CapsuleShape& capsule, vector<SpaceNode*> nodes)
+void reality::QuadTreeMgr::Render()
 {
-	map<float, CapsuleCallback> floor_list;
-	vector<RayShape> wall_list;
-
-	int cal = 0;
-	for (auto node : nodes)
-	{
-		including_nodes_num.insert(node->node_num);
-		for (auto& tri : node->static_triangles)
-		{
-			auto result = CapsuleToTriangleEx(capsule, tri);
-			if (result.reaction == CapsuleCallback::FLOOR)
-				floor_list.insert(make_pair(XMVectorGetY(result.floor_pos), result));
-			if (result.reaction == CapsuleCallback::WALL)
-				wall_list.push_back(RayShape(tri.GetMinXZ(), tri.GetMaxXZ()));
-			
-			if (ent == SCENE_MGR->GetPlayer<Character>(0)->entity_id_)
-			{
-				cal++;
-			}
-		}
-	}
-
-	if (ent == SCENE_MGR->GetPlayer<Character>(0)->entity_id_)
-	{
-		calculating_triagnles = cal;
-	}
-
-	if (floor_list.empty())
-	{
-		SCENE_MGR->GetActor<Character>(ent)->GravityFall(9.81f);
-		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::GRAVITY_FALL;
-		SCENE_MGR->GetActor<Character>(ent)->floor_height = capsule.base.y;
-	}
-	else
-	{
-		SCENE_MGR->GetActor<Character>(ent)->GetMovementComponent()->gravity = 0.0f;
-		SCENE_MGR->GetActor<Character>(ent)->movement_state_ = MovementState::STAND_ON_FLOOR;
-		SCENE_MGR->GetActor<Character>(ent)->floor_height = floor_list.rbegin()->first;
-	}
-
-	if (wall_list.size() > 0)
-	{
-		SCENE_MGR->GetActor<Character>(ent)->blocking_walls_ = wall_list;
-	}	
+	culling_nodes = 0;
+	NodeCulling(root_mesh_node_);
 }
 
-void reality::QuadTreeMgr::CheckBlockingLine(entt::entity ent, CapsuleShape& capsule)
+void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, PhysicsNode* node)
 {
-	for (auto& dynamic_capsule : dynamic_capsule_list)
-	{
-		if (dynamic_capsule.second->tag == "Enemy")
-			continue;
-
-		XMFLOAT3 capsule_pos = dynamic_capsule.second->capsule.base;
-		capsule_pos.y = 0.0f;
-
-		for (auto& blocking_line : blocking_lines)
-		{
-			float distance_from_line = XMVectorGetX(XMVector3LinePointDistance(_XMVECTOR3(blocking_line.start), _XMVECTOR3(blocking_line.end), _XMVECTOR3(capsule_pos)));
-
-			if (distance_from_line <= dynamic_capsule.second->capsule.radius)
-			{
-				XMVECTOR OB = blocking_line.GetRayVector();
-				XMVECTOR OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - _XMVECTOR3(blocking_line.start);
-				float dot = XMVectorGetX(XMVector3Dot(OA, OB));
-				if (dot < 0)
-				{
-					OB *= -1.0f;
-					OA = _XMVECTOR3(dynamic_capsule.second->capsule.base) - _XMVECTOR3(blocking_line.end);
-				}
-
-				float proj_length = Vector3Length(Vector3Project(OB, OA));
-				float line_length = Vector3Length(OB) + dynamic_capsule.second->capsule.radius;
-
-				if (proj_length <= line_length)
-				{
-					SCENE_MGR->GetActor<Character>(dynamic_capsule.first)->blocking_walls_.push_back(blocking_line);
-				}
-			}
-		}
-	}
-}
-
-void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
-{
-	if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
-		return;
+	//if (FrustumToAABB(camera_frustum_, node->area) == CollideType::OUTSIDE)
+	//	return;
 	
 	if (RayToAABB(ray, node->area))
 	{
 		if (node->is_leaf && node->static_triangles.size() > 0)
 		{
 			float dist = Distance(_XMVECTOR3(node->area.center), _XMVECTOR3(ray.start));
-			casted_nodes_.insert(make_pair(dist, node));
+			casted_physics_nodes_.insert(make_pair(dist, node));
 			return;
 		}
 		if (!node->is_leaf)
@@ -298,10 +591,33 @@ void reality::QuadTreeMgr::NodeCasting(const RayShape& ray, SpaceNode* node)
 	}
 }
 
-SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node)
+void reality::QuadTreeMgr::NodeCulling(MeshNode* node)
+{
+	auto result = camera_frustum_.Contains(node->culling_aabb);
+
+	if (result == ContainmentType::CONTAINS)
+	{
+		RenderNode(node);
+	}
+	else if (result == ContainmentType::INTERSECTS)
+	{
+		if (node->is_leaf)
+			RenderNode(node);
+
+		else
+		{
+			NodeCulling(node->child_node_[0]);
+			NodeCulling(node->child_node_[1]);
+			NodeCulling(node->child_node_[2]);
+			NodeCulling(node->child_node_[3]);
+		}
+	}
+}
+
+PhysicsNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node)
 {
 	if (node == nullptr)
-		return root_node_;
+		return root_physics_node_;
 
 	auto capsule_shape = c_capsule->capsule;
 	auto result = CapsuleToAABB(node->area, capsule_shape);
@@ -313,12 +629,12 @@ SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, 
 		return ParentNodeQuery(c_capsule, node->parent_node);
 }
 
-bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& node_list)
+bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node, vector<PhysicsNode*>& node_list)
 {
 	auto capsule_shape = c_capsule->capsule;
 	auto result = CapsuleToAABB(node->area, capsule_shape);
 
-	if (node == root_node_ && result != CollideType::INSIDE)
+	if (node == root_physics_node_ && result != CollideType::INSIDE)
 	{
 		return false;
 	}
@@ -366,62 +682,34 @@ void reality::QuadTreeMgr::UpdateCapsules()
 	}
 }
 
-RayCallback reality::QuadTreeMgr::RaycastAdjustLevel(RayShape& ray, float max_distance)
-{
-	map<float, RayCallback> callback_list;
-
-	int cal = 0;
-	for (auto& node : casted_nodes_)
-	{
-		if (node.first > max_distance)
-			break;
-
-		for (auto& tri : node.second->static_triangles)
-		{
-			cal++;
-			const auto& callback = RayToTriangle(ray, tri);
-			if (callback.success)
-			{
-				callback_list.insert(make_pair(callback.distance, callback));
-			}
-		}
-	}
-	cal = 0;
-
-	if (callback_list.begin() == callback_list.end())
-		return RayCallback();
-
-	return callback_list.begin()->second;
-}
-
-pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
-{
-	map<float, RayCallback> callback_list;
-
-	entt::entity selected_entity = entt::null;
-
-	auto level_callback = RaycastAdjustLevel(ray, 15000);
-	for (auto& capsule : dynamic_capsule_list)
-	{
-		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
-			continue;
-
-		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
-		if (capsule_callback.success)
-		{
-			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
-			selected_entity = capsule.first;
-		}
-	}
-
-	if (callback_list.begin() == callback_list.end())
-		return make_pair(RayCallback(), entt::null);
-
-	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
-		return make_pair(RayCallback(), entt::null);
-
-	return make_pair(callback_list.begin()->second, selected_entity);
-}
+//pair<RayCallback, entt::entity> reality::QuadTreeMgr::RaycastAdjustActor(RayShape& ray)
+//{
+//	map<float, RayCallback> callback_list;
+//
+//	entt::entity selected_entity = entt::null;
+//
+//	auto level_callback = RaycastAdjustLevel(ray, 15000);
+//	for (auto& capsule : dynamic_capsule_list)
+//	{
+//		if (capsule.first == SCENE_MGR->GetPlayer<Character>(0)->GetEntityId())
+//			continue;
+//
+//		const auto& capsule_callback = RayToCapsule(ray, capsule.second->capsule);
+//		if (capsule_callback.success)
+//		{
+//			callback_list.insert(make_pair(capsule_callback.distance, capsule_callback));
+//			selected_entity = capsule.first;
+//		}
+//	}
+//
+//	if (callback_list.begin() == callback_list.end())
+//		return make_pair(RayCallback(), entt::null);
+//
+//	if (level_callback.success && level_callback.distance < callback_list.begin()->first)
+//		return make_pair(RayCallback(), entt::null);
+//
+//	return make_pair(callback_list.begin()->second, selected_entity);
+//}
 
 void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 {
@@ -432,15 +720,29 @@ void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 
 bool reality::QuadTreeMgr::CreatePhysicsCS()
 {
-	triangle_stbuffer.SetElementArraySize(deviding_level_->level_triangles.size());
-	for (auto& tri : deviding_level_->level_triangles)
+	UINT total_size = 0;
+	for (auto& leaf_node : leaf_physics_nodes_)
 	{
-		triangle_stbuffer.elements[tri.index].index = tri.index;
-		triangle_stbuffer.elements[tri.index].normal = tri.normal;
-		triangle_stbuffer.elements[tri.index].vertex0 = tri.vertex0;
-		triangle_stbuffer.elements[tri.index].vertex1 = tri.vertex1;
-		triangle_stbuffer.elements[tri.index].vertex2 = tri.vertex2;
+		total_size += leaf_node.second->static_triangles.size();
 	}
+
+	triangle_stbuffer.SetElementArraySize(total_size);
+
+	UINT index = 0;
+	for (auto& leaf_node : leaf_physics_nodes_)
+	{
+		for (auto& tri : leaf_node.second->static_triangles)
+		{
+			triangle_stbuffer.elements[index].including_node = leaf_node.second->node_num;
+			triangle_stbuffer.elements[index].normal = tri.normal;
+			triangle_stbuffer.elements[index].vertex0 = tri.vertex0;
+			triangle_stbuffer.elements[index].vertex1 = tri.vertex1;
+			triangle_stbuffer.elements[index].vertex2 = tri.vertex2;
+
+			index++;
+		}		
+	}
+
 	if (triangle_stbuffer.Create(triangle_stbuffer.elements.data()) == false)
 		return false;
 
@@ -485,16 +787,17 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 	DX11APP->GetDeviceContext()->CopyResource(staging_buffer_.Get(), result_stbuffer.buffer.Get());
 
 	D3D11_MAPPED_SUBRESOURCE mapped_resource = { 0, };
+	
 	HRESULT hr = DX11APP->GetDeviceContext()->Map(staging_buffer_.Get(), 0, D3D11_MAP_READ, 0, &mapped_resource);
 	if (FAILED(hr))
 		return;
 
-	//SbCollisionResult::Data* sum = (SbCollisionResult::Data*)mapped_resource.pData;
+	DX11APP->GetDeviceContext()->Unmap(staging_buffer_.Get(), 0);
+
 	SbCollisionResult::Data* sum = reinterpret_cast<SbCollisionResult::Data*>(mapped_resource.pData);
 	memcpy(collision_result_pool_.data(), sum, 64 * sizeof(SbCollisionResult::Data));
 	UINT size = 64 * sizeof(SbCollisionResult::Data);
 	mapped_resource.RowPitch;
-	DX11APP->GetDeviceContext()->Unmap(staging_buffer_.Get(), 0);
 
 }
 
@@ -505,14 +808,12 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 		auto& result = collision_result_pool_[i];
 		auto character = SCENE_MGR->GetActor<Character>((entt::entity)result.entity);
 		if (character == nullptr)
-			break;
+			continue;
 
-		character->floor_height = result.floor_position.y;
+		character->floor_position = result.floor_position;
 
 		if (result.collide_type != 0)
 		{
-
-
 			if (result.collide_type == 1)
 			{
 				character->GetMovementComponent()->gravity = 0.0f;
@@ -520,17 +821,13 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 			}
 			if (result.collide_type == 2)
 			{
-
-			}
-
-
-	
+				
+			}	
 		}
 		else
 		{
 			character->GravityFall(9.81f);
 			character->movement_state_ = MovementState::GRAVITY_FALL;
-			character->floor_height = result.floor_position.y;
 		}
 
 		//if (result.is_wall_collide)
@@ -542,3 +839,118 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 		//}
 	}
 }
+
+void reality::QuadTreeMgr::ExportQuadTreeData(string filename)
+{
+	FileTransfer outdata_file(filename, WRITE);
+
+	// physics tree data
+	UINT physics_node_count = total_physics_nodes_.size();
+	outdata_file.WriteBinary<UINT>(&physics_node_count, 1);
+
+	for (auto& node : total_physics_nodes_)
+	{
+		// index data
+		UINT null_node = 99999;
+
+		outdata_file.WriteBinary<UINT>(&node.second->node_num, 1);
+		outdata_file.WriteBinary<bool>(&node.second->is_leaf, 1);
+
+		if (node.second->parent_node)			
+		{
+			outdata_file.WriteBinary<UINT>(&node.second->parent_node->node_num, 1);
+		}
+		else
+		{
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+		}
+
+		if (node.second->child_node_[0])
+		{
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[0]->node_num, 1);
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[1]->node_num, 1);
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[2]->node_num, 1);
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[3]->node_num, 1);
+		}
+		else
+		{
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+		}
+
+		// aabb data
+		outdata_file.WriteBinary<XMFLOAT3>(&node.second->area.min, 1);
+		outdata_file.WriteBinary<XMFLOAT3>(&node.second->area.max, 1);
+		outdata_file.WriteBinary<XMFLOAT3>(&node.second->area.center, 1);
+
+		// collision data
+		UINT triangles_count = node.second->static_triangles.size();
+		outdata_file.WriteBinary<UINT>(&triangles_count, 1);
+
+		for (auto& tri : node.second->static_triangles)
+		{
+			outdata_file.WriteBinary<UINT>(&tri.index, 1);
+			outdata_file.WriteBinary<XMFLOAT3>(&tri.normal, 1);
+			outdata_file.WriteBinary<XMFLOAT3>(&tri.vertex0, 1);
+			outdata_file.WriteBinary<XMFLOAT3>(&tri.vertex1, 1);
+			outdata_file.WriteBinary<XMFLOAT3>(&tri.vertex2, 1);			
+		}
+	}
+
+	// mesh tree data
+	UINT mesh_node_count = total_mesh_nodes_.size();
+	outdata_file.WriteBinary<UINT>(&mesh_node_count, 1);
+
+	for (auto& node : total_mesh_nodes_)
+	{
+		// index data
+		UINT null_node = 99999;
+
+		outdata_file.WriteBinary<UINT>(&node.second->node_num, 1);
+		outdata_file.WriteBinary<bool>(&node.second->is_leaf, 1);
+
+		if (node.second->parent_node)
+		{
+			outdata_file.WriteBinary<UINT>(&node.second->parent_node->node_num, 1);
+		}
+		else
+		{
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+		}
+
+		if (node.second->child_node_[0])
+		{
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[0]->node_num, 1);
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[1]->node_num, 1);
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[2]->node_num, 1);
+			outdata_file.WriteBinary<UINT>(&node.second->child_node_[3]->node_num, 1);
+		}
+		else
+		{
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+			outdata_file.WriteBinary<UINT>(&null_node, 1);
+		}
+
+		// aabb data
+		outdata_file.WriteBinary<XMFLOAT3>(&node.second->area.min, 1);
+		outdata_file.WriteBinary<XMFLOAT3>(&node.second->area.max, 1);
+		outdata_file.WriteBinary<XMFLOAT3>(&node.second->area.center, 1);
+
+		// mesh data
+		UINT mesh_size = node.second->separated_level_mesh_.meshes.size();
+		outdata_file.WriteBinary<UINT>(&mesh_size, 1);
+
+		for (auto& mesh : node.second->separated_level_mesh_.meshes)
+		{
+			UINT vertex_size = mesh.vertices.size();
+			outdata_file.WriteBinary<UINT>(&vertex_size, 1);
+			outdata_file.WriteBinary<Vertex>(mesh.vertices.data(), vertex_size);
+			outdata_file.WriteBinary<char>(mesh.mesh_name.data(), 128);
+		}
+	}
+}
+

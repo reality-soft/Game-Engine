@@ -5,20 +5,13 @@
 
 void reality::AnimationBase::AnimationUpdate()
 {
-	OnUpdate();
-
 	animation_.cur_animation_time_ += TM_DELTATIME;
 
-	if (cur_anim_state_ == ANIM_STATE::ANIM_STATE_NONE||
-		cur_anim_state_ == ANIM_STATE::ANIM_STATE_PREV_ONLY) {
-		return;
-	}
 	animation_.cur_frame_ += 60.0f / TM_FPS;
 
-	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
-	if (animation_.cur_frame_ >= anim_resource->end_frame) {
+	if (animation_.cur_frame_ >= animation_.end_frame_) {
 		animation_ended_ = true;
-		animation_.cur_frame_ = anim_resource->start_frame;
+		animation_.cur_frame_ = animation_.start_frame_;
 	}
 
 	OnUpdate();
@@ -63,6 +56,10 @@ void reality::AnimationBase::SetAnimation(string animation_id, float blend_time)
 	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_id);
 	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
 
+	if (anim_resource != nullptr) {
+		animation_.start_frame_ = anim_resource->start_frame;
+		animation_.end_frame_ = anim_resource->end_frame;
+	}
 
 	string prev_animation_id = animation_.cur_anim_id_;
 	float prev_anim_last_frame = animation_.cur_frame_;

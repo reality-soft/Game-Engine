@@ -63,17 +63,17 @@ namespace reality {
 			XMMATRIX movement_matrix = XMMatrixTranslationFromVector(movement_vector_);
 			transform_matrix *= movement_matrix;
 
-
 			switch (character->movement_state_)
 			{
 				case MovementState::STAND_ON_FLOOR :
-					transform_matrix.r[3].m128_f32[1] = character->floor_height;
+					transform_matrix.r[3].m128_f32[1] = character->floor_position.y;
 					break;
 				case MovementState::JUMP:
 					break;
 				case MovementState::GRAVITY_FALL:
 					break;
 			}
+
 
 			character->ApplyMovement(transform_matrix);
 		};
