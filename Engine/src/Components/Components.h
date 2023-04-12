@@ -380,7 +380,7 @@ namespace reality
 			cur_transform->OnUpdate();
 
 			for (auto child : children) {
-				child->OnUpdate(registry, entity, cur_transform->local * world);
+				child->OnUpdate(registry, entity, world * cur_transform->local);
 			}
 		}
 
