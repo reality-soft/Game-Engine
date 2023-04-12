@@ -11,6 +11,7 @@
 #include "DX11App.h"
 #include "ResourceMgr.h"
 #include "AnimSlot.h"
+#include "Socket.h"
 
 namespace reality
 {
@@ -31,11 +32,21 @@ namespace reality
 
 		virtual void OnConstruct() override;
 	};
+  
+	struct DLL_API C_Socket : public C_Transform
+	{
+		unordered_map<string, Socket> sockets;
+
+		void AddSocket(string socket_name, UINT bone_id, XMMATRIX owner_local, XMMATRIX local_offset) {
+			sockets.insert({ socket_name, Socket(bone_id, owner_local, local_offset) });
+		}
+	};
 
 	struct DLL_API C_StaticMesh : public C_Transform
 	{
 		string static_mesh_id;
 		string vertex_shader_id = "StaticMeshVS.cso";
+		string socket_name = "";
 
 		virtual void OnConstruct() override {};
 	};

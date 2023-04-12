@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UI_Text.h"
+#include "Engine.h"
 
 using namespace reality;
 
@@ -25,5 +26,6 @@ void UI_Text::SetFont(E_Font font)
 
 void UI_Text::RenderThisUI()
 {
-	WRITER->Draw(text_, font_, rect_transform_.world_rect.min, size_, color_);
+	auto resolution = ENGINE->GetWindowResolution();
+	WRITER->Draw(text_, font_, rect_transform_[resolution].world_rect.min, size_ * E_Resolution_Multiply[resolution], color_);
 }

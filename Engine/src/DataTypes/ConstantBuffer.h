@@ -8,6 +8,12 @@ namespace reality
 		XMMATRIX    local_matrix;
 	};
 
+	struct SocketTransform {
+		XMMATRIX	owner_local = XMMatrixIdentity();
+		XMMATRIX	local_offset = XMMatrixIdentity();
+		XMMATRIX	animation_matrix = XMMatrixIdentity();
+	};
+
 	struct CbTransform
 	{
 		CbTransform()
@@ -25,6 +31,46 @@ namespace reality
 			Transform transform;
 		} data;
 
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
+	struct CbStaticMesh
+	{
+		CbStaticMesh() = default;
+		CbStaticMesh(const CbStaticMesh& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
+		struct Data
+		{
+			Transform		transform;
+			SocketTransform	socket_transform;
+		} data;
+		ComPtr<ID3D11Buffer> buffer;
+	};
+
+
+	struct CbSkeletalMesh
+	{
+		CbSkeletalMesh() = default;
+		CbSkeletalMesh(const CbSkeletalMesh& other)
+		{
+			data = other.data;
+			other.buffer.CopyTo(buffer.GetAddressOf());
+		}
+		struct Data
+		{
+			Transform   transform;
+			XMMATRIX	bind_pose[128];
+			XMMATRIX	prev_animation[128];
+			XMMATRIX	animation[128];
+			XMMATRIX	prev_slot_animation[128];
+			XMMATRIX	slot_animation[128];
+			float		slot_weights[128];
+			float		base_time_weight;
+			float		slot_time_weight;
+		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
@@ -72,29 +118,6 @@ namespace reality
 			XMMATRIX main_billboard;
 			XMMATRIX x_billboard;
 			XMMATRIX y_billboard;
-		} data;
-		ComPtr<ID3D11Buffer> buffer;
-	};
-
-	struct CbSkeletalMesh
-	{
-		CbSkeletalMesh() = default;
-		CbSkeletalMesh(const CbSkeletalMesh& other)
-		{
-			data = other.data;
-			other.buffer.CopyTo(buffer.GetAddressOf());
-		}
-		struct Data
-		{
-			Transform   transform;
-			XMMATRIX	bind_pose[128];	
-			XMMATRIX	prev_animation[128];
-			XMMATRIX	animation[128];
-			XMMATRIX	prev_slot_animation[128];
-			XMMATRIX	slot_animation[128];
-			float		slot_weights[128];
-			float		base_time_weight;
-			float		slot_time_weight;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
