@@ -9,8 +9,9 @@ namespace reality
 	};
 
 	struct SocketTransform {
-		XMMATRIX	local_offset;
-		XMMATRIX	animation_matrix;
+		XMMATRIX	owner_local = XMMatrixIdentity();
+		XMMATRIX	local_offset = XMMatrixIdentity();
+		XMMATRIX	animation_matrix = XMMatrixIdentity();
 	};
 
 	struct CbTransform

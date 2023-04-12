@@ -88,17 +88,18 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 			socket_component = reg.try_get<C_Socket>(ent);
 		}
 
-		SetTransformCB(socket_component, cb_static_mesh_.data.transform);
-
 		if (socket_component != nullptr) {
+			C_Transform transform;
+			transform.world = socket_component->world;
+			transform.local = static_mesh_component->local;
+			SetTransformCB(&transform, cb_static_mesh_.data.transform);
 			auto socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
 			if (socket_it != socket_component->sockets.end()) {
 				SetSocketCB(socket_it->second);
 			}
 		}
 		else {
-			cb_static_mesh_.data.socket_transform.animation_matrix = XMMatrixIdentity();
-			cb_static_mesh_.data.socket_transform.local_offset = XMMatrixIdentity();
+			SetTransformCB(static_mesh_component, cb_static_mesh_.data.transform);
 		}
 
 		RenderStaticMesh(static_mesh_component);
@@ -558,6 +559,7 @@ void reality::RenderSystem::SetTransformCB(const C_Transform* const transform_co
 
 void reality::RenderSystem::SetSocketCB(const Socket& socket)
 {
+	cb_static_mesh_.data.socket_transform.owner_local = XMMatrixTranspose(socket.owner_local);
 	cb_static_mesh_.data.socket_transform.local_offset = XMMatrixTranspose(socket.local_offset);
 	cb_static_mesh_.data.socket_transform.animation_matrix = XMMatrixTranspose(socket.animation_matrix);
 }
