@@ -42,7 +42,7 @@ LRESULT CALLBACK WindowProc(
 }
 
 namespace reality {
-	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, E_Resolution resolution)
+	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, E_Resolution resolution, bool titlebar)
 	{
 		POINT screen_size = { 0, 0 };
 		
@@ -62,7 +62,7 @@ namespace reality {
 		}
 
 		// À©µµ¿ì ÃÊ±âÈ­
-		if (InitWindow(hinstance, title, screen_size) == false)
+		if (InitWindow(hinstance, title, screen_size, titlebar) == false)
 			return false;
 
 		// DX ÃÊ±âÈ­
@@ -157,14 +157,12 @@ namespace reality {
 		DX11APP->Resize(wnd_size.x, wnd_size.y);
 	}
 
-	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size)
+	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size, bool titlebar)
 	{
 		this->hinstance = hinstance;
 		this->title = title;
 
-		//auto style = WS_OVERLAPPEDWINDOW;
-		//style &= ~WS_THICKFRAME;
-		auto style = WS_POPUP;
+		auto style = titlebar ? WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME :  WS_POPUP;
 
 		RECT rc = { 0, 0, screen_size.x, screen_size.y };
 		AdjustWindowRect(&rc, style, false);

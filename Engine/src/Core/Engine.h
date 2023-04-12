@@ -19,7 +19,7 @@ namespace reality {
 #define ENGINE reality::Engine::GetInst()
 
 	public:
-		bool OnInit(HINSTANCE hinstance, LPCWSTR title, E_Resolution resolution);
+		bool OnInit(HINSTANCE hinstance, LPCWSTR title, E_Resolution resolution, bool titlebar);
 		void Run();
 		void OnResized();
 		void OnRelease();
@@ -38,7 +38,7 @@ namespace reality {
 		HWND			GetWindowHandle() { return hwnd; }
 		E_Resolution	GetWindowResolution() { return current_resolution; }
 	private:
-		bool InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size);
+		bool InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size, bool titlebar);
 	};
 }
 
