@@ -30,8 +30,7 @@ namespace reality {
 		SpaceNode* parent_node = nullptr;
 		UINT parent_node_index = 0;
 		UINT child_node_index[4] = {0, 0, 0, 0};
-
-	public:
+			public:
 		AABBShape area;
 		BoundingBox culling_aabb;
 		vector<TriangleShape> static_triangles;
@@ -58,8 +57,9 @@ namespace reality {
 
 		void Release();
 	public:
+		void SetSpaceHeight(float min_y, float max_y);
 		void UpdateCapsules();
-		//pair<RayCallback, entt::entity> RaycastAdjustActor(RayShape& ray);
+		RayCallback Raycast(const RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
 		bool RegistStaticSphere(entt::entity ent);
 
@@ -69,6 +69,7 @@ namespace reality {
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
 		array<SbCollisionResult::Data, 64> collision_result_pool_;
+		queue<RayShape> raycast_queue_;
 
 	public:
 		UINT visible_nodes = 0;

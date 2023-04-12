@@ -13,7 +13,7 @@ bool reality::SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b)
         return false;
 }
 
-bool reality::PointInTriangle(const XMVECTOR& p, TriangleShape& tri)
+bool reality::PointInTriangle(const XMVECTOR& p, const TriangleShape& tri)
 {
     XMVECTOR tri_vertex0 = _XMVECTOR3(tri.vertex0);
     XMVECTOR tri_vertex1 = _XMVECTOR3(tri.vertex1);
@@ -31,7 +31,7 @@ bool reality::PointInTriangle(const XMVECTOR& p, TriangleShape& tri)
     return false;
 }
 
-RayCallback reality::RayToTriangle(RayShape& ray, TriangleShape& tri)
+RayCallback reality::RayToTriangle(const RayShape& ray, const TriangleShape& tri)
 {
     XMVECTOR tri_vertex0 = _XMVECTOR3(tri.vertex0);
     XMVECTOR tri_vertex1 = _XMVECTOR3(tri.vertex1);
@@ -57,7 +57,7 @@ RayCallback reality::RayToTriangle(RayShape& ray, TriangleShape& tri)
     return callback;
 }
 
-bool reality::RayToAABB(const RayShape& ray, AABBShape& aabb)
+bool reality::RayToAABB(const RayShape& ray, const AABBShape& aabb)
 {
     XMVECTOR center_to_corner = _XMVECTOR3(aabb.max) - _XMVECTOR3(aabb.center);
     center_to_corner.m128_f32[1] = 0.0f;
@@ -73,7 +73,7 @@ bool reality::RayToAABB(const RayShape& ray, AABBShape& aabb)
     return false;
 }
 
-RayCallback reality::RayToCapsule(RayShape& ray, const CapsuleShape& cap)
+RayCallback reality::RayToCapsule(const RayShape& ray, const CapsuleShape& cap)
 {
     XMVECTOR RC;
     float d;
@@ -152,7 +152,7 @@ RayCallback reality::RayToCapsule(RayShape& ray, const CapsuleShape& cap)
     return RayCallback();
 }
 
-CollideType reality::AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2)
+CollideType reality::AABBtoAABB(const AABBShape& aabb1, const AABBShape& aabb2)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -174,7 +174,7 @@ CollideType reality::AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2)
     return CollideType::INTERSECT;
 }
 
-CollideType reality::CapsuleToAABB(AABBShape& aabb, CapsuleShape& capsule)
+CollideType reality::CapsuleToAABB(const AABBShape& aabb, const CapsuleShape& capsule)
 {
     auto cap_to_aabb = CapsuleConvertAABB(capsule);
     return AABBtoAABB(cap_to_aabb, aabb);
@@ -197,10 +197,10 @@ CollideType reality::SphereToAABB(const SphereShape& sphere, const AABBShape& aa
     return CollideType::OUTSIDE;
 }
 
-CollideType reality::CapsuleToCapsule(CapsuleShape& cap1, CapsuleShape& cap2)
+CollideType reality::CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleShape& cap2)
 {
-    vector<XMVECTOR> cap1_ab = { GetTipBaseAB(cap1)[3], GetTipBaseAB(cap1)[4] };
-    vector<XMVECTOR> cap2_ab = { GetTipBaseAB(cap2)[3], GetTipBaseAB(cap2)[4] };
+    vector<XMVECTOR> cap1_ab = { GetTipBaseAB(cap1)[2], GetTipBaseAB(cap1)[3] };
+    vector<XMVECTOR> cap2_ab = { GetTipBaseAB(cap2)[2], GetTipBaseAB(cap2)[3] };
 
     float distance = 0;
     float radius = cap1.radius + cap2.radius;
@@ -226,7 +226,7 @@ CollideType reality::CapsuleToCapsule(CapsuleShape& cap1, CapsuleShape& cap2)
     return CollideType::OUTSIDE;
 }
 
-CollideType reality::AABBToTriagnle(AABBShape& aabb, TriangleShape& triangle)
+CollideType reality::AABBToTriagnle(const AABBShape& aabb, const TriangleShape& triangle)
 {
     // Check if all three vertices are inside the AABB
     int tri_vertices = 0;
@@ -276,7 +276,7 @@ CollideType reality::AABBToTriagnle(AABBShape& aabb, TriangleShape& triangle)
     return CollideType::OUTSIDE;
 }
 
-CapsuleCallback reality::CapsuleToTriangle(CapsuleShape& cap, TriangleShape& triangle)
+CapsuleCallback reality::CapsuleToTriangle(const CapsuleShape& cap, const TriangleShape& triangle)
 {
     CapsuleCallback result;
     RayShape a_to_base(GetTipBaseAB(cap)[2], GetTipBaseAB(cap)[1]);

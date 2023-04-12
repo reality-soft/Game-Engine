@@ -8,11 +8,16 @@ namespace reality {
         RayCallback()
         {
             success = false;
+            is_actor = false;
+
             distance = 0.0f;
             point = XMVectorZero();
             normal = XMVectorZero();
         }
         bool success;
+        bool is_actor;
+        entt::entity ent;
+
         float distance;
         XMVECTOR point;
         XMVECTOR normal;
@@ -46,25 +51,25 @@ namespace reality {
 
     bool SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b);
 
-    bool PointInTriangle(const XMVECTOR& p, TriangleShape& tri);
+    bool PointInTriangle(const XMVECTOR& p, const TriangleShape& tri);
 
-    bool RayToAABB(const RayShape& ray, AABBShape& aabb);
+    bool RayToAABB(const RayShape& ray, const AABBShape& aabb);
 
-    RayCallback RayToTriangle(RayShape& ray, TriangleShape& tri);
+    RayCallback RayToTriangle(const RayShape& ray, const TriangleShape& tri);
 
-    RayCallback RayToCapsule(RayShape& ray, const CapsuleShape& cap);
+    RayCallback RayToCapsule(const RayShape& ray, const CapsuleShape& cap);
 
-    CollideType AABBtoAABB(AABBShape& aabb1, AABBShape& aabb2);
+    CollideType AABBtoAABB(const AABBShape& aabb1, const AABBShape& aabb2);
 
-    CollideType CapsuleToAABB(AABBShape& aabb, CapsuleShape& capsule);
+    CollideType CapsuleToAABB(const AABBShape& aabb, const CapsuleShape& capsule);
 
     CollideType SphereToAABB(const SphereShape& sphere, const AABBShape& aabb);
 
-    CollideType CapsuleToCapsule(CapsuleShape& cap1, CapsuleShape& cap2);
+    CollideType CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleShape& cap2);
 
-    CollideType AABBToTriagnle(AABBShape& aabb, TriangleShape& triangle);
+    CollideType AABBToTriagnle(const AABBShape& aabb, const TriangleShape& triangle);
 
-    CapsuleCallback CapsuleToTriangle(CapsuleShape& cap, TriangleShape& triangle);
+    CapsuleCallback CapsuleToTriangle(const CapsuleShape& cap, const TriangleShape& triangle);
 
     // Converter
 
