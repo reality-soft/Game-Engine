@@ -26,7 +26,6 @@ namespace reality
 		void CreateEffectBuffer();
 
 		void RenderBoxShape(entt::registry& reg);
-		void RenderBoundingBox(const C_BoundingBox* const);
 		void RenderEffects(entt::registry& reg);
 
 	public:
