@@ -13,6 +13,9 @@ namespace reality
 		AABBShape		collision_box_;
 		int				node_num_;
 		entt::registry* reg_scene_;
+
+		bool visible = false;
+
 	public:
 		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate();

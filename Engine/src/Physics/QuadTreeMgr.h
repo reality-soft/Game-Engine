@@ -9,45 +9,33 @@
 
 namespace reality {
 
-	class DLL_API PhysicsNode 
+	class DLL_API SpaceNode 
 	{
 	public:
-		PhysicsNode(UINT num, UINT depth);
-		~PhysicsNode();
+		SpaceNode(UINT num, UINT depth);
+		~SpaceNode();
 
 	public:
 		void SetNode(float min_x, float min_z, float max_x, float max_z);
+		void SetVisible(bool _visible);
 
 	public:
 		bool is_leaf = false;
+		bool visible = false;
 		UINT node_num;
 		UINT node_depth;
-		AABBShape area;
-		PhysicsNode* child_node_[4] = { 0, };
-		PhysicsNode* parent_node = nullptr;
+
+	public:
+		SpaceNode* child_node_[4] = { 0, };
+		SpaceNode* parent_node = nullptr;
 		UINT parent_node_index = 0;
 		UINT child_node_index[4] = {0, 0, 0, 0};
-		vector<TriangleShape> static_triangles;
-	};
 
-	class DLL_API MeshNode
-	{
 	public:
-		MeshNode(UINT num, UINT depth);
-		~MeshNode();
-
-		void SetNode(float min_x, float min_z, float max_x, float max_z);
-
-		bool is_leaf = false;
-		UINT node_num;
-		UINT node_depth;
 		AABBShape area;
 		BoundingBox culling_aabb;
-		MeshNode* child_node_[4] = { 0, };
-		MeshNode* parent_node = nullptr;
-		UINT parent_node_index = 0;
-		UINT child_node_index[4] = { 0, 0, 0, 0 };
-		StaticMesh separated_level_mesh_;
+		vector<TriangleShape> static_triangles;
+		list<entt::entity> static_actors;
 	};
 
 	class DLL_API QuadTreeMgr
@@ -68,13 +56,12 @@ namespace reality {
 		void Frame(CameraSystem* applied_camera);
 		void UpdatePhysics(string cs_id);
 
-		void Render();
-
 		void Release();
 	public:
 		void UpdateCapsules();
 		//pair<RayCallback, entt::entity> RaycastAdjustActor(RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
+		bool RegistStaticSphere(entt::entity ent);
 
 		SbTriangleCollision triangle_stbuffer;
 		SbCapsuleCollision capsule_stbuffer;
@@ -84,7 +71,7 @@ namespace reality {
 		array<SbCollisionResult::Data, 64> collision_result_pool_;
 
 	public:
-		UINT culling_nodes = 0;
+		UINT visible_nodes = 0;
 		vector<RayShape> blocking_lines;
 
 		// Physics Tree
@@ -92,32 +79,22 @@ namespace reality {
 		void RunPhysicsCS(string cs_id);
 		void MovementByPhysicsCS();
 
-		PhysicsNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node);
-		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, PhysicsNode* node, vector<PhysicsNode*>& node_list);
-		void	   NodeCasting(const RayShape& ray, PhysicsNode* node);
-		void NodeCulling(MeshNode* node);
+		SpaceNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node);
+		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& out_nodes);
+		bool	   IncludingNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
+		void	   NodeCulling(SpaceNode* node);
 
 		UINT max_depth;
 		UINT node_count = 0;
 
-		PhysicsNode* root_physics_node_ = nullptr;
-		map<UINT, PhysicsNode*> total_physics_nodes_;
-		map<UINT, PhysicsNode*> leaf_physics_nodes_;
-		map<float, PhysicsNode*> casted_physics_nodes_;
-
+		SpaceNode* root_node_ = nullptr;
+		map<UINT, SpaceNode*> total_nodes_;
+		map<UINT, SpaceNode*> leaf_nodes_;
 		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
 
 	private:
-		PhysicsNode* BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
-		void SetStaticTriangles(PhysicsNode* node);
-
-		// MeshTree
-	private:
-		MeshNode* root_mesh_node_ = nullptr;
-		map<UINT, MeshNode*> total_mesh_nodes_;
-		map<UINT, MeshNode*> leaf_mesh_nodes_;
-		MeshNode* BuildMeshTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
-		void SetMeshes(MeshNode* node);
+		SpaceNode* BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
+		void SetStaticTriangles(SpaceNode* node);
 
 	public:
 		StaticMeshLevel* deviding_level_ = nullptr;
@@ -127,6 +104,5 @@ namespace reality {
 
 	private:
 		void InitImported();
-		void RenderNode(MeshNode* node);
 	};
 }
