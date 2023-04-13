@@ -267,12 +267,24 @@ void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
 		bool tri_aabb_intersect = node->culling_aabb.Intersects(_XMVECTOR3(tri.vertex0), _XMVECTOR3(tri.vertex1), _XMVECTOR3(tri.vertex2));
 		if (tri_aabb_intersect)
 			node->static_triangles.push_back(tri);
+	}
+}
 
-		//CollideType result = AABBToTriagnle(node->area, tri);
-		//if (result != CollideType::OUTSIDE)
-		//{
-		//	node->static_triangles.push_back(tri);
-		//}
+void reality::QuadTreeMgr::AddStaticTriangles(const vector<TriangleShape>& triangles)
+{
+	for (auto& item : leaf_nodes_)
+	{
+		auto node = item.second;
+		for (const auto& tri : triangles)
+		{
+			XMVECTOR Normal = XMVector3Cross(XMVectorSubtract(_XMVECTOR3(tri.vertex1), _XMVECTOR3(tri.vertex0)), XMVectorSubtract(_XMVECTOR3(tri.vertex2), _XMVECTOR3(tri.vertex0)));
+			if (XMVector3Equal(Normal, XMVectorZero()))
+				continue;
+
+			bool tri_aabb_intersect = node->culling_aabb.Intersects(_XMVECTOR3(tri.vertex0), _XMVECTOR3(tri.vertex1), _XMVECTOR3(tri.vertex2));
+			if (tri_aabb_intersect)
+				node->static_triangles.push_back(tri);
+		}
 	}
 }
 

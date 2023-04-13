@@ -1,5 +1,6 @@
 #pragma once
 #define EPSILON 0.00001f
+#include "Mesh.h"
 
 namespace reality {
 
@@ -70,4 +71,6 @@ namespace reality {
         TriangleShape topbottom_tries[4];
     };
 
+    void ConvertToTrianlgeShapes(vector<TriangleShape>& out, const SingleMesh<Vertex>& mesh);
+    void ConvertToAABBShape(AABBShape& out, const SingleMesh<Vertex>& mesh);
 }

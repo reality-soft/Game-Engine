@@ -99,6 +99,7 @@ namespace reality {
 	private:
 		SpaceNode* BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
 		void SetStaticTriangles(SpaceNode* node);
+		void AddStaticTriangles(const vector<TriangleShape>& triangles);
 
 	public:
 		StaticMeshLevel* deviding_level_ = nullptr;
