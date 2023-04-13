@@ -228,7 +228,7 @@ CollideType reality::CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleSha
 
 CollideType reality::AABBToTriagnle(const AABBShape& aabb, const TriangleShape& triangle)
 {
-    // Check if all three vertices are inside the AABB
+   // Check if all three vertices are inside the AABB
     int tri_vertices = 0;
 
     if (XMVector3GreaterOrEqual(_XMVECTOR3(triangle.vertex0), _XMVECTOR3(aabb.min)) && XMVector3LessOrEqual(_XMVECTOR3(triangle.vertex0), _XMVECTOR3(aabb.max)))

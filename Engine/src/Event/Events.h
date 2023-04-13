@@ -35,45 +35,26 @@ namespace reality {
 
 			auto c_capsule = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(character->GetEntityId());
 
-			for (auto& block_wall : character->blocking_walls_)
+			for (int i = 0; i < 4; ++i)
 			{
-				XMVECTOR blocking_vector = GetRayVector(block_wall);
-				XMVECTOR start_to_cap = _XMVECTOR3(c_capsule->capsule.base) - _XMVECTOR3(block_wall.start);
-				start_to_cap.m128_f32[1] = 0.0f;
+				auto plane = character->blocking_planes_[i];
 
-				XMVECTOR project = Vector3Project(blocking_vector, start_to_cap);
+				if (Vector3Length(_XMVECTOR4(plane)) <= 0.1f)
+					continue;
 
-				XMVECTOR cap_to_blocking = XMVector3Normalize(project - start_to_cap) * c_capsule->capsule.radius;
+				XMVECTOR plane_normal = XMVectorSet(plane.x, plane.y, plane.z, 0);
 
-				XMVECTOR movement = movement_vector_;
-				movement.m128_f32[1] = 0.0f;
-				float dot = XMVectorGetX(XMVector3Dot(movement, blocking_vector));
-				if (dot < 0)
-				{
-					blocking_vector *= -1.0f;
-				}
-
-				float dot2 = XMVectorGetX(XMVector3Dot(cap_to_blocking, movement_vector_));
-				if (dot2 > 0)
-					movement_vector_ = Vector3Project(blocking_vector, movement_vector_);
+				if (XMVectorGetX(XMVector3Dot(plane_normal, movement_vector_)) < 0.0f)
+					movement_vector_ = VectorProjectPlane(movement_vector_, plane_normal);
 			}
+			
 
-			character->blocking_walls_.clear();
 			XMMATRIX transform_matrix = character->GetTranformMatrix();
 			XMMATRIX movement_matrix = XMMatrixTranslationFromVector(movement_vector_);
 			transform_matrix *= movement_matrix;
 
-			switch (character->movement_state_)
-			{
-				case MovementState::STAND_ON_FLOOR :
-					transform_matrix.r[3].m128_f32[1] = character->floor_position.y;
-					break;
-				case MovementState::JUMP:
-					break;
-				case MovementState::GRAVITY_FALL:
-					break;
-			}
-
+			if (character->movement_state_ == MovementState::WALK)
+				transform_matrix.r[3].m128_f32[1] = character->floor_position.y;
 
 			character->ApplyMovement(transform_matrix);
 		};
