@@ -5,10 +5,8 @@ namespace reality
 {
 	enum class MovementState
 	{
-		STAND_ON_FLOOR,
-		JUMP,
-		GRAVITY_FALL,
-		BLOCK_BY_WALL,
+		FALL,
+		WALK,
 	};
 
 	class DLL_API Character : public Actor
@@ -23,7 +21,7 @@ namespace reality
 	public:
 		XMFLOAT3 floor_position = {0, 0, 0};
 		MovementState movement_state_;
-		vector<RayShape> blocking_walls_;
+		XMFLOAT4 blocking_planes_[4];
 
 	public:
 		void OnInit(entt::registry& registry) override;

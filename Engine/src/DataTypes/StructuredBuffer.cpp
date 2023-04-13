@@ -121,7 +121,7 @@ void reality::SbCollisionResult::SetElementArraySize(UINT size)
 		e.entity = 0;
 		e.collide_type = 0;
 		e.floor_position = { 0, 0, 0 };
-		ZeroMemory(&e.blocking_rays, sizeof(e.blocking_rays));
+		ZeroMemory(&e.wall_planes, sizeof(e.wall_planes));
 	}
 
 	byte_stride = sizeof(SbCollisionResult::Data);

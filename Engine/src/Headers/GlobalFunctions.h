@@ -118,6 +118,12 @@ static DirectX::XMVECTOR Vector3Project(DirectX::XMVECTOR OB, DirectX::XMVECTOR 
 	return DirectX::XMVectorMultiply(DirectX::XMVectorDivide(OB, DirectX::XMVector3LengthSq(OB)), DirectX::XMVector3Dot(OA, OB));
 }
 
+static DirectX::XMVECTOR VectorProjectPlane(DirectX::XMVECTOR vector, DirectX::XMVECTOR plane_normal)
+{
+	DirectX::XMVECTOR proj = DirectX::XMVectorMultiply(DirectX::XMVector3Dot(vector, plane_normal), plane_normal);
+	return DirectX::XMVectorSubtract(vector, proj);
+}
+
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
 {
 

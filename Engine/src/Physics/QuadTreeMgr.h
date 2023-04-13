@@ -77,7 +77,6 @@ namespace reality {
 		
 	public:
 		UINT visible_nodes = 0;
-		vector<RayShape> blocking_lines;
 
 		// Physics Tree
 	private:
