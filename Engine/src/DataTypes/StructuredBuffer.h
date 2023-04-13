@@ -60,6 +60,20 @@ namespace reality
 		vector<SbCapsuleCollision::Data> elements;
 	};
 
+	class SbSphereCollision : public StructuredSRV
+	{
+	public:
+		struct Data
+		{
+			float radius;
+			XMFLOAT3 center;
+		};
+
+	public:
+		void SetElementArraySize(UINT size);
+		vector<SbSphereCollision::Data> elements;
+	};
+
 	class SbCollisionResult : public StructuredUAV
 	{
 	public:

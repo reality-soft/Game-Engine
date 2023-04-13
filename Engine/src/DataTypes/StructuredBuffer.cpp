@@ -112,6 +112,21 @@ void reality::SbCapsuleCollision::SetElementArraySize(UINT size)
 	byte_width = elements.size() * byte_stride;
 }
 
+void reality::SbSphereCollision::SetElementArraySize(UINT size)
+{
+	elements.resize(size);
+
+	for (auto& e : elements)
+	{
+		e.radius = 0;
+		e.center = { 0 ,0, 0 };
+	}
+
+	byte_stride = sizeof(SbSphereCollision::Data);
+	byte_width = elements.size() * byte_stride;
+}
+
+
 void reality::SbCollisionResult::SetElementArraySize(UINT size)
 {
 	elements.resize(size);
