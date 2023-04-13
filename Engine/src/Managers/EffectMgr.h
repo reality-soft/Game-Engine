@@ -37,8 +37,12 @@ namespace reality
 
 			XMVECTOR base = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			XMVECTOR axis = XMVector3Cross(base, normal);
-			float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
-			XMVECTOR rot_q = XMQuaternionRotationAxis(axis, angle);
+			XMVECTOR rot_q = XMQuaternionIdentity();
+			if (!XMVector3Equal(axis, XMVectorZero()))
+			{
+				float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
+				rot_q = XMQuaternionRotationAxis(axis, angle);
+			}
 
 			effect_actor->Spawn(pos, rot_q, scale);
 		}
@@ -55,8 +59,12 @@ namespace reality
 
 			XMVECTOR base = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			XMVECTOR axis = XMVector3Cross(base, normal);
-			float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
-			XMVECTOR rot_q = XMQuaternionRotationAxis(axis, angle);
+			XMVECTOR rot_q = XMQuaternionIdentity();
+			if (!XMVector3Equal(axis, XMVectorZero()))
+			{
+				float angle = acosf(XMVectorGetX(XMVector3Dot(base, normal)));
+				rot_q = XMQuaternionRotationAxis(axis, angle);
+			}
 
 			effect_actor->Spawn(pos, rot_q, scale);
 		}

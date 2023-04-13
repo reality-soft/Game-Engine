@@ -150,7 +150,7 @@ RayShape reality::CameraSystem::CreateFrontRay()
 	ray_origin.m128_f32[3] = 0.0f;
 	XMVECTOR ray_dir = XMVector3Normalize(camera_world.r[2]);
 
-	return RayShape(ray_origin, ray_dir * camera->far_z);
+	return RayShape(ray_origin, ray_origin + ray_dir * 100000.0f);
 }
 
 C_Camera* CameraSystem::GetCamera()
