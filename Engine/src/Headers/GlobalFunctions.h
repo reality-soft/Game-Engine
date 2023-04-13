@@ -124,6 +124,14 @@ static DirectX::XMVECTOR VectorProjectPlane(DirectX::XMVECTOR vector, DirectX::X
 	return DirectX::XMVectorSubtract(vector, proj);
 }
 
+static DirectX::XMVECTOR PointLineSegment(DirectX::XMVECTOR point, DirectX::XMVECTOR line1, DirectX::XMVECTOR line2)
+{
+	DirectX::XMVECTOR segment = DirectX::XMVectorSubtract(line1, line2);
+	DirectX::XMVECTOR diff = DirectX::XMVectorSubtract(point, line1);
+	DirectX::XMVECTOR t = DirectX::XMVectorSaturate(DirectX::XMVectorDivide(DirectX::XMVector3Dot(diff, segment), DirectX::XMVector3Dot(segment, segment)));
+	return DirectX::XMVectorAdd(line1, DirectX::XMVectorMultiply(t, segment));
+}
+
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
 {
 
