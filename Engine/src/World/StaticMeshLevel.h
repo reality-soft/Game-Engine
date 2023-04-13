@@ -13,13 +13,13 @@ namespace reality
 		~StaticMeshLevel();
 
 	public:
-		bool Create(string mesh_id, string vs_id, string collision_ltmesh);
+		bool Create(string mesh_id, string vs_id);
 		void Update();
 		void Render();
 		void Destroy();
 
-		void SetShadowMap(ID3D11ShaderResourceView* shadow_map, CbShadowMap* cb_shaodow);
 		void RenderCollisionMesh();
+		void SetShadowMap(ID3D11ShaderResourceView* shadow_map, CbShadowMap* cb_shaodow);
 		StaticMesh* GetLevelMesh();
 		VertexShader* GetVertexShader();
 	public:
@@ -28,9 +28,7 @@ namespace reality
 
 	private:
 		shared_ptr<StaticMesh> level_mesh;
-		shared_ptr<StaticMesh> collision_mesh;
 		shared_ptr<VertexShader> vertex_shader;
-
 
 		bool SetMaterialToMesh(string mesh_name, string material_id);
 		bool SetRandomMaterialToMesh(string mesh_name, string keyward);
