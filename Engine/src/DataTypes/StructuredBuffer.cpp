@@ -112,6 +112,21 @@ void reality::SbCapsuleCollision::SetElementArraySize(UINT size)
 	byte_width = elements.size() * byte_stride;
 }
 
+void reality::SbSphereCollision::SetElementArraySize(UINT size)
+{
+	elements.resize(size);
+
+	for (auto& e : elements)
+	{
+		e.radius = 0;
+		e.center = { 0 ,0, 0 };
+	}
+
+	byte_stride = sizeof(SbSphereCollision::Data);
+	byte_width = elements.size() * byte_stride;
+}
+
+
 void reality::SbCollisionResult::SetElementArraySize(UINT size)
 {
 	elements.resize(size);
@@ -121,7 +136,7 @@ void reality::SbCollisionResult::SetElementArraySize(UINT size)
 		e.entity = 0;
 		e.collide_type = 0;
 		e.floor_position = { 0, 0, 0 };
-		ZeroMemory(&e.blocking_rays, sizeof(e.blocking_rays));
+		ZeroMemory(&e.wall_planes, sizeof(e.wall_planes));
 	}
 
 	byte_stride = sizeof(SbCollisionResult::Data);

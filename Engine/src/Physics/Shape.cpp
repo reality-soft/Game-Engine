@@ -125,3 +125,42 @@ reality::Frustum::Frustum(const XMMATRIX& mat_view_proj)
     topbottom_tries[2] = TriangleShape(_XMFLOAT3(frustum_vertex[0]), _XMFLOAT3(frustum_vertex[3]), _XMFLOAT3(frustum_vertex[4]));
     topbottom_tries[3] = TriangleShape(_XMFLOAT3(frustum_vertex[4]), _XMFLOAT3(frustum_vertex[3]), _XMFLOAT3(frustum_vertex[7]));
 }
+
+void reality::ConvertToTrianlgeShapes(vector<TriangleShape>& out, const SingleMesh<Vertex>& mesh)
+{
+    UINT num_triangle = mesh.vertices.size() / 3;
+    UINT index = 0;
+    for (UINT t = 0; t < num_triangle; t++)
+    {
+        TriangleShape tri_plane = TriangleShape(
+            mesh.vertices[index + 0].p,
+            mesh.vertices[index + 2].p,
+            mesh.vertices[index + 1].p
+        );
+
+        tri_plane.index = t;
+
+        out.push_back(tri_plane);
+        index += 3;
+    }
+    
+}
+
+void reality::ConvertToAABBShape(AABBShape& out, const SingleMesh<Vertex>& mesh)
+{
+    XMFLOAT3 aabb_min = {0, 0, 0};
+    XMFLOAT3 aabb_max = {0, 0, 0};
+
+    for (const auto vertex : mesh.vertices)
+    {
+        aabb_min.x = min(aabb_min.x, vertex.p.x);
+        aabb_min.y = min(aabb_min.y, vertex.p.y);
+        aabb_min.y = min(aabb_min.z, vertex.p.z);
+
+        aabb_max.x = max(aabb_max.x, vertex.p.x);
+        aabb_max.y = max(aabb_max.y, vertex.p.y);
+        aabb_max.y = max(aabb_max.z, vertex.p.z);
+    }
+
+    out = AABBShape(aabb_min, aabb_max);
+}

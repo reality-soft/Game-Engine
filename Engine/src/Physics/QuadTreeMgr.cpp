@@ -30,6 +30,7 @@ void reality::SpaceNode::SetNode(float min_x, float min_z, float max_x, float ma
 	XMFLOAT3 min = XMFLOAT3(min_x, MIN_HEIGHT, min_z);
 	XMFLOAT3 max = XMFLOAT3(max_x, MAX_HEIGHT, max_z);
 	area = AABBShape(min, max);
+	culling_aabb.CreateFromPoints(culling_aabb, _XMVECTOR3(area.min), _XMVECTOR3(area.max));
 }
 
 void reality::SpaceNode::SetVisible(bool _visible)
@@ -99,25 +100,6 @@ void reality::QuadTreeMgr::CreateQuadTreeData(int max_depth)
 	this->max_depth = max_depth;
 	node_count = 0;
 	root_node_ = BuildPhysicsTree(0, min_x, min_z, max_x, max_z);
-
-	// set blocking field
-	for (auto& guide_line : deviding_level_->GetGuideLines(GuideLine::GuideType::eBlocking))
-	{
-		if (guide_line.guide_type_ == GuideLine::GuideType::eBlocking)
-		{
-			for (UINT i = 1; i < guide_line.line_nodes.size(); ++i)
-			{
-				RayShape blocking_line;
-				blocking_line.start = _XMFLOAT3(guide_line.line_nodes.at(i - 1));
-				blocking_line.end = _XMFLOAT3(guide_line.line_nodes.at(i));
-
-				blocking_line.start.y = 0.0f;
-				blocking_line.end.y = 0.0f;
-
-				blocking_lines.push_back(blocking_line);
-			}
-		}
-	}
 }
 
 void reality::QuadTreeMgr::ImportQuadTreeData(string filename)
@@ -276,12 +258,32 @@ SpaceNode* reality::QuadTreeMgr::BuildPhysicsTree(UINT depth, float min_x, float
 
 void reality::QuadTreeMgr::SetStaticTriangles(SpaceNode* node)
 {
-	for (auto& tri : deviding_level_->level_triangles)
+	for (const auto& tri : deviding_level_->level_triangles)
 	{
-		CollideType result = AABBToTriagnle(node->area, tri);
-		if (result != CollideType::OUTSIDE)
-		{
+		XMVECTOR Normal = XMVector3Cross(XMVectorSubtract(_XMVECTOR3(tri.vertex1), _XMVECTOR3(tri.vertex0)), XMVectorSubtract(_XMVECTOR3(tri.vertex2), _XMVECTOR3(tri.vertex0)));
+		if (XMVector3Equal(Normal, XMVectorZero()))
+			continue;
+
+		bool tri_aabb_intersect = node->culling_aabb.Intersects(_XMVECTOR3(tri.vertex0), _XMVECTOR3(tri.vertex1), _XMVECTOR3(tri.vertex2));
+		if (tri_aabb_intersect)
 			node->static_triangles.push_back(tri);
+	}
+}
+
+void reality::QuadTreeMgr::AddStaticTriangles(const vector<TriangleShape>& triangles)
+{
+	for (auto& item : leaf_nodes_)
+	{
+		auto node = item.second;
+		for (const auto& tri : triangles)
+		{
+			XMVECTOR Normal = XMVector3Cross(XMVectorSubtract(_XMVECTOR3(tri.vertex1), _XMVECTOR3(tri.vertex0)), XMVectorSubtract(_XMVECTOR3(tri.vertex2), _XMVECTOR3(tri.vertex0)));
+			if (XMVector3Equal(Normal, XMVectorZero()))
+				continue;
+
+			bool tri_aabb_intersect = node->culling_aabb.Intersects(_XMVECTOR3(tri.vertex0), _XMVECTOR3(tri.vertex1), _XMVECTOR3(tri.vertex2));
+			if (tri_aabb_intersect)
+				node->static_triangles.push_back(tri);
 		}
 	}
 }
@@ -631,8 +633,7 @@ void reality::QuadTreeMgr::RenderCollisionMeshes()
 
 	DX11APP->GetDeviceContext()->IASetInputLayout(vertex_shader->InputLayout());
 	DX11APP->GetDeviceContext()->VSSetShader(vertex_shader->Get(), nullptr, 0);
-	DX11APP->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
+	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->Wireframe());
 	
 	material->Set();
 
@@ -672,7 +673,7 @@ void reality::QuadTreeMgr::RenderCollisionMeshes()
 
 	deviding_level_->RenderCollisionMesh();
 
-	DX11APP->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
 void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
@@ -717,31 +718,32 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 
 		character->floor_position = result.floor_position;
 
-		if (result.collide_type != 0)
+		switch (result.collide_type)
 		{
-			if (result.collide_type == 1)
-			{
-				character->GetMovementComponent()->gravity = 0.0f;
-				character->movement_state_ = MovementState::STAND_ON_FLOOR;
-			}
-			if (result.collide_type == 2)
-			{
-				
-			}	
-		}
-		else
-		{
+		case 0: 
+			character->movement_state_ = MovementState::FALL;
 			character->GravityFall(9.81f);
-			character->movement_state_ = MovementState::GRAVITY_FALL;
+			break;
+		case 1: 
+			character->movement_state_ = MovementState::WALK;
+			character->GetMovementComponent()->gravity = 0.0f;
+			break;
+		case 2: 
+			character->movement_state_ = MovementState::FALL;
+			character->GravityFall(9.81f);
+			break;
+		case 3:
+			character->movement_state_ = MovementState::WALK;
+			character->GetMovementComponent()->gravity = 0.0f;
+			break;
 		}
 
-		//if (result.is_wall_collide)
-		//{
-		//	for (int j = 0; j < 4; ++j)
-		//	{
-		//		character->blocking_walls_.push_back(result.blocking_rays[j]);
-		//	}
-		//}
+		for (int j = 0; j < 4; ++j)
+		{
+			character->blocking_planes_[j] = result.wall_planes[j];
+		}
+
+		character = nullptr;
 	}
 }
 
