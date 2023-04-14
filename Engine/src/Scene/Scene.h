@@ -37,8 +37,6 @@ namespace reality {
 		ActorClass* GetPlayer(int player_num);
 		template <typename ActorClass, typename... Args>
 		entt::entity AddPlayer(Args&&...args);
-
-        
 	};
 
     template<typename ActorClass>

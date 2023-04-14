@@ -55,20 +55,11 @@ void GUIMgr::RenderWidgets()
 	ImGui::EndFrame();
 }
 
-void GUIMgr::AddWidget(string widget_name, GuiWidget* widget)
-{
-	if (FindWidget(widget_name) != nullptr)
-		return;
-
-	widget->Init();
-	widgets.insert(make_pair(widget_name, widget));
-}
-
 GuiWidget* GUIMgr::FindWidget(string widget_name)
 {
 	auto iter = widgets.find(widget_name);
 	if (iter != widgets.end())
-		return iter->second;
+		return iter->second.get();
 	
 	return nullptr;
 }
