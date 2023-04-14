@@ -113,6 +113,7 @@ void reality::CameraSystem::CreateFrustum()
 
 RayShape CameraSystem::CreateMouseRay()
 {
+	RayShape mouse_ray;
 	POINT cursor_pos;
 	GetCursorPos(&cursor_pos);
 	ScreenToClient(ENGINE->GetWindowHandle(), &cursor_pos);
@@ -133,9 +134,13 @@ RayShape CameraSystem::CreateMouseRay()
 	XMVECTOR ray_origin;
 
 	ray_origin = XMVector3TransformCoord({0, 0, 0, 0}, inv_view);
-	ray_dir = XMVector3Normalize(XMVector3TransformNormal({ndc_x, ndc_y, 1.0f, 0}, inv_view));
+	ray_dir = XMVector3TransformNormal({ndc_x, ndc_y, 1.0f, 0}, inv_view);
+	ray_dir = XMVector3Normalize(ray_dir);
 
-	return RayShape(ray_origin, ray_origin + ray_dir * 100000);
+	mouse_ray.start = _XMFLOAT3(ray_origin);
+	mouse_ray.end = _XMFLOAT3((ray_dir * camera->far_z));
+
+	return mouse_ray;
 }
 
 RayShape reality::CameraSystem::CreateFrontRay()
@@ -145,7 +150,7 @@ RayShape reality::CameraSystem::CreateFrontRay()
 	ray_origin.m128_f32[3] = 0.0f;
 	XMVECTOR ray_dir = XMVector3Normalize(camera_world.r[2]);
 
-	return RayShape(ray_origin, ray_origin + ray_dir * 100000);
+	return RayShape(ray_origin, ray_origin + ray_dir * 100000.0f);
 }
 
 C_Camera* CameraSystem::GetCamera()
