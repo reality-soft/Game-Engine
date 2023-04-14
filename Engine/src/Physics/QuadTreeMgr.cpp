@@ -102,9 +102,9 @@ void reality::QuadTreeMgr::CreateQuadTreeData(int max_depth)
 	root_node_ = BuildPhysicsTree(0, min_x, min_z, max_x, max_z);
 }
 
-void reality::QuadTreeMgr::ImportQuadTreeData(string filename)
+void reality::QuadTreeMgr::ImportQuadTreeData(string mapdat_file)
 {
-	FileTransfer read_file(filename, READ);
+	FileTransfer read_file(mapdata_dir + mapdat_file, READ);
 
 	UINT null_node_index = 99999;
 
@@ -219,6 +219,47 @@ void reality::QuadTreeMgr::InitImported()
 		node->culling_aabb.CreateFromPoints(node->culling_aabb, _XMVECTOR3(node->area.min), _XMVECTOR3(node->area.max));
 	}
 }
+
+void reality::QuadTreeMgr::ImportGuideLines(string mapdat_file, GuideType guide_type)
+{
+	FileTransfer out_mapdata(mapdata_dir + mapdat_file, READ);
+
+	vector<GuideLine> new_guide_lines_;
+
+	UINT num_guide_lines = 0;
+	out_mapdata.ReadBinary<UINT>(num_guide_lines);
+	for (UINT i = 0; i < num_guide_lines; ++i)
+	{
+		GuideLine new_guide_line;
+		new_guide_line.guide_type_ = guide_type;
+
+		UINT num_nodes = 0;
+		out_mapdata.ReadBinary<UINT>(num_nodes);
+
+		for (UINT j = 0; j < num_nodes; ++j)
+		{
+			UINT node_number;
+			XMVECTOR node_pos;
+			out_mapdata.ReadBinary<UINT>(node_number);
+			out_mapdata.ReadBinary<XMVECTOR>(node_pos);
+
+			new_guide_line.AddNode(node_pos);
+		}
+
+		new_guide_lines_.push_back(new_guide_line);
+	}
+
+	auto name = split(mapdat_file, '.');
+	guide_lines_.insert(make_pair(name[0], new_guide_lines_));
+	new_guide_lines_.clear();
+}
+
+vector<GuideLine>* reality::QuadTreeMgr::GetGuideLines(string name)
+{
+	if (guide_lines_.find(name) != guide_lines_.end())
+		return &guide_lines_.find(name)->second;
+}
+
 
 SpaceNode* reality::QuadTreeMgr::BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
 {
