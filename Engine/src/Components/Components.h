@@ -97,7 +97,13 @@ namespace reality
 		vector<pair<string, AnimSlot>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
 
-		C_Animation(AnimationBase* anim_object);
+		C_Animation(const AnimationBase& anim_object)
+		{
+			AnimSlot base_anim_slot;
+			base_anim_slot.anim_object_ = make_shared<AnimationBase>(anim_object);
+			anim_slots.push_back({ "Base", base_anim_slot });
+			name_to_anim_slot_index.insert({ "Base", 0 });
+		}
 
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override {};
