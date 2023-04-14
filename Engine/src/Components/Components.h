@@ -97,7 +97,8 @@ namespace reality
 		vector<pair<string, AnimSlot>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
 
-		C_Animation(AnimationBase* anim_object);
+		template <typename AnimObjectType, typename... Args>
+		C_Animation(Args&&...args);
 
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override {};
@@ -114,7 +115,7 @@ namespace reality
 
 			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons_, anim_slot.bone_id_to_weight_);
 			anim_slot.range_ = range * 2;
-			anim_slot.anim_object_ = make_shared<AnimSlotType>(args...);
+			anim_slot.anim_object_ = dynamic_pointer_cast<AnimationBase>(make_shared<AnimSlotType>(args...));
 			anim_slot.anim_object_->OnInit();
 
 			anim_slots.push_back({ anim_slot_name, anim_slot });
@@ -216,4 +217,15 @@ namespace reality
 		string		spot_light_id;
 		SpotLight	spot_light;
 	};
+
+	template<typename AnimObjectType, typename ...Args>
+	inline C_Animation::C_Animation(Args && ...args)
+	{
+		AnimSlot base_anim_slot;
+		base_anim_slot.anim_object_ = dynamic_pointer_cast<AnimationBase>(make_shared<AnimObjectType>(args...));
+		anim_slots.push_back({ "Base", base_anim_slot });
+		name_to_anim_slot_index.insert({ "Base", 0 });
+
+		return cur_entity_id;
+	}
 }
