@@ -49,7 +49,7 @@ namespace reality {
 		void Init(StaticMeshLevel* level_to_devide, entt::registry& reg);
 
 		void CreateQuadTreeData(int max_depth);
-		void ImportQuadTreeData(string filename);
+		void ImportQuadTreeData(string mapdat_file);
 		bool CreatePhysicsCS();
 
 		void Frame(CameraSystem* applied_camera);
@@ -109,5 +109,14 @@ namespace reality {
 
 	private:
 		void InitImported();
+
+		// GuideLine
+	public:
+		void ImportGuideLines(string mapdat_file, GuideType guide_type);
+		vector<GuideLine>* GetGuideLines(string name);
+
+	private:
+		map<string, vector<GuideLine>> guide_lines_;
+		string mapdata_dir = "../../Contents/BinaryPackage/";
 	};
 }
