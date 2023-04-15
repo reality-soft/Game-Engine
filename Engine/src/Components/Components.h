@@ -76,6 +76,12 @@ namespace reality
 		virtual void OnUpdate() override;
 	};
 
+	struct DLL_API C_TriggerVolume : public C_Transform
+	{
+		SphereShape sphere_volume;
+		virtual void OnUpdate() override;
+	};
+
 	struct DLL_API C_Camera : public C_Transform
 	{
 		XMVECTOR camera_pos = { 0, 0, 0, 0 };

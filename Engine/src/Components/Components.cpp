@@ -33,6 +33,12 @@ void reality::C_SphereCollision::OnUpdate()
 	sphere.center = _XMFLOAT3(world.r[3]);
 }
 
+void reality::C_TriggerVolume::OnUpdate()
+{
+	sphere_volume.center = _XMFLOAT3(world.r[3]);
+}
+
+
 void reality::C_Camera::OnUpdate()
 {
 	XMVECTOR target_translation, target_rotation, target_scale;
@@ -287,3 +293,4 @@ shared_ptr<TransformTreeNode> reality::TransformTree::FindNode(shared_ptr<Transf
 
 	return nullptr;
 }
+
