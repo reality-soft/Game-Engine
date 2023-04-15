@@ -82,6 +82,9 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	for (auto ent : view_stm)
 	{
 		auto* static_mesh_component = reg.try_get<C_StaticMesh>(ent);
+		if (static_mesh_component == nullptr)
+			continue;
+
 		C_Socket* socket_component = nullptr;
 		if (static_mesh_component->socket_name != "") {
 			socket_component = reg.try_get<C_Socket>(ent);
