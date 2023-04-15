@@ -43,7 +43,9 @@ namespace reality
 		void Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context);
 		void RenderWidgets();
 
-		void AddWidget(string widget_name, GuiWidget* widget);
+
+		template <typename WidgetType, typename... Args>
+		void AddWidget(string widget_name, Args&&...args);
 		GuiWidget* FindWidget(string widget_name);
 
 		ImGuiContext* GetContext();
@@ -52,7 +54,19 @@ namespace reality
 		ImFont* AddFont(string font_name, LPCSTR ttf_file, float font_size);
 	private:
 		ImGuiContext* context;
-		unordered_map<string, GuiWidget*> widgets;
+		unordered_map<string, shared_ptr<GuiWidget>> widgets;
 	};
+
+	template <typename WidgetType, typename... Args>
+	void GUIMgr::AddWidget(string widget_name, Args&&...args)
+	{
+		if (FindWidget(widget_name) != nullptr)
+			return;
+
+		shared_ptr<GuiWidget> widget = dynamic_pointer_cast<GuiWidget>(make_shared<WidgetType>(args...));
+		widget->Init();
+
+		widgets.insert(make_pair(widget_name, widget));
+	}
 }
 

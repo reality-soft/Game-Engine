@@ -102,6 +102,9 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		}
 		else {
 			SetTransformCB(static_mesh_component, cb_static_mesh_.data.transform);
+			cb_static_mesh_.data.socket_transform.owner_local = XMMatrixIdentity();
+			cb_static_mesh_.data.socket_transform.local_offset = XMMatrixIdentity();
+			cb_static_mesh_.data.socket_transform.animation_matrix = XMMatrixIdentity();
 		}
 
 		RenderStaticMesh(static_mesh_component);
