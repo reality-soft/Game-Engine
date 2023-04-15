@@ -13,22 +13,14 @@ bool reality::Environment::CreateEnvironment()
 	return true;
 }
 
-void reality::Environment::SetWorldTime(float noon_time, float night_time, bool noon_start)
+void reality::Environment::SetWorldTime(float noon_time, float night_time)
 {
-	world_time_.x = noon_time;
-	world_time_.y = -night_time;
+	time_limits.x = noon_time / 2;
+	time_limits.y = -night_time / 2;
 
-	if (noon_start)
-	{
-		current_time_ = world_time_.x;
-		time_routin_ = TimeRoutin::NOON_TO_NIGHT;
-	}
-
-	else
-	{
-		current_time_ = -world_time_.y; 
-		time_routin_ = TimeRoutin::NIGHT_TO_NOON;
-	}
+	current_time_ = 0.0f;
+	time_routin_ = TimeRoutin::NIGHT_TO_NOON;
+	current_day_ = Day::eNoon;
 }
 
 void reality::Environment::SetSkyColorByTime(XMFLOAT4 start_color, XMFLOAT4 end_color)
@@ -50,14 +42,6 @@ void reality::Environment::SetLightProperty(float _min_brightness, float _max_sp
 
 void reality::Environment::Update(CameraSystem* sys_camera, LightingSystem* sys_lighting)
 {
-	if (current_time_ >= world_time_.x)
-		time_routin_ = TimeRoutin::NOON_TO_NIGHT;
-
-
-	if (current_time_ <= world_time_.y)
-		time_routin_ = TimeRoutin::NIGHT_TO_NOON;
-
-
 	switch (time_routin_)
 	{
 	case TimeRoutin::NOON_TO_NIGHT:
@@ -69,9 +53,22 @@ void reality::Environment::Update(CameraSystem* sys_camera, LightingSystem* sys_
 		break;
 	}
 
-	sky_sphere_.Update(world_time_, current_time_);
-	distance_fog_.Update(world_time_, current_time_);
-	sys_lighting->UpdateGlobalLight(world_time_, current_time_, min_directional_bright_, max_specular_strength_);
+	if (current_time_ >= time_limits.x)
+		time_routin_ = TimeRoutin::NOON_TO_NIGHT;
+
+
+	else if (current_time_ <= time_limits.y)
+		time_routin_ = TimeRoutin::NIGHT_TO_NOON;
+
+	if (current_time_ > 0)
+		current_day_ = Day::eNoon;
+
+	else
+		current_day_ = Day::eNight;
+
+	sky_sphere_.Update(time_limits, current_time_);
+	distance_fog_.Update(time_limits, current_time_);
+	sys_lighting->UpdateGlobalLight(time_limits, current_time_, min_directional_bright_, max_specular_strength_);
 
 	distance_fog_.UpdateFogStart(sys_camera->GetCamera()->camera_pos);
 	distance_fog_.UpdateFogColor(sky_sphere_.GetSkyColor());
@@ -93,4 +90,31 @@ reality::DistanceFog* reality::Environment::GetDistanceFog()
 reality::SkySphere* reality::Environment::GetSkySphere()
 {
 	return &sky_sphere_;
+}
+
+float reality::Environment::GetCountingTime()
+{
+	return current_time_;
+}
+
+XMFLOAT2 reality::Environment::GetTimeLimits()
+{
+	return time_limits;
+}
+
+bool reality::Environment::IsDayChanged()
+{
+	static Day last_day = current_day_;
+	if (current_day_ != last_day)
+	{
+		last_day = current_day_;
+		return true;
+	}
+
+	return false;
+}
+
+reality::Day reality::Environment::GetCurrentDay()
+{
+	return current_day_;
 }
