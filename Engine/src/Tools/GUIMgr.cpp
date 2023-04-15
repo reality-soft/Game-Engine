@@ -55,15 +55,6 @@ void GUIMgr::RenderWidgets()
 	ImGui::EndFrame();
 }
 
-GuiWidget* GUIMgr::FindWidget(string widget_name)
-{
-	auto iter = widgets.find(widget_name);
-	if (iter != widgets.end())
-		return iter->second.get();
-	
-	return nullptr;
-}
-
 ImGuiContext* reality::GUIMgr::GetContext()
 {
 	return context;
