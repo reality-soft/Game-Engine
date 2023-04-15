@@ -19,7 +19,7 @@ namespace reality {
 		}
 
 	public:
-		AnimationState* GetCurrentAnimatinoState() {
+		AnimationState* GetCurrentAnimationState() {
 			return cur_state_.get();
 		}
 
