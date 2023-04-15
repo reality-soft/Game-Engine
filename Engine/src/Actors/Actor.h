@@ -10,12 +10,11 @@ namespace reality
 	public:
 		entt::entity	entity_id_;
 		TransformTree	transform_tree_;
-		AABBShape		collision_box_;
 		int				node_num_;
 		entt::registry* reg_scene_;
 
 		bool visible = false;
-
+		bool trigger_sensor = false;
 	public:
 		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate();

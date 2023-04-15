@@ -6,7 +6,8 @@
 namespace reality {
 	enum EVENT_TYPE {
 		MOVEMENT,
-		DELETE_ACTOR
+		DELETE_ACTOR,
+		TRIGGER,
 	};
 
 	class DLL_API Event
@@ -75,5 +76,30 @@ namespace reality {
 		};
 	private:
 		entt::entity actor_id_;
+	};
+
+	class DLL_API TriggerEvent : public Event {
+	public:
+		TriggerEvent(entt::entity target_actor, entt::entity trigger_actor, bool begin_or_end) : Event(TRIGGER) {
+			target_actor_ = target_actor;
+			trigger_actor_ = trigger_actor;
+			begin_or_end_ = begin_or_end;
+		}
+
+		virtual void Process() override {
+			if (begin_or_end_ == true) // Begin Overlap
+			{
+
+			}
+			else // End Overlap
+			{
+
+			}
+		};
+
+	private:
+		entt::entity target_actor_;
+		entt::entity trigger_actor_;
+		bool begin_or_end_;
 	};
 }
