@@ -535,6 +535,7 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 			callback_list.insert(make_pair(callback.distance, callback));
 		}
 	}
+
 	for (auto& item : dynamic_capsule_list)
 	{
 		const auto& capsule = item.second->capsule;
@@ -767,7 +768,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 			break;
 		case 1: 
 			character->movement_state_ = MovementState::WALK;
-			character->GetMovementComponent()->gravity = 0.0f;
+			character->GetMovementComponent()->gravity_pulse = 0.0f;
 			break;
 		case 2: 
 			character->movement_state_ = MovementState::FALL;
@@ -775,7 +776,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 			break;
 		case 3:
 			character->movement_state_ = MovementState::WALK;
-			character->GetMovementComponent()->gravity = 0.0f;
+			character->GetMovementComponent()->gravity_pulse = 0.0f;
 			break;
 		}
 

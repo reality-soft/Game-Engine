@@ -323,7 +323,7 @@ CapsuleCallback reality::CapsuleToTriangle(const CapsuleShape& cap, const Triang
 
 XMVECTOR reality::GetRayVector(const RayShape& ray)
 {
-    return _XMVECTOR3(ray.start) - _XMVECTOR3(ray.end);
+    return _XMVECTOR3(ray.end) - _XMVECTOR3(ray.start);
 }
 
 array<RayShape, 3> reality::GetEdgeRays(const TriangleShape& tri)
