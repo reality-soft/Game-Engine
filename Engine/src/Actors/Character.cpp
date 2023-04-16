@@ -17,7 +17,7 @@ void reality::Character::OnUpdate()
 
 void reality::Character::GravityFall(float _gravity)
 {
-	movement_component_->gravity += _gravity;
+	movement_component_->gravity_pulse += _gravity;
 }
 
 XMVECTOR reality::Character::GetPos() const
