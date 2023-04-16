@@ -29,35 +29,6 @@ namespace reality {
 		}
 
 		virtual void Process() override {
-
-			auto character = SCENE_MGR->GetActor<Character>(actor_id_);
-			if (character == nullptr)
-				return;
-
-			auto c_capsule = SCENE_MGR->GetRegistry().try_get<C_CapsuleCollision>(character->GetEntityId());
-
-			for (int i = 0; i < 4; ++i)
-			{
-				auto plane = character->blocking_planes_[i];
-
-				if (Vector3Length(_XMVECTOR4(plane)) <= 0.1f)
-					continue;
-
-				XMVECTOR plane_normal = XMVectorSet(plane.x, plane.y, plane.z, 0);
-
-				if (XMVectorGetX(XMVector3Dot(plane_normal, movement_vector_)) < 0.0f)
-					movement_vector_ = VectorProjectPlane(movement_vector_, plane_normal);
-			}
-			
-
-			XMMATRIX transform_matrix = character->GetTranformMatrix();
-			XMMATRIX movement_matrix = XMMatrixTranslationFromVector(movement_vector_);
-			transform_matrix *= movement_matrix;
-
-			if (character->movement_state_ == MovementState::WALK)
-				transform_matrix.r[3].m128_f32[1] = character->floor_position.y;
-
-			character->ApplyMovement(transform_matrix);
 		};
 	private:
 		XMVECTOR movement_vector_;
@@ -76,30 +47,5 @@ namespace reality {
 		};
 	private:
 		entt::entity actor_id_;
-	};
-
-	class DLL_API TriggerEvent : public Event {
-	public:
-		TriggerEvent(entt::entity target_actor, entt::entity trigger_actor, bool begin_or_end) : Event(TRIGGER) {
-			target_actor_ = target_actor;
-			trigger_actor_ = trigger_actor;
-			begin_or_end_ = begin_or_end;
-		}
-
-		virtual void Process() override {
-			if (begin_or_end_ == true) // Begin Overlap
-			{
-
-			}
-			else // End Overlap
-			{
-
-			}
-		};
-
-	private:
-		entt::entity target_actor_;
-		entt::entity trigger_actor_;
-		bool begin_or_end_;
 	};
 }

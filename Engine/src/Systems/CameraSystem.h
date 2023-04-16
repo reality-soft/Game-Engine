@@ -29,6 +29,7 @@ namespace reality
 		XMMATRIX world_matrix;
 		XMMATRIX view_matrix;
 		XMMATRIX projection_matrix;
+		float mouse_sensivity = 0.5f;
 
 	private:
 		void DebugCameraMovement();

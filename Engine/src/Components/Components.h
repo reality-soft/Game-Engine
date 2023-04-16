@@ -171,8 +171,8 @@ namespace reality
 		float rotation = 0.0f;
 		float angular_velocity = 0.0f;
 
-		float jump_scale = 0.0f;
-		float gravity = 0.0f;
+		float jump_pulse = 0.0f;
+		float gravity_pulse = 0.0f;
 
 		C_Movement(TransformTree* actor_transform_tree) :
 			actor_transform_tree(actor_transform_tree) {};
