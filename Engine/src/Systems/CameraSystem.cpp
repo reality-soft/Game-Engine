@@ -207,14 +207,11 @@ void CameraSystem::DebugCameraMovement()
 
 void reality::CameraSystem::PlayerCameraMovement()
 {
-	//if (DINPUT->GetMouseState(R_BUTTON) == KEY_HOLD)
-	//{
-		float yaw = DINPUT->GetDeltaX() * TM_DELTATIME;
-		float pitch = DINPUT->GetDeltaY() * TM_DELTATIME;
+	float yaw   = DINPUT->GetDeltaX() * TM_DELTATIME * mouse_sensivity;
+	float pitch = DINPUT->GetDeltaY() * TM_DELTATIME * mouse_sensivity;
 
-		camera->pitch_yaw.x += pitch;
-		camera->pitch_yaw.y += yaw;
-	//}
+	camera->pitch_yaw.x += pitch;
+	camera->pitch_yaw.y += yaw;
 }
 
 void CameraSystem::CameraAction()
