@@ -114,7 +114,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	{
 		auto* skeletal_mesh_component = reg.try_get<C_SkeletalMesh>(ent);
 		auto* animation_component = reg.try_get<C_Animation>(ent);
-		if (skeletal_mesh_component == nullptr || animation_component == nullptr) {
+		if (skeletal_mesh_component == nullptr) {
 			continue;
 		}
 		SetTransformCB(skeletal_mesh_component, cb_skeletal_mesh_.data.transform);
@@ -296,8 +296,13 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 		return;
 	}
 
-	PlayAnimation(skeletal_mesh->skeleton, *animation_component);
-	
+	if (animation_component != nullptr) {
+		PlayAnimation(skeletal_mesh->skeleton, *animation_component);
+	}
+	else {
+		SetAnimationMatricesIdentity();
+	}
+
 	device_context_->UpdateSubresource(cb_skeletal_mesh_.buffer.Get(), 0, nullptr, &cb_skeletal_mesh_.data, 0, 0);
 	device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
 
@@ -402,7 +407,6 @@ void RenderSystem::CreateEffectCB()
 
 		hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_particle_.buffer.GetAddressOf());
 	}
-	
 }
 
 void RenderSystem::CreateEffectBuffer()
@@ -688,5 +692,16 @@ void RenderSystem::SetParticleCB(Particle& particle)
 
 	device_context_->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
 	device_context_->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());
+}
+
+void reality::RenderSystem::SetAnimationMatricesIdentity()
+{
+	for (int i = 0;i < 128;i++) {
+		cb_skeletal_mesh_.data.bind_pose[i] = XMMatrixIdentity();
+		cb_skeletal_mesh_.data.prev_animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh_.data.animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh_.data.prev_slot_animation[i] = XMMatrixIdentity();
+		cb_skeletal_mesh_.data.slot_animation[i] = XMMatrixIdentity();
+	}
 }
 

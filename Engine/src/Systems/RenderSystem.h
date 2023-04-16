@@ -36,6 +36,10 @@ namespace reality
 		void SetShaderAndMaterial(Emitter& emitter);
 		void SetStates(Emitter& emitter);
 		void SetParticleCB(Particle& particle);
+
+	public:
+		void SetAnimationMatricesIdentity();
+
 	public:
 
 	private:
