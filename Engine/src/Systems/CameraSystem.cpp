@@ -11,8 +11,9 @@ CameraSystem::CameraSystem()
 	camera = nullptr;
 	viewport = DX11APP->GetViewPortAddress();
 
-	cb_camera_info.data.view_matrix = XMMatrixIdentity();
-	projection_matrix = cb_camera_info.data.projection_matrix = XMMatrixIdentity();
+	cb_camera_info.data.view_proj_matrix = XMMatrixIdentity();
+	projection_matrix = XMMatrixIdentity();
+	view_matrix = XMMatrixIdentity();
 }
 
 CameraSystem::~CameraSystem()
@@ -145,7 +146,7 @@ RayShape CameraSystem::CreateMouseRay()
 
 RayShape reality::CameraSystem::CreateFrontRay()
 {
-	XMMATRIX camera_world = XMMatrixInverse(nullptr, XMMatrixTranspose(cb_camera_info.data.view_matrix));
+	XMMATRIX camera_world = XMMatrixInverse(nullptr, view_matrix);
 	XMVECTOR ray_origin = camera_world.r[3];
 	ray_origin.m128_f32[3] = 0.0f;
 	XMVECTOR ray_dir = XMVector3Normalize(camera_world.r[2]);
@@ -257,8 +258,9 @@ void CameraSystem::CreateMatrix()
 	this->view_matrix = view_matrix;
 	this->world_matrix = XMMatrixInverse(0, view_matrix);
 
-	cb_camera_info.data.view_matrix = XMMatrixTranspose(view_matrix);
-	cb_camera_info.data.projection_matrix = XMMatrixTranspose(projection_matrix);
+	//cb_camera_info.data.view_matrix = XMMatrixTranspose(view_matrix);
+	//cb_camera_info.data.projection_matrix = XMMatrixTranspose(projection_matrix);
+	cb_camera_info.data.view_proj_matrix = XMMatrixTranspose(view_matrix * projection_matrix);
 	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(cb_camera_info.data.camera_position));
 	cb_camera_info.data.camera_position = XMMatrixInverse(nullptr, this->view_matrix).r[3];
 	cb_camera_info.data.camera_position.m128_f32[3] = camera->far_z;
