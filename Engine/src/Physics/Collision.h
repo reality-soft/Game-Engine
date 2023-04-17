@@ -71,9 +71,11 @@ namespace reality {
 
     CapsuleCallback CapsuleToTriangle(const CapsuleShape& cap, const TriangleShape& triangle);
 
+    XMVECTOR PointRaySegment(const RayShape& ray, const XMVECTOR& point);
+
     // Converter
 
-    XMVECTOR GetRayVector(const RayShape& ray);
+    XMVECTOR GetRayDirection(const RayShape& ray);
 
     array<RayShape, 3> GetEdgeRays(const TriangleShape& tri);
     XMVECTOR           GetMinXZ(const TriangleShape& tri);

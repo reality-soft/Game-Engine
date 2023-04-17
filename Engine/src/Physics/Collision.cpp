@@ -44,7 +44,7 @@ RayCallback reality::RayToTriangle(const RayShape& ray, const TriangleShape& tri
     if (PointInTriangle(P, tri))
     {
         float distance = Distance(P, _XMVECTOR3(ray.start));
-        float ray_length = Vector3Length(GetRayVector(ray));
+        float ray_length = Distance(_XMVECTOR3(ray.end), _XMVECTOR3(ray.start));
         if (distance <= ray_length)
         {
             callback.success = true;
@@ -86,8 +86,7 @@ RayCallback reality::RayToCapsule(const RayShape& ray, const CapsuleShape& cap)
 
     RC = _XMVECTOR3(ray.start);
     RC = XMVectorSubtract(RC, _XMVECTOR3(cap.base));
-    XMVECTOR dir = GetRayVector(ray);
-    dir = XMVector3Normalize(dir);
+    XMVECTOR dir = GetRayDirection(ray);
     n = XMVector3Cross(dir, axis);
 
     ln = XMVector3Length(n).m128_f32[0];
@@ -274,6 +273,8 @@ CollideType reality::AABBToTriagnle(const AABBShape& aabb, const TriangleShape& 
     }
 
     return CollideType::OUTSIDE;
+
+    BoundingBox box;
 }
 
 CapsuleCallback reality::CapsuleToTriangle(const CapsuleShape& cap, const TriangleShape& triangle)
@@ -321,9 +322,17 @@ CapsuleCallback reality::CapsuleToTriangle(const CapsuleShape& cap, const Triang
     }
 }
 
-XMVECTOR reality::GetRayVector(const RayShape& ray)
+XMVECTOR reality::PointRaySegment(const RayShape& ray, const XMVECTOR& point)
 {
-    return _XMVECTOR3(ray.end) - _XMVECTOR3(ray.start);
+    XMVECTOR segment = _XMVECTOR3(ray.end) - _XMVECTOR3(ray.start);
+    XMVECTOR diff = DirectX::XMVectorSubtract(point, _XMVECTOR3(ray.start));
+    float t = XMVectorSaturate(XMVector3Dot(diff, segment) / XMVector3Dot(segment, segment)).m128_f32[0];
+
+    return _XMVECTOR3(ray.start) + t * segment;
+}
+XMVECTOR reality::GetRayDirection(const RayShape& ray)
+{
+    return XMVector3Normalize(_XMVECTOR3(ray.end) - _XMVECTOR3(ray.start));
 }
 
 array<RayShape, 3> reality::GetEdgeRays(const TriangleShape& tri)
