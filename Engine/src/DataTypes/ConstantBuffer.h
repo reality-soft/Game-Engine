@@ -78,8 +78,7 @@ namespace reality
 	{
 		CbCameraInfo()
 		{
-			data.view_matrix = XMMatrixIdentity();
-			data.projection_matrix = XMMatrixIdentity();
+			data.view_proj_matrix = XMMatrixIdentity();
 			data.camera_translation = XMMatrixIdentity();
 			data.camera_position = XMVectorZero();
 			data.camera_look = XMVectorZero();
@@ -91,8 +90,7 @@ namespace reality
 		}
 		struct Data
 		{
-			XMMATRIX view_matrix;
-			XMMATRIX projection_matrix;
+			XMMATRIX view_proj_matrix;
 			XMMATRIX camera_translation;
 			XMVECTOR camera_position;
 			XMVECTOR camera_look;
