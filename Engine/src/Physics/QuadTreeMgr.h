@@ -3,6 +3,7 @@
 #include "StaticMeshLevel.h"
 #include "CameraSystem.h"
 #include "StructuredBuffer.h"
+#include "Character.h"
 
 #define MIN_HEIGHT -10000.f
 #define MAX_HEIGHT  10000.f
@@ -77,6 +78,7 @@ namespace reality {
 		
 	public:
 		UINT visible_nodes = 0;
+		UINT raycast_calculated = 0;
 
 		// Physics Tree
 	private:
@@ -86,6 +88,7 @@ namespace reality {
 		SpaceNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node);
 		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& out_nodes);
 		bool	   IncludingNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
+		void	   RaycastNodeQuery(const RayShape& ray, SpaceNode* node, map<float, RayCallback>& callbacks);
 		void	   NodeCulling(SpaceNode* node);
 
 		UINT max_depth;
@@ -114,6 +117,10 @@ namespace reality {
 	public:
 		void ImportGuideLines(string mapdat_file, GuideType guide_type);
 		vector<GuideLine>* GetGuideLines(string name);
+		void SetBlockingFields(string name);
+		void SetPlayerStart(string name, Character* player, float start_rotate_angle);
+		vector<RayShape> blocking_fields_;
+		XMVECTOR player_start_;
 
 	private:
 		map<string, vector<GuideLine>> guide_lines_;
