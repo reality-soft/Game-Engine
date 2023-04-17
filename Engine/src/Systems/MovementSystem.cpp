@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "TimeMgr.h"
+#include "QuadTreeMgr.h"
 #include "MovementSystem.h"
 #include "EventMgr.h"
 
@@ -48,9 +49,28 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 			if (XMVectorGetX(XMVector3Dot(plane_normal, movement_vector)) < 0.0f)
 				movement_vector = VectorProjectPlane(movement_vector, plane_normal);
 		}
+		for (const auto& block_ray : QUADTREE->blocking_fields_)
+		{
+			RayShape ray = block_ray;
+			ray.start.y = 0.0f;
+			ray.end.y = 0.0f;
+			XMVECTOR position = _XMVECTOR3(c_capsule->capsule.base); position.m128_f32[1] = 0.0f;
+			XMVECTOR segment = PointRaySegment(ray, position);
+			float distance = Distance(position, segment);
+			//float distance = XMVector3LinePointDistance(line_start, line_end, position).m128_f32[0];
+			if (distance <= c_capsule->capsule.radius)
+			{
+				XMVECTOR plane_normal = -1.0f * XMPlaneFromPoints(_XMVECTOR3(ray.start), _XMVECTOR3(ray.start) + XMVectorSet(0, 10000, 0, 0), _XMVECTOR3(ray.end));
+				plane_normal.m128_f32[3] = 0.0f;
+
+				if (XMVectorGetX(XMVector3Dot(plane_normal, movement_vector)) < 0.0f)
+					movement_vector = VectorProjectPlane(movement_vector, plane_normal);
+			}
+		}
 
 
-		XMMATRIX transform_matrix = character->GetTranformMatrix();
+
+		XMMATRIX transform_matrix = character->GetTransformMatrix();
 		XMMATRIX movement_matrix = XMMatrixTranslationFromVector(movement_vector);
 		transform_matrix *= movement_matrix;
 

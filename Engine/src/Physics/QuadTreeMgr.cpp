@@ -3,7 +3,6 @@
 #include "QuadTreeMgr.h"
 #include "TimeMgr.h"
 #include "SceneMgr.h"
-#include "Character.h"
 
 using namespace reality;
 
@@ -260,6 +259,35 @@ vector<GuideLine>* reality::QuadTreeMgr::GetGuideLines(string name)
 		return &guide_lines_.find(name)->second;
 }
 
+void reality::QuadTreeMgr::SetBlockingFields(string name)
+{
+	vector<GuideLine>* guide_lines_ = GetGuideLines(name);
+	for (const auto& guide_line : *guide_lines_)
+	{
+		if (guide_line.guide_type_ == GuideType::eBlocking)
+		{
+			for (UINT i = 1; i < guide_line.line_nodes.size(); ++i)
+			{
+				RayShape ray;
+				ray.start = _XMFLOAT3(guide_line.line_nodes.at(i - 1));
+				ray.end = _XMFLOAT3(guide_line.line_nodes.at(i));
+				blocking_fields_.push_back(ray);
+			}			
+		}
+	}
+}
+
+void reality::QuadTreeMgr::SetPlayerStart(string name, Character* player, float start_rotate_angle)
+{
+	vector<GuideLine>* guide_lines_ = GetGuideLines(name);
+	player_start_ = guide_lines_->at(0).line_nodes.at(0);
+	player_start_.m128_f32[1] += 100.0f;
+	if (player != nullptr)
+	{
+		player->SetPos(player_start_);
+	}	
+}
+
 
 SpaceNode* reality::QuadTreeMgr::BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
 {
@@ -494,6 +522,31 @@ bool reality::QuadTreeMgr::IncludingNodeQuery(C_SphereCollision* c_sphere, Space
 	return true;
 }
 
+void reality::QuadTreeMgr::RaycastNodeQuery(const RayShape& ray, SpaceNode* node, map<float, RayCallback>& callbacks)
+{
+	float dist;
+	if (node->culling_aabb.Intersects(_XMVECTOR3(ray.start), GetRayDirection(ray), dist))
+	{
+		if (node->is_leaf)
+		{
+			for (const auto& tri : node->static_triangles)
+			{
+				raycast_calculated++;
+				auto callback = RayToTriangle(ray, tri);
+				if (callback.success)
+					callbacks.insert(make_pair(callback.distance, callback));
+			}
+		}
+		else
+		{
+			RaycastNodeQuery(ray, node->child_node_[0], callbacks);
+			RaycastNodeQuery(ray, node->child_node_[1], callbacks);
+			RaycastNodeQuery(ray, node->child_node_[2], callbacks);
+			RaycastNodeQuery(ray, node->child_node_[3], callbacks);
+		}
+	}
+}
+
 void reality::QuadTreeMgr::SetSpaceHeight(float min_y, float max_y)
 {
 	for (auto& node : total_nodes_)
@@ -525,19 +578,17 @@ void reality::QuadTreeMgr::UpdateCapsules()
 RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 {
 	map<float, RayCallback> callback_list;
+	raycast_calculated = 0;
 
-	for (auto& tri : deviding_level_->level_triangles)
-	{
-		auto callback = RayToTriangle(ray, tri);
-		if (callback.success)
-		{
-			callback.is_actor = false;
-			callback_list.insert(make_pair(callback.distance, callback));
-		}
-	}
+	RaycastNodeQuery(ray, root_node_, callback_list);
 
 	for (auto& item : dynamic_capsule_list)
 	{
+		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
+			continue;
+
+		raycast_calculated++;
+
 		const auto& capsule = item.second->capsule;
 		auto callback = RayToCapsule(ray, capsule);
 		if (callback.success)
