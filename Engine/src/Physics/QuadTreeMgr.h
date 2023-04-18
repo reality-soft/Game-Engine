@@ -10,7 +10,7 @@
 
 namespace reality {
 
-	class DLL_API SpaceNode 
+	class DLL_API SpaceNode
 	{
 	public:
 		SpaceNode(UINT num, UINT depth);
@@ -30,8 +30,8 @@ namespace reality {
 		SpaceNode* child_node_[4] = { 0, };
 		SpaceNode* parent_node = nullptr;
 		UINT parent_node_index = 0;
-		UINT child_node_index[4] = {0, 0, 0, 0};
-			public:
+		UINT child_node_index[4] = { 0, 0, 0, 0 };
+	public:
 		AABBShape area;
 		BoundingBox culling_aabb;
 		vector<TriangleShape> static_triangles;
@@ -60,12 +60,15 @@ namespace reality {
 	public:
 		void SetSpaceHeight(float min_y, float max_y);
 		void UpdateCapsules();
+		void UpdateSpheres();
 		RayCallback Raycast(const RayShape& ray);
 		void RegistDynamicCapsule(entt::entity ent);
+		void RegistDynamicSphere(entt::entity ent);
 		bool RegistStaticSphere(entt::entity ent);
 
 		SbTriangleCollision triangle_stbuffer;
 		SbCapsuleCollision capsule_stbuffer;
+		SbSphereCollision sphere_stbuffer;
 		SbCollisionResult result_stbuffer;
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
@@ -75,7 +78,7 @@ namespace reality {
 		bool InitCollisionMeshes();
 		void RenderCollisionMeshes();
 		bool view_collisions_ = false;
-		
+
 	public:
 		UINT visible_nodes = 0;
 		UINT raycast_calculated = 0;
@@ -84,9 +87,12 @@ namespace reality {
 	private:
 		void RunPhysicsCS(string cs_id);
 		void MovementByPhysicsCS();
+		void SphereUpdateByPhysicsCS();
 
 		SpaceNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node);
+		SpaceNode* ParentNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node);
 		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& out_nodes);
+		bool	   LeafNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
 		bool	   IncludingNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
 		void	   RaycastNodeQuery(const RayShape& ray, SpaceNode* node, map<float, RayCallback>& callbacks);
 		void	   NodeCulling(SpaceNode* node);
@@ -98,6 +104,7 @@ namespace reality {
 		map<UINT, SpaceNode*> total_nodes_;
 		map<UINT, SpaceNode*> leaf_nodes_;
 		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
+		map<entt::entity, C_SphereCollision*> dynamic_sphere_list;
 
 	private:
 		SpaceNode* BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
