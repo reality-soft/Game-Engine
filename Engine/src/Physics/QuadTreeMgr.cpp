@@ -769,6 +769,11 @@ void reality::QuadTreeMgr::RenderCollisionMeshes()
 	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
+const map<UINT, SpaceNode*>& reality::QuadTreeMgr::GetLeafNodes()
+{
+	return leaf_nodes_;
+}
+
 void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 {
 	auto compute_shader = RESOURCE->UseResource<ComputeShader>(cs_id);

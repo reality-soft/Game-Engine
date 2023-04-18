@@ -22,6 +22,7 @@ namespace reality
 		void SetSpeed(float speed) { this->speed = speed; };
 		void SetFov(float dgree) { camera->fov = XMConvertToRadians(dgree); };
 		void SetFarZ(float z) { camera->far_z = z; };
+		void SetNearZ(float z) { camera->near_z = z; };
 		XMFLOAT2 ndc;
 
 		void CreateFrustum();
