@@ -67,6 +67,8 @@ namespace reality
 		{
 			float radius;
 			XMFLOAT3 center;
+			int entity;
+			int node_numbers[4];
 		};
 
 	public:
@@ -79,11 +81,22 @@ namespace reality
 	public:
 		struct Data
 		{
-			int entity;
-			int collide_type;
+			struct CapsuleResult
+			{
+				int entity;
+				int collide_type;
 
-			XMFLOAT3 floor_position;
-			XMFLOAT4 wall_planes[4];
+				XMFLOAT3 floor_position;
+				XMFLOAT4 wall_planes[4];
+			} capsule_result;
+
+			struct SphereResult
+			{
+				int entity;
+				int is_collide;
+				XMFLOAT3 tri_normal;
+			} sphere_result;
+
 		};
 
 	public:
