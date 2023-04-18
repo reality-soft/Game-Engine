@@ -1,9 +1,10 @@
 #pragma once
-#include "AnimationState.h"
 #include "Transition.h"
 #include "AnimationBase.h"
 
 namespace reality {
+	class AnimationState;
+
 	class DLL_API AnimationStateMachine : public AnimationBase
 	{
 	public:

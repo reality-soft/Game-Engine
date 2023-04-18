@@ -79,6 +79,7 @@ namespace reality {
 		void RenderCollisionMeshes();
 		bool view_collisions_ = false;
 
+		const map<UINT, SpaceNode*>& GetLeafNodes();
 	public:
 		UINT visible_nodes = 0;
 		UINT raycast_calculated = 0;
