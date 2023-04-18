@@ -7,6 +7,7 @@ public:
 		bone_id(bone_id),
 		owner_local(owner_local),
 		local_offset(local_offset) {};
+	Socket() {};
 
 public:
 	int bone_id;
