@@ -133,10 +133,13 @@ void reality::SbCollisionResult::SetElementArraySize(UINT size)
 
 	for (auto& e : elements)
 	{
-		e.entity = 0;
-		e.collide_type = 0;
-		e.floor_position = { 0, 0, 0 };
-		ZeroMemory(&e.wall_planes, sizeof(e.wall_planes));
+		e.capsule_result.entity = 0;
+		e.capsule_result.collide_type = 0;
+		e.capsule_result.floor_position = { 0, 0, 0 };
+		ZeroMemory(&e.capsule_result.wall_planes, sizeof(e.capsule_result.wall_planes));
+
+		e.sphere_result.entity = 0;
+		e.sphere_result.tri_normal = { 0, 0, 0 };
 	}
 
 	byte_stride = sizeof(SbCollisionResult::Data);
