@@ -19,6 +19,7 @@ namespace reality {
 		}
 
 	public:
+		virtual void AnimationUpdate();
 		virtual void OnInit() {};
 
 	protected:
@@ -30,10 +31,7 @@ namespace reality {
 		}
 
 	public:
-		virtual void AnimationUpdate();
 		virtual string GetCurAnimationId();
-		virtual string GetPrevAnimationId();
-		virtual float GetPrevAnimLastFrame();
 		virtual float GetCurAnimTime();
 		virtual float GetCurFrame();
 		virtual float GetBlendTime();
@@ -49,7 +47,6 @@ namespace reality {
 		ANIM_STATE cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
 		bool animation_ended_ = false;
 
-		map<int, unordered_set<UINT>> included_skeletons_;
 		unordered_map<UINT, int>	  bone_id_to_weight_;
 		shared_ptr<AnimationBase>	  anim_object_;
 		float						  range_;

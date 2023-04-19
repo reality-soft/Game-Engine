@@ -7,13 +7,12 @@ namespace reality {
 			animation_matrices.resize(size);
 		}
 		vector<XMMATRIX> animation_matrices;
-		string prev_anim_id_ = "";
+		vector<XMMATRIX> prev_animation_matrices;
 		string cur_anim_id_ = "";
 		float start_frame_ = 0.0f;
 		float end_frame_ = 0.0f;
 		float blend_time_ = 0.0f;
 		float cur_animation_time_ = 0.0f;
-		float prev_anim_last_frame_ = 0.0f;
 		float cur_frame_ = 0.0f;
 	};
 }

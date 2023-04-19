@@ -10,8 +10,8 @@
 #include "Effect.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"
-#include "AnimSlot.h"
 #include "Socket.h"
+#include "AnimationBase.h"
 
 namespace reality
 {
