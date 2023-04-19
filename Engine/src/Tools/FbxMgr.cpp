@@ -470,7 +470,7 @@ void reality::FbxMgr::ReCalculateNormal(StaticMesh& static_mesh, FbxVertexOption
         UINT index = 0;
         switch (vertex_option) {
         case FbxVertexOption::BY_CONTROL_POINT:
-            num_triangle = mesh.indices.size();
+            num_triangle = mesh.indices.size() / 3;
             break;
         case FbxVertexOption::BY_POLYGON_VERTEX:
             num_triangle = mesh.vertices.size() / 3;
