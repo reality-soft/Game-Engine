@@ -37,4 +37,33 @@ namespace reality {
 	private:
 		entt::entity actor_id_;
 	};
+
+	class DLL_API CameraShakeEvent : public Event {
+	public:
+		CameraShakeEvent(entt::entity actor_id, float shake_time, float magnitude, float frequency)
+		{
+			actor_id_ = actor_id; 
+			shake_time_ = shake_time;
+			magnitude_ = magnitude;
+			frequency_ = frequency;
+		}
+
+		virtual void Process() override {
+			auto camera = SCENE_MGR->GetRegistry().try_get<C_Camera>(actor_id_);
+			
+			if (camera == nullptr)
+				return;
+
+			camera->is_shaking = true;
+			camera->shaking_timer = 0.0f;
+			camera->shake_time = shake_time_;
+			camera->shake_magnitude = magnitude_;
+			camera->shake_frequency = frequency_;
+		}
+	private:
+		entt::entity actor_id_;
+		float shake_time_;
+		float magnitude_;
+		float frequency_;
+	};
 }
