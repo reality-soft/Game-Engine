@@ -181,19 +181,31 @@ CollideType reality::CapsuleToAABB(const AABBShape& aabb, const CapsuleShape& ca
 
 CollideType reality::SphereToAABB(const SphereShape& sphere, const AABBShape& aabb)
 {
-    float aabb_radius = Distance(_XMVECTOR3(aabb.max), _XMVECTOR3(aabb.center));
-    float distance = Distance(_XMVECTOR3(sphere.center), _XMVECTOR3(aabb.center)) - sphere.radius;
+    // Compute the squared distance between the sphere center and the AABB
+    float sqDist = 0.0f;
 
-    if (distance < aabb_radius)
-    {
-        if (aabb_radius - distance > sphere.radius * 2)
-            return CollideType::INSIDE;
+    if (sphere.center.x < aabb.min.x) sqDist += (aabb.min.x - sphere.center.x) * (aabb.min.x - sphere.center.x);
+    if (sphere.center.x > aabb.max.x) sqDist += (sphere.center.x - aabb.max.x) * (sphere.center.x - aabb.max.x);
+    if (sphere.center.y < aabb.min.y) sqDist += (aabb.min.y - sphere.center.y) * (aabb.min.y - sphere.center.y);
+    if (sphere.center.y > aabb.max.y) sqDist += (sphere.center.y - aabb.max.y) * (sphere.center.y - aabb.max.y);
+    if (sphere.center.z < aabb.min.z) sqDist += (aabb.min.z - sphere.center.z) * (aabb.min.z - sphere.center.z);
+    if (sphere.center.z > aabb.max.z) sqDist += (sphere.center.z - aabb.max.z) * (sphere.center.z - aabb.max.z);
 
-        else
-            return CollideType::INTERSECT;
+    // If the squared distance is less than the squared radius, the sphere is intersecting or inside the AABB
+    if (sqDist <= sphere.radius * sphere.radius) {
+        // Check if the sphere is inside the AABB
+        if (sphere.center.x > aabb.min.x + sphere.radius && sphere.center.x < aabb.max.x - sphere.radius &&
+            sphere.center.y > aabb.min.y + sphere.radius && sphere.center.y < aabb.max.y - sphere.radius &&
+            sphere.center.z > aabb.min.z + sphere.radius && sphere.center.z < aabb.max.z - sphere.radius) {
+            return CollideType::INSIDE; // Inside
+        }
+        else {
+            return CollideType::INTERSECT; // Intersecting
+        }
     }
-
-    return CollideType::OUTSIDE;
+    else {
+        return CollideType::OUTSIDE; // Outside
+    }
 }
 
 CollideType reality::CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleShape& cap2)

@@ -19,7 +19,6 @@ namespace reality
 		void Destroy();
 
 		void RenderCollisionMesh();
-		void SetShadowMap(ID3D11ShaderResourceView* shadow_map, CbShadowMap* cb_shaodow);
 		StaticMesh* GetLevelMesh();
 		VertexShader* GetVertexShader();
 	public:

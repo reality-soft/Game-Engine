@@ -154,22 +154,6 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbShadowMap
-	{
-		CbShadowMap()
-		{
-			data.shadow_view = XMMatrixIdentity();
-			data.shadow_proj = XMMatrixIdentity();
-		}
-		struct Data
-		{
-			XMMATRIX shadow_view;
-			XMMATRIX shadow_proj;
-		} data;
-
-		ComPtr<ID3D11Buffer> buffer;
-	};
-
 	struct CbGlobalLight
 	{
 		CbGlobalLight()

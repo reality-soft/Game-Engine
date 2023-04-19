@@ -65,6 +65,14 @@ void reality::QuadTreeMgr::Init(StaticMeshLevel* level_to_devide, entt::registry
 		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
 	}
 
+	// regist dynamic spheres
+	const auto& dynamic_sphere_view = registry_->view<C_SphereCollision>();
+	for (auto& ent : dynamic_sphere_view)
+	{
+		auto sphere_collision = registry_->try_get<C_SphereCollision>(ent);
+		dynamic_sphere_list.insert(make_pair(ent, sphere_collision));
+	}
+
 	// regist static spheres
 	auto sphere_view = registry_->view<C_SphereCollision>();
 	for (auto& ent : sphere_view)
@@ -362,6 +370,7 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 	camera_frustum_.CreateFromMatrix(camera_frustum_, applied_camera->projection_matrix);
 	camera_frustum_.Transform(camera_frustum_, applied_camera->world_matrix);
 	UpdateCapsules();
+	UpdateSpheres();
 
 	visible_nodes = 0;
 	NodeCulling(root_node_);
@@ -380,6 +389,12 @@ void reality::QuadTreeMgr::Release()
 
 void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 {
+	capsule_stbuffer.elements.clear();
+	sphere_stbuffer.elements.clear();
+
+	capsule_stbuffer.elements.resize(64);
+	sphere_stbuffer.elements.resize(64);
+
 	UINT capsule_index = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
 	{
@@ -412,9 +427,42 @@ void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 		SCENE_MGR->GetActor<Actor>(dynamic_capsule.first)->visible = queried_nodes[0]->visible;
 	}
 
+	UINT sphere_index = 0;
+	for (auto& dynamic_sphere : dynamic_sphere_list)
+	{
+		SpaceNode* query_start = total_nodes_.find(dynamic_sphere.second->enclosed_node_index)->second;
+		query_start = ParentNodeQuery(dynamic_sphere.second, query_start);
+
+		vector<SpaceNode*> queried_nodes;
+		LeafNodeQuery(dynamic_sphere.second, query_start, queried_nodes);
+
+		if (queried_nodes.empty())
+			continue;
+
+		sphere_stbuffer.elements[sphere_index].center = dynamic_sphere.second->sphere.center;
+		sphere_stbuffer.elements[sphere_index].radius = dynamic_sphere.second->sphere.radius;
+		sphere_stbuffer.elements[sphere_index].entity = (int)dynamic_sphere.first;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (i >= queried_nodes.size())
+				sphere_stbuffer.elements[sphere_index].node_numbers[i] = 0;
+
+			else
+				sphere_stbuffer.elements[sphere_index].node_numbers[i] = queried_nodes[i]->node_num;
+		}
+
+		sphere_index++;
+
+		SCENE_MGR->GetActor<Actor>(dynamic_sphere.first)->visible = queried_nodes[0]->visible;
+	}
+
 	DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
+	DX11APP->GetDeviceContext()->UpdateSubresource(sphere_stbuffer.buffer.Get(), 0, 0, sphere_stbuffer.elements.data(), 0, 0);
+
 	RunPhysicsCS(cs_id);
 	MovementByPhysicsCS();
+	SphereUpdateByPhysicsCS();
 }
 
 void reality::QuadTreeMgr::NodeCulling(SpaceNode* node)
@@ -462,6 +510,21 @@ SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, 
 		return ParentNodeQuery(c_capsule, node->parent_node);
 }
 
+SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node)
+{
+	if (node == nullptr)
+		return root_node_;
+
+	auto sphere_shape = c_sphere->sphere;
+	auto result = SphereToAABB(sphere_shape, node->area);
+
+	if (result == CollideType::INSIDE)
+		return node;
+
+	else
+		return ParentNodeQuery(c_sphere, node->parent_node);
+}
+
 bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& node_list)
 {
 	auto capsule_shape = c_capsule->capsule;
@@ -491,6 +554,40 @@ bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNod
 			LeafNodeQuery(c_capsule, node->child_node_[1], node_list);
 			LeafNodeQuery(c_capsule, node->child_node_[2], node_list);
 			LeafNodeQuery(c_capsule, node->child_node_[3], node_list);
+		}
+	}
+	return true;
+}
+
+bool reality::QuadTreeMgr::LeafNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& node_list)
+{
+	auto sphere_shape = c_sphere->sphere;
+	auto result = SphereToAABB(sphere_shape, node->area);
+
+	if (node == root_node_ && result != CollideType::INSIDE)
+	{
+		return false;
+	}
+
+	if (result != CollideType::OUTSIDE)
+	{
+		if (result == CollideType::INTERSECT)
+			c_sphere->enclosed_node_index = node->parent_node->node_num;
+
+		if (node->is_leaf)
+		{
+			if (result == CollideType::INSIDE)
+				c_sphere->enclosed_node_index = node->parent_node->node_num;
+
+			node_list.push_back(node);
+			return true;
+		}
+		if (!node->is_leaf)
+		{
+			LeafNodeQuery(c_sphere, node->child_node_[0], node_list);
+			LeafNodeQuery(c_sphere, node->child_node_[1], node_list);
+			LeafNodeQuery(c_sphere, node->child_node_[2], node_list);
+			LeafNodeQuery(c_sphere, node->child_node_[3], node_list);
 		}
 	}
 	return true;
@@ -575,6 +672,25 @@ void reality::QuadTreeMgr::UpdateCapsules()
 	}
 }
 
+void reality::QuadTreeMgr::UpdateSpheres()
+{
+	vector<entt::entity> destroied_actors;
+
+	for (auto& c_sphere : dynamic_sphere_list)
+	{
+		if (SCENE_MGR->GetActor<Actor>(c_sphere.first) == nullptr)
+		{
+			destroied_actors.push_back(c_sphere.first);
+			c_sphere.second = nullptr;
+		}
+	}
+
+	for (const auto& ent : destroied_actors)
+	{
+		dynamic_sphere_list.erase(ent);
+	}
+}
+
 RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 {
 	map<float, RayCallback> callback_list;
@@ -612,6 +728,13 @@ void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
 }
 
+void reality::QuadTreeMgr::RegistDynamicSphere(entt::entity ent)
+{
+	auto sphere_collision = registry_->try_get<C_SphereCollision>(ent);
+	if (sphere_collision != nullptr)
+		dynamic_sphere_list.insert(make_pair(ent, sphere_collision));
+}
+
 bool reality::QuadTreeMgr::RegistStaticSphere(entt::entity ent)
 {
 	auto sphere = registry_->try_get<C_SphereCollision>(ent);
@@ -628,6 +751,7 @@ bool reality::QuadTreeMgr::RegistStaticSphere(entt::entity ent)
 
 	return true;
 }
+
 
 bool reality::QuadTreeMgr::CreatePhysicsCS()
 {
@@ -659,6 +783,10 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 
 	capsule_stbuffer.SetElementArraySize(64);
 	if (capsule_stbuffer.Create(capsule_stbuffer.elements.data()) == false)
+		return false;
+
+	sphere_stbuffer.SetElementArraySize(64);
+	if (sphere_stbuffer.Create(sphere_stbuffer.elements.data()) == false)
 		return false;
 
 	result_stbuffer.SetElementArraySize(64);
@@ -769,6 +897,11 @@ void reality::QuadTreeMgr::RenderCollisionMeshes()
 	DX11APP->GetDeviceContext()->RSSetState(DX11APP->GetCommonStates()->CullNone());
 }
 
+const map<UINT, SpaceNode*>& reality::QuadTreeMgr::GetLeafNodes()
+{
+	return leaf_nodes_;
+}
+
 void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 {
 	auto compute_shader = RESOURCE->UseResource<ComputeShader>(cs_id);
@@ -780,6 +913,7 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 
 	DX11APP->GetDeviceContext()->CSSetShaderResources(0, 1, triangle_stbuffer.srv.GetAddressOf());	
 	DX11APP->GetDeviceContext()->CSSetShaderResources(1, 1, capsule_stbuffer.srv.GetAddressOf());
+	DX11APP->GetDeviceContext()->CSSetShaderResources(2, 1, sphere_stbuffer.srv.GetAddressOf());
 	DX11APP->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, result_stbuffer.uav.GetAddressOf(), 0);
 	DX11APP->GetDeviceContext()->Dispatch(1, 1, 1);
 
@@ -805,13 +939,13 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 	for (UINT i = 0; i < 64; ++i)
 	{
 		auto& result = collision_result_pool_[i];
-		auto character = SCENE_MGR->GetActor<Character>((entt::entity)result.entity);
+		auto character = SCENE_MGR->GetActor<Character>((entt::entity)result.capsule_result.entity);
 		if (character == nullptr)
 			continue;
 
-		character->floor_position = result.floor_position;
+		character->floor_position = result.capsule_result.floor_position;
 
-		switch (result.collide_type)
+		switch (result.capsule_result.collide_type)
 		{
 		case 0: 
 			character->movement_state_ = MovementState::FALL;
@@ -833,10 +967,31 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 
 		for (int j = 0; j < 4; ++j)
 		{
-			character->blocking_planes_[j] = result.wall_planes[j];
+			character->blocking_planes_[j] = result.capsule_result.wall_planes[j];
 		}
 
 		character = nullptr;
+	}
+}
+
+void reality::QuadTreeMgr::SphereUpdateByPhysicsCS()
+{
+	for (UINT i = 0; i < 64; ++i)
+	{
+		auto& result = collision_result_pool_[i].sphere_result;
+		if (dynamic_sphere_list.find((entt::entity)result.entity) == dynamic_sphere_list.end())
+			continue;
+		auto& sphere_comp = registry_->get<C_SphereCollision>((entt::entity)result.entity);
+
+		sphere_comp.is_collide = 0;
+		sphere_comp.tri_normal = { 0.0f, 0.0f, 0.0f };
+
+		if (result.is_collide)
+		{
+			sphere_comp.is_collide = result.is_collide;
+			sphere_comp.tri_normal = result.tri_normal;
+		}
+
 	}
 }
 

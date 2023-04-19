@@ -72,6 +72,11 @@ namespace reality
 	struct DLL_API C_SphereCollision : public C_Transform
 	{
 		reality::SphereShape sphere;
+		UINT enclosed_node_index = 0;
+
+		bool is_collide;
+		XMFLOAT3 tri_normal;
+
 		void SetSphereData(XMFLOAT3 offset, float radius);
 		virtual void OnUpdate() override;
 	};

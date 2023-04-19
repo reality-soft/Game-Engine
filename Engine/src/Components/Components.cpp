@@ -24,6 +24,8 @@ void reality::C_CapsuleCollision::OnUpdate()
 void reality::C_SphereCollision::SetSphereData(XMFLOAT3 offset, float radius)
 {
 	sphere = reality::SphereShape(offset, radius);
+	is_collide = 0;
+	tri_normal = { 0.0f, 0.0f, 0.0f };
 	local = XMMatrixTranslationFromVector(_XMVECTOR3(sphere.center));
 	world = world * local;
 }
