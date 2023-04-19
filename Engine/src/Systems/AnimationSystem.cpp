@@ -13,9 +13,7 @@ void reality::AnimationSystem::OnUpdate(entt::registry& reg)
 	{
 		auto* animation_component = reg.try_get<C_Animation>(ent);
 
-		for (const auto& anim_slot : animation_component->anim_slots) {
-			anim_slot.second->AnimationUpdate();
-		}
+		animation_component->OnUpdate();
 
 		auto* socket_component = reg.try_get<C_Socket>(ent);
 		if (socket_component != nullptr) {
