@@ -24,6 +24,8 @@ void reality::C_CapsuleCollision::OnUpdate()
 void reality::C_SphereCollision::SetSphereData(XMFLOAT3 offset, float radius)
 {
 	sphere = reality::SphereShape(offset, radius);
+	is_collide = 0;
+	tri_normal = { 0.0f, 0.0f, 0.0f };
 	local = XMMatrixTranslationFromVector(_XMVECTOR3(sphere.center));
 	world = world * local;
 }
@@ -59,14 +61,6 @@ void reality::C_Camera::SetLocalFrom(C_CapsuleCollision& capsule_collision, floa
 	far_z = 10000.f;
 	fov = XMConvertToRadians(90);
 	tag = "Player";
-}
-
-reality::C_Animation::C_Animation(AnimationBase* anim_object)
-{
-	AnimSlot base_anim_slot;
-	base_anim_slot.anim_object_ = make_shared<AnimationBase>(*anim_object);
-	anim_slots.push_back({ "Base", base_anim_slot });
-	name_to_anim_slot_index.insert({ "Base", 0 });
 }
 
 AnimSlot reality::C_Animation::GetAnimSlotByName(string anim_slot_name)

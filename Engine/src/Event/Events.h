@@ -4,26 +4,16 @@
 #include "Character.h"
 
 namespace reality {
-	enum EVENT_TYPE {
-		MOVEMENT,
-		DELETE_ACTOR,
-		TRIGGER,
-	};
-
 	class DLL_API Event
-	{
-
-		EVENT_TYPE event_type_;
-		
+	{	
 	public:
 		Event() {};
-		Event(EVENT_TYPE event_type) : event_type_(event_type) {};
 		virtual void Process() {};
 	};
 
 	class DLL_API MovementEvent : public Event {
 	public:
-		MovementEvent(XMVECTOR movement_vector, entt::entity actor_id) : Event(MOVEMENT) {
+		MovementEvent(XMVECTOR movement_vector, entt::entity actor_id) {
 			movement_vector_ = movement_vector;
 			actor_id_ = actor_id;
 		}
@@ -35,10 +25,9 @@ namespace reality {
 		entt::entity actor_id_;
 	};
 
-
 	class DLL_API DeleteActorEvent : public Event {
 	public:
-		DeleteActorEvent(entt::entity actor_id) : Event(DELETE_ACTOR) {
+		DeleteActorEvent(entt::entity actor_id) {
 			actor_id_ = actor_id;
 		}
 

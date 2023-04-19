@@ -72,6 +72,11 @@ namespace reality
 	struct DLL_API C_SphereCollision : public C_Transform
 	{
 		reality::SphereShape sphere;
+		UINT enclosed_node_index = 0;
+
+		bool is_collide;
+		XMFLOAT3 tri_normal;
+
 		void SetSphereData(XMFLOAT3 offset, float radius);
 		virtual void OnUpdate() override;
 	};
@@ -103,13 +108,21 @@ namespace reality
 		vector<pair<string, AnimSlot>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
 
-		C_Animation(AnimationBase* anim_object);
-
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override {};
 
 		AnimSlot GetAnimSlotByName(string anim_slot_name);
 		XMMATRIX GetCurAnimMatirixOfBone(int bone_id);
+
+		template<typename AnimationObject, typename... Args>
+		inline void SetBaseAnimObject(Args&&...args)
+		{
+			AnimSlot base_anim_slot;
+			base_anim_slot.anim_object_ = make_shared<AnimationObject>(args...);
+			anim_slots.push_back({ "Base", base_anim_slot });
+			anim_slots[0].second.anim_object_->OnInit();
+			name_to_anim_slot_index.insert({ "Base", 0 });
+		}
 
 		template<typename AnimSlotType, typename... Args>
 		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range, Args&&... args) 
