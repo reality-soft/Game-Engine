@@ -126,7 +126,6 @@ namespace reality {
 		void ImportGuideLines(string mapdat_file, GuideType guide_type);
 		vector<GuideLine>* GetGuideLines(string name);
 		void SetBlockingFields(string name);
-		void SetPlayerStart(string name, Character* player, float start_rotate_angle);
 		vector<RayShape> blocking_fields_;
 		XMVECTOR player_start_;
 
