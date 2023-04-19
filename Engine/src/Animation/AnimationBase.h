@@ -14,8 +14,8 @@ namespace reality {
 		AnimationBase(string skeletal_mesh_id, string bone_name, int range, int num_of_bones);
 
 	public:
-		Animation* GetCurAnimation() {
-			return animation_.get();
+		Animation GetCurAnimation() {
+			return animation_;
 		}
 
 	public:
@@ -43,13 +43,9 @@ namespace reality {
 		virtual void SetAnimation(string animation_id, float blend_time);
 
 	protected:
-		shared_ptr<Animation> animation_;
+		Animation animation_;
 		ANIM_STATE cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
 		bool animation_ended_ = false;
-
-		unordered_map<UINT, int>	  bone_id_to_weight_;
-		shared_ptr<AnimationBase>	  anim_object_;
-		float						  range_;
 	};
 }
 

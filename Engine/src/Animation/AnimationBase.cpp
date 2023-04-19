@@ -7,54 +7,52 @@ reality::AnimationBase::AnimationBase(string skeletal_mesh_id, string bone_name,
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
 
-	bone_id_to_weight_ = skeletal_mesh->skeleton.GetSubBonesOf(bone_name, range);
-	range_ = range * 2;
-
-	animation_ = make_shared<Animation>(num_of_bones);
+	animation_.bone_id_to_weight_ = skeletal_mesh->skeleton.GetSubBonesOf(bone_name, range);
+	animation_.range_ = range * 2;
 }
 
 void reality::AnimationBase::AnimationUpdate()
 {
-	animation_->cur_animation_time_ += TM_DELTATIME;
+	animation_.cur_animation_time_ += TM_DELTATIME;
 
-	animation_->cur_frame_ += 60.0f / TM_FPS;
+	animation_.cur_frame_ += 60.0f / TM_FPS;
 
-	if (animation_->cur_frame_ >= animation_->end_frame_) {
+	if (animation_.cur_frame_ >= animation_.end_frame_) {
 		animation_ended_ = true;
-		animation_->cur_frame_ = animation_->start_frame_;
+		animation_.cur_frame_ = animation_.start_frame_;
 	}
 
 	OnUpdate();
 
 	animation_ended_ = false;
 
-	OutAnimData* cur_animation_resource = RESOURCE->UseResource<OutAnimData>(animation_->cur_anim_id_);
+	OutAnimData* cur_animation_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
 	if (cur_animation_resource == nullptr) {
 		return;
 	}
 
-	for (const auto& bone_id_weight_pair : bone_id_to_weight_) {
+	for (const auto& bone_id_weight_pair : animation_.bone_id_to_weight_) {
 		const UINT& bone_id = bone_id_weight_pair.first;
-		animation_->animation_matrices[bone_id] = cur_animation_resource->animation_matrices[bone_id][animation_->cur_frame_];
+		animation_.animation_matrices[bone_id] = cur_animation_resource->animation_matrices[bone_id][animation_.cur_frame_];
 	}
 }
 string reality::AnimationBase::GetCurAnimationId()
 {
-	return animation_->cur_anim_id_;
+	return animation_.cur_anim_id_;
 }
 float reality::AnimationBase::GetCurAnimTime()
 {
-	return animation_->cur_animation_time_;
+	return animation_.cur_animation_time_;
 }
 
 float reality::AnimationBase::GetCurFrame()
 {
-	return animation_->cur_frame_;
+	return animation_.cur_frame_;
 }
 
 float reality::AnimationBase::GetBlendTime()
 {
-	return animation_->blend_time_;
+	return animation_.blend_time_;
 }
 
 reality::ANIM_STATE reality::AnimationBase::GetCurAnimState()
@@ -65,27 +63,27 @@ reality::ANIM_STATE reality::AnimationBase::GetCurAnimState()
 void reality::AnimationBase::SetAnimation(string animation_id, float blend_time)
 {
 	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_id);
-	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(animation_->cur_anim_id_);
+	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
 
-	string prev_animation_id = animation_->cur_anim_id_;
-	float prev_anim_last_frame = animation_->cur_frame_;
+	string prev_animation_id = animation_.cur_anim_id_;
+	float prev_anim_last_frame = animation_.cur_frame_;
 
 	if (anim_resource != nullptr) {
-		animation_->start_frame_ = anim_resource->start_frame;
-		animation_->end_frame_ = anim_resource->end_frame;
-		animation_->cur_frame_ = anim_resource->start_frame;
+		animation_.start_frame_ = anim_resource->start_frame;
+		animation_.end_frame_ = anim_resource->end_frame;
+		animation_.cur_frame_ = anim_resource->start_frame;
 	}
 
 	if (prev_anim_resource != nullptr) {
-		for (const auto& bone_id_weight_pair : bone_id_to_weight_) {
+		for (const auto& bone_id_weight_pair : animation_.bone_id_to_weight_) {
 			const UINT& bone_id = bone_id_weight_pair.first;
-			animation_->prev_animation_matrices[bone_id] = prev_anim_resource->animation_matrices[bone_id][prev_anim_last_frame];
+			animation_.prev_animation_matrices[bone_id] = prev_anim_resource->animation_matrices[bone_id][prev_anim_last_frame];
 		}
 	}
 
-	animation_->cur_anim_id_ = animation_id;
-	animation_->cur_animation_time_ = 0.0f;
-	animation_->blend_time_ = blend_time;
+	animation_.cur_anim_id_ = animation_id;
+	animation_.cur_animation_time_ = 0.0f;
+	animation_.blend_time_ = blend_time;
 
 	if (prev_anim_resource == nullptr && anim_resource == nullptr) {
 		cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;

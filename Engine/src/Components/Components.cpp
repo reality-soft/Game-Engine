@@ -70,6 +70,11 @@ reality::C_Animation::C_Animation(int num_of_bones)
 
 void reality::C_Animation::OnUpdate()
 {
+	animation_matrices;
+
+	for (const auto& anim_slot_pair : anim_slots) {
+		const auto& anim_slot = anim_slot_pair.second;
+	}
 }
 
 AnimationBase* reality::C_Animation::GetAnimSlotByName(string anim_slot_name)
