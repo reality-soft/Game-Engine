@@ -285,18 +285,6 @@ void reality::QuadTreeMgr::SetBlockingFields(string name)
 	}
 }
 
-void reality::QuadTreeMgr::SetPlayerStart(string name, Character* player, float start_rotate_angle)
-{
-	vector<GuideLine>* guide_lines_ = GetGuideLines(name);
-	player_start_ = guide_lines_->at(0).line_nodes.at(0);
-	player_start_.m128_f32[1] += 100.0f;
-	if (player != nullptr)
-	{
-		player->SetPos(player_start_);
-	}	
-}
-
-
 SpaceNode* reality::QuadTreeMgr::BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z)
 {
 	SpaceNode* new_node = new SpaceNode(node_count++, depth);
