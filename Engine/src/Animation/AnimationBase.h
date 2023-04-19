@@ -11,7 +11,7 @@ namespace reality {
 
 	class DLL_API AnimationBase {
 	public:
-		AnimationBase(string skeletal_mesh_id, string bone_name, int range, int num_of_bones);
+		AnimationBase(string skeletal_mesh_id, int range, string bone_name);
 
 	public:
 		Animation GetCurAnimation() {
@@ -31,10 +31,16 @@ namespace reality {
 		}
 
 	public:
-		virtual string GetCurAnimationId();
-		virtual float GetCurAnimTime();
-		virtual float GetCurFrame();
-		virtual float GetBlendTime();
+		string GetCurAnimationId();
+		float GetCurAnimTime();
+		float GetCurFrame();
+		float GetBlendTime();
+		float GetRange();
+
+	public:
+		unordered_map<UINT, XMMATRIX>* GetAnimationMatrices();
+		unordered_map<UINT, XMMATRIX>* GetPrevAnimationMatrices();
+		unordered_map<UINT, int>* GetWeights();
 
 	public:
 		ANIM_STATE GetCurAnimState();

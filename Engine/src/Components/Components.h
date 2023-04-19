@@ -108,6 +108,13 @@ namespace reality
 		vector<pair<string, shared_ptr<AnimationBase>>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
 
+		vector<XMMATRIX> prev_slot_cur_time_animation_matrices;
+		vector<XMMATRIX> prev_slot_prev_time_animation_matrices;
+		vector<XMMATRIX> cur_slot_cur_time_animation_matrices;
+		vector<XMMATRIX> cur_slot_prev_time_animation_matrices;
+		vector<float>	 time_weights;
+		vector<float>	 bone_weights;
+
 		vector<XMMATRIX> animation_matrices;
 
 		C_Animation(int num_of_bones);

@@ -66,14 +66,91 @@ void reality::C_Camera::SetLocalFrom(C_CapsuleCollision& capsule_collision, floa
 reality::C_Animation::C_Animation(int num_of_bones)
 {
 	animation_matrices.resize(num_of_bones);
+	prev_slot_cur_time_animation_matrices.resize(num_of_bones);
+	prev_slot_prev_time_animation_matrices.resize(num_of_bones);
+	cur_slot_cur_time_animation_matrices.resize(num_of_bones);
+	cur_slot_prev_time_animation_matrices.resize(num_of_bones);
+	time_weights.resize(num_of_bones);
+	bone_weights.resize(num_of_bones);
 }
 
 void reality::C_Animation::OnUpdate()
 {
-	animation_matrices;
-
 	for (const auto& anim_slot_pair : anim_slots) {
 		const auto& anim_slot = anim_slot_pair.second;
+		
+		const unordered_map<UINT, XMMATRIX>* anim_slot_matrices = nullptr;
+		const unordered_map<UINT, XMMATRIX>* anim_slot_prev_matrices = nullptr;
+		const unordered_map<UINT, int>* weights = nullptr;
+		float range = 0.0f;
+		float time_weight = 0.0f;
+		switch (anim_slot->GetCurAnimState()) {
+		case ANIM_STATE::ANIM_STATE_NONE:
+			break;
+		case ANIM_STATE::ANIM_STATE_CUR_ONLY:
+			anim_slot_matrices = anim_slot->GetAnimationMatrices();
+			weights = anim_slot->GetWeights();
+			range = anim_slot->GetRange();
+			time_weight = anim_slot->GetCurAnimTime() / anim_slot->GetBlendTime();
+			
+			for (const auto& animation_matrice_pair_per_bone : *anim_slot_matrices) {
+				const auto& bone_id = animation_matrice_pair_per_bone.first;
+				const auto& anim_slot_matrix_for_bone = animation_matrice_pair_per_bone.second;
+				
+				bone_weights[bone_id] = weights->at(bone_id) / range;
+				time_weights[bone_id] = time_weight;
+
+				prev_slot_cur_time_animation_matrices[bone_id] = cur_slot_cur_time_animation_matrices[bone_id];
+				cur_slot_cur_time_animation_matrices[bone_id] = anim_slot_matrix_for_bone;
+			}
+
+			break;
+		case ANIM_STATE::ANIM_STATE_PREV_ONLY:
+			anim_slot_prev_matrices = anim_slot->GetPrevAnimationMatrices();
+			weights = anim_slot->GetWeights();
+			range = anim_slot->GetRange();
+			time_weight = anim_slot->GetCurAnimTime() / anim_slot->GetBlendTime();
+
+			for (const auto& animation_matrice_pair_per_bone : *anim_slot_prev_matrices) {
+				const auto& bone_id = animation_matrice_pair_per_bone.first;
+				const auto& anim_slot_matrix_for_bone = animation_matrice_pair_per_bone.second;
+
+				bone_weights[bone_id] = weights->at(bone_id) / range;
+				time_weights[bone_id] = time_weight;
+
+				prev_slot_prev_time_animation_matrices[bone_id] = cur_slot_prev_time_animation_matrices[bone_id];
+				cur_slot_prev_time_animation_matrices[bone_id] = anim_slot_matrix_for_bone;
+			}
+
+			break;
+		case ANIM_STATE::ANIM_STATE_CUR_PREV:
+			anim_slot_matrices = anim_slot->GetAnimationMatrices();
+			anim_slot_prev_matrices = anim_slot->GetPrevAnimationMatrices();
+			weights = anim_slot->GetWeights();
+			range = anim_slot->GetRange();
+			time_weight = anim_slot->GetCurAnimTime() / anim_slot->GetBlendTime();
+
+			for (const auto& animation_matrice_pair_per_bone : *anim_slot_matrices) {
+				const auto& bone_id = animation_matrice_pair_per_bone.first;
+				const auto& anim_slot_matrix_for_bone = animation_matrice_pair_per_bone.second;
+				const auto& anim_slot_prev_matrix_for_bone = anim_slot_prev_matrices->at(bone_id);
+
+				bone_weights[bone_id] = weights->at(bone_id) / range;
+				time_weights[bone_id] = time_weight;
+
+				prev_slot_prev_time_animation_matrices[bone_id] = cur_slot_prev_time_animation_matrices[bone_id];
+				cur_slot_prev_time_animation_matrices[bone_id] = anim_slot_matrix_for_bone;
+
+				prev_slot_cur_time_animation_matrices[bone_id] = cur_slot_cur_time_animation_matrices[bone_id];
+				cur_slot_cur_time_animation_matrices[bone_id] = anim_slot_matrix_for_bone;
+			}
+			break;
+		}
+	}
+
+	for (int i = 0;i < animation_matrices.size();i++) {
+		animation_matrices[i] = (prev_slot_prev_time_animation_matrices[i] * bone_weights[i] + cur_slot_prev_time_animation_matrices[i] * (1.0f - bone_weights[i])) * (1 - time_weights[i]) +
+								(prev_slot_cur_time_animation_matrices[i] * bone_weights[i] + cur_slot_cur_time_animation_matrices[i] * (1.0f - bone_weights[i])) * time_weights[i];
 	}
 }
 

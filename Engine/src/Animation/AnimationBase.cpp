@@ -3,12 +3,22 @@
 #include "TimeMgr.h"
 #include "ResourceMgr.h"
 
-reality::AnimationBase::AnimationBase(string skeletal_mesh_id, string bone_name, int range, int num_of_bones)
+reality::AnimationBase::AnimationBase(string skeletal_mesh_id, int range, string bone_name = "")
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
+	// base slot
+	if (bone_name == "") {
+		const auto& id_bone_map = skeletal_mesh->skeleton.id_bone_map;
 
-	animation_.bone_id_to_weight_ = skeletal_mesh->skeleton.GetSubBonesOf(bone_name, range);
-	animation_.range_ = range * 2;
+		for (const auto& id_bone_pair : id_bone_map) {
+			const int& bone_id = id_bone_pair.first;
+			animation_.bone_id_to_weight_.insert({ bone_id , 1.0f });
+		}
+	}
+	else {
+		animation_.bone_id_to_weight_ = skeletal_mesh->skeleton.GetSubBonesOf(bone_name, range);
+		animation_.range_ = range * 2;
+	}
 }
 
 void reality::AnimationBase::AnimationUpdate()
@@ -53,6 +63,26 @@ float reality::AnimationBase::GetCurFrame()
 float reality::AnimationBase::GetBlendTime()
 {
 	return animation_.blend_time_;
+}
+
+float reality::AnimationBase::GetRange()
+{
+	return animation_.range_;
+}
+
+unordered_map<UINT, XMMATRIX>* reality::AnimationBase::GetAnimationMatrices()
+{
+	return &animation_.animation_matrices;
+}
+
+unordered_map<UINT, XMMATRIX>* reality::AnimationBase::GetPrevAnimationMatrices()
+{
+	return &animation_.prev_animation_matrices;
+}
+
+unordered_map<UINT, int>* reality::AnimationBase::GetWeights()
+{
+	return &animation_.bone_id_to_weight_;
 }
 
 reality::ANIM_STATE reality::AnimationBase::GetCurAnimState()
