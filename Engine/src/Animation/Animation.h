@@ -3,6 +3,10 @@
 
 namespace reality {
 	struct DLL_API Animation {
+		Animation(int size) {
+			animation_matrices.resize(size);
+		}
+		vector<XMMATRIX> animation_matrices;
 		string prev_anim_id_ = "";
 		string cur_anim_id_ = "";
 		float start_frame_ = 0.0f;

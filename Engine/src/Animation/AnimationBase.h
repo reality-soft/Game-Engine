@@ -10,14 +10,12 @@ namespace reality {
 	};
 
 	class DLL_API AnimationBase {
-	protected:
-		Animation animation_;
-		ANIM_STATE cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
-		bool animation_ended_ = false;
+	public:
+		AnimationBase(int num_of_bones);
 
 	public:
-		Animation GetCurAnimation() {
-			return animation_;
+		Animation* GetCurAnimation() {
+			return animation_.get();
 		}
 
 	public:
@@ -45,6 +43,11 @@ namespace reality {
 
 	public:
 		virtual void SetAnimation(string animation_id, float blend_time);
+
+	protected:
+		shared_ptr<Animation> animation_;
+		ANIM_STATE cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
+		bool animation_ended_ = false;
 	};
 }
 
