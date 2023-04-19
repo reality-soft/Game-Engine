@@ -34,7 +34,7 @@ void UI_Slider::UpdateSliderPos()
 		slider_->SetLocalRectByCenter({ x * 1.0f / E_Resolution_Multiply[resolution], rect_transform_[E_Resolution::R1920x1080].world_rect.height / 2.0f},
 			slider_->rect_transform_[E_Resolution::R1920x1080].world_rect.width, slider_->rect_transform_[E_Resolution::R1920x1080].world_rect.height);
 
-		value_ = 100.0f * x / rect_transform_[resolution].world_rect.min.x;
+		value_ = 100.0f * x / rect_transform_[resolution].world_rect.width;
 	}
 }
 

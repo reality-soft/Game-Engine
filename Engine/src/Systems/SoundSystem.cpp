@@ -28,15 +28,29 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
             auto listeners = reg.view<C_SoundListener>();
             for (auto entity2 : listeners)
             {
-                auto& generator_transform = reg.get<C_Transform>(entity);
                 auto& listener_transform = reg.get<C_CapsuleCollision>(entity2);
-                // TODO : Transform 수정 후 고칠 예정
-                XMVECTOR genertor_position = XMVectorSet(generator_transform.world.r[3].m128_f32[0], generator_transform.world.r[3].m128_f32[1],
-                    generator_transform.world.r[3].m128_f32[2], 0);
-                XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
-                    listener_transform.world.r[3].m128_f32[2], 0);
-                XMVECTOR pos = genertor_position - listener_position;
-                Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
+                auto generator_transform = reg.try_get<C_Transform>(entity);
+                if (generator_transform)
+                {
+                    XMVECTOR genertor_position = XMVectorSet(generator_transform->world.r[3].m128_f32[0], generator_transform->world.r[3].m128_f32[1],
+                        generator_transform->world.r[3].m128_f32[2], 0);
+                    XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
+                        listener_transform.world.r[3].m128_f32[2], 0);
+                    XMVECTOR pos = genertor_position - listener_position;
+                    Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
+                }
+
+                auto generator_transform2 = reg.try_get<C_CapsuleCollision>(entity2);
+                if (generator_transform2)
+                {
+                    XMVECTOR generator_position2 = XMVectorSet(generator_transform2->world.r[3].m128_f32[0], generator_transform2->world.r[3].m128_f32[1],
+                        generator_transform2->world.r[3].m128_f32[2], 0);
+                    XMVECTOR listener_position2 = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
+                        listener_transform.world.r[3].m128_f32[2], 0);
+                    XMVECTOR pos2 = generator_position2 - listener_position2;
+                    Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos2);
+                }
+                
             }
 
             // 재생했다면 큐에서 제거

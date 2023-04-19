@@ -10,8 +10,8 @@ bool FmodMgr::Init()
     // FMOD 채널 그룹 생성
     CreateFmodChannelGroup();
 
-    music_volume_ = 5.0f;
-    sfx_volume_ = 5.0f;
+    music_volume_ = 0.5f;
+    sfx_volume_ = 0.5f;
 
     return true;
 }
