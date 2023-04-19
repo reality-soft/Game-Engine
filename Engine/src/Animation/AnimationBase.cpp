@@ -3,8 +3,13 @@
 #include "TimeMgr.h"
 #include "ResourceMgr.h"
 
-reality::AnimationBase::AnimationBase(int num_of_bones)
+reality::AnimationBase::AnimationBase(string skeletal_mesh_id, string bone_name, int range, int num_of_bones)
 {
+	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
+
+	skeletal_mesh->skeleton.GetSubBonesOf(bone_name, range, included_skeletons_, bone_id_to_weight_);
+	range_ = range * 2;
+
 	animation_ = make_shared<Animation>(num_of_bones);
 }
 

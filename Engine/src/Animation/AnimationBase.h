@@ -11,7 +11,7 @@ namespace reality {
 
 	class DLL_API AnimationBase {
 	public:
-		AnimationBase(int num_of_bones);
+		AnimationBase(string skeletal_mesh_id, string bone_name, int range, int num_of_bones);
 
 	public:
 		Animation* GetCurAnimation() {
@@ -48,6 +48,11 @@ namespace reality {
 		shared_ptr<Animation> animation_;
 		ANIM_STATE cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
 		bool animation_ended_ = false;
+
+		map<int, unordered_set<UINT>> included_skeletons_;
+		unordered_map<UINT, int>	  bone_id_to_weight_;
+		shared_ptr<AnimationBase>	  anim_object_;
+		float						  range_;
 	};
 }
 

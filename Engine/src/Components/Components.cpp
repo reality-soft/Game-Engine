@@ -63,95 +63,23 @@ void reality::C_Camera::SetLocalFrom(C_CapsuleCollision& capsule_collision, floa
 	tag = "Player";
 }
 
-AnimSlot reality::C_Animation::GetAnimSlotByName(string anim_slot_name)
+reality::C_Animation::C_Animation(int num_of_bones)
 {
-	return anim_slots[name_to_anim_slot_index[anim_slot_name]].second;
+	animation_matrices.resize(num_of_bones);
+}
+
+void reality::C_Animation::OnUpdate()
+{
+}
+
+AnimationBase* reality::C_Animation::GetAnimSlotByName(string anim_slot_name)
+{
+	return anim_slots[name_to_anim_slot_index[anim_slot_name]].second.get();
 }
 
 XMMATRIX reality::C_Animation::GetCurAnimMatirixOfBone(int bone_id)
 {
-	const AnimSlot& base_anim_slot = anim_slots[0].second;
-	ANIM_STATE base_anim_slot_state = base_anim_slot.GetCurAnimState();
-
-	float base_time_weight = min(1.0f, base_anim_slot.anim_object_->GetCurAnimTime() / base_anim_slot.anim_object_->GetBlendTime());
-
-	XMMATRIX base_cur_animation = XMMatrixIdentity();
-	XMMATRIX base_prev_animation = XMMatrixIdentity();
-	XMMATRIX base_animation = XMMatrixIdentity();
-
-	OutAnimData* res_animation = nullptr;
-	OutAnimData* res_prev_animation = nullptr;
-
-	switch (base_anim_slot_state) {
-	case ANIM_STATE::ANIM_STATE_NONE:
-		return XMMatrixIdentity();
-	case ANIM_STATE::ANIM_STATE_CUR_ONLY:
-		res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
-		base_prev_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
-		base_cur_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
-		base_animation = base_cur_animation;
-		break;
-	case ANIM_STATE::ANIM_STATE_CUR_PREV:
-		res_prev_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetPrevAnimationId());
-		res_animation = RESOURCE->UseResource<OutAnimData>(base_anim_slot.anim_object_->GetCurAnimationId());
-
-		base_prev_animation = res_prev_animation->animations[bone_id][base_anim_slot.anim_object_->GetPrevAnimLastFrame()];
-		base_cur_animation = res_animation->animations[bone_id][base_anim_slot.anim_object_->GetCurFrame()];
-
-		base_animation = base_cur_animation * base_time_weight + base_prev_animation * (1.0f - base_time_weight);
-		break;
-	}
-
-	int i = anim_slots.size() - 1;
-	float slot_weight = 0.0f;
-
-	XMMATRIX slot_cur_animation = XMMatrixIdentity();
-	XMMATRIX slot_prev_animation = XMMatrixIdentity();
-	XMMATRIX slot_animation = XMMatrixIdentity();
-
-	OutAnimData* res_prev_slot_animation = nullptr;
-	OutAnimData* res_slot_animation = nullptr;
-
-	for (i; i >= 1; i--) {
-		AnimSlot& anim_slot = anim_slots[i].second;
-		ANIM_STATE slot_anim_state = anim_slot.GetCurAnimState();
-
-		float slot_time_weight = min(1.0f, anim_slot.anim_object_->GetCurAnimTime() / anim_slot.anim_object_->GetBlendTime());
-
-		slot_cur_animation = XMMatrixIdentity();
-		slot_prev_animation = XMMatrixIdentity();
-		slot_animation = XMMatrixIdentity();
-
-		switch (slot_anim_state) {
-		case ANIM_STATE::ANIM_STATE_NONE:
-			continue;
-		case ANIM_STATE::ANIM_STATE_PREV_ONLY:
-			res_prev_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
-			slot_prev_animation = res_prev_slot_animation->animations[bone_id][anim_slot.anim_object_->GetPrevAnimLastFrame()];
-
-			slot_animation = base_cur_animation * slot_time_weight + slot_prev_animation * (1.0f - slot_time_weight);
-			break;
-		case ANIM_STATE::ANIM_STATE_CUR_ONLY:
-			res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
-			slot_cur_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetCurFrame()];
-
-			slot_animation = slot_cur_animation * slot_time_weight + base_prev_animation * (1.0f - slot_time_weight);
-			break;
-		case ANIM_STATE::ANIM_STATE_CUR_PREV:
-			res_prev_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetPrevAnimationId());
-			res_slot_animation = RESOURCE->UseResource<OutAnimData>(anim_slot.anim_object_->GetCurAnimationId());
-
-			slot_prev_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetPrevAnimLastFrame()];
-			slot_cur_animation = res_slot_animation->animations[bone_id][anim_slot.anim_object_->GetCurFrame()];
-
-			slot_animation = slot_cur_animation * slot_time_weight + slot_prev_animation * (1.0f - slot_time_weight);
-		}
-
-		slot_weight = anim_slot.bone_id_to_weight_[bone_id] / anim_slot.range_;
-		break;
-	}
-
-	return base_animation * (1.0f - slot_weight) + slot_animation * slot_weight;
+	return animation_matrices[bone_id];
 }
 
 reality::C_BoxShape::C_BoxShape()
