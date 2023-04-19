@@ -94,9 +94,16 @@ namespace reality
 		float target_height = 0.0f;
 		XMVECTOR local_pos;
 		XMFLOAT2 pitch_yaw = { 0, 0 };
+		float roll = 0.0f;
 		XMVECTOR look, right, up;
 		float rotation = 0.0f, target_rotation = 0.0f;
 		float near_z, far_z, fov, aspect;
+
+		bool is_shaking = false;
+		float shaking_timer = 0.0f;
+		float shake_time = 0.0f;
+		float shake_magnitude = 0.0f;
+		float shake_frequency = 0.0f;
 
 		virtual void OnConstruct() override {};
 		virtual void OnUpdate() override;

@@ -213,11 +213,34 @@ void reality::CameraSystem::PlayerCameraMovement()
 
 	camera->pitch_yaw.x += pitch;
 	camera->pitch_yaw.y += yaw;
+	camera->roll = 0;
 }
 
 void CameraSystem::CameraAction()
 {
+	// Shaking Action
+	if (camera->is_shaking)
+	{
+		camera->shaking_timer += TIMER->GetDeltaTime();
+		if (camera->shaking_timer > camera->shake_time)
+		{
+			camera->is_shaking = false;
+			camera->shaking_timer = 0.0f; 
+			camera->shake_time = 0.0f;
+			camera->shake_magnitude = 0.0f;
+			camera->shake_frequency = 0.0f;
+		}
+		else
+		{
+			float shake_displacementX = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementY = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementZ = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
 
+			//camera->camera_pos = XMVectorAdd(camera->camera_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
+			camera->roll = shake_displacementX;
+			//camera->target_pos = XMVectorAdd(camera->target_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
+		}
+	}
 }
 
 void CameraSystem::CreateMatrix()
@@ -234,7 +257,7 @@ void CameraSystem::CreateMatrix()
 
 	scale_vector = XMVectorReplicate(1.0f);
 	rotation_center = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, 0);
+	rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, camera->roll);
 
 	camera->rotation += (camera->target_rotation - camera->rotation) * TM_DELTATIME * 10;
 
