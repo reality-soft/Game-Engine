@@ -80,6 +80,8 @@ void reality::C_Animation::OnUpdate()
 	for (const auto& anim_slot_pair : anim_slots) {
 		const auto& anim_slot = anim_slot_pair.second;
 		
+		anim_slot->AnimationUpdate();
+
 		const unordered_map<UINT, XMMATRIX>* anim_slot_matrices = nullptr;
 		const unordered_map<UINT, XMMATRIX>* anim_slot_prev_matrices = nullptr;
 		const unordered_map<UINT, int>* weights = nullptr;

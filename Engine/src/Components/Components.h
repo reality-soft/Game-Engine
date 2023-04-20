@@ -137,6 +137,8 @@ namespace reality
 		void AddNewAnimSlot(string anim_slot_name, Args&&... args) 
 		{
 			anim_slots.push_back({ anim_slot_name, make_shared<AnimObjectType>(args...) });
+			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
+			anim_slots[anim_slots.size() - 1].second->OnInit();
 		};
 	};
 

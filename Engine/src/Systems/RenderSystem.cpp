@@ -124,8 +124,6 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 void RenderSystem::PlayAnimation(const Skeleton& skeleton, const C_Animation* const animation_component)
 {
-
-
 	if (animation_component == nullptr) {
 		for (const auto& bp : skeleton.bind_pose_matrices)
 		{
