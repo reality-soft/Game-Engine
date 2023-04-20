@@ -20,6 +20,11 @@ void reality::Character::GravityFall(float _gravity)
 	movement_component_->gravity_pulse += _gravity;
 }
 
+void reality::Character::CancelMovement()
+{
+	movement_component_->direction = { 0.0f, 0.0f, 0.0f, 0.0f };
+}
+
 XMVECTOR reality::Character::GetPos() const
 {
 	XMVECTOR translation;
