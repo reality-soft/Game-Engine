@@ -4,6 +4,7 @@
 #include "TimeMgr.h"
 #include "DataTableMgr.h"
 #include "DXStates.h"
+#include "SceneMgr.h"
 
 using namespace reality;
 
@@ -79,39 +80,43 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 	for (auto ent : view_stm)
 	{
-		auto* static_mesh_component = reg.try_get<C_StaticMesh>(ent);
-		if (static_mesh_component == nullptr)
-			continue;
+		if (SCENE_MGR->GetActor<Actor>(ent)->visible) {
+			auto* static_mesh_component = reg.try_get<C_StaticMesh>(ent);
+			if (static_mesh_component == nullptr)
+				continue;
 
-		C_Socket* socket_component = nullptr;
-		if (static_mesh_component->socket_name != "") {
-			socket_component = reg.try_get<C_Socket>(ent);
-		}
-
-		cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(static_mesh_component->local * static_mesh_component->world);
-		if (socket_component != nullptr) {
-			const auto& socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
-			if (socket_it != socket_component->sockets.end()) {
-				const Socket& socket = socket_it->second;
-				cb_static_mesh_.data.socket_matrix = XMMatrixTranspose(socket.local_offset * socket.animation_matrix * socket.owner_local * socket_component->world);
+			C_Socket* socket_component = nullptr;
+			if (static_mesh_component->socket_name != "") {
+				socket_component = reg.try_get<C_Socket>(ent);
 			}
-		}
-		else {
-			cb_static_mesh_.data.socket_matrix = XMMatrixIdentity();
-		}
 
-		RenderStaticMesh(static_mesh_component);
+			cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(static_mesh_component->local * static_mesh_component->world);
+			if (socket_component != nullptr) {
+				const auto& socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
+				if (socket_it != socket_component->sockets.end()) {
+					const Socket& socket = socket_it->second;
+					cb_static_mesh_.data.socket_matrix = XMMatrixTranspose(socket.local_offset * socket.animation_matrix * socket.owner_local * socket_component->world);
+				}
+			}
+			else {
+				cb_static_mesh_.data.socket_matrix = XMMatrixIdentity();
+			}
+
+			RenderStaticMesh(static_mesh_component);
+		}
 	}
 
 	for (auto ent : view_skm)
 	{
-		auto* skeletal_mesh_component = reg.try_get<C_SkeletalMesh>(ent);
-		auto* animation_component = reg.try_get<C_Animation>(ent);
-		if (skeletal_mesh_component == nullptr) {
-			continue;
+		if (SCENE_MGR->GetActor<Actor>(ent)->visible) {
+			auto* skeletal_mesh_component = reg.try_get<C_SkeletalMesh>(ent);
+			auto* animation_component = reg.try_get<C_Animation>(ent);
+			if (skeletal_mesh_component == nullptr) {
+				continue;
+			}
+			cb_skeletal_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->local * skeletal_mesh_component->world);
+			RenderSkeletalMesh(skeletal_mesh_component, animation_component);
 		}
-		cb_skeletal_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->local * skeletal_mesh_component->world);
-		RenderSkeletalMesh(skeletal_mesh_component, animation_component);
 	}
 
 	DX11APP->GetDeviceContext()->RSSetState(DXStates::rs_solid_cull_none());
