@@ -109,7 +109,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		if (skeletal_mesh_component == nullptr) {
 			continue;
 		}
-		cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->local * skeletal_mesh_component->world);
+		cb_skeletal_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->local * skeletal_mesh_component->world);
 		RenderSkeletalMesh(skeletal_mesh_component, animation_component);
 	}
 
