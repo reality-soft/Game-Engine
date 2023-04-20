@@ -15,7 +15,7 @@ namespace reality {
 			registry.on_construct<C_Camera>().connect<&ComponentSystem::OnConstruct<C_Camera>>(this);
 			registry.on_construct<C_Animation>().connect<&ComponentSystem::OnConstruct<C_Animation>>(this);
 			registry.on_update<C_Transform>().connect<&ComponentSystem::OnUpdate<C_Transform>>(this);
-			registry.on_update<C_Animation>().connect<&ComponentSystem::OnUpdate<C_Animation>>(this);
+			//registry.on_update<C_Animation>().connect<&ComponentSystem::OnUpdate<C_Animation>>(this);
 
 			return true;
 		}

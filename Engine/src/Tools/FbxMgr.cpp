@@ -231,7 +231,7 @@ void reality::FbxMgr::SaveAnimation(const map<string, OutAnimData>& animation)
         vector<UINT> keys;
         vector<vector<XMMATRIX>> animation_matrices;
 
-        for (const auto& cur_pair : cur_anim.second.animations) {
+        for (const auto& cur_pair : cur_anim.second.animation_matrices) {
             keys.push_back(cur_pair.first);
             animation_matrices.push_back(cur_pair.second);
         }
@@ -380,7 +380,7 @@ reality::OutAnimData reality::FbxMgr::LoadAnimation(string filename)
     }
 
     for (int i = 0;i < num_of_keys;i++) {
-        animation_data.animations.insert({ keys[i], animation_matrices[i] });
+        animation_data.animation_matrices.insert({ keys[i], animation_matrices[i] });
     }
 
     animation_data.start_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];

@@ -10,10 +10,8 @@ namespace reality {
 	};
 
 	class DLL_API AnimationBase {
-	protected:
-		Animation animation_;
-		ANIM_STATE cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
-		bool animation_ended_ = false;
+	public:
+		AnimationBase(string skeletal_mesh_id, int range, string bone_name = "");
 
 	public:
 		Animation GetCurAnimation() {
@@ -21,6 +19,7 @@ namespace reality {
 		}
 
 	public:
+		virtual void AnimationUpdate();
 		virtual void OnInit() {};
 
 	protected:
@@ -32,19 +31,27 @@ namespace reality {
 		}
 
 	public:
-		virtual void AnimationUpdate();
-		virtual string GetCurAnimationId();
-		virtual string GetPrevAnimationId();
-		virtual float GetPrevAnimLastFrame();
-		virtual float GetCurAnimTime();
-		virtual float GetCurFrame();
-		virtual float GetBlendTime();
+		string GetCurAnimationId();
+		float GetCurAnimTime();
+		float GetCurFrame();
+		float GetBlendTime();
+		float GetRange();
+
+	public:
+		unordered_map<UINT, XMMATRIX>* GetAnimationMatrices();
+		unordered_map<UINT, XMMATRIX>* GetPrevAnimationMatrices();
+		unordered_map<UINT, int>* GetWeights();
 
 	public:
 		ANIM_STATE GetCurAnimState();
 
 	public:
 		virtual void SetAnimation(string animation_id, float blend_time);
+
+	protected:
+		Animation animation_;
+		ANIM_STATE cur_anim_state_ = ANIM_STATE::ANIM_STATE_NONE;
+		bool animation_ended_ = false;
 	};
 }
 

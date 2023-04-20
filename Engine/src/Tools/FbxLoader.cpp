@@ -512,7 +512,7 @@ namespace reality {
 					keyframes.push_back(track.anim_mat);
 				}
 
-				out_anim_map[anim_name].animations.insert(make_pair(bone.second, keyframes));
+				out_anim_map[anim_name].animation_matrices.insert(make_pair(bone.second, keyframes));
 			}
 		}
 	}
