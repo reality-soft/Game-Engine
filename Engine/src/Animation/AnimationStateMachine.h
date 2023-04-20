@@ -8,7 +8,9 @@ namespace reality {
 	class DLL_API AnimationStateMachine : public AnimationBase
 	{
 	public:
-		AnimationStateMachine(entt::entity owner_id) : owner_id_(owner_id) {}
+		AnimationStateMachine(entt::entity owner_id, string skeletal_mesh_id,int range, string bone_name = "") :
+			owner_id_(owner_id), 
+			AnimationBase(skeletal_mesh_id, range, bone_name) {}
 
 	public:
 		virtual void OnInit() override;

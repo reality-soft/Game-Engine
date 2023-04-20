@@ -45,7 +45,7 @@ namespace reality
 
 	struct OutAnimData
 	{
-		std::map<UINT, std::vector<XMMATRIX>> animations;
+		std::map<UINT, std::vector<XMMATRIX>> animation_matrices;
 		UINT start_frame = 0;
 		UINT end_frame = 0;
 	};

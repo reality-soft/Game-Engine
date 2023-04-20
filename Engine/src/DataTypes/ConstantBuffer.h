@@ -3,11 +3,6 @@
 
 namespace reality
 {
-	struct Transform {
-		XMMATRIX    world_matrix;
-		XMMATRIX    local_matrix;
-	};
-
 	struct SocketTransform {
 		XMMATRIX	owner_local = XMMatrixIdentity();
 		XMMATRIX	local_offset = XMMatrixIdentity();
@@ -18,8 +13,7 @@ namespace reality
 	{
 		CbTransform()
 		{
-			data.transform.world_matrix = XMMatrixIdentity();
-			data.transform.local_matrix = XMMatrixIdentity();
+			data.transform_matrix = XMMatrixIdentity();
 		}
 		CbTransform(const CbTransform& other)
 		{
@@ -28,7 +22,7 @@ namespace reality
 		}
 		struct Data
 		{
-			Transform transform;
+			XMMATRIX transform_matrix;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -44,8 +38,8 @@ namespace reality
 		}
 		struct Data
 		{
-			Transform		transform;
-			SocketTransform	socket_transform;
+			XMMATRIX transform_matrix;
+			XMMATRIX socket_matrix;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -61,15 +55,8 @@ namespace reality
 		}
 		struct Data
 		{
-			Transform   transform;
-			XMMATRIX	bind_pose[128];
-			XMMATRIX	prev_animation[128];
+			XMMATRIX    transform_matrix;
 			XMMATRIX	animation[128];
-			XMMATRIX	prev_slot_animation[128];
-			XMMATRIX	slot_animation[128];
-			float		slot_weights[128];
-			float		base_time_weight;
-			float		slot_time_weight;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};

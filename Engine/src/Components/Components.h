@@ -10,8 +10,8 @@
 #include "Effect.h"
 #include "DX11App.h"
 #include "ResourceMgr.h"
-#include "AnimSlot.h"
 #include "Socket.h"
+#include "AnimationBase.h"
 
 namespace reality
 {
@@ -112,39 +112,40 @@ namespace reality
 
 	struct DLL_API C_Animation : public Component
 	{
-		vector<pair<string, AnimSlot>> anim_slots;
+		vector<pair<string, shared_ptr<AnimationBase>>> anim_slots;
 		unordered_map<string, int> name_to_anim_slot_index;
 
-		virtual void OnConstruct() override {};
-		virtual void OnUpdate() override {};
+		vector<XMMATRIX> prev_slot_cur_time_animation_matrices;
+		vector<XMMATRIX> prev_slot_prev_time_animation_matrices;
+		vector<XMMATRIX> cur_slot_cur_time_animation_matrices;
+		vector<XMMATRIX> cur_slot_prev_time_animation_matrices;
+		vector<float>	 time_weights;
+		vector<float>	 bone_weights;
 
-		AnimSlot GetAnimSlotByName(string anim_slot_name);
+		vector<XMMATRIX> animation_matrices;
+
+		C_Animation(int num_of_bones);
+
+		virtual void OnConstruct() override {};
+		virtual void OnUpdate() override;
+
+		AnimationBase* GetAnimSlotByName(string anim_slot_name);
 		XMMATRIX GetCurAnimMatirixOfBone(int bone_id);
 
-		template<typename AnimationObject, typename... Args>
+		template<typename AnimObjectType, typename... Args>
 		inline void SetBaseAnimObject(Args&&...args)
 		{
-			AnimSlot base_anim_slot;
-			base_anim_slot.anim_object_ = make_shared<AnimationObject>(args...);
-			anim_slots.push_back({ "Base", base_anim_slot });
-			anim_slots[0].second.anim_object_->OnInit();
+			anim_slots.push_back({ "Base", make_shared<AnimObjectType>(args...) });
+			anim_slots[0].second->OnInit();
 			name_to_anim_slot_index.insert({ "Base", 0 });
 		}
 
-		template<typename AnimSlotType, typename... Args>
-		void AddNewAnimSlot(string anim_slot_name, string skeletal_mesh_id, string bone_id, int range, Args&&... args) 
+		template<typename AnimObjectType, typename... Args>
+		void AddNewAnimSlot(string anim_slot_name, Args&&... args) 
 		{
-			AnimSlot anim_slot;
-
-			SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
-
-			skeletal_mesh->skeleton.GetSubBonesOf(bone_id, range, anim_slot.included_skeletons_, anim_slot.bone_id_to_weight_);
-			anim_slot.range_ = range * 2;
-			anim_slot.anim_object_ = make_shared<AnimSlotType>(args...);
-			anim_slot.anim_object_->OnInit();
-
-			anim_slots.push_back({ anim_slot_name, anim_slot });
+			anim_slots.push_back({ anim_slot_name, make_shared<AnimObjectType>(args...) });
 			name_to_anim_slot_index.insert({ anim_slot_name, anim_slots.size() - 1 });
+			anim_slots[anim_slots.size() - 1].second->OnInit();
 		};
 	};
 
