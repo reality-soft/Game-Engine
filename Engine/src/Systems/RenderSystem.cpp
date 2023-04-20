@@ -52,9 +52,7 @@ void reality::RenderSystem::OnCreate(entt::registry& reg)
 	hr = DX11APP->GetDevice()->CreateBuffer(&desc, &subdata, cb_static_mesh_.buffer.GetAddressOf());
 
 	for (int i = 0; i < 128; ++i) {
-		cb_skeletal_mesh_.data.bind_pose[i] = XMMatrixIdentity();
 		cb_skeletal_mesh_.data.animation[i] = XMMatrixIdentity();
-		cb_skeletal_mesh_.data.slot_animation[i] = XMMatrixIdentity();
 	}
 
 	ZeroMemory(&desc, sizeof(desc));
@@ -90,21 +88,15 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 			socket_component = reg.try_get<C_Socket>(ent);
 		}
 
+		cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(static_mesh_component->local * static_mesh_component->world);
 		if (socket_component != nullptr) {
-			C_Transform transform;
-			transform.world = socket_component->world;
-			transform.local = static_mesh_component->local;
-			SetTransformCB(&transform, cb_static_mesh_.data.transform);
 			auto socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
 			if (socket_it != socket_component->sockets.end()) {
-				SetSocketCB(socket_it->second);
+				cb_static_mesh_.data.socket_matrix = socket_component->local * socket_component->world;
 			}
 		}
 		else {
-			SetTransformCB(static_mesh_component, cb_static_mesh_.data.transform);
-			cb_static_mesh_.data.socket_transform.owner_local = XMMatrixIdentity();
-			cb_static_mesh_.data.socket_transform.local_offset = XMMatrixIdentity();
-			cb_static_mesh_.data.socket_transform.animation_matrix = XMMatrixIdentity();
+			cb_static_mesh_.data.socket_matrix = XMMatrixIdentity();
 		}
 
 		RenderStaticMesh(static_mesh_component);
@@ -117,7 +109,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		if (skeletal_mesh_component == nullptr) {
 			continue;
 		}
-		SetTransformCB(skeletal_mesh_component, cb_skeletal_mesh_.data.transform);
+		cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->local * skeletal_mesh_component->world);
 		RenderSkeletalMesh(skeletal_mesh_component, animation_component);
 	}
 
@@ -130,13 +122,26 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 	RenderEffects(reg);
 }
 
-void RenderSystem::PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component)
+void RenderSystem::PlayAnimation(const Skeleton& skeleton, const C_Animation* const animation_component)
 {
-	ZeroMemory(cb_skeletal_mesh_.data.slot_weights, sizeof(cb_skeletal_mesh_.data.slot_weights));
 
-	for (const auto& bp : skeleton.bind_pose_matrices)
-	{
-		cb_skeletal_mesh_.data.bind_pose[bp.first] = XMMatrixTranspose(bp.second);
+
+	if (animation_component == nullptr) {
+		for (const auto& bp : skeleton.bind_pose_matrices)
+		{
+			const UINT bone_id = bp.first;
+			const XMMATRIX& bind_pose_matrix = bp.second;
+			cb_skeletal_mesh_.data.animation[bone_id] = XMMatrixTranspose(bind_pose_matrix);
+		}
+	}
+	else {
+		for (const auto& bp : skeleton.bind_pose_matrices)
+		{
+			const UINT bone_id = bp.first;
+			const XMMATRIX& bind_pose_matrix = bp.second;
+			const XMMATRIX& animation_matrix = animation_component->animation_matrices[bone_id];
+			cb_skeletal_mesh_.data.animation[bone_id] = XMMatrixTranspose(bind_pose_matrix * animation_matrix);
+		}
 	}
 }
 
@@ -186,12 +191,7 @@ void RenderSystem::RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_
 		return;
 	}
 
-	if (animation_component != nullptr) {
-		PlayAnimation(skeletal_mesh->skeleton, *animation_component);
-	}
-	else {
-		SetAnimationMatricesIdentity();
-	}
+	PlayAnimation(skeletal_mesh->skeleton, animation_component);
 
 	device_context_->UpdateSubresource(cb_skeletal_mesh_.buffer.Get(), 0, nullptr, &cb_skeletal_mesh_.data, 0, 0);
 	device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
@@ -334,7 +334,7 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 	{
 		auto& box = reg.get<C_BoxShape>(ent);
 
-		SetTransformCB(&box, cb_transform_.data.transform);
+		cb_transform_.data.transform_matrix = XMMatrixTranspose(box.local * box.world);
 
 		device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
 		device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
@@ -420,19 +420,6 @@ void RenderSystem::RenderEffects(entt::registry& reg)
 	device_context_->OMSetDepthStencilState(DXStates::ds_defalut(), 0xff);
 	device_context_->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	device_context_->GSSetShader(nullptr, 0, 0);
-}
-
-void reality::RenderSystem::SetTransformCB(const C_Transform* const transform_component, Transform& transform)
-{
-	transform.local_matrix = XMMatrixTranspose(transform_component->local);
-	transform.world_matrix = XMMatrixTranspose(transform_component->world);
-}
-
-void reality::RenderSystem::SetSocketCB(const Socket& socket)
-{
-	cb_static_mesh_.data.socket_transform.owner_local = XMMatrixTranspose(socket.owner_local);
-	cb_static_mesh_.data.socket_transform.local_offset = XMMatrixTranspose(socket.local_offset);
-	cb_static_mesh_.data.socket_transform.animation_matrix = XMMatrixTranspose(socket.animation_matrix);
 }
 
 void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
@@ -583,15 +570,3 @@ void RenderSystem::SetParticleCB(Particle& particle)
 	device_context_->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
 	device_context_->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());
 }
-
-void reality::RenderSystem::SetAnimationMatricesIdentity()
-{
-	for (int i = 0;i < 128;i++) {
-		cb_skeletal_mesh_.data.bind_pose[i] = XMMatrixIdentity();
-		cb_skeletal_mesh_.data.prev_animation[i] = XMMatrixIdentity();
-		cb_skeletal_mesh_.data.animation[i] = XMMatrixIdentity();
-		cb_skeletal_mesh_.data.prev_slot_animation[i] = XMMatrixIdentity();
-		cb_skeletal_mesh_.data.slot_animation[i] = XMMatrixIdentity();
-	}
-}
-

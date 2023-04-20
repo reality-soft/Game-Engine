@@ -871,7 +871,7 @@ void reality::QuadTreeMgr::RenderCollisionMeshes()
 		XMMATRIX a_sphere_world = XMMatrixScaling(capsule.radius, capsule.radius, capsule.radius) * XMMatrixTranslationFromVector(capsule_info[2]);
 		XMMATRIX b_sphere_world = XMMatrixScaling(capsule.radius, capsule.radius, capsule.radius) * XMMatrixTranslationFromVector(capsule_info[3]);
 
-		capsule_mesh_transform.data.transform.world_matrix = XMMatrixTranspose(a_sphere_world);
+		capsule_mesh_transform.data.transform_matrix = XMMatrixTranspose(a_sphere_world);
 		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_mesh_transform.buffer.Get(), 0, 0, &capsule_mesh_transform.data, 0, 0);
 		DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, capsule_mesh_transform.buffer.GetAddressOf());
 
@@ -879,7 +879,7 @@ void reality::QuadTreeMgr::RenderCollisionMeshes()
 		DX11APP->GetDeviceContext()->IASetIndexBuffer(capsule_mesh->meshes[0].index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		DX11APP->GetDeviceContext()->DrawIndexed(capsule_mesh->meshes[0].indices.size(), 0, 0);
 
-		capsule_mesh_transform.data.transform.world_matrix = XMMatrixTranspose(b_sphere_world);
+		capsule_mesh_transform.data.transform_matrix = XMMatrixTranspose(b_sphere_world);
 		DX11APP->GetDeviceContext()->UpdateSubresource(capsule_mesh_transform.buffer.Get(), 0, 0, &capsule_mesh_transform.data, 0, 0);
 		DX11APP->GetDeviceContext()->VSSetConstantBuffers(1, 1, capsule_mesh_transform.buffer.GetAddressOf());
 
