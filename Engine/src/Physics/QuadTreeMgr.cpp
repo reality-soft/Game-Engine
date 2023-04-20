@@ -832,9 +832,6 @@ bool reality::QuadTreeMgr::InitCollisionMeshes()
 
 void reality::QuadTreeMgr::RenderCollisionMeshes()
 {
-	if (DINPUT->GetKeyState(DIK_C) == KEY_PUSH)
-		view_collisions_ = !view_collisions_;
-
 	if (!view_collisions_)
 		return;
 
