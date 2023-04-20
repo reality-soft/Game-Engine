@@ -152,6 +152,7 @@ void reality::C_Animation::OnUpdate()
 	}
 
 	for (int i = 0;i < animation_matrices.size();i++) {
+		time_weights[i] = min(1.0, time_weights[i]);
 		animation_matrices[i] = (prev_slot_prev_time_animation_matrices[i] * bone_weights[i] + cur_slot_prev_time_animation_matrices[i] * (1.0f - bone_weights[i])) * (1 - time_weights[i]) +
 								(prev_slot_cur_time_animation_matrices[i] * bone_weights[i] + cur_slot_cur_time_animation_matrices[i] * (1.0f - bone_weights[i])) * time_weights[i];
 	}
