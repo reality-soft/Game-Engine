@@ -168,60 +168,6 @@ XMMATRIX reality::C_Animation::GetCurAnimMatirixOfBone(int bone_id)
 	return animation_matrices[bone_id];
 }
 
-reality::C_BoxShape::C_BoxShape()
-{
-	material_id = "box_material.mat";
-
-	vertex_list.push_back({ { -1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+0.0f, +0.0f} });
-	vertex_list.push_back({ { +1.0f, +1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +0.0f} });
-	vertex_list.push_back({ { -1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+0.0f, +1.0f} });
-	vertex_list.push_back({ { +1.0f, -1.0f, +0.0f }, {+0.0f, +0.0f, +0.0f}, {+1.0f, +1.0f} });
-
-	D3D11_BUFFER_DESC bufDesc;
-
-	ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
-
-	bufDesc.ByteWidth = sizeof(Vertex) * vertex_list.size();
-	bufDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufDesc.CPUAccessFlags = 0;
-	bufDesc.MiscFlags = 0;
-	bufDesc.StructureByteStride = 0;
-
-	D3D11_SUBRESOURCE_DATA subResourse;
-
-	ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
-
-	subResourse.pSysMem = &vertex_list.at(0);
-	subResourse.SysMemPitch;
-	subResourse.SysMemSlicePitch;
-
-	DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &vertex_buffer);
-
-	index_list.push_back(0);
-	index_list.push_back(1);
-	index_list.push_back(2);
-	index_list.push_back(2);
-	index_list.push_back(1);
-	index_list.push_back(3);
-
-	ZeroMemory(&bufDesc, sizeof(D3D11_BUFFER_DESC));
-
-	bufDesc.ByteWidth = sizeof(DWORD) * index_list.size();
-	bufDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bufDesc.CPUAccessFlags = 0;
-	bufDesc.MiscFlags = 0;
-	bufDesc.StructureByteStride = 0;
-
-	ZeroMemory(&subResourse, sizeof(D3D11_SUBRESOURCE_DATA));
-
-	subResourse.pSysMem = &index_list.at(0);
-	subResourse.SysMemPitch;
-	subResourse.SysMemSlicePitch;
-
-	DX11APP->GetDevice()->CreateBuffer(&bufDesc, &subResourse, &index_buffer);
-}
 
 void reality::TransformTreeNode::OnUpdate(entt::registry& registry, entt::entity entity, XMMATRIX world)
 {
