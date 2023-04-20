@@ -17,7 +17,8 @@ namespace reality
 	enum class Day
 	{
 		eNoon,
-		eNight
+		eNight,
+		NONE,
 	};
 
 	class DLL_API Environment
