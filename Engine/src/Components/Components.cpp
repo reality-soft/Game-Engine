@@ -65,6 +65,7 @@ void reality::C_Camera::SetLocalFrom(C_CapsuleCollision& capsule_collision, floa
 
 reality::C_Animation::C_Animation(int num_of_bones)
 {
+	num_of_bones += 5;
 	animation_matrices.resize(num_of_bones);
 	prev_slot_cur_time_animation_matrices.resize(num_of_bones);
 	prev_slot_prev_time_animation_matrices.resize(num_of_bones);
