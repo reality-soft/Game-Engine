@@ -62,8 +62,8 @@ namespace reality {
 		void UpdateCapsules();
 		void UpdateSpheres();
 		RayCallback Raycast(const RayShape& ray);
-		void RegistDynamicCapsule(entt::entity ent);
-		void RegistDynamicSphere(entt::entity ent);
+		bool RegistDynamicCapsule(entt::entity ent);
+		bool RegistDynamicSphere(entt::entity ent);
 		bool RegistStaticSphere(entt::entity ent);
 
 		SbTriangleCollision triangle_stbuffer;
