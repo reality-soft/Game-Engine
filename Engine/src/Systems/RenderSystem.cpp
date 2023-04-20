@@ -90,9 +90,10 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 		cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(static_mesh_component->local * static_mesh_component->world);
 		if (socket_component != nullptr) {
-			auto socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
+			const auto& socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
 			if (socket_it != socket_component->sockets.end()) {
-				cb_static_mesh_.data.socket_matrix = socket_component->local * socket_component->world;
+				const Socket& socket = socket_it->second;
+				cb_static_mesh_.data.socket_matrix = XMMatrixTranspose(socket.local_offset * socket.animation_matrix * socket.owner_local * socket_component->world);
 			}
 		}
 		else {
