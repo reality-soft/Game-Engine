@@ -709,18 +709,28 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 	return callback_list.begin()->second;
 }
 
-void reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
+bool reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 {
+	if (dynamic_capsule_list.size() >= 64)
+		return false;
+
 	auto capsule_collision = registry_->try_get<C_CapsuleCollision>(ent);
 	if (capsule_collision != nullptr)
 		dynamic_capsule_list.insert(make_pair(ent, capsule_collision));
+
+	return true;
 }
 
-void reality::QuadTreeMgr::RegistDynamicSphere(entt::entity ent)
+bool reality::QuadTreeMgr::RegistDynamicSphere(entt::entity ent)
 {
+	if (dynamic_sphere_list.size() >= 64)
+		return false;
+
 	auto sphere_collision = registry_->try_get<C_SphereCollision>(ent);
 	if (sphere_collision != nullptr)
 		dynamic_sphere_list.insert(make_pair(ent, sphere_collision));
+
+	return true;
 }
 
 bool reality::QuadTreeMgr::RegistStaticSphere(entt::entity ent)
@@ -822,9 +832,6 @@ bool reality::QuadTreeMgr::InitCollisionMeshes()
 
 void reality::QuadTreeMgr::RenderCollisionMeshes()
 {
-	if (DINPUT->GetKeyState(DIK_C) == KEY_PUSH)
-		view_collisions_ = !view_collisions_;
-
 	if (!view_collisions_)
 		return;
 
