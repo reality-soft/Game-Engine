@@ -11,7 +11,7 @@ namespace reality {
 
 	class DLL_API AnimationBase {
 	public:
-		AnimationBase(string skeletal_mesh_id, int range, string bone_name);
+		AnimationBase(string skeletal_mesh_id, int range, string bone_name = "");
 
 	public:
 		Animation GetCurAnimation() {

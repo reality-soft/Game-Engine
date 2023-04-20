@@ -3,7 +3,7 @@
 #include "TimeMgr.h"
 #include "ResourceMgr.h"
 
-reality::AnimationBase::AnimationBase(string skeletal_mesh_id, int range, string bone_name = "")
+reality::AnimationBase::AnimationBase(string skeletal_mesh_id, int range, string bone_name)
 {
 	SkeletalMesh* skeletal_mesh = RESOURCE->UseResource<SkeletalMesh>(skeletal_mesh_id);
 	// base slot
