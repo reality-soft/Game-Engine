@@ -21,7 +21,7 @@ namespace reality {
 	public:
 		virtual void AnimationUpdate();
 
-	protected:
+	public:
 		virtual void OnInit() {};
 
 	protected:
