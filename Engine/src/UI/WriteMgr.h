@@ -14,6 +14,8 @@ namespace reality
 		BASIC = 0,
 		ROTUNDA = 1,
 		EUROCINE = 2,
+		ALTONE = 3,
+		RENOGARE = 4,
 	};
 
 	class DLL_API WriteMgr
@@ -26,6 +28,8 @@ namespace reality
 		unique_ptr<SpriteFont>	sprite_font_basic_;
 		unique_ptr<SpriteFont>	sprite_font_rotunda_;
 		unique_ptr<SpriteFont>	sprite_font_eurocine_;
+		unique_ptr<SpriteFont>	sprite_font_altone_;
+		unique_ptr<SpriteFont>	sprite_font_renogare_;
 	public:
 		void Init();
 
