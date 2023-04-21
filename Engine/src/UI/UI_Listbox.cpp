@@ -16,7 +16,7 @@ void UI_Listbox::InitListBox(string open_panel,
 	UI_Button::Init();
 
 	current_item_text_ = make_shared<UI_Text>();
-		current_item_text_->InitText("", E_Font::ROTUNDA, { 0.0f, 10.0f });
+		current_item_text_->InitText("", E_Font::ROTUNDA, { 5.0f, 15.0f });
 	AddChildUI("1_CurrentItemText", current_item_text_);
 
 	open_panel_ = make_shared<UI_Image>();
