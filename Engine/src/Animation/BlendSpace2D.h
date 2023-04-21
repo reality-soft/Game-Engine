@@ -7,7 +7,7 @@ namespace reality {
 
     struct DLL_API AnimationClip {
     public:
-        AnimationClip();
+        AnimationClip() {};
         AnimationClip(float x, float y, string animation_id);
 
     public:
