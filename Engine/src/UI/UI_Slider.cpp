@@ -13,7 +13,7 @@ void UI_Slider::InitSlider(string background, string normal, string hover, strin
 	render_data_.tex_id = background;
 	slider_ = make_shared<UI_Button>();
 	slider_->InitButton(normal, hover, push, select, disable);
-	AddChildUI(slider_);
+	AddChildUI("1_Slider", slider_);
 }
 
 void UI_Slider::Update()

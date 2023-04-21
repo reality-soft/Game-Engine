@@ -17,18 +17,18 @@ void UIBase::Init()
 void UIBase::Update()
 {
 	UpdateThisUI();
-	for (auto child : child_ui_list_)
+	for (auto& pair : child_ui_list_)
 	{
-		child->Update();
+		pair.second->Update();
 	}
 }
 
 void UIBase::Render()
 {
 	RenderThisUI();
-	for (auto child : child_ui_list_)
+	for (auto& pair : child_ui_list_)
 	{
-		child->Render();
+		pair.second->Render();
 	}
 }
 
@@ -192,16 +192,18 @@ void UIBase::UpdateRectTransform()
 	
 }
 
-void UIBase::AddChildUI(shared_ptr<UIBase> child_ui)
+void UIBase::AddChildUI(string name, shared_ptr<UIBase> child_ui)
 {
-	child_ui_list_.insert(child_ui);
+	child_ui_list_.insert({ name, child_ui });
 	child_ui->parent_ui_ = this;
 }
 
-void reality::UIBase::DeleteChildUI(shared_ptr<UIBase> child_ui)
+void reality::UIBase::DeleteChildUI(string name)
 {
-	child_ui_list_.erase(child_ui);
-	child_ui->parent_ui_ = nullptr;
+	if (child_ui_list_.find(name) == child_ui_list_.end())
+		return;
+	child_ui_list_[name]->parent_ui_ = nullptr;
+	child_ui_list_.erase(name);
 }
 
 E_UIState UIBase::GetCurrentState()
