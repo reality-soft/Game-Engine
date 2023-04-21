@@ -42,7 +42,7 @@ namespace reality {
 					cur_bone_ids.push({ child_bone_depth, child_bone_id });
 
 					child_bone_depth = min(child_bone_depth, range);
-					out_id_weight_map.insert({ cur_bone_id, child_bone_depth + range });
+					out_id_weight_map.insert({ child_bone_id, child_bone_depth + range });
 				}
 			}
 
