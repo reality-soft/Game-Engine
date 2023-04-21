@@ -7,7 +7,9 @@
 #include "SceneMgr.h"
 #include "FmodMgr.h"
 
+#ifdef DEBUG_
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
 LRESULT CALLBACK WindowProc(
 	HWND hWnd,
@@ -15,8 +17,10 @@ LRESULT CALLBACK WindowProc(
 	WPARAM wParam,
 	LPARAM lParam)
 {
+#ifdef DEBUG_
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
+#endif
 
 	switch (msg)
 	{
@@ -28,6 +32,7 @@ LRESULT CALLBACK WindowProc(
 		//ENGINE->OnResized();
 		break;
 
+#ifdef DEBUG_
 	case WM_DPICHANGED:
 		if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
 		{
@@ -37,6 +42,7 @@ LRESULT CALLBACK WindowProc(
 			::SetWindowPos(hWnd, NULL, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		break;
+#endif
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
@@ -69,7 +75,9 @@ namespace reality {
 		if (DX11APP->OnInit(screen_size, hwnd) == false)
 			return false;
 
+#ifdef DEBUG_
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
+#endif		
 		DINPUT->Init();
 		TIMER->Init();
 		FMOD_MGR->Init();

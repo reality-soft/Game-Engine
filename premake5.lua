@@ -69,25 +69,13 @@ project "Engine"
 		"dxgi",
 		"dinput8",
 		"dxguid",
-		"DirectXTK_D",
-		"libfbxsdk-md",
-		"libxml2-md",
-		"zlib-md",
 		"fmod_vc",
 		"fmodL_vc",
-		"ImGui_Win32_Dx11_D"
 	}
 
 	filter "system:windows"
 		staticruntime "off"
 		systemversion "latest"
-		runtime "Debug"
-
-		defines
-		{
-			"PLATFORM_WINDOWS",
-			"BUILD_DLL"
-		}
 
 		postbuildcommands
 		{
@@ -96,7 +84,16 @@ project "Engine"
 
 	filter "configurations:Debug"
 		defines "_DEBUG"
+		staticruntime "off"
 		symbols "On"
+		runtime "Debug"
+
+		defines
+		{
+			"PLATFORM_WINDOWS",
+			"BUILD_DLL",
+			"_ITERATOR_DEBUG_LEVEL=2"
+		}
 
 		libdirs
 		{
@@ -104,23 +101,54 @@ project "Engine"
 			"../SDK/FMOD/lib/debug",
 		}
 
+		links
+		{
+			"DirectXTK_D",
+			"libfbxsdk-md",
+			"libxml2-md",
+			"zlib-md",
+			"ImGui_Win32_Dx11_D",
+		}
+
 	filter "configurations:Release"
 		defines "_RELEASE"
+		staticruntime "off"
 		optimize "On"
-
+		runtime "Release"
 		
+
+		defines
+		{
+			"PLATFORM_WINDOWS",
+			"BUILD_DLL",
+			"_ITERATOR_DEBUG_LEVEL=0"
+		}
+
+
 		libdirs
 		{
 			"../SDK/FBXSDK/lib/release",
 			"../SDK/FMOD/lib/release",
 		}
 
+		links
+		{
+			"DirectXTK"
+		}
+
 	filter "configurations:Dist"
 		defines "_DIST"
+		staticruntime "off"
 		optimize "On"
+		runtime "Release"
 
 		libdirs
 		{
 			"../SDK/FBXSDK/lib/release",
 			"../SDK/FMOD/lib/release",
+		}
+		
+		links
+		{
+			"DirectXTK"
 		}

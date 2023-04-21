@@ -1,4 +1,5 @@
 #pragma once
+#ifdef DEBUG_
 #include "stdafx.h"
 #include "DllMacro.h"
 #include "DX11App.h"
@@ -81,4 +82,4 @@ namespace reality
 		return dynamic_cast<WidgetType*>(iter->second.get());
 	}
 }
-
+#endif

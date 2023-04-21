@@ -2,6 +2,7 @@
 #include "FbxLoader.h"
 #include "Material.h"
 
+#ifdef DEBUG_
 namespace reality {
 
 	void FbxLoader::Destroy()
@@ -614,3 +615,4 @@ namespace reality {
 		return true;
 	}
 }
+#endif

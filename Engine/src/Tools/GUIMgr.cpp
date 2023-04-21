@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GUIMgr.h"
 
+#ifdef DEBUG_
 using namespace reality;
 
 void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
@@ -77,3 +78,4 @@ ImFont* reality::GUIMgr::AddFont(string font_name, LPCSTR ttf_file, float font_s
 
 	return new_font;
 }
+#endif
