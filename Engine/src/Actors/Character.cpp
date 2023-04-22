@@ -24,7 +24,7 @@ void reality::Character::GravityFall(float _gravity)
 
 void reality::Character::CancelMovement()
 {
-	movement_component_->direction = { 0.0f, 0.0f, 0.0f, 0.0f };
+	movement_component_->velocity = { 0.0f, 0.0f, 0.0f, 0.0f };
 }
 
 void reality::Character::SetPos(const XMVECTOR& position)

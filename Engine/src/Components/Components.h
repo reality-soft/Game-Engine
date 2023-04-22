@@ -185,7 +185,8 @@ namespace reality
 	{
 		TransformTree* actor_transform_tree;
 		
-		XMVECTOR direction = { 0.0f, 0.0f, 0.0f, 0.0f };
+		XMVECTOR velocity = { 0.0f, 0.0f, 0.0f, 0.0f };
+		int accelaration_vector[3] = { 0, 0, 0};
 		float speed = 0.0f;
 		float max_speed = 0.0f;
 		float acceleration = 0.0f;
