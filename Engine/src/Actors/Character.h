@@ -18,6 +18,9 @@ namespace reality
 		XMVECTOR	 fall_ = { 0, -1, 0, 0 };
 		XMVECTOR	 jump_ =  { 0, 1, 0, 0 };
 
+	protected:
+		XMMATRIX rotation_ = XMMatrixIdentity();
+
 	public:
 		XMFLOAT3 floor_position = {0, 0, 0};
 		MovementState movement_state_;
@@ -31,8 +34,6 @@ namespace reality
 		void CancelMovement();
 
 	public:
-		XMVECTOR GetPos() const;
 		void SetPos(const XMVECTOR& position);
-		void RotateAlongMovementDirection();
 	};
 }

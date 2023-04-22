@@ -68,20 +68,17 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 			}
 		}
 
-
-
-		XMMATRIX transform_matrix = character->GetTransformMatrix();
-		XMMATRIX movement_matrix = XMMatrixTranslationFromVector(movement_vector);
-		transform_matrix *= movement_matrix;
+		XMVECTOR character_cur_postion = character->GetCurPosition();
+		character_cur_postion += movement_vector;
 
 		if (movement_component->jump_pulse <= 0)
 		{
 			if (character->movement_state_ == MovementState::WALK)
-				transform_matrix.r[3].m128_f32[1] = character->floor_position.y;
+				character_cur_postion.m128_f32[1] = character->floor_position.y;
 		}
 
 
-		character->ApplyMovement(transform_matrix);
+		character->ApplyMovement(character_cur_postion);
 
 		movement_component->direction = XMVectorZero();
 	}
