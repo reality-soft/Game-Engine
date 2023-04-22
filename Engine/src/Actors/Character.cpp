@@ -32,3 +32,8 @@ void reality::Character::SetPos(const XMVECTOR& position)
 	cur_position_ = position;
 	transform_tree_.root_node->Translate(*reg_scene_, entity_id_, XMMatrixTranslationFromVector(cur_position_));
 }
+
+XMMATRIX reality::Character::GetRotation()
+{
+	return rotation_;
+}

@@ -29,11 +29,14 @@ namespace reality
 	public:
 		void OnInit(entt::registry& registry) override;
 		void OnUpdate() override;
-		C_Movement* GetMovementComponent() { return movement_component_; }
-		void GravityFall(float _gravity);
-		void CancelMovement();
 
 	public:
+		C_Movement* GetMovementComponent() { return movement_component_; }
+		void GravityFall(float _gravity);		
 		void SetPos(const XMVECTOR& position);
+		XMMATRIX GetRotation();
+
+	public:
+		void CancelMovement();
 	};
 }
