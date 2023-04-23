@@ -216,7 +216,11 @@ namespace reality
 		vector<DWORD>			index_list;
 		ComPtr<ID3D11Buffer>	index_buffer;
 
-		C_BoxShape();
+		C_BoxShape()
+		{
+			vs_id = "";
+			material_id = "";
+		}
 	};
 
 	struct DLL_API C_Effect : public C_Transform

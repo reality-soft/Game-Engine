@@ -28,6 +28,7 @@ namespace reality
 		void OnUpdate() override;
 		C_Movement* GetMovementComponent() { return movement_component_; }
 		void GravityFall(float _gravity);
+		void CancelMovement();
 
 	public:
 		XMVECTOR GetPos() const;

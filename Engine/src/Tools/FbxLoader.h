@@ -2,6 +2,7 @@
 #include "FbxOutData.h"
 #include "DllMacro.h"
 
+#ifdef DEBUG_
 namespace reality {
 	struct FbxImportOption
 	{
@@ -62,3 +63,4 @@ namespace reality {
 	};
 
 }
+#endif

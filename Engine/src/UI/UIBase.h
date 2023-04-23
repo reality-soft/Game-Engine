@@ -12,7 +12,7 @@ namespace reality
 		E_UIState	current_state_;
 	public:
 		UIBase*								parent_ui_;
-		unordered_set<shared_ptr<UIBase>>	child_ui_list_;
+		map<string, shared_ptr<UIBase>>		child_ui_list_;
 	public:
 		vector<RectTransform> rect_transform_;
 		RectRenderData	render_data_;
@@ -28,8 +28,8 @@ namespace reality
 		virtual void RenderThisUI();
 		void UpdateRectTransform();
 	public:
-		void AddChildUI(shared_ptr<UIBase> child_ui);
-		void DeleteChildUI(shared_ptr<UIBase> child_ui);
+		void AddChildUI(string name, shared_ptr<UIBase> child_ui);
+		void DeleteChildUI(string name);
 		E_UIState GetCurrentState();
 		void SetCurrentState(E_UIState state);
 	public:

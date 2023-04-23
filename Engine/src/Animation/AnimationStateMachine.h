@@ -8,7 +8,7 @@ namespace reality {
 	class DLL_API AnimationStateMachine : public AnimationBase
 	{
 	public:
-		AnimationStateMachine(entt::entity owner_id, string skeletal_mesh_id,int range, string bone_name = "") :
+		AnimationStateMachine(entt::entity owner_id, string skeletal_mesh_id, int range, string bone_name = "") :
 			owner_id_(owner_id), 
 			AnimationBase(skeletal_mesh_id, range, bone_name) {}
 

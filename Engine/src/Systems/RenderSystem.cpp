@@ -341,7 +341,7 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 		cb_transform_.data.transform_matrix = XMMatrixTranspose(box.local * box.world);
 
 		device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
-		device_context_->VSSetConstantBuffers(1, 1, cb_skeletal_mesh_.buffer.GetAddressOf());
+		device_context_->VSSetConstantBuffers(1, 1, cb_transform_.buffer.GetAddressOf());
 
 		auto material = RESOURCE->UseResource<Material>(box.material_id);
 		material->Set();

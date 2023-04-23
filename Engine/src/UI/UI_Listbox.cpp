@@ -16,8 +16,8 @@ void UI_Listbox::InitListBox(string open_panel,
 	UI_Button::Init();
 
 	current_item_text_ = make_shared<UI_Text>();
-		current_item_text_->InitText("", E_Font::ROTUNDA, { 0.0f, 10.0f });
-	AddChildUI(current_item_text_);
+		current_item_text_->InitText("", E_Font::ROTUNDA, { 5.0f, 15.0f });
+	AddChildUI("1_CurrentItemText", current_item_text_);
 
 	open_panel_ = make_shared<UI_Image>();
 	open_panel_->InitImage(open_panel);
@@ -155,13 +155,14 @@ void UI_Listbox::AddItem(string value)
 		item_button_textures[E_UIState::UI_SELECT],
 		item_button_textures[E_UIState::UI_DISABLED]
 	);
-	open_panel_->AddChildUI(new_item_button);
+	string item_ui_name = "1_" + value + " button";
+	open_panel_->AddChildUI(item_ui_name, new_item_button);
 	XMFLOAT2 min = { item_button_min_.x, item_button_min_.y + item_button_height_space_ * (item_button_list_.size() - 1) };
 	new_item_button->SetLocalRectByMin(min, item_button_width_, item_button_height_);
 
 	auto new_item_text = make_shared<UI_Text>();
 	new_item_text->InitText(value, E_Font::ROTUNDA, {0.0f, 10.0f});
-	new_item_button->AddChildUI(new_item_text);
+	new_item_button->AddChildUI("1_item_text", new_item_text);
 }
 
 void UI_Listbox::OpenListBox()
@@ -175,7 +176,7 @@ void UI_Listbox::OpenListBox()
 		list_button_textures["opened_disable"]);
 	
 	// Add OpenPanel to child 
-	AddChildUI(open_panel_);
+	AddChildUI("1_OpenPanel", open_panel_);
 }
 void UI_Listbox::CloseListBox()
 {
@@ -188,7 +189,7 @@ void UI_Listbox::CloseListBox()
 		list_button_textures["closed_disable"]);
 
 	// Delete OpenPanel to child
-	DeleteChildUI(open_panel_);
+	DeleteChildUI("1_OpenPanel");
 }
 
 void reality::UI_Listbox::SetListBoxText(string text)
