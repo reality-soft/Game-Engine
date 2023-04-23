@@ -87,6 +87,11 @@ namespace reality
 		virtual void OnUpdate() override;
 	};
 
+	struct DLL_API C_TriggerSensor : public Component
+	{
+		set<string> can_sense_tags;
+	};
+
 	struct DLL_API C_Camera : public C_Transform
 	{
 		XMVECTOR camera_pos = { 0, 0, 0, 0 };
