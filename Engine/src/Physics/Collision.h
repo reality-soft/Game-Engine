@@ -17,6 +17,7 @@ namespace reality {
         bool success;
         bool is_actor;
         entt::entity ent;
+        UINT tri_index;
 
         float distance;
         XMVECTOR point;
@@ -49,45 +50,45 @@ namespace reality {
 
     // CollisionTest
 
-    bool SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b);
+    bool DLL_API SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b);
 
-    bool PointInTriangle(const XMVECTOR& p, const TriangleShape& tri);
+    bool DLL_API PointInTriangle(const XMVECTOR& p, const TriangleShape& tri);
 
-    bool RayToAABB(const RayShape& ray, const AABBShape& aabb);
+    bool DLL_API RayToAABB(const RayShape& ray, const AABBShape& aabb);
 
-    RayCallback RayToTriangle(const RayShape& ray, const TriangleShape& tri);
+    RayCallback DLL_API RayToTriangle(const RayShape& ray, const TriangleShape& tri);
 
-    RayCallback RayToCapsule(const RayShape& ray, const CapsuleShape& cap);
+    RayCallback DLL_API RayToCapsule(const RayShape& ray, const CapsuleShape& cap);
 
-    CollideType AABBtoAABB(const AABBShape& aabb1, const AABBShape& aabb2);
+    CollideType DLL_API AABBtoAABB(const AABBShape& aabb1, const AABBShape& aabb2);
 
-    CollideType CapsuleToAABB(const AABBShape& aabb, const CapsuleShape& capsule);
+    CollideType DLL_API CapsuleToAABB(const AABBShape& aabb, const CapsuleShape& capsule);
 
-    CollideType SphereToAABB(const SphereShape& sphere, const AABBShape& aabb);
+    CollideType DLL_API SphereToAABB(const SphereShape& sphere, const AABBShape& aabb);
 
-    CollideType CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleShape& cap2);
+    CollideType DLL_API CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleShape& cap2);
 
-    CollideType AABBToTriagnle(const AABBShape& aabb, const TriangleShape& triangle);
+    CollideType DLL_API AABBToTriagnle(const AABBShape& aabb, const TriangleShape& triangle);
 
-    CapsuleCallback CapsuleToTriangle(const CapsuleShape& cap, const TriangleShape& triangle);
+    CapsuleCallback DLL_API CapsuleToTriangle(const CapsuleShape& cap, const TriangleShape& triangle);
 
-    XMVECTOR PointRaySegment(const RayShape& ray, const XMVECTOR& point);
+    XMVECTOR DLL_API PointRaySegment(const RayShape& ray, const XMVECTOR& point);
 
     // Converter
 
-    XMVECTOR GetRayDirection(const RayShape& ray);
+    XMVECTOR DLL_API GetRayDirection(const RayShape& ray);
 
-    array<RayShape, 3> GetEdgeRays(const TriangleShape& tri);
-    XMVECTOR           GetMinXZ(const TriangleShape& tri);
-    XMVECTOR           GetMaxXZ(const TriangleShape& tri);
+    array<RayShape, 3> DLL_API GetEdgeRays(const TriangleShape& tri);
+    XMVECTOR           DLL_API GetMinXZ(const TriangleShape& tri);
+    XMVECTOR           DLL_API GetMaxXZ(const TriangleShape& tri);
 
-    array<TriangleShape, 12> GetTriangles(const AABBShape& aabb);
-    array<XMFLOAT3, 8>       GetCorners(const AABBShape& aabb);
-    array<RayShape, 4>       GetYAxisRay(const AABBShape& aabb);
+    array<TriangleShape, 12> DLL_API GetTriangles(const AABBShape& aabb);
+    array<XMFLOAT3, 8>       DLL_API GetCorners(const AABBShape& aabb);
+    array<RayShape, 4>       DLL_API GetYAxisRay(const AABBShape& aabb);
 
-    array<XMVECTOR, 4> GetTipBaseAB(const CapsuleShape& capsule);
+    array<XMVECTOR, 4> DLL_API GetTipBaseAB(const CapsuleShape& capsule);
 
 
-    AABBShape   CapsuleConvertAABB(const CapsuleShape& capsule);
-    SphereShape AABBTConvertSphere(const AABBShape& aabb);
+    AABBShape   DLL_API CapsuleConvertAABB(const CapsuleShape& capsule);
+    SphereShape DLL_API AABBTConvertSphere(const AABBShape& aabb);
 }
