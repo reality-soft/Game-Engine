@@ -129,9 +129,9 @@ namespace reality {
 
 		void ImportFloydRout(string mapdat_file);
 		map<UINT, FloydRout>& GetFloydRout();
-		vector<TriangleShape>& GetFloydTriangles();
+		vector<TriangleShape>& GetCarTriangles();
 		map<UINT, FloydRout> floyd_routs_;
-		vector<TriangleShape> floyd_triagnles_;
+		vector<TriangleShape> car_triagnles_;
 
 		void SetBlockingFields(string name);
 		vector<RayShape> blocking_fields_;

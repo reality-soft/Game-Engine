@@ -295,7 +295,7 @@ void reality::QuadTreeMgr::ImportFloydRout(string mapdat_file)
 			tri.index == 11104 || tri.index == 11105 ||
 			tri.index == 11106 || tri.index == 11107 ||
 			tri.index == 11108 || tri.index == 11109)
-			floyd_triagnles_.push_back(tri);
+			car_triagnles_.push_back(tri);
 	}
 	
 }
@@ -305,9 +305,9 @@ map<UINT, FloydRout>& reality::QuadTreeMgr::GetFloydRout()
 	return floyd_routs_;
 }
 
-vector<TriangleShape>& reality::QuadTreeMgr::GetFloydTriangles()
+vector<TriangleShape>& reality::QuadTreeMgr::GetCarTriangles()
 {
-	return floyd_triagnles_;
+	return car_triagnles_;
 }
 
 void reality::QuadTreeMgr::SetBlockingFields(string name)
