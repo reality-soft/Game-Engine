@@ -77,11 +77,6 @@ project "Engine"
 		staticruntime "off"
 		systemversion "latest"
 
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} ../../output/bin/" .. outputdir .. "/TestGame"),
-		}
-
 	filter "configurations:Debug"
 		defines "_DEBUG"
 		staticruntime "off"

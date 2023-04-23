@@ -1,12 +1,14 @@
 #pragma once
+#include "ScreenGrab.h"
 #include "RenderTargetMgr.h"
 #include "StaticMeshLevel.h"
-
 namespace reality
 {
-	struct CbSingleShadow
+	bool DLL_API CreateDepthBiasRS(int DepthBias, float SlopeScaledDepthBias, float DepthBiasClamp, ID3D11RasterizerState** rs);
+
+	struct CbProjectionShadow
 	{
-		CbSingleShadow()
+		CbProjectionShadow()
 		{
 			data.shadow_view_proj = XMMatrixIdentity();
 		}
@@ -18,79 +20,62 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbMultipleShadows
+	struct CbCubeMapShadow
 	{
-		CbMultipleShadows()
+		CbCubeMapShadow()
 		{
-			for (int i = 0; i < 9; ++i)
-			{
+			for (int i = 0; i < 6; ++i)
 				data.shadow_view_proj[i] = XMMatrixIdentity();
-			}
 		}
 		struct Data
 		{
-			XMMATRIX shadow_view_proj[9];
+			XMMATRIX shadow_view_proj[6];
 		} data;
 
-		UINT index = 0;
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	class DLL_API SingleShadow
+	class DLL_API ProjectionShadow
 	{
 	public:
-		bool Init(XMFLOAT2 near_far, XMFLOAT2 dmap_size, XMFLOAT2 smap_size, string dmap_vs, string smap_vs, string smap_ps);
-		void RenderDepthMap(XMVECTOR light_pos, XMVECTOR light_look);
-		void RenderShadowMap();
-		void SetShadowMapSRV();
-
+		bool Init(XMFLOAT2 near_far, XMFLOAT2 dmap_size, string dmap_vs);
+		bool CreateDepthMap(StaticMeshLevel* level_to_render, XMVECTOR light_pos, XMVECTOR light_look);
+		void SetDepthMapSRV();
 		ID3D11ShaderResourceView* GetDepthMapSRV();
-		ID3D11ShaderResourceView* GetRTSRV();
-
-	public:
-		XMFLOAT2 projection_near_far_;
-		XMFLOAT2 depth_map_size_;
-		XMFLOAT2 shadow_map_size_;
-		StaticMeshLevel* static_mesh_level_ = nullptr;
-		ID3D11RasterizerState* depth_bias_rs_;
 
 	private:
+		XMFLOAT2 projection_near_far_;
+		XMFLOAT2 depth_map_size_;
+
 		RenderTarget* depth_map_rt_ = nullptr;
-		RenderTarget* shadow_map_rt_ = nullptr;
 		VertexShader* depth_map_vs_ = nullptr;
-		VertexShader* shadow_map_vs_ = nullptr;
-		PixelShader* shadow_map_ps_ = nullptr;
+		ID3D11RasterizerState* depth_bias_rs_ = nullptr;
 
 		ID3D11SamplerState* sampler_clamp_ = nullptr;
-		CbSingleShadow cb_single_shadow_;
-		bool depth_map_rendered_ = false;
+		CbProjectionShadow cb_shadow_;
 	};
 
-
-	class DLL_API MultipleShadows
+	class DLL_API CubemapShadow
 	{
 	public:
-		bool Init(XMFLOAT2 near_far, XMFLOAT2 dmap_size, XMFLOAT2 smap_size, string dmap_vs, string smap_vs, string smap_ps);
-		bool CreateDepthMap(XMVECTOR light_pos, XMVECTOR light_dir);
-		void RenderShadowMap();
+		bool Init(XMFLOAT2 near_far, XMFLOAT2 dmap_size, string dmap_vs);
+		bool CreateDepthMap(StaticMeshLevel* level_to_render, XMVECTOR light_pos);
+		void CreateTextureFile();
+		void SetDepthMapSRV(int slot);
 
-
+		ID3D11ShaderResourceView* depth_srvs[6] = {0,};
+		ID3D11RasterizerState* depth_bias_rs_ = nullptr;
+	private:
 		XMFLOAT2 projection_near_far_;
 		XMFLOAT2 depth_map_size_;
-		XMFLOAT2 shadow_map_size_;
-		StaticMeshLevel* static_mesh_level_ = nullptr;
 
-	private:
-		RenderTarget* depth_map_rt_ = nullptr;
-		RenderTarget* shadow_map_rt_ = nullptr;
+		ComPtr<ID3D11RenderTargetView> cubemap_rt_;
+		RenderTarget* depth_map_rts_[6];
 		VertexShader* depth_map_vs_ = nullptr;
-		VertexShader* shadow_map_vs_ = nullptr;
-		PixelShader* shadow_map_ps_ = nullptr;
 
 		ID3D11SamplerState* sampler_clamp_ = nullptr;
-		ID3D11RasterizerState* depth_bias_rs_;
-		vector<ID3D11ShaderResourceView*> depth_map_textures_;
+		CbCubeMapShadow cb_cubemap_shadow_;
 
-		CbMultipleShadows cb_total_shadows_;
+		CbProjectionShadow cb_shadow_[6];
 	};
 }

@@ -75,10 +75,10 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 {
 	DX11APP->GetDeviceContext()->GSSetShader(nullptr, nullptr, 0);
 
-	auto view_stm = reg.view<C_StaticMesh>();
-	auto view_skm = reg.view<C_SkeletalMesh>();
+	const auto& view_stm = reg.view<C_StaticMesh>();
+	const auto& view_skm = reg.view<C_SkeletalMesh>();
 
-	for (auto ent : view_stm)
+	for (auto& ent : view_stm)
 	{
 		if (SCENE_MGR->GetActor<Actor>(ent)->visible) {
 			auto* static_mesh_component = reg.try_get<C_StaticMesh>(ent);
@@ -106,7 +106,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 		}
 	}
 
-	for (auto ent : view_skm)
+	for (auto& ent : view_skm)
 	{
 		if (SCENE_MGR->GetActor<Actor>(ent)->visible) {
 			auto* skeletal_mesh_component = reg.try_get<C_SkeletalMesh>(ent);
@@ -161,7 +161,7 @@ void RenderSystem::RenderStaticMesh(const C_StaticMesh* const static_mesh_compon
 	device_context_->UpdateSubresource(cb_static_mesh_.buffer.Get(), 0, nullptr, &cb_static_mesh_.data, 0, 0);
 	device_context_->VSSetConstantBuffers(1, 1, cb_static_mesh_.buffer.GetAddressOf());
 
-	for (auto single_mesh : static_mesh->meshes)
+	for (const auto& single_mesh : static_mesh->meshes)
 	{
 		Material* material = RESOURCE->UseResource<Material>(single_mesh.mesh_name + ".mat");
 		if (material)

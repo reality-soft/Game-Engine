@@ -12,9 +12,10 @@ namespace reality
 		TransformTree	transform_tree_;
 		int				node_num_;
 		entt::registry* reg_scene_;
+		string tag;
 
-		bool visible = false;
-		bool trigger_sensor = false;
+		bool visible = true;
+
 	public:
 		virtual void OnInit(entt::registry& registry);
 		virtual void OnUpdate();

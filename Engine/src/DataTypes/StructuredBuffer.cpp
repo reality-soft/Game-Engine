@@ -71,7 +71,7 @@ bool reality::StructuredUAV::Create(void* p_data)
 
 	uav_desc.Format = DXGI_FORMAT_UNKNOWN;
 	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	uav_desc.Buffer.NumElements = 64;
+	uav_desc.Buffer.NumElements = byte_width / byte_stride;
 
 	hr = DX11APP->GetDevice()->CreateUnorderedAccessView(buffer.Get(), &uav_desc, uav.GetAddressOf());
 	if (FAILED(hr))

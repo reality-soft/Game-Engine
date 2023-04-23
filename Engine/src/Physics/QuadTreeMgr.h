@@ -45,7 +45,8 @@ namespace reality {
 
 	private:
 		entt::registry* registry_;
-
+		float accmulator = 1.0f / 60.0f;
+		float time_bound = 0.0f;
 	public:
 		void Init(StaticMeshLevel* level_to_devide, entt::registry& reg);
 
@@ -54,7 +55,7 @@ namespace reality {
 		bool CreatePhysicsCS();
 
 		void Frame(CameraSystem* applied_camera);
-		void UpdatePhysics(string cs_id);
+		void UpdatePhysics();
 
 		void Release();
 	public:
@@ -72,7 +73,7 @@ namespace reality {
 		SbCollisionResult result_stbuffer;
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
-		array<SbCollisionResult::Data, 64> collision_result_pool_;
+		array<SbCollisionResult::Data, 32> collision_result_pool_;
 
 		CbTransform capsule_mesh_transform;
 		bool InitCollisionMeshes();
@@ -125,6 +126,13 @@ namespace reality {
 	public:
 		void ImportGuideLines(string mapdat_file, GuideType guide_type);
 		vector<GuideLine>* GetGuideLines(string name);
+
+		void ImportFloydRout(string mapdat_file);
+		map<UINT, FloydRout>& GetFloydRout();
+		vector<TriangleShape>& GetCarTriangles();
+		map<UINT, FloydRout> floyd_routs_;
+		vector<TriangleShape> car_triagnles_;
+
 		void SetBlockingFields(string name);
 		vector<RayShape> blocking_fields_;
 		XMVECTOR player_start_;
