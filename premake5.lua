@@ -89,11 +89,6 @@ project "Engine"
 			"BUILD_DLL"
 		}
 
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} ../../output/bin/" .. outputdir .. "/TestGame"),
-		}
-
 	filter "configurations:Debug"
 		defines "_DEBUG"
 		symbols "On"
