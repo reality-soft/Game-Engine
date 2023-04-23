@@ -8,7 +8,7 @@ void reality::AnimationSystem::OnCreate(entt::registry& reg)
 
 void reality::AnimationSystem::OnUpdate(entt::registry& reg)
 {
-	auto view_anim = reg.view<C_Animation>();
+	const auto& view_anim = reg.view<C_Animation>();
 
 	for (auto ent : view_anim)
 	{
