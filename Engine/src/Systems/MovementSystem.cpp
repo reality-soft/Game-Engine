@@ -21,11 +21,30 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 		if (character == nullptr || movement_component == nullptr || c_capsule == nullptr)
 			return;
 
+
+		float cur_y_axis_speed = movement_component->velocity.m128_f32[1];
+
 		movement_component->velocity.m128_f32[1] = 0.0f;
 		movement_component->velocity.m128_f32[0] += movement_component->accelaration_vector[0] * movement_component->acceleration * TM_DELTATIME;
 		movement_component->velocity.m128_f32[2] += movement_component->accelaration_vector[2] * movement_component->acceleration * TM_DELTATIME;
 
-		XMVector3Transform(movement_component->velocity, character->GetRotation());
+		// deceleration
+		if (movement_component->accelaration_vector[0] == 0 && 0 <= movement_component->velocity.m128_f32[0]) {
+			movement_component->velocity.m128_f32[0] -= movement_component->acceleration * 3 * TM_DELTATIME;
+			movement_component->velocity.m128_f32[0] = max(0.0f, movement_component->velocity.m128_f32[0]);
+		}
+		if (movement_component->accelaration_vector[0] == 0 && 0 >= movement_component->velocity.m128_f32[0]) {
+			movement_component->velocity.m128_f32[0] += movement_component->acceleration * 3 * TM_DELTATIME;
+			movement_component->velocity.m128_f32[0] = min(0.0f, movement_component->velocity.m128_f32[0]);
+		}
+		if (movement_component->accelaration_vector[2] == 0 && 0 <= movement_component->velocity.m128_f32[2]) {
+			movement_component->velocity.m128_f32[2] -= movement_component->acceleration * 3 * TM_DELTATIME;
+			movement_component->velocity.m128_f32[2] = max(0.0f, movement_component->velocity.m128_f32[2]);
+		}
+		if (movement_component->accelaration_vector[2] == 0 && 0 >= movement_component->velocity.m128_f32[2]) {
+			movement_component->velocity.m128_f32[2] += movement_component->acceleration * 3 * TM_DELTATIME;
+			movement_component->velocity.m128_f32[2] = min(0.0f, movement_component->velocity.m128_f32[2]);
+		}
 
 		movement_component->speed = XMVector3Length(movement_component->velocity).m128_f32[0];
 		if (movement_component->speed >= movement_component->max_speed) {
@@ -34,18 +53,16 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 			movement_component->speed = movement_component->max_speed;
 		}
 
-		XMVECTOR jump_vector    = XMVectorSet(0,  1, 0, 0) * movement_component->jump_pulse    * TM_DELTATIME;
-		XMVECTOR gravity_vector = XMVectorSet(0, -1, 0, 0) * movement_component->gravity_pulse * TM_DELTATIME;
+		if (movement_component->jump_pulse > 0.0f) {
+			int i = 0;
+		}
 
-		movement_component->velocity += jump_vector + gravity_vector;
-		movement_component->gravity_pulse = min(movement_component->gravity_pulse, 981.0f);
+		cur_y_axis_speed += movement_component->jump_pulse - movement_component->gravity_pulse * TM_DELTATIME;
+
+		movement_component->velocity.m128_f32[1] = cur_y_axis_speed;
+
+		XMVECTOR cur_velocity = XMVector3Transform(movement_component->velocity, character->GetRotation());
 	
-		if (movement_component->gravity_pulse >= movement_component->jump_pulse && movement_component->jump_pulse > 0.001f)
-		{
-			movement_component->jump_pulse = 0.0f;
-			movement_component->gravity_pulse = 0.0f;
-		}	
-
 		for (int i = 0; i < 4; ++i)
 		{
 			auto plane = character->blocking_planes_[i];
@@ -55,8 +72,8 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 
 			XMVECTOR plane_normal = XMVectorSet(plane.x, plane.y, plane.z, 0);
 
-			if (XMVectorGetX(XMVector3Dot(plane_normal, movement_component->velocity)) < 0.0f)
-				movement_component->velocity = VectorProjectPlane(movement_component->velocity, plane_normal);
+			if (XMVectorGetX(XMVector3Dot(plane_normal, cur_velocity)) < 0.0f)
+				cur_velocity = VectorProjectPlane(cur_velocity, plane_normal);
 		}
 		for (const auto& block_ray : QUADTREE->blocking_fields_)
 		{
@@ -72,13 +89,13 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 				XMVECTOR plane_normal = -1.0f * XMPlaneFromPoints(_XMVECTOR3(ray.start), _XMVECTOR3(ray.start) + XMVectorSet(0, 10000, 0, 0), _XMVECTOR3(ray.end));
 				plane_normal.m128_f32[3] = 0.0f;
 
-				if (XMVectorGetX(XMVector3Dot(plane_normal, movement_component->velocity)) < 0.0f)
-					movement_component->velocity = VectorProjectPlane(movement_component->velocity, plane_normal);
+				if (XMVectorGetX(XMVector3Dot(plane_normal, cur_velocity)) < 0.0f)
+					cur_velocity = VectorProjectPlane(cur_velocity, plane_normal);
 			}
 		}
 
 		XMVECTOR character_cur_postion = character->GetCurPosition();
-		character_cur_postion += movement_component->velocity;
+		character_cur_postion += cur_velocity * TM_DELTATIME;
 
 		if (movement_component->jump_pulse <= 0)
 		{
@@ -86,11 +103,11 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 				character_cur_postion.m128_f32[1] = character->floor_position.y;
 		}
 
-
 		character->ApplyMovement(character_cur_postion);
 
 		movement_component->accelaration_vector[0] = 0;
 		movement_component->accelaration_vector[1] = 0;
 		movement_component->accelaration_vector[2] = 0;
+		movement_component->jump_pulse = 0;
 	}
 }
