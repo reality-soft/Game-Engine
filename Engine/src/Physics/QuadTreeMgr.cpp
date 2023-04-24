@@ -944,7 +944,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 		{
 		case 0: 
 			character->movement_state_ = MovementState::FALL;
-			character->GetMovementComponent()->gravity_pulse = 200.0f;
+			character->GetMovementComponent()->gravity_pulse = 300.0f;
 			break;
 		case 1: 
 			character->movement_state_ = MovementState::WALK;
@@ -953,7 +953,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 			break;
 		case 2: 
 			character->movement_state_ = MovementState::FALL;
-			character->GetMovementComponent()->gravity_pulse = 200.0f;
+			character->GetMovementComponent()->gravity_pulse = 300.0f;
 			break;
 		case 3:
 			character->movement_state_ = MovementState::WALK;
