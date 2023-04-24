@@ -58,6 +58,22 @@ static float RandomFloatInRange(float min, float max)
 	return min + (scaled * (max - min));
 }
 
+static void RandomMarginFloat(float& f, float margin, bool up, bool down)
+{
+	if (up)
+	{
+		f += RandomFloatInRange(0, margin);
+	}
+	else if (down)
+	{
+		f -= RandomFloatInRange(0, margin);
+	}
+	else
+	{
+		f += RandomFloatInRange(-margin / 2, margin / 2);
+	}
+}
+
 static DirectX::XMVECTOR RandomPointInBox(const DirectX::XMVECTOR& center, const DirectX::XMVECTOR& half_size)
 {
 	srand(time(NULL));
