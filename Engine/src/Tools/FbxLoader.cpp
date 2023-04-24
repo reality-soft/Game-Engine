@@ -2,7 +2,7 @@
 #include "FbxLoader.h"
 #include "Material.h"
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 namespace reality {
 
 	void FbxLoader::Destroy()

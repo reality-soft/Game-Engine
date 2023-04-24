@@ -9,7 +9,7 @@
 #pragma warning(disable : 26495)
 #pragma warning(disable : 26451)
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 #include <fbxsdk.h>
 #endif
 #include <fmod.hpp>

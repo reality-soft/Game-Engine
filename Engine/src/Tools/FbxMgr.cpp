@@ -4,7 +4,7 @@
 #include "ResourceMgr.h"
 #include "Dx11App.h"
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options, FbxVertexOption vertex_option)
 {
     FbxLoader fbx_loader;
@@ -464,7 +464,7 @@ bool reality::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
     return true;
 }
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 void reality::FbxMgr::ReCalculateNormal(StaticMesh& static_mesh, FbxVertexOption vertex_option)
 {
     for (auto& mesh : static_mesh.meshes)

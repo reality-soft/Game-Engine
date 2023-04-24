@@ -2,7 +2,7 @@
 #include "FbxOutData.h"
 #include "DllMacro.h"
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 namespace reality {
 	struct FbxImportOption
 	{
