@@ -26,12 +26,12 @@ namespace reality
 	protected:
 		virtual void UpdateThisUI();
 		virtual void RenderThisUI();
-		void UpdateRectTransform();
 	public:
 		void AddChildUI(string name, shared_ptr<UIBase> child_ui);
 		void DeleteChildUI(string name);
 		E_UIState GetCurrentState();
 		void SetCurrentState(E_UIState state);
+		void UpdateRectTransform();
 	public:
 		bool GetOnOff();
 		void On();

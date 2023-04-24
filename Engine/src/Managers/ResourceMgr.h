@@ -7,6 +7,11 @@
 #include "Material.h"
 #include "Effect.h"
 
+#define LOCK_MUTEX_RESOURCE(dir, method)\
+resource_mutex.lock();\
+LoadDir((dir), (method));\
+resource_mutex.unlock();\
+
 namespace reality
 {
 	class DLL_API ResourceMgr
@@ -55,6 +60,11 @@ namespace reality
 		void PushAnimation(const map<string, OutAnimData>& animation);
 
 	private:
+		mutex resource_mutex;
+	public:
+		mutex& GetResourceMutex() { return resource_mutex; }
+
+	private:
 		string current_id;
 
 		unordered_map<string, StaticMesh>			resdic_static_mesh;
@@ -76,15 +86,15 @@ namespace reality
 		unordered_map<string, shared_ptr<BaseLight>> resdic_light;
 
 	private:
-		bool ImportShaders(string filename);
 		bool ImportSound(string filename);
-		bool ImportTexture(string filename);
 		bool ImportMaterial(string filename);
 		bool ImportSKM(string filename);
 		bool ImportSTM(string filename);
 		bool ImportANIM(string filename);
 		bool ImportLight(string filename);
 	public:
+		bool ImportShaders(string filename);
+		bool ImportTexture(string filename);
 		bool ImportSprite(string filename);
 		bool SaveSprite(string name, shared_ptr<Sprite> new_sprite);
 		bool ImportEffect(string filename);

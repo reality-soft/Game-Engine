@@ -87,7 +87,7 @@ project "Engine"
 		{
 			"PLATFORM_WINDOWS",
 			"BUILD_DLL",
-			"_ITERATOR_DEBUG_LEVEL=2"
+			"_ITERATOR__DEBUGLEVEL=2"
 		}
 
 		libdirs
@@ -116,7 +116,7 @@ project "Engine"
 		{
 			"PLATFORM_WINDOWS",
 			"BUILD_DLL",
-			"_ITERATOR_DEBUG_LEVEL=0"
+			"_ITERATOR__DEBUGLEVEL=0"
 		}
 
 

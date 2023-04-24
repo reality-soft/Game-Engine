@@ -6,9 +6,10 @@ namespace reality {
     enum E_SceneType
     {
         SCENE_NONE = 0,
-        START = 1,
-        LOADING = 2,
-        INGAME = 3,
+        POP = 1,
+        START = 2,
+        LOADING = 3,
+        INGAME = 4,
     };
 
     class DLL_API SceneMgr {
