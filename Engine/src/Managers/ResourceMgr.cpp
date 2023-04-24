@@ -28,16 +28,28 @@ void ResourceMgr::Release()
 
 void ResourceMgr::LoadAllResource()
 {
-    LoadDir(directory_ + "/SKM/", &ResourceMgr::ImportSKM);
-    LoadDir(directory_ + "/STM/", &ResourceMgr::ImportSTM);
-    LoadDir(directory_ + "/ANIM/", &ResourceMgr::ImportANIM);
-    LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
-    LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
-    LoadDir(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
-    LoadDir(directory_ + "/Material/", &ResourceMgr::ImportMaterial);
-    LoadDir(directory_ + "/Sprite/", &ResourceMgr::ImportSprite);
-    LoadDir(directory_ + "/Effect/", &ResourceMgr::ImportEffect);
-    LoadDir(directory_ + "/Light/", &ResourceMgr::ImportLight);
+    LOCK_MUTEX_RESOURCE(directory_ + "/SKM/", &ResourceMgr::ImportSKM);
+    LOCK_MUTEX_RESOURCE(directory_ + "/STM/", &ResourceMgr::ImportSTM);
+    LOCK_MUTEX_RESOURCE(directory_ + "/ANIM/", &ResourceMgr::ImportANIM);
+    LOCK_MUTEX_RESOURCE(directory_ + "/Sound/", &ResourceMgr::ImportSound);
+    LOCK_MUTEX_RESOURCE(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
+    LOCK_MUTEX_RESOURCE(directory_ + "/Material/", &ResourceMgr::ImportMaterial);
+    LOCK_MUTEX_RESOURCE(directory_ + "/Sprite/", &ResourceMgr::ImportSprite);
+    LOCK_MUTEX_RESOURCE(directory_ + "/Effect/", &ResourceMgr::ImportEffect);
+    LOCK_MUTEX_RESOURCE(directory_ + "/Light/", &ResourceMgr::ImportLight);
+
+    //resource_mutex.lock();
+    //LoadDir(directory_ + "/SKM/", &ResourceMgr::ImportSKM);
+    //LoadDir(directory_ + "/STM/", &ResourceMgr::ImportSTM);
+    //LoadDir(directory_ + "/ANIM/", &ResourceMgr::ImportANIM);
+    ////LoadDir(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
+    //LoadDir(directory_ + "/Sound/", &ResourceMgr::ImportSound);
+    //LoadDir(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
+    //LoadDir(directory_ + "/Material/", &ResourceMgr::ImportMaterial);
+    //LoadDir(directory_ + "/Sprite/", &ResourceMgr::ImportSprite);
+    //LoadDir(directory_ + "/Effect/", &ResourceMgr::ImportEffect);
+    //LoadDir(directory_ + "/Light/", &ResourceMgr::ImportLight);
+    //resource_mutex.unlock();
 }
 
 void ResourceMgr::LoadDir(string path, Load_Func load_func)

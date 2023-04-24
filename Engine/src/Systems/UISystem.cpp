@@ -54,11 +54,12 @@ void UISystem::OnUpdate(entt::registry& reg)
 		{
 			pair.second->Update();
 		}
-
+		RESOURCE->GetResourceMutex().lock();
 		for (auto& pair : ui_comp.ui_list)
 		{
 			pair.second->Render();
 		}
+		RESOURCE->GetResourceMutex().unlock();
 	}
 
 	// 백버퍼에 UI 랜더타겟 랜더링
