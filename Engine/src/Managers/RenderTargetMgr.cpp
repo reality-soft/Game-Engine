@@ -274,8 +274,18 @@ shared_ptr<RenderTarget> RenderTargetMgr::LoadRT(std::string rtname)
 	}
 }
 
-void RenderTargetMgr::DeletingRT()
+bool RenderTargetMgr::DeletingRT(std::string rtname)
 {
+	auto iter = resdic_render_target_.find(rtname);
+	if (iter != resdic_render_target_.end())
+	{
+		resdic_render_target_.erase("rtname");
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void RenderTargetMgr::ResettingRT()

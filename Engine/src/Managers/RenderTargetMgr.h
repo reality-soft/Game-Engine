@@ -60,7 +60,7 @@ namespace reality
 		shared_ptr<RenderTarget> MakeRT(std::string rtname, float rtWidth, float rtHeight);
 		shared_ptr<RenderTarget> LoadRT(std::string rtname);
 	public:
-		void	DeletingRT();
+		bool	DeletingRT(string name);
 		void	ResettingRT();
 	};
 }
