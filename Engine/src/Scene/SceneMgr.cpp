@@ -33,7 +33,6 @@ namespace reality{
 	{
 		if (scenes.find(scene_to_change_) != scenes.end())
 		{
-				cur_scene_->OnRelease();
 			cur_scene_ = scenes[scene_to_change_];
 			COMPONENT->OnInit(cur_scene_->GetRegistryRef());
 		}
