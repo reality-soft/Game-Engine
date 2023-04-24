@@ -7,7 +7,7 @@
 #include "SceneMgr.h"
 #include "FmodMgr.h"
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 
@@ -17,7 +17,7 @@ LRESULT CALLBACK WindowProc(
 	WPARAM wParam,
 	LPARAM lParam)
 {
-#ifdef DEBUG_
+#ifdef _DEBUG
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
 #endif
@@ -32,7 +32,7 @@ LRESULT CALLBACK WindowProc(
 		//ENGINE->OnResized();
 		break;
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 	case WM_DPICHANGED:
 		if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
 		{
@@ -75,7 +75,7 @@ namespace reality {
 		if (DX11APP->OnInit(screen_size, hwnd) == false)
 			return false;
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
 #endif		
 		DINPUT->Init();
