@@ -4,14 +4,15 @@ namespace reality {
 
 	enum E_Resolution
 	{
-		R1920x1080 = 0,
-		R1280x720 = 1,
+		RPOP = 0,
+		R1920x1080 = 1,
+		R1280x720 = 2,
 		RESOLUTION_COUNT,
 	};
 
-	static const string E_Resolution_String[] = { "1920 X 1080", "1280 X 720" };
-	static POINT  E_Resolution_Size[] = { { 1920, 1080 }, { 1280, 720 } };
-	static const float  E_Resolution_Multiply[] = { 1.0f, 2.0f / 3.0f };
+	static const string E_Resolution_String[] = { "POP", "1920 X 1080", "1280 X 720" };
+	static POINT  E_Resolution_Size[] = { { 600, 400 }, { 1920, 1080 }, { 1280, 720 } };
+	static const float  E_Resolution_Multiply[] = { 1.0f, 1.0f, 2.0f / 3.0f };
 
 	class DLL_API Engine
 	{

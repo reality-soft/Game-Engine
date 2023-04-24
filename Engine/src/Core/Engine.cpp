@@ -54,18 +54,7 @@ namespace reality {
 		
 		current_resolution = resolution;
 
-		switch (resolution)
-		{
-		case E_Resolution::R1920x1080:
-			screen_size = { 1920, 1080 };
-			break;
-		case E_Resolution::R1280x720:
-			screen_size = { 1280, 720 };
-			break;
-		default:
-			screen_size = { 1920, 1080 };
-			break;
-		}
+		screen_size = E_Resolution_Size[resolution];
 
 		// À©µµ¿ì ÃÊ±âÈ­
 		if (InitWindow(hinstance, title, screen_size, titlebar) == false)
@@ -136,33 +125,22 @@ namespace reality {
 
 	void Engine::Resize(E_Resolution new_resolution)
 	{
-		POINT screen_size = { 0, 0 };
-
 		current_resolution = new_resolution;
 
-		switch (new_resolution)
-		{
-		case E_Resolution::R1920x1080:
-			screen_size = { 1920, 1080 };
-			break;
-		case E_Resolution::R1280x720:
-			screen_size = { 1280, 720 };
-			break;
-		default:
-			screen_size = { 1920, 1080 };
-			break;
-		}
+		POINT screen_size = E_Resolution_Size[new_resolution];
 
-		SetWindowPos(hwnd, NULL, GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2, screen_size.x, screen_size.y, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+		int x = GetSystemMetrics(SM_CXSCREEN) / 2 - screen_size.x / 2;
+		int y = GetSystemMetrics(SM_CYSCREEN) / 2 - screen_size.y / 2;
+
+		SetWindowPos(hwnd, NULL, x, y, screen_size.x, screen_size.y, SWP_NOZORDER | SWP_FRAMECHANGED);
 
 		RECT new_rc;
 		GetClientRect(hwnd, &new_rc);
 		wnd_size.x = new_rc.right - new_rc.left;
 		wnd_size.y = new_rc.bottom - new_rc.top;
 
-		E_Resolution_Size[new_resolution] = { wnd_size.x, wnd_size.y };
-
 		DX11APP->Resize(wnd_size.x, wnd_size.y);
+
 	}
 
 	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size, bool titlebar)
