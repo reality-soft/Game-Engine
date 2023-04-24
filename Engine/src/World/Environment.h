@@ -30,7 +30,7 @@ namespace reality
 		void SetFogDistanceByTime(float start_distance, float end_distance);
 		void SetLightProperty(float _min_brightness, float _max_specular);
 
-		void Update(CameraSystem* sys_camera, LightingSystem* sys_lighting);
+		void Update(XMVECTOR camera_pos, LightingSystem* sys_lighting);
 		void Render();
 
 	public:
