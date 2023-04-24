@@ -40,7 +40,7 @@ void reality::Environment::SetLightProperty(float _min_brightness, float _max_sp
 	max_specular_strength_ = _max_specular;
 }
 
-void reality::Environment::Update(CameraSystem* sys_camera, LightingSystem* sys_lighting)
+void reality::Environment::Update(XMVECTOR camera_pos, LightingSystem* sys_lighting)
 {
 	switch (time_routin_)
 	{
@@ -72,7 +72,7 @@ void reality::Environment::Update(CameraSystem* sys_camera, LightingSystem* sys_
 	distance_fog_.Update(lerp_value);
 	sys_lighting->UpdateGlobalLight(lerp_value, min_directional_bright_, max_specular_strength_);
 
-	distance_fog_.UpdateFogStart(sys_camera->GetCamera()->camera_pos);
+	distance_fog_.UpdateFogStart(camera_pos);
 	distance_fog_.UpdateFogColor(sky_sphere_.GetSkyColor());
 
 }
