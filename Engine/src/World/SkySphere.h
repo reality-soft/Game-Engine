@@ -13,7 +13,7 @@ namespace reality
 
 	public:
 		bool CreateSphere();
-		void Update(XMFLOAT2 world_time, float current_time);
+		void Update(float lerp_value);
 		void Render();
 
 		void SetNoonColor(XMFLOAT4 _color);
