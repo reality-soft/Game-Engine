@@ -13,7 +13,7 @@ void reality::C_CapsuleCollision::SetCapsuleData(XMFLOAT3 offset, float height, 
 {
 	capsule = reality::CapsuleShape(offset, height, radius);
 	local = XMMatrixTranslationFromVector(_XMVECTOR3(capsule.base));
-	world = world * local;
+	world = XMMatrixIdentity();
 }
 
 void reality::C_CapsuleCollision::OnUpdate()
@@ -172,24 +172,28 @@ XMMATRIX reality::C_Animation::GetCurAnimMatirixOfBone(int bone_id)
 void reality::TransformTreeNode::OnUpdate(entt::registry& registry, entt::entity entity, XMMATRIX world)
 {
 	C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
-	cur_transform->world = world;
+	cur_transform->world = cur_transform->local * world;
 	cur_transform->OnUpdate();
 
 	for (auto child : children) {
-		child->OnUpdate(registry, entity, world * cur_transform->local);
+		child->OnUpdate(registry, entity, cur_transform->world);
 	}
 }
 
 void reality::TransformTreeNode::Rotate(entt::registry& registry, entt::entity entity, XMVECTOR rotation_center, XMMATRIX rotation_matrix)
 {
 	C_Transform* cur_transform = static_cast<C_Transform*>(registry.storage(id_type)->get(entity));
+
 	XMVECTOR world_scale, world_rotation, world_translation;
 	XMMatrixDecompose(&world_scale, &world_rotation, &world_translation, cur_transform->world);
+
+	XMVECTOR local_scale, local_rotation, local_translation;
+	XMMatrixDecompose(&local_scale, &local_rotation, &local_translation, cur_transform->local);
 
 	if (id_type != TYPE_ID(C_Camera)) {
 		cur_transform->world *= XMMatrixTranslationFromVector(-rotation_center);
 		cur_transform->world *= XMMatrixInverse(0, XMMatrixRotationQuaternion(world_rotation));
-		cur_transform->world *= rotation_matrix;
+		cur_transform->world *= XMMatrixRotationQuaternion(local_rotation) * rotation_matrix;
 		cur_transform->world *= XMMatrixTranslationFromVector(rotation_center);
 	}
 

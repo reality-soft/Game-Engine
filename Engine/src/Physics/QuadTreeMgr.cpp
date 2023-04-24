@@ -405,6 +405,9 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 
 	visible_nodes = 0;
 	NodeCulling(root_node_);
+
+	XMFLOAT2 camera_pitch_yaw = applied_camera->GetCamera()->pitch_yaw;
+	camera_rotation_ = XMMatrixRotationRollPitchYaw(camera_pitch_yaw.x, camera_pitch_yaw.y, 0);	
 }
 
 void reality::QuadTreeMgr::Release()
