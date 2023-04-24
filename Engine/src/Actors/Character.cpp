@@ -17,11 +17,6 @@ void reality::Character::OnUpdate()
 	transform_tree_.root_node->Rotate(*reg_scene_, entity_id_, cur_position_, rotation_);
 }
 
-void reality::Character::GravityFall(float _gravity)
-{
-	movement_component_->gravity_pulse += _gravity;
-}
-
 void reality::Character::CancelMovement()
 {
 	movement_component_->velocity = { 0.0f, 0.0f, 0.0f, 0.0f };

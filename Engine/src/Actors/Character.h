@@ -32,7 +32,6 @@ namespace reality
 
 	public:
 		C_Movement* GetMovementComponent() { return movement_component_; }
-		void GravityFall(float _gravity);		
 		void SetPos(const XMVECTOR& position);
 		XMMATRIX GetRotation();
 
