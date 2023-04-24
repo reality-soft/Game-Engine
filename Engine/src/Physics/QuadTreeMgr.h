@@ -84,7 +84,7 @@ namespace reality {
 	public:
 		UINT visible_nodes = 0;
 		UINT raycast_calculated = 0;
-
+		XMMATRIX camera_rotation_;
 		// Physics Tree
 	private:
 		void RunPhysicsCS(string cs_id);
