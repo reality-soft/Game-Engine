@@ -1,5 +1,5 @@
 #pragma once
-#ifdef DEBUG_
+#ifdef _DEBUG
 #include "stdafx.h"
 #include "DllMacro.h"
 #include "DX11App.h"

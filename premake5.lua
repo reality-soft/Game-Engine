@@ -77,11 +77,6 @@ project "Engine"
 		staticruntime "off"
 		systemversion "latest"
 
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} ../../output/bin/" .. outputdir .. "/TestGame"),
-		}
-
 	filter "configurations:Debug"
 		defines "_DEBUG"
 		staticruntime "off"
@@ -92,7 +87,7 @@ project "Engine"
 		{
 			"PLATFORM_WINDOWS",
 			"BUILD_DLL",
-			"_ITERATOR_DEBUG_LEVEL=2"
+			"_ITERATOR__DEBUGLEVEL=2"
 		}
 
 		libdirs
@@ -121,7 +116,7 @@ project "Engine"
 		{
 			"PLATFORM_WINDOWS",
 			"BUILD_DLL",
-			"_ITERATOR_DEBUG_LEVEL=0"
+			"_ITERATOR__DEBUGLEVEL=0"
 		}
 
 

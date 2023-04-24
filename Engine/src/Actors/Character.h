@@ -18,6 +18,9 @@ namespace reality
 		XMVECTOR	 fall_ = { 0, -1, 0, 0 };
 		XMVECTOR	 jump_ =  { 0, 1, 0, 0 };
 
+	protected:
+		XMMATRIX rotation_ = XMMatrixIdentity();
+
 	public:
 		XMFLOAT3 floor_position = {0, 0, 0};
 		MovementState movement_state_;
@@ -26,13 +29,13 @@ namespace reality
 	public:
 		void OnInit(entt::registry& registry) override;
 		void OnUpdate() override;
-		C_Movement* GetMovementComponent() { return movement_component_; }
-		void GravityFall(float _gravity);
-		void CancelMovement();
 
 	public:
-		XMVECTOR GetPos() const;
+		C_Movement* GetMovementComponent() { return movement_component_; }
 		void SetPos(const XMVECTOR& position);
-		void RotateAlongMovementDirection();
+		XMMATRIX GetRotation();
+
+	public:
+		void CancelMovement();
 	};
 }

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GUIMgr.h"
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 using namespace reality;
 
 void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)

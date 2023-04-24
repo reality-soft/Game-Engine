@@ -12,7 +12,7 @@ namespace reality
 	public:	
 		void OnCreate(entt::registry& reg) override;
 		void OnUpdate(entt::registry& reg) override;
-		void UpdateGlobalLight(XMFLOAT2 world_time, float current_time, float min_bright, float max_specular);
+		void UpdateGlobalLight(float lerp_value, float min_bright, float max_specular);
 		CbGlobalLight::Data GetGlobalLightData();
 		void SetGlobalLightPos(XMFLOAT3 position);
 

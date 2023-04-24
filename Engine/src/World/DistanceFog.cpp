@@ -42,27 +42,9 @@ void reality::DistanceFog::UpdateFogColor(XMFLOAT4 color)
 	cb_fog_.data.fog_color = color;
 }
 
-void reality::DistanceFog::Update(XMFLOAT2 world_time, float current_time)
+void reality::DistanceFog::Update(float lerp_value)
 {
-	float half_noon = world_time.x / 2;
-	float half_night = world_time.y / 2;
-
-	if (current_time > half_noon)
-		cb_fog_.data.distance = max_distance_;
-
-	else if (current_time < half_night)
-		cb_fog_.data.distance = min_distance_;
-
-	else if (current_time <= half_noon && current_time >= half_night)
-	{
-		float a = half_noon - half_night;
-		float b = half_night - half_night;
-		float ct = current_time - half_night;
-		float lerp = ct / (a + b);
-
-		cb_fog_.data.distance = min_distance_ + (max_distance_ - min_distance_) * lerp;
-	}
-
+	cb_fog_.data.distance = min_distance_ + (max_distance_ - min_distance_) * lerp_value;
 }
 
 void reality::DistanceFog::Render()

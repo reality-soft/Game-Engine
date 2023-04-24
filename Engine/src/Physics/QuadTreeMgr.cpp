@@ -267,6 +267,49 @@ vector<GuideLine>* reality::QuadTreeMgr::GetGuideLines(string name)
 		return &guide_lines_.find(name)->second;
 }
 
+void reality::QuadTreeMgr::ImportFloydRout(string mapdat_file)
+{
+	FileTransfer out_mapdata(mapdata_dir + mapdat_file, READ);
+
+	UINT num_routs;
+	out_mapdata.ReadBinary<UINT>(num_routs);
+
+	for (UINT i = 0; i < num_routs; ++i)
+	{
+		FloydRout new_rout;
+
+		out_mapdata.ReadBinary<float>(new_rout.distance);
+		out_mapdata.ReadBinary<UINT>(new_rout.start_index);
+		out_mapdata.ReadBinary<UINT>(new_rout.dest_index);
+		out_mapdata.ReadBinary<UINT>(new_rout.trans_index);
+		out_mapdata.ReadBinary<XMVECTOR>(new_rout.start);
+		out_mapdata.ReadBinary<XMVECTOR>(new_rout.dest);
+		out_mapdata.ReadBinary<XMVECTOR>(new_rout.trans);
+
+		floyd_routs_.insert(make_pair(i, new_rout));
+	}
+
+	for (const auto& tri : deviding_level_->level_triangles)
+	{
+		if (tri.index == 11102 || tri.index == 11103 ||
+			tri.index == 11104 || tri.index == 11105 ||
+			tri.index == 11106 || tri.index == 11107 ||
+			tri.index == 11108 || tri.index == 11109)
+			car_triagnles_.push_back(tri);
+	}
+	
+}
+
+map<UINT, FloydRout>& reality::QuadTreeMgr::GetFloydRout()
+{
+	return floyd_routs_;
+}
+
+vector<TriangleShape>& reality::QuadTreeMgr::GetCarTriangles()
+{
+	return car_triagnles_;
+}
+
 void reality::QuadTreeMgr::SetBlockingFields(string name)
 {
 	vector<GuideLine>* guide_lines_ = GetGuideLines(name);
@@ -362,6 +405,9 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 
 	visible_nodes = 0;
 	NodeCulling(root_node_);
+
+	XMFLOAT2 camera_pitch_yaw = applied_camera->GetCamera()->pitch_yaw;
+	camera_rotation_ = XMMatrixRotationRollPitchYaw(camera_pitch_yaw.x, camera_pitch_yaw.y, 0);	
 }
 
 void reality::QuadTreeMgr::Release()
@@ -375,13 +421,13 @@ void reality::QuadTreeMgr::Release()
 	leaf_nodes_.clear();
 }
 
-void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
+void reality::QuadTreeMgr::UpdatePhysics()
 {
 	capsule_stbuffer.elements.clear();
 	sphere_stbuffer.elements.clear();
 
-	capsule_stbuffer.elements.resize(64);
-	sphere_stbuffer.elements.resize(64);
+	capsule_stbuffer.elements.resize(32);
+	sphere_stbuffer.elements.resize(32);
 
 	UINT capsule_index = 0;
 	for (auto& dynamic_capsule : dynamic_capsule_list)
@@ -410,9 +456,11 @@ void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 				capsule_stbuffer.elements[capsule_index].node_numbers[i] = queried_nodes[i]->node_num;
 		}
 
-		capsule_index++;
+		auto actor = SCENE_MGR->GetActor<Actor>(dynamic_capsule.first);
+		if (actor)
+			actor->visible = queried_nodes[0]->visible;
 
-		SCENE_MGR->GetActor<Actor>(dynamic_capsule.first)->visible = queried_nodes[0]->visible;
+		capsule_index++;
 	}
 
 	UINT sphere_index = 0;
@@ -440,15 +488,17 @@ void reality::QuadTreeMgr::UpdatePhysics(string cs_id)
 				sphere_stbuffer.elements[sphere_index].node_numbers[i] = queried_nodes[i]->node_num;
 		}
 
-		sphere_index++;
+		auto actor = SCENE_MGR->GetActor<Actor>(dynamic_sphere.first);
+		if (actor)
+			actor->visible = queried_nodes[0]->visible;
 
-		SCENE_MGR->GetActor<Actor>(dynamic_sphere.first)->visible = queried_nodes[0]->visible;
+		sphere_index++;
 	}
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(capsule_stbuffer.buffer.Get(), 0, 0, capsule_stbuffer.elements.data(), 0, 0);
 	DX11APP->GetDeviceContext()->UpdateSubresource(sphere_stbuffer.buffer.Get(), 0, 0, sphere_stbuffer.elements.data(), 0, 0);
 
-	RunPhysicsCS(cs_id);
+	RunPhysicsCS("PhysicsCS.cso");
 	MovementByPhysicsCS();
 	SphereUpdateByPhysicsCS();
 }
@@ -488,8 +538,7 @@ SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_CapsuleCollision* c_capsule, 
 	if (node == nullptr)
 		return root_node_;
 
-	auto capsule_shape = c_capsule->capsule;
-	auto result = CapsuleToAABB(node->area, capsule_shape);
+	auto result = CapsuleToAABB(node->area, c_capsule->capsule);
 
 	if (result == CollideType::INSIDE)
 		return node;
@@ -503,8 +552,7 @@ SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_SphereCollision* c_sphere, Sp
 	if (node == nullptr)
 		return root_node_;
 
-	auto sphere_shape = c_sphere->sphere;
-	auto result = SphereToAABB(sphere_shape, node->area);
+	auto result = SphereToAABB(c_sphere->sphere, node->area);
 
 	if (result == CollideType::INSIDE)
 		return node;
@@ -515,8 +563,7 @@ SpaceNode* reality::QuadTreeMgr::ParentNodeQuery(C_SphereCollision* c_sphere, Sp
 
 bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& node_list)
 {
-	auto capsule_shape = c_capsule->capsule;
-	auto result = CapsuleToAABB(node->area, capsule_shape);
+	auto result = CapsuleToAABB(node->area, c_capsule->capsule);
 
 	if (node == root_node_ && result != CollideType::INSIDE)
 	{
@@ -549,8 +596,7 @@ bool reality::QuadTreeMgr::LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNod
 
 bool reality::QuadTreeMgr::LeafNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& node_list)
 {
-	auto sphere_shape = c_sphere->sphere;
-	auto result = SphereToAABB(sphere_shape, node->area);
+	auto result = SphereToAABB(c_sphere->sphere, node->area);
 
 	if (node == root_node_ && result != CollideType::INSIDE)
 	{
@@ -583,8 +629,7 @@ bool reality::QuadTreeMgr::LeafNodeQuery(C_SphereCollision* c_sphere, SpaceNode*
 
 bool reality::QuadTreeMgr::IncludingNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes)
 {
-	auto& sphere = c_sphere->sphere;
-	CollideType result = SphereToAABB(sphere, node->area);
+	CollideType result = SphereToAABB(c_sphere->sphere, node->area);
 
 	if (node == root_node_ && result != CollideType::INSIDE)
 		return false;
@@ -683,7 +728,7 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 {
 	map<float, RayCallback> callback_list;
 	raycast_calculated = 0;
-
+	
 	RaycastNodeQuery(ray, root_node_, callback_list);
 
 	for (auto& item : dynamic_capsule_list)
@@ -711,7 +756,7 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 
 bool reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 {
-	if (dynamic_capsule_list.size() >= 64)
+	if (dynamic_capsule_list.size() >= 32)
 		return false;
 
 	auto capsule_collision = registry_->try_get<C_CapsuleCollision>(ent);
@@ -723,7 +768,7 @@ bool reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 
 bool reality::QuadTreeMgr::RegistDynamicSphere(entt::entity ent)
 {
-	if (dynamic_sphere_list.size() >= 64)
+	if (dynamic_sphere_list.size() >= 32)
 		return false;
 
 	auto sphere_collision = registry_->try_get<C_SphereCollision>(ent);
@@ -779,15 +824,15 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 	if (triangle_stbuffer.Create(triangle_stbuffer.elements.data()) == false)
 		return false;
 
-	capsule_stbuffer.SetElementArraySize(64);
+	capsule_stbuffer.SetElementArraySize(32);
 	if (capsule_stbuffer.Create(capsule_stbuffer.elements.data()) == false)
 		return false;
 
-	sphere_stbuffer.SetElementArraySize(64);
+	sphere_stbuffer.SetElementArraySize(32);
 	if (sphere_stbuffer.Create(sphere_stbuffer.elements.data()) == false)
 		return false;
 
-	result_stbuffer.SetElementArraySize(64);
+	result_stbuffer.SetElementArraySize(32);
 	if (result_stbuffer.Create(result_stbuffer.elements.data()) == false)
 		return false;
 
@@ -796,7 +841,7 @@ bool reality::QuadTreeMgr::CreatePhysicsCS()
 	D3D11_BUFFER_DESC buffer_desc;
 
 	ZeroMemory(&buffer_desc, sizeof(buffer_desc));
-	buffer_desc.ByteWidth = sizeof(SbCollisionResult::Data) * 64;
+	buffer_desc.ByteWidth = sizeof(SbCollisionResult::Data) * 32;
 	buffer_desc.Usage = D3D11_USAGE_STAGING;
 	buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
@@ -923,40 +968,37 @@ void reality::QuadTreeMgr::RunPhysicsCS(string cs_id)
 	DX11APP->GetDeviceContext()->Unmap(staging_buffer_.Get(), 0);
 
 	SbCollisionResult::Data* sum = reinterpret_cast<SbCollisionResult::Data*>(mapped_resource.pData);
-	memcpy(collision_result_pool_.data(), sum, 64 * sizeof(SbCollisionResult::Data));
-	UINT size = 64 * sizeof(SbCollisionResult::Data);
-	mapped_resource.RowPitch;
-
+	memcpy(collision_result_pool_.data(), sum, 32 * sizeof(SbCollisionResult::Data));
 }
 
 void reality::QuadTreeMgr::MovementByPhysicsCS()
 {
-	for (UINT i = 0; i < 64; ++i)
+	for (UINT i = 0; i < 32; ++i)
 	{
 		auto& result = collision_result_pool_[i];
 		auto character = SCENE_MGR->GetActor<Character>((entt::entity)result.capsule_result.entity);
 		if (character == nullptr)
 			continue;
-
 		character->floor_position = result.capsule_result.floor_position;
-
 		switch (result.capsule_result.collide_type)
 		{
 		case 0: 
 			character->movement_state_ = MovementState::FALL;
-			character->GravityFall(9.81f);
+			character->GetMovementComponent()->gravity_pulse = 300.0f;
 			break;
 		case 1: 
 			character->movement_state_ = MovementState::WALK;
 			character->GetMovementComponent()->gravity_pulse = 0.0f;
+			character->GetMovementComponent()->velocity.m128_f32[1] = 0.0f;
 			break;
 		case 2: 
 			character->movement_state_ = MovementState::FALL;
-			character->GravityFall(9.81f);
+			character->GetMovementComponent()->gravity_pulse = 300.0f;
 			break;
 		case 3:
 			character->movement_state_ = MovementState::WALK;
 			character->GetMovementComponent()->gravity_pulse = 0.0f;
+			character->GetMovementComponent()->velocity.m128_f32[1] = 0.0f;
 			break;
 		}
 
@@ -971,7 +1013,7 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 
 void reality::QuadTreeMgr::SphereUpdateByPhysicsCS()
 {
-	for (UINT i = 0; i < 64; ++i)
+	for (UINT i = 0; i < 32; ++i)
 	{
 		auto& result = collision_result_pool_[i].sphere_result;
 		if (dynamic_sphere_list.find((entt::entity)result.entity) == dynamic_sphere_list.end())

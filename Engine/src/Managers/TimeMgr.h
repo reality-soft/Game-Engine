@@ -12,14 +12,15 @@ namespace reality
 		LARGE_INTEGER cur_time;
 
 		double delta_time = 0;
-		float fps = 0;
+		double deltas = 0;
+		int fps = 0;
 		float game_time = 0;
 
 		void Init();
 		void Update();
 
 		double GetDeltaTime();
-		float GetFPS();
+		int GetFPS();
 		float GetGameTime();
 	};
 }

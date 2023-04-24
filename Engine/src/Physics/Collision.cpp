@@ -51,6 +51,7 @@ RayCallback reality::RayToTriangle(const RayShape& ray, const TriangleShape& tri
             callback.distance = distance;
             callback.point = P;
             callback.normal = tri_normal;
+            callback.tri_index = tri.index;
         }
     }
 

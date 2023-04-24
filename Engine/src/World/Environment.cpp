@@ -66,9 +66,11 @@ void reality::Environment::Update(CameraSystem* sys_camera, LightingSystem* sys_
 	else
 		current_day_ = Day::eNight;
 
-	sky_sphere_.Update(time_limits, current_time_);
-	distance_fog_.Update(time_limits, current_time_);
-	sys_lighting->UpdateGlobalLight(time_limits, current_time_, min_directional_bright_, max_specular_strength_);
+	float lerp_value = max(0, current_time_ / time_limits.x);
+
+	sky_sphere_.Update(lerp_value);
+	distance_fog_.Update(lerp_value);
+	sys_lighting->UpdateGlobalLight(lerp_value, min_directional_bright_, max_specular_strength_);
 
 	distance_fog_.UpdateFogStart(sys_camera->GetCamera()->camera_pos);
 	distance_fog_.UpdateFogColor(sky_sphere_.GetSkyColor());

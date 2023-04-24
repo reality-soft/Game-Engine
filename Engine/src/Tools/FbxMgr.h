@@ -10,7 +10,7 @@ namespace reality {
 #define FBX FbxMgr::GetInst()
 
 	public:
-#ifdef DEBUG_
+#ifdef _DEBUG
 		bool ImportAndSaveFbx(string filename, FbxImportOption options = FbxImportOption(), FbxVertexOption vertex_option = FbxVertexOption::BY_CONTROL_POINT);
 #endif
 
@@ -27,7 +27,7 @@ namespace reality {
 	private:
 		bool CreateBuffers(SingleMesh<Vertex>& mesh);
 		bool CreateBuffers(SingleMesh<SkinnedVertex>& mesh);
-#ifdef DEBUG_
+#ifdef _DEBUG
 		void ReCalculateNormal(StaticMesh& static_mesh, FbxVertexOption vertex_option);
 		void ReCalculateNormal(SkeletalMesh& skeletal_mesh, FbxVertexOption vertex_option);
 #endif
