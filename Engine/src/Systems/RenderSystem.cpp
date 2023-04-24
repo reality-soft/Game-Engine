@@ -90,7 +90,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 				socket_component = reg.try_get<C_Socket>(ent);
 			}
 
-			cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(static_mesh_component->local * static_mesh_component->world);
+			cb_static_mesh_.data.transform_matrix = XMMatrixTranspose(static_mesh_component->world);
 			if (socket_component != nullptr) {
 				const auto& socket_it = socket_component->sockets.find(static_mesh_component->socket_name);
 				if (socket_it != socket_component->sockets.end()) {
@@ -114,7 +114,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 			if (skeletal_mesh_component == nullptr) {
 				continue;
 			}
-			cb_skeletal_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->local * skeletal_mesh_component->world);
+			cb_skeletal_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->world);
 			RenderSkeletalMesh(skeletal_mesh_component, animation_component);
 		}
 	}

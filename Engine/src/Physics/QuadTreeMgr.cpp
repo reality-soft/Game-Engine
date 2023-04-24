@@ -405,6 +405,9 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 
 	visible_nodes = 0;
 	NodeCulling(root_node_);
+
+	XMFLOAT2 camera_pitch_yaw = applied_camera->GetCamera()->pitch_yaw;
+	camera_rotation_ = XMMatrixRotationRollPitchYaw(camera_pitch_yaw.x, camera_pitch_yaw.y, 0);	
 }
 
 void reality::QuadTreeMgr::Release()
@@ -981,19 +984,21 @@ void reality::QuadTreeMgr::MovementByPhysicsCS()
 		{
 		case 0: 
 			character->movement_state_ = MovementState::FALL;
-			character->GravityFall(9.81f);
+			character->GetMovementComponent()->gravity_pulse = 300.0f;
 			break;
 		case 1: 
 			character->movement_state_ = MovementState::WALK;
 			character->GetMovementComponent()->gravity_pulse = 0.0f;
+			character->GetMovementComponent()->velocity.m128_f32[1] = 0.0f;
 			break;
 		case 2: 
 			character->movement_state_ = MovementState::FALL;
-			character->GravityFall(9.81f);
+			character->GetMovementComponent()->gravity_pulse = 300.0f;
 			break;
 		case 3:
 			character->movement_state_ = MovementState::WALK;
 			character->GetMovementComponent()->gravity_pulse = 0.0f;
+			character->GetMovementComponent()->velocity.m128_f32[1] = 0.0f;
 			break;
 		}
 
