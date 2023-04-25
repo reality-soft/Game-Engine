@@ -120,6 +120,36 @@ namespace reality {
         }
     }
 
+    void RepeatNode::Execute()
+    {
+        if (children_.size() == 0) {
+            status_ = BehaviorStatus::SUCCESS;
+            return;
+        }
+        status_ = BehaviorStatus::RUNNING;
+
+        BehaviorStatus child_status = children_[0]->GetStatus();
+
+        switch (child_status) {
+        case BehaviorStatus::IDLE:
+            children_[executing_child_node_index_]->Execute();
+            break;
+        case BehaviorStatus::FAILURE:
+            children_[0]->ResetNodes();
+            children_[0]->Execute();
+            break;
+        case BehaviorStatus::SUCCESS:
+            children_[0]->ResetNodes();
+            children_[0]->Execute();
+            cur_rep_++;
+            if (max_rep_ > 0 && cur_rep_ >= max_rep_) {
+                cur_rep_ = 0;
+                status_ = BehaviorStatus::SUCCESS;
+            }
+            break;
+        }
+    }
+
     void ActionNode::Execute()
     {
         BehaviorStatus result = Action();

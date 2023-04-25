@@ -65,6 +65,16 @@ namespace reality {
         virtual void Execute() override;
     };
 
+    class RepeatNode : public BehaviorNode {
+    public:
+        RepeatNode(shared_ptr<BehaviorNode> child_node, int maxRepetitions = -1) : BehaviorNode({ child_node }), max_rep_(maxRepetitions) {}
+
+        virtual void Execute() override;
+    private:
+        int max_rep_;
+        int cur_rep_;
+    };
+
     class DLL_API IfElseIfNode : public BehaviorNode
     {
     public:
