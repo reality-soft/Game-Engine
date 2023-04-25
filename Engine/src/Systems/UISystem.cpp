@@ -46,8 +46,13 @@ void UISystem::OnUpdate(entt::registry& reg)
 
 	// UI 랜더타겟으로 변경 후 UI들 랜더링
 	render_target_->SetRenderTarget();
-	
+
 	DX11APP->GetDeviceContext()->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+
+	//DX11APP->GetDeviceContext()->OMSetRenderTargets(1, render_target_->render_target_view_.GetAddressOf(), nullptr);
+	//DX11APP->GetDeviceContext()->OMSetBlendState(nullptr, nullptr, -1);
+	//DX11APP->GetDeviceContext()->OMSetDepthStencilState(nullptr, -1);
+	//DX11APP->GetDeviceContext()->RSSetState(nullptr);
 
 	auto view_ui = reg.view<C_UI>();
 	for (auto& entity : view_ui)
@@ -71,7 +76,7 @@ void UISystem::OnUpdate(entt::registry& reg)
 	float pos_x = 0.5f;
 	float pos_y = 0.5f;
 
-	DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->AlphaBlend(), nullptr, -1);
+	//DX11APP->GetDeviceContext()->OMSetBlendState(DX11APP->GetCommonStates()->AlphaBlend(), nullptr, -1);
 	XMMATRIX s = XMMatrixScaling(scale_x, scale_y, 1.0f);
 	XMMATRIX r = XMMatrixRotationZ(0.0f);
 	XMMATRIX t = XMMatrixTranslation(pos_x, pos_y, 0.0f);
