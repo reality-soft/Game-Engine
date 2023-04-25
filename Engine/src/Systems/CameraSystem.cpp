@@ -302,15 +302,6 @@ void CameraSystem::CreateMatrix()
 	billboard.r[3].m128_f32[2] = 0.0f;
 	cb_effect.data.main_billboard = XMMatrixTranspose(billboard);
 
-	
-	//rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, 0, 0);
-	//XMMATRIX w = XMMatrixIdentity();
-	//w = DirectX::XMMatrixAffineTransformation(scale_vector, rotation_center, rotation_quaternion, camera->camera_pos);
-	//billboard.r[3].m128_f32[0] = 0.0f;
-	//billboard.r[3].m128_f32[1] = 0.0f;
-	//billboard.r[3].m128_f32[2] = 0.0f;
-	//cb_effect.data.x_billboard = XMMatrixTranspose(billboard);
-
 	XMMATRIX x_only = XMMatrixIdentity();
 	x_only.r[1].m128_f32[1] = view_matrix.r[1].m128_f32[1];
 	x_only.r[1].m128_f32[2] = view_matrix.r[1].m128_f32[2];
