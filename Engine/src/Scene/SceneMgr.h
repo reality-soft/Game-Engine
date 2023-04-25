@@ -7,8 +7,8 @@ namespace reality {
     {
         SCENE_NONE = 0,
         POP = 1,
-        START = 2,
-        LOADING = 3,
+        INTRO = 2,
+        START = 3,
         INGAME = 4,
     };
 
