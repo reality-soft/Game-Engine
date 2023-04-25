@@ -14,7 +14,7 @@ namespace reality {
 
 		if (root_status == BehaviorStatus::FAILURE ||
 			root_status == BehaviorStatus::SUCCESS) {
-			root_->ResetNode();
+			root_->ResetNodes();
 		}
 	}
 

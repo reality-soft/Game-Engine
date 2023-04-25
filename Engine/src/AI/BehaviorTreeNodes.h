@@ -21,7 +21,7 @@ namespace reality {
 
     public:
         virtual void Execute() {};
-        virtual void ResetNode();
+        virtual void ResetNodes();
 
     public:
         void                   SetStatus(BehaviorStatus);
@@ -33,13 +33,13 @@ namespace reality {
 
     private:
         std::string name_;
+
+    protected:
+        std::vector<shared_ptr<BehaviorNode>> children_;
        
     protected:
         BehaviorStatus status_ = BehaviorStatus::IDLE;
         int executing_child_node_index_ = 0;
-
-    protected:
-        std::vector<shared_ptr<BehaviorNode>> children_;
 
     private:
         std::mutex status_mutex_;
@@ -63,6 +63,23 @@ namespace reality {
 
     public:
         virtual void Execute() override;
+    };
+
+    class DLL_API IfElseIfNode : public BehaviorNode
+    {
+    public:
+        IfElseIfNode() {};
+        IfElseIfNode(const std::vector<std::pair<std::function<bool()>, shared_ptr<BehaviorNode>>>& children, shared_ptr<BehaviorNode> else_node = nullptr) : children_(children), else_node_(else_node){
+            children_.push_back({ []() { return true; }, else_node });
+        }
+
+    public:
+        virtual void Execute() override;
+        virtual void ResetNodes() override;
+
+    protected:
+        std::vector<std::pair<std::function<bool()>, shared_ptr<BehaviorNode>>> children_;
+        shared_ptr<BehaviorNode> else_node_;
     };
 
     class DLL_API ActionNode : public BehaviorNode
