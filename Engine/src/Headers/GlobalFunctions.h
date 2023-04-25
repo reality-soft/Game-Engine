@@ -169,11 +169,11 @@ static DirectX::XMFLOAT4 LerpColor(DirectX::XMFLOAT4 start_color, DirectX::XMFLO
 	return lerped_color;
 }
 
-static DirectX::XMMATRIX TransformS(DirectX::XMFLOAT3& sacling)
+static DirectX::XMMATRIX TransformS(DirectX::XMFLOAT3 sacling)
 {
 	return DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&sacling));
 }
-static DirectX::XMMATRIX TransformR(DirectX::XMFLOAT3& roation)
+static DirectX::XMMATRIX TransformR(DirectX::XMFLOAT3 roation)
 {
 	DirectX::XMMATRIX rotation = DirectX::XMMatrixIdentity();
 	rotation *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(roation.x));
@@ -182,7 +182,7 @@ static DirectX::XMMATRIX TransformR(DirectX::XMFLOAT3& roation)
 
 	return rotation;
 }
-static DirectX::XMMATRIX TransformT(DirectX::XMFLOAT3& position)
+static DirectX::XMMATRIX TransformT(DirectX::XMFLOAT3 position)
 {
 	return DirectX::XMMatrixTranslationFromVector(XMLoadFloat3(&position));
 }
