@@ -28,7 +28,9 @@ namespace reality
 		void AddNode(XMVECTOR node_pos);
 		void DeleteNode(UINT index);
 		void UpdateLines();
+		void Import(string mapdat_file, GuideType type);
 
+		string mapdata_dir = "../../Contents/BinaryPackage/";
 		map<UINT, XMVECTOR> line_nodes;
 		vector<XMVECTOR> line_vectors;
 	};
