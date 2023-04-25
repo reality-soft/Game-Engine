@@ -36,6 +36,7 @@ namespace reality
 		bool GetOnOff();
 		void On();
 		void Off();
+		void SetAlpha(float alpha);
 	public:
 		virtual void SetLocalRectByMin(XMFLOAT2 min, float width, float height);
 		virtual void SetLocalRectByMax(XMFLOAT2 max, float width, float height);

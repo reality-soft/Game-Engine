@@ -39,10 +39,10 @@ void UIBase::CreateRenderData()
 	render_data_.ps_id = "UIPS.cso";
 
 	// 정점 작성
-	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {+0.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {+1.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {+0.0f, +1.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {+1.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+0.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+1.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+0.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+1.0f, +1.0f} });
 
 	D3D11_BUFFER_DESC bufDesc;
 
@@ -223,6 +223,14 @@ void UIBase::On()
 void UIBase::Off()
 {
 	onoff_ = false;
+}
+
+void reality::UIBase::SetAlpha(float alpha)
+{
+	for (auto& vertex : render_data_.vertex_list)
+		vertex.c.w = alpha;
+
+	DX11APP->GetDeviceContext()->UpdateSubresource(render_data_.vertex_buffer.Get(), 0, nullptr, render_data_.vertex_list.data(), 0, 0);
 }
 
 bool UIBase::GetOnOff()
