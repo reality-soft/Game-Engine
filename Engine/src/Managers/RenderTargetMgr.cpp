@@ -36,10 +36,10 @@ void RenderTarget::CreateRenderData()
 	render_data_.ps_id = "UIPS.cso";
 
 	// 정점 작성
-	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {+0.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {+1.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {+0.0f, +1.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {+1.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+0.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+1.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+0.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+1.0f, +1.0f} });
 
 	D3D11_BUFFER_DESC bufDesc;
 
