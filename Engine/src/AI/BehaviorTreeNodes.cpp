@@ -153,6 +153,32 @@ namespace reality {
         }
     }
 
+    void InfiniteRepeatNode::Execute()
+    {
+        if (children_.size() == 0) {
+            status_ = BehaviorStatus::SUCCESS;
+            return;
+        }
+        status_ = BehaviorStatus::RUNNING;
+
+        BehaviorStatus child_status = children_[0]->GetStatus();
+
+        switch (child_status) {
+        case BehaviorStatus::IDLE:
+        case BehaviorStatus::RUNNING:
+            children_[executing_child_node_index_]->Execute();
+            break;
+        case BehaviorStatus::FAILURE:
+            children_[0]->ResetNodes();
+            children_[0]->Execute();
+            break;
+        case BehaviorStatus::SUCCESS:
+            children_[0]->ResetNodes();
+            children_[0]->Execute();
+            break;
+        }
+    }
+
     void ActionNode::Execute()
     {
         BehaviorStatus result = Action();

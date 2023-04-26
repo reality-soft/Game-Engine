@@ -119,6 +119,22 @@ namespace reality {
         int cur_rep_;
     };
 
+    class DLL_API InfiniteRepeatNode : public BehaviorNode {
+    public:
+        InfiniteRepeatNode(shared_ptr<BehaviorNode> child_node) : BehaviorNode({ child_node }) {}
+        InfiniteRepeatNode(const InfiniteRepeatNode& other) : BehaviorNode(other) {}
+        InfiniteRepeatNode& operator=(const InfiniteRepeatNode& other) {
+            if (this != &other) {
+                BehaviorNode::operator=(other);
+            }
+
+            return *this;
+        }
+
+        virtual void Execute() override;
+    };
+
+
     class DLL_API IfElseIfNode : public BehaviorNode
     {
     public:
