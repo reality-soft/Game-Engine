@@ -6,7 +6,7 @@ using namespace reality;
 
 ID3D11BlendState* reality::DXStates::bs_default()
 {
-	static ComPtr<ID3D11BlendState>		blend_state;
+    static ComPtr<ID3D11BlendState>        blend_state;
 
     if (blend_state.Get() == nullptr)
     {
@@ -42,9 +42,9 @@ ID3D11BlendState* reality::DXStates::bs_default()
 
         return blend_state.Get();
     }
-    
+
     else
-	    return blend_state.Get();
+        return blend_state.Get();
 }
 
 ID3D11BlendState* reality::DXStates::bs_dual_source_blend()
