@@ -98,7 +98,7 @@ namespace reality {
         virtual void Execute() override;
     };
 
-    class RepeatNode : public BehaviorNode {
+    class DLL_API RepeatNode : public BehaviorNode {
     public:
         RepeatNode(shared_ptr<BehaviorNode> child_node, int maxRepetitions = -1) : BehaviorNode({ child_node }), max_rep_(maxRepetitions) {}
         RepeatNode(const RepeatNode& other) : BehaviorNode(other) {}
@@ -123,7 +123,7 @@ namespace reality {
     {
     public:
         IfElseIfNode() {};
-        IfElseIfNode(const std::vector<std::pair<std::function<bool()>, shared_ptr<BehaviorNode>>>& children, shared_ptr<BehaviorNode> else_node = nullptr) : children_(children), else_node_(else_node){
+        IfElseIfNode(const std::vector<std::pair<std::function<bool()>, shared_ptr<BehaviorNode>>>& children, shared_ptr<BehaviorNode> else_node = nullptr) : children_(children) {
             children_.push_back({ []() { return true; }, else_node });
         }
         IfElseIfNode(const IfElseIfNode& other) {
@@ -145,12 +145,12 @@ namespace reality {
 
     protected:
         std::vector<std::pair<std::function<bool()>, shared_ptr<BehaviorNode>>> children_;
-        shared_ptr<BehaviorNode> else_node_;
     };
 
     class DLL_API ActionNode : public BehaviorNode
     {
     public:
+        ActionNode() {};
         ActionNode(const ActionNode& other) : BehaviorNode(other) {}
         ActionNode& operator=(const ActionNode& other) {
             if (this != &other) {

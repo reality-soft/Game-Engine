@@ -64,6 +64,7 @@ namespace reality {
 
         switch (child_status) {
         case BehaviorStatus::IDLE:
+        case BehaviorStatus::RUNNING:
             children_[executing_child_node_index_]->Execute();
             break;
         case BehaviorStatus::FAILURE:
@@ -99,6 +100,7 @@ namespace reality {
 
         switch (child_status) {
         case BehaviorStatus::IDLE:
+        case BehaviorStatus::RUNNING:
             children_[executing_child_node_index_].second->Execute();
             break;
         case BehaviorStatus::FAILURE:
@@ -132,6 +134,7 @@ namespace reality {
 
         switch (child_status) {
         case BehaviorStatus::IDLE:
+        case BehaviorStatus::RUNNING:
             children_[executing_child_node_index_]->Execute();
             break;
         case BehaviorStatus::FAILURE:
