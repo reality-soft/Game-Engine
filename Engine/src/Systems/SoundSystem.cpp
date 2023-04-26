@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "TimeMgr.h"
 #include "SoundSystem.h"
 #include "ResourceMgr.h"
 #include "FmodMgr.h"
@@ -11,6 +12,65 @@ void SoundSystem::OnUpdate(entt::registry& reg)
     CheckGenerators(reg);
 
     CheckPlayingPool();
+}
+
+void reality::SoundSystem::PlayBackground(string sound_name, bool looping, float fade_in, float volume)
+{
+    static float timer = 0.0f;
+
+    timer += TM_DELTATIME;
+    float time_lerp = min(1.0f, timer / fade_in);
+
+    for (auto sound : sound_play_list)
+    {
+        if (sound->sound_filename == sound_name)
+        {
+            sound->channel->setVolume(sound->constant_volume * time_lerp);
+            return;
+        }
+    }
+
+    Sound* sound_data = LoadSoundFromPool();
+    sound_data->sound_filename = sound_name;
+    sound_data->type = MUSIC;
+    sound_data->sound = RESOURCE->UseResource<FMOD::Sound>(sound_name);
+    sound_data->sound->getLength(&sound_data->total_time, FMOD_TIMEUNIT_MS);
+    sound_data->constant_volume = volume;
+
+    sound_data->looping = looping;
+    sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+
+    FMOD_RESULT hr;    
+    hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->music_channel_group(), false, &sound_data->channel);
+
+    sound_play_list.push_back(sound_data);
+}
+
+bool reality::SoundSystem::FadeOutDelete(float fade_out)
+{
+    
+    static float timer = 0.0f;
+    timer += TM_DELTATIME;
+    float time_lerp = max(0.0f, 1.0f - timer / fade_out);
+
+    if (time_lerp <= 0.0001f)
+    {
+        for (auto sound : sound_play_list)
+        {
+            sound->sound->release();
+            delete sound;
+            sound = nullptr;
+        }
+        sound_play_list.clear();
+        return true;
+    }
+
+    for (const auto& sound : sound_play_list)
+    {
+        sound->channel->setVolume(sound->constant_volume * time_lerp);
+    }
+
+    return false;
 }
 
 void SoundSystem::CheckGenerators(entt::registry& reg)
