@@ -186,3 +186,70 @@ static DirectX::XMMATRIX TransformT(DirectX::XMFLOAT3 position)
 {
 	return DirectX::XMMatrixTranslationFromVector(XMLoadFloat3(&position));
 }
+
+static float FadeInAlpha(float start, float end, float cur_time)
+{
+	float alpha = 0.0f;
+
+	float fi_s, fi_e;
+	fi_s = start;
+	fi_e = end;
+
+	if (fi_s <= cur_time && cur_time <= fi_e) // fade_in
+	{
+		alpha = (fi_s - cur_time) / (fi_s - fi_e);
+	}
+	else if (fi_e <= cur_time)
+	{
+		alpha = 1.0f;
+	}
+
+	return alpha;
+}
+
+static float FadeOutAlpha(float start, float end, float cur_time)
+{
+	float alpha = 1.0f;
+
+	float fo_s, fo_e;
+	fo_s = start;
+	fo_e = end;
+
+	if (fo_s <= cur_time && cur_time <= fo_e) // fade_in
+	{
+		alpha = 1.0f - (fo_s - cur_time) / (fo_s - fo_e);
+	}
+	else if (fo_e <= cur_time)
+	{
+		alpha = 0.0f;
+	}
+
+	return alpha;
+}
+
+
+static float FadeAlpha(float start, float end, float fade_in, float fade_out, float cur_time)
+{
+	float alpha = 0.0f;
+
+	float fi_s, fi_e, fo_s, fo_e;
+	fi_s = start;
+	fi_e = fi_s + fade_in;
+	fo_s = end - fade_out;
+	fo_e = end;
+
+	if (fi_s <= cur_time && cur_time <= fi_e) // fade_in
+	{
+		alpha = cur_time / fade_in;
+	}
+	else if (fo_s <= cur_time && cur_time <= fo_e) // fade_out
+	{
+		alpha = 1.0f - (cur_time - fo_s) / fade_out;
+	}
+	else if (fi_e <= cur_time && cur_time <= fo_s)
+	{
+		alpha = 1.0f;
+	}
+
+	return alpha;
+}

@@ -13,6 +13,10 @@ namespace reality {
 	public:
 		virtual void OnCreate(entt::registry& reg) {}
 		virtual void OnUpdate(entt::registry& reg);
+
+		void PlayBackground(string sound_name, bool looping, float fade_in, float volume);
+		bool FadeOutDelete(float fade_out);
+
 	private:
 		// 사운드 시스템
 		void CheckGenerators(entt::registry& reg);

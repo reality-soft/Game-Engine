@@ -26,7 +26,6 @@ void FmodMgr::Release()
 {
     sfx_channel_group_->release();
     music_channel_group_->release();
-
     fmod_system_->release();
 }
 
