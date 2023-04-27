@@ -44,8 +44,10 @@ RayCallback reality::RayToTriangle(const RayShape& ray, const TriangleShape& tri
     if (PointInTriangle(P, tri))
     {
         float distance = Distance(P, _XMVECTOR3(ray.start));
+        float dot_product = XMVector3Dot(GetRayDirection(ray), P - _XMVECTOR3(ray.start)).m128_f32[0];
         float ray_length = Distance(_XMVECTOR3(ray.end), _XMVECTOR3(ray.start));
-        if (distance <= ray_length)
+
+        if (distance <= ray_length && dot_product > 0)
         {
             callback.success = true;
             callback.distance = distance;

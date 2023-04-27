@@ -20,6 +20,7 @@ namespace reality
 		FMOD::Sound* sound;
 		UINT total_time;
 		UINT current_time;
+		float constant_volume;
 	public:
 		Sound() : sound_filename(""), channel(nullptr), sound(nullptr), total_time(0), current_time(0) { }
 		Sound(Sound& sound) = default;
