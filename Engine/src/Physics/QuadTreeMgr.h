@@ -63,6 +63,9 @@ namespace reality {
 		void UpdateCapsules();
 		void UpdateSpheres();
 		RayCallback Raycast(const RayShape& ray);
+		RayCallback RaycastActorOnly(const RayShape& ray);
+		RayCallback RaycastCarOnly(const RayShape& ray);
+
 		bool RegistDynamicCapsule(entt::entity ent);
 		bool RegistDynamicSphere(entt::entity ent);
 		bool RegistStaticSphere(entt::entity ent);
