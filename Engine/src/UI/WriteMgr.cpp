@@ -11,6 +11,7 @@ void WriteMgr::Init()
 	sprite_font_eurocine_ = std::make_unique<SpriteFont>(DX11APP->GetDevice(), L"../../Contents/SpriteFont/Eurocine.spritefont");
 	sprite_font_altone_ = std::make_unique<SpriteFont>(DX11APP->GetDevice(), L"../../Contents/SpriteFont/Altone.spritefont");
 	sprite_font_renogare_ = std::make_unique<SpriteFont>(DX11APP->GetDevice(), L"../../Contents/SpriteFont/Renogare.spritefont");
+	sprite_font_roboto_ = std::make_unique<SpriteFont>(DX11APP->GetDevice(), L"../../Contents/SpriteFont/Roboto.spritefont");
 }
 
 void WriteMgr::Draw(string text, E_Font font, XMFLOAT2 coord, float size, XMFLOAT4 color)
@@ -32,6 +33,9 @@ void WriteMgr::Draw(string text, E_Font font, XMFLOAT2 coord, float size, XMFLOA
 		break;
 	case RENOGARE:
 		sprite_font_renogare_->DrawString(sprite_batch_.get(), to_mw(text).c_str(), coord, XMLoadFloat4(&color), 0, {}, size);
+		break;
+	case ROBOTO:
+		sprite_font_roboto_->DrawString(sprite_batch_.get(), to_mw(text).c_str(), coord, XMLoadFloat4(&color), 0, {}, size);
 		break;
 	}
 	sprite_batch_->End();

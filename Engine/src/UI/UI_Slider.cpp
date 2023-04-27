@@ -14,6 +14,7 @@ void UI_Slider::InitSlider(string background, string normal, string hover, strin
 	slider_ = make_shared<UI_Button>();
 	slider_->InitButton(normal, hover, push, select, disable);
 	AddChildUI("1_Slider", slider_);
+	value_ = 50.0f;
 }
 
 void UI_Slider::Update()

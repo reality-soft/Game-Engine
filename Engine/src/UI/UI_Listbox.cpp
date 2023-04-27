@@ -16,7 +16,7 @@ void UI_Listbox::InitListBox(string open_panel,
 	UI_Button::Init();
 
 	current_item_text_ = make_shared<UI_Text>();
-		current_item_text_->InitText("", E_Font::ROTUNDA, { 5.0f, 15.0f });
+		current_item_text_->InitText("", E_Font::ROBOTO, { 5.0f, 0.0f });
 	AddChildUI("1_CurrentItemText", current_item_text_);
 
 	open_panel_ = make_shared<UI_Image>();
@@ -161,7 +161,7 @@ void UI_Listbox::AddItem(string value)
 	new_item_button->SetLocalRectByMin(min, item_button_width_, item_button_height_);
 
 	auto new_item_text = make_shared<UI_Text>();
-	new_item_text->InitText(value, E_Font::ROTUNDA, {0.0f, 10.0f});
+	new_item_text->InitText(value, E_Font::ROBOTO, {0.0f, -3.0f});
 	new_item_button->AddChildUI("1_item_text", new_item_text);
 }
 

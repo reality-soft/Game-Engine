@@ -12,6 +12,8 @@ void SoundSystem::OnUpdate(entt::registry& reg)
     CheckGenerators(reg);
 
     CheckPlayingPool();
+
+    SetPlayingSoundVolume();
 }
 
 void reality::SoundSystem::PlayBackground(string sound_name, bool looping, float fade_in, float volume)
@@ -146,6 +148,25 @@ void SoundSystem::CheckPlayingPool()
     }
 }
 
+void reality::SoundSystem::SetPlayingSoundVolume()
+{
+    for (auto sound : sound_play_list)
+    {
+        float volume;
+        sound->channel->getVolume(&volume);
+        switch (sound->type)
+        {
+        case MUSIC:
+            sound->channel->setVolume(volume * FMOD_MGR->GetMusicVolume());
+            break;
+        case SFX:
+            sound->channel->setVolume(volume * FMOD_MGR->GetSFXVolume());
+            break;
+        }
+        
+    }
+}
+
 void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos)
 {
     FMOD_VECTOR pos = { generate_pos.m128_f32[0], generate_pos.m128_f32[1], generate_pos.m128_f32[2] };
@@ -170,12 +191,12 @@ void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, fl
     if (sound_type == MUSIC)
     {
         hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->music_channel_group(), false, &sound_data->channel);
-        sound_data->channel->setVolume(volume * FMOD_MGR->GetMusicVolume());
+        sound_data->channel->setVolume(volume);
     }
     else
     {
         hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->sfx_channel_group(), false, &sound_data->channel);
-        sound_data->channel->setVolume(volume * FMOD_MGR->GetSFXVolume());
+        sound_data->channel->setVolume(volume);
     }
     sound_data->channel->set3DAttributes(&pos, &vel);
     sound_data->channel->set3DLevel(6);

@@ -21,6 +21,7 @@ namespace reality {
 		// 사운드 시스템
 		void CheckGenerators(entt::registry& reg);
 		void CheckPlayingPool();
+		void SetPlayingSoundVolume();
 	private:
 		void Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos);
 		void CreateSoundPool();
