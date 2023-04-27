@@ -17,7 +17,7 @@ namespace reality {
 		virtual void OnUpdate() override;
 
 	public:
-		entt::entity GetOwnerId() {
+		entt::entity GetOwnerId() const {
 			return owner_id_;
 		}
 
