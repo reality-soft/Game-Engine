@@ -36,7 +36,6 @@ void reality::SoundSystem::PlayBackground(string sound_name, bool looping, float
     sound_data->sound = RESOURCE->UseResource<FMOD::Sound>(sound_name);
     sound_data->sound->getLength(&sound_data->total_time, FMOD_TIMEUNIT_MS);
     sound_data->constant_volume = volume;
-
     sound_data->looping = looping;
     sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 
