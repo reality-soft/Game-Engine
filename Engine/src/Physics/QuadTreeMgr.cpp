@@ -727,7 +727,6 @@ void reality::QuadTreeMgr::UpdateSpheres()
 RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 {
 	map<float, RayCallback> callback_list;
-	raycast_calculated = 0;
 	
 	RaycastNodeQuery(ray, root_node_, callback_list);
 
@@ -736,7 +735,30 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
 			continue;
 
-		raycast_calculated++;
+		const auto& capsule = item.second->capsule;
+		auto callback = RayToCapsule(ray, capsule);
+		if (callback.success)
+		{
+			callback.is_actor = true;
+			callback.ent = item.first;
+			callback_list.insert(make_pair(callback.distance, callback));
+		}
+	}
+
+	if (callback_list.empty())
+		return RayCallback();
+
+	return callback_list.begin()->second;
+}
+
+RayCallback reality::QuadTreeMgr::RaycastActorOnly(const RayShape& ray)
+{
+	map<float, RayCallback> callback_list;
+
+	for (auto& item : dynamic_capsule_list)
+	{
+		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
+			continue;
 
 		const auto& capsule = item.second->capsule;
 		auto callback = RayToCapsule(ray, capsule);
@@ -744,6 +766,26 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 		{
 			callback.is_actor = true;
 			callback.ent = item.first;
+			callback_list.insert(make_pair(callback.distance, callback));
+		}
+	}
+
+	if (callback_list.empty())
+		return RayCallback();
+
+	return callback_list.begin()->second;
+}
+
+RayCallback reality::QuadTreeMgr::RaycastCarOnly(const RayShape& ray)
+{
+	map<float, RayCallback> callback_list;
+
+	for (const auto& tri : car_triagnles_)
+	{
+		auto callback = RayToTriangle(ray, tri);
+		if (callback.success)
+		{
+			callback.is_actor = false;
 			callback_list.insert(make_pair(callback.distance, callback));
 		}
 	}
