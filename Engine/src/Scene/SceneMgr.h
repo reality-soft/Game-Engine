@@ -7,9 +7,9 @@ namespace reality {
     {
         SCENE_NONE = 0,
         POP = 1,
-        INTRO = 2,
-        START = 3,
-        INGAME = 4,
+        START = 2,
+        INGAME = 3,
+        ENDING = 4,
     };
 
     class DLL_API SceneMgr {

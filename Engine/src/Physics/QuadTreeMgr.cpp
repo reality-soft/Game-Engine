@@ -724,7 +724,7 @@ void reality::QuadTreeMgr::UpdateSpheres()
 	}
 }
 
-RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
+RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray, entt::entity owner_ent = entt::null)
 {
 	map<float, RayCallback> callback_list;
 	
@@ -733,6 +733,9 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 	for (auto& item : dynamic_capsule_list)
 	{
 		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
+			continue;
+
+		if (item.first == owner_ent)
 			continue;
 
 		const auto& capsule = item.second->capsule;
@@ -751,13 +754,16 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 	return callback_list.begin()->second;
 }
 
-RayCallback reality::QuadTreeMgr::RaycastActorOnly(const RayShape& ray)
+RayCallback reality::QuadTreeMgr::RaycastActorOnly(const RayShape& ray, entt::entity owner_ent = entt::null)
 {
 	map<float, RayCallback> callback_list;
 
 	for (auto& item : dynamic_capsule_list)
 	{
 		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
+			continue;
+
+		if (item.first == owner_ent)
 			continue;
 
 		const auto& capsule = item.second->capsule;
