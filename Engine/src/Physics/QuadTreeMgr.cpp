@@ -740,7 +740,7 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray, entt::entity owne
 
 		const auto& capsule = item.second->capsule;
 		auto callback = RayToCapsule(ray, capsule);
-		if (callback.success)
+		if (callback.success && item.first != owner_ent)
 		{
 			callback.is_actor = true;
 			callback.ent = item.first;
