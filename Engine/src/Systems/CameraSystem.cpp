@@ -289,7 +289,8 @@ void CameraSystem::CreateMatrix()
 	cb_camera_info.data.camera_position.m128_f32[3] = camera->far_z;
 	cb_camera_info.data.camera_look = XMVector3Normalize(XMMatrixInverse(nullptr, this->view_matrix).r[2]);
 
-	camera->look = XMVector3Normalize(rotation_matrix.r[2]);
+	//camera->look = XMVector3Normalize(rotation_matrix.r[2]);
+	camera->look = cb_camera_info.data.camera_look;
 	camera->right = XMVector3Normalize(rotation_matrix.r[0]);
 	camera->up = XMVector3Normalize(rotation_matrix.r[1]);
 
