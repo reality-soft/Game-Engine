@@ -724,7 +724,7 @@ void reality::QuadTreeMgr::UpdateSpheres()
 	}
 }
 
-RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
+RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray, entt::entity owner_ent)
 {
 	map<float, RayCallback> callback_list;
 	
@@ -737,7 +737,7 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray)
 
 		const auto& capsule = item.second->capsule;
 		auto callback = RayToCapsule(ray, capsule);
-		if (callback.success)
+		if (callback.success && callback.ent != owner_ent)
 		{
 			callback.is_actor = true;
 			callback.ent = item.first;

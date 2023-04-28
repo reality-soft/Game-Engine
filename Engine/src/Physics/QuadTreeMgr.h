@@ -62,7 +62,7 @@ namespace reality {
 		void SetSpaceHeight(float min_y, float max_y);
 		void UpdateCapsules();
 		void UpdateSpheres();
-		RayCallback Raycast(const RayShape& ray);
+		RayCallback Raycast(const RayShape& ray, entt::entity owner_ent = entt::null);
 		RayCallback RaycastActorOnly(const RayShape& ray);
 		RayCallback RaycastCarOnly(const RayShape& ray);
 
