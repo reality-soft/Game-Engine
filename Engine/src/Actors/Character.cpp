@@ -19,7 +19,8 @@ void reality::Character::OnUpdate()
 
 void reality::Character::CancelMovement()
 {
-	movement_component_->velocity = { 0.0f, 0.0f, 0.0f, 0.0f };
+	movement_component_->velocity.m128_f32[0] = 0;
+	movement_component_->velocity.m128_f32[2] = 0;
 }
 
 void reality::Character::SetPos(const XMVECTOR& position)
@@ -32,3 +33,9 @@ XMMATRIX reality::Character::GetRotation()
 {
 	return rotation_;
 }
+
+reality::C_CapsuleCollision* reality::Character::GetCapsuleComponent()
+{
+	return reg_scene_->try_get<C_CapsuleCollision>(entity_id_);
+}
+

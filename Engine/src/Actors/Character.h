@@ -32,9 +32,10 @@ namespace reality
 
 	public:
 		C_Movement* GetMovementComponent() { return movement_component_; }
+		C_CapsuleCollision* GetCapsuleComponent();
+
 		void SetPos(const XMVECTOR& position);
 		XMMATRIX GetRotation();
-
 	public:
 		void CancelMovement();
 	};

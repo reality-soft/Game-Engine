@@ -53,16 +53,11 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 			movement_component->speed = movement_component->max_speed;
 		}
 
-		if (movement_component->jump_pulse > 0.0f) {
-			int i = 0;
-		}
-
 		cur_y_axis_speed += movement_component->jump_pulse - movement_component->gravity_pulse * TM_DELTATIME;
-
 		movement_component->velocity.m128_f32[1] = cur_y_axis_speed;
-
+		
 		XMVECTOR cur_velocity = XMVector3Transform(movement_component->velocity, character->GetRotation());
-	
+
 		for (int i = 0; i < 4; ++i)
 		{
 			auto plane = character->blocking_planes_[i];

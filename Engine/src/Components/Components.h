@@ -65,6 +65,9 @@ namespace reality
 		reality::CapsuleShape capsule;
 		UINT enclosed_node_index = 0;
 
+		XMVECTOR impulse_vector = { 0, 0, 0, 0 };
+		float impulse_strength = 0;
+
 		void SetCapsuleData(XMFLOAT3 offset, float height, float radius);
 		virtual void OnUpdate() override;
 	};
