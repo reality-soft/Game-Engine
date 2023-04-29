@@ -80,4 +80,18 @@ namespace reality{
 	int  SceneMgr::GetNumOfActor() {
 		return cur_scene_->GetActors().size();
 	}
+
+	int SceneMgr::GetNumOfActor(string tag)
+	{
+		int num = 0;
+		auto actors = cur_scene_->GetActors();
+		for (const auto& actor : actors)
+		{
+			if (actor.second->tag == tag)
+				num++;
+		}
+
+
+		return num;
+	}
 }

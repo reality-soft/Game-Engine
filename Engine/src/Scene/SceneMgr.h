@@ -43,6 +43,7 @@ namespace reality {
         void InternalChangeScene();
     public:
         int  GetNumOfActor();
+        int  GetNumOfActor(string tag);
     private:
         E_SceneType         scene_to_change_;
         shared_ptr<Scene>   cur_scene_;
