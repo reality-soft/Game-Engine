@@ -812,6 +812,32 @@ RayCallback reality::QuadTreeMgr::RaycastCarOnly(const RayShape& ray)
 	return callback_list.begin()->second;
 }
 
+RayCallback reality::QuadTreeMgr::RaycastActorTargeted(const RayShape& ray, entt::entity target_ent = entt::null)
+{
+	RayCallback callback;
+
+	for (auto& item : dynamic_capsule_list)
+	{	
+
+		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
+			continue;
+
+		const auto& capsule = item.second->capsule;
+		callback = RayToCapsule(ray, capsule);
+		if (callback.success)
+		{
+			if (item.first == target_ent)
+			{
+				callback.is_actor = true;
+				callback.ent = item.first;
+				break;
+			}
+		}
+	}
+
+	return callback;
+}
+
 bool reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)
 {
 	if (dynamic_capsule_list.size() >= 32)
