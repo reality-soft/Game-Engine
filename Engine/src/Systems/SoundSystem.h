@@ -15,7 +15,8 @@ namespace reality {
 		virtual void OnUpdate(entt::registry& reg);
 
 		void PlayBackground(string sound_name, bool looping, float fade_in, float volume);
-		bool FadeOutDelete(float fade_out);
+		bool FadeOut(float fade_out);
+		void ResetFadeTimer();
 
 	private:
 		// 사운드 시스템
@@ -26,6 +27,9 @@ namespace reality {
 		void Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos);
 		void CreateSoundPool();
 		Sound* LoadSoundFromPool();
+
+		float fade_in_timer = 0.0f;
+		float fade_out_timer = 0.0f;
 	};
 }
 

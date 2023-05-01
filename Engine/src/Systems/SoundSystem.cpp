@@ -18,10 +18,8 @@ void SoundSystem::OnUpdate(entt::registry& reg)
 
 void reality::SoundSystem::PlayBackground(string sound_name, bool looping, float fade_in, float volume)
 {
-    static float timer = 0.0f;
-
-    timer += TM_DELTATIME;
-    float time_lerp = min(1.0f, timer / fade_in);
+    fade_in_timer += TM_DELTATIME;
+    float time_lerp = min(1.0f, fade_in_timer / fade_in);
 
     for (auto sound : sound_play_list)
     {
@@ -33,6 +31,7 @@ void reality::SoundSystem::PlayBackground(string sound_name, bool looping, float
     }
 
     Sound* sound_data = LoadSoundFromPool();
+    sound_data->channel;
     sound_data->sound_filename = sound_name;
     sound_data->type = MUSIC;
     sound_data->sound = RESOURCE->UseResource<FMOD::Sound>(sound_name);
@@ -47,22 +46,20 @@ void reality::SoundSystem::PlayBackground(string sound_name, bool looping, float
     sound_play_list.push_back(sound_data);
 }
 
-bool reality::SoundSystem::FadeOutDelete(float fade_out)
+bool reality::SoundSystem::FadeOut(float fade_out)
 {
-    
-    static float timer = 0.0f;
-    timer += TM_DELTATIME;
-    float time_lerp = max(0.0f, 1.0f - timer / fade_out);
+    fade_out_timer += TM_DELTATIME;
+    float time_lerp = max(0.0f, 1.0f - fade_out_timer / fade_out);
 
     if (time_lerp <= 0.0001f)
     {
         for (auto sound : sound_play_list)
         {
-            sound->sound->release();
-            delete sound;
-            sound = nullptr;
+            sound->channel->stop();
+            sound->channel = nullptr;
         }
         sound_play_list.clear();
+        ResetFadeTimer();
         return true;
     }
 
@@ -72,6 +69,12 @@ bool reality::SoundSystem::FadeOutDelete(float fade_out)
     }
 
     return false;
+}
+
+void reality::SoundSystem::ResetFadeTimer()
+{
+    fade_in_timer = 0.0f;
+    fade_out_timer = 0.0f;
 }
 
 void SoundSystem::CheckGenerators(entt::registry& reg)
