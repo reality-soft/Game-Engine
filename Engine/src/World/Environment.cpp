@@ -20,7 +20,7 @@ void reality::Environment::SetWorldTime(float noon_time, float night_time)
 
 	current_time_ = 0.0f;
 	time_routin_ = TimeRoutin::NIGHT_TO_NOON;
-	current_day_ = Day::NONE;
+	current_day_ = Day::eNoon;
 }
 
 void reality::Environment::SetSkyColorByTime(XMFLOAT4 start_color, XMFLOAT4 end_color)
