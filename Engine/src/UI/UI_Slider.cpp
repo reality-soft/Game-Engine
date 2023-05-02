@@ -15,6 +15,7 @@ void UI_Slider::InitSlider(string background, string normal, string hover, strin
 	slider_->InitButton(normal, hover, push, select, disable);
 	AddChildUI("1_Slider", slider_);
 	value_ = 50.0f;
+	last_value_ = 50.0f;
 }
 
 void UI_Slider::Update()
@@ -22,6 +23,13 @@ void UI_Slider::Update()
 	UIBase::Update();
 
 	UpdateSliderPos();
+
+	if (value_ != last_value_)
+		is_changed_ = true;
+	else
+		is_changed_ = false;
+
+	last_value_ = value_;
 }
 
 void UI_Slider::UpdateSliderPos()
