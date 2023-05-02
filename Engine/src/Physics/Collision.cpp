@@ -240,6 +240,18 @@ CollideType reality::CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleSha
     return CollideType::OUTSIDE;
 }
 
+CollideType DLL_API reality::CapsuleToSphere(const CapsuleShape& cap, const SphereShape& sphere)
+{
+    auto capsule_info = GetTipBaseAB(cap);
+    RayShape capsule_ray(capsule_info[2], capsule_info[3]);
+    XMVECTOR closest_point = PointRaySegment(capsule_ray, _XMVECTOR3(sphere.center));
+
+    if (Distance(closest_point, _XMVECTOR3(sphere.center)) < cap.radius + sphere.radius)
+        return CollideType::INTERSECT;
+
+    return CollideType::OUTSIDE;
+}
+
 CollideType reality::AABBToTriagnle(const AABBShape& aabb, const TriangleShape& triangle)
 {
    // Check if all three vertices are inside the AABB

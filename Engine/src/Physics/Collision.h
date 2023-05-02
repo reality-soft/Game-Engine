@@ -68,6 +68,8 @@ namespace reality {
 
     CollideType DLL_API CapsuleToCapsule(const CapsuleShape& cap1, const CapsuleShape& cap2);
 
+    CollideType DLL_API CapsuleToSphere(const CapsuleShape& cap, const SphereShape& sphere);
+
     CollideType DLL_API AABBToTriagnle(const AABBShape& aabb, const TriangleShape& triangle);
 
     CapsuleCallback DLL_API CapsuleToTriangle(const CapsuleShape& cap, const TriangleShape& triangle);

@@ -22,12 +22,6 @@ bool SoundSystem::FadeOutDelete(string sound_name, float fade_out)
     return FMOD_MGR->FadeOutDelete(sound_name, fade_out);
 }
 
-void reality::SoundSystem::ResetFadeTimer()
-{
-    fade_in_timer = 0.0f;
-    fade_out_timer = 0.0f;
-}
-
 void SoundSystem::CheckGenerators(entt::registry& reg)
 {
     // 업데이트에서는 사운드 제너레이터 컴포넌트를 가지고 있는 엔티티들이 사운드 큐를 가지고 있으면 사운드를 재생한다.
