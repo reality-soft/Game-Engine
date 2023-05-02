@@ -8,6 +8,7 @@ namespace reality {
 	public:
 		virtual void OnCreate(entt::registry& reg) {}
 		virtual void OnUpdate(entt::registry& reg);
+    
 	private:
 		void CheckGenerators(entt::registry& reg);
 	public:

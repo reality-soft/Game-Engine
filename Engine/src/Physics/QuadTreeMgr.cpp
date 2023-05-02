@@ -267,44 +267,6 @@ vector<GuideLine>* reality::QuadTreeMgr::GetGuideLines(string name)
 		return &guide_lines_.find(name)->second;
 }
 
-void reality::QuadTreeMgr::ImportFloydRout(string mapdat_file)
-{
-	FileTransfer out_mapdata(mapdata_dir + mapdat_file, READ);
-
-	UINT num_routs;
-	out_mapdata.ReadBinary<UINT>(num_routs);
-
-	for (UINT i = 0; i < num_routs; ++i)
-	{
-		FloydRout new_rout;
-
-		out_mapdata.ReadBinary<float>(new_rout.distance);
-		out_mapdata.ReadBinary<UINT>(new_rout.start_index);
-		out_mapdata.ReadBinary<UINT>(new_rout.dest_index);
-		out_mapdata.ReadBinary<UINT>(new_rout.trans_index);
-		out_mapdata.ReadBinary<XMVECTOR>(new_rout.start);
-		out_mapdata.ReadBinary<XMVECTOR>(new_rout.dest);
-		out_mapdata.ReadBinary<XMVECTOR>(new_rout.trans);
-
-		floyd_routs_.insert(make_pair(i, new_rout));
-	}
-
-	for (const auto& tri : deviding_level_->level_triangles)
-	{
-		if (tri.index == 11102 || tri.index == 11103 ||
-			tri.index == 11104 || tri.index == 11105 ||
-			tri.index == 11106 || tri.index == 11107 ||
-			tri.index == 11108 || tri.index == 11109)
-			car_triagnles_.push_back(tri);
-	}
-	
-}
-
-map<UINT, FloydRout>& reality::QuadTreeMgr::GetFloydRout()
-{
-	return floyd_routs_;
-}
-
 vector<TriangleShape>& reality::QuadTreeMgr::GetCarTriangles()
 {
 	return car_triagnles_;

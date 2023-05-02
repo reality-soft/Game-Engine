@@ -102,10 +102,10 @@ HRESULT LightingSystem::CreateSpotLightsCB()
 	return hr;
 }
 
-void LightingSystem::UpdateGlobalLight(float lerp_value, float min_bright, float max_specular)
+void LightingSystem::UpdateGlobalLight(float specular, XMFLOAT4 color)
 {
-	global_light.data.brightness = max(min_bright, lerp_value);
-	global_light.data.specular_strength = lerp_value * max_specular;
+	global_light.data.specular_strength = specular;
+	global_light.data.light_color = color;
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(global_light.buffer.Get(), 0, 0, &global_light.data, 0, 0);
 	DX11APP->GetDeviceContext()->PSSetConstantBuffers(0, 1, global_light.buffer.GetAddressOf());
@@ -116,7 +116,7 @@ CbGlobalLight::Data reality::LightingSystem::GetGlobalLightData()
 	return global_light.data;
 }
 
-void reality::LightingSystem::SetGlobalLightPos(XMFLOAT3 position)
+void reality::LightingSystem::SetGlobalLightPos(XMFLOAT4 position)
 {
 	global_light.data.position = position;
 }

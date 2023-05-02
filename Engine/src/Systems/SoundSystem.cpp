@@ -22,9 +22,15 @@ bool SoundSystem::FadeOutDelete(string sound_name, float fade_out)
     return FMOD_MGR->FadeOutDelete(sound_name, fade_out);
 }
 
+void reality::SoundSystem::ResetFadeTimer()
+{
+    fade_in_timer = 0.0f;
+    fade_out_timer = 0.0f;
+}
+
 void SoundSystem::CheckGenerators(entt::registry& reg)
 {
-    // ¾÷µ¥ÀÌÆ®¿¡¼­´Â »ç¿îµå Á¦³Ê·¹ÀÌÅÍ ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ´Â ¿£Æ¼Æ¼µéÀÌ »ç¿îµå Å¥¸¦ °¡Áö°í ÀÖÀ¸¸é »ç¿îµå¸¦ Àç»ıÇÑ´Ù.
+    // ì—…ë°ì´íŠ¸ì—ì„œëŠ” ì‚¬ìš´ë“œ ì œë„ˆë ˆì´í„° ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§€ê³  ìˆëŠ” ì—”í‹°í‹°ë“¤ì´ ì‚¬ìš´ë“œ íë¥¼ ê°€ì§€ê³  ìˆìœ¼ë©´ ì‚¬ìš´ë“œë¥¼ ì¬ìƒí•œë‹¤.
     auto generators = reg.view<C_SoundGenerator>();
     for (auto entity : generators)
     {
@@ -33,7 +39,7 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
         {
             auto queue = generator.sound_queue_list.front();
 
-            // ¸®½º³Ê ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ´Â ¿£Æ¼Æ¼µé¿¡ ´ëÇØ 3D º¤ÅÍ °è»ê ÈÄ »ç¿îµå ¼³Á¤
+            // ë¦¬ìŠ¤ë„ˆ ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§€ê³  ìˆëŠ” ì—”í‹°í‹°ë“¤ì— ëŒ€í•´ 3D ë²¡í„° ê³„ì‚° í›„ ì‚¬ìš´ë“œ ì„¤ì •
             auto listeners = reg.view<C_SoundListener>();
             for (auto entity2 : listeners)
             {
@@ -62,7 +68,7 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
                 
             }
 
-            // Àç»ıÇß´Ù¸é Å¥¿¡¼­ Á¦°Å
+            // ì¬ìƒí–ˆë‹¤ë©´ íì—ì„œ ì œê±°
             generator.sound_queue_list.pop();
         }
     }
