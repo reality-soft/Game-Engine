@@ -6,6 +6,7 @@
 #include "InputEventMgr.h"
 #include "SceneMgr.h"
 #include "FmodMgr.h"
+#include "WriteMgr.h"
 
 #ifdef _DEBUG
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -70,6 +71,7 @@ namespace reality {
 		DINPUT->Init();
 		TIMER->Init();
 		FMOD_MGR->Init();
+		WRITER->Init();
 
 		return true;
 	}
