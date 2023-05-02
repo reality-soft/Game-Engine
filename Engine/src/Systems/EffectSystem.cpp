@@ -169,7 +169,15 @@ void EffectSystem::EmitParticle(Emitter* emitter)
 	particle.lifetime = randstep(emitter->life_time[0], emitter->life_time[1]);
 	particle.frame_ratio = 0.0f;
 
-	particle.color = emitter->initial_color;
+	switch (emitter->color_setting_type)
+	{
+	case INITIAL_SET:
+		particle.color = emitter->initial_color;
+		break;
+	case SET_PER_LIFETIME:
+		particle.color = emitter->color_timeline[0];
+		break;
+	}
 
 	particle.position = {
 		randstep(emitter->initial_position[0].x, emitter->initial_position[1].x),
