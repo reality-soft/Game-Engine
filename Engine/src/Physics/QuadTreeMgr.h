@@ -66,6 +66,7 @@ namespace reality {
 		RayCallback Raycast(const RayShape& ray, entt::entity owner_ent);
 		RayCallback RaycastActorOnly(const RayShape& ray, entt::entity owner_ent);
 		RayCallback RaycastCarOnly(const RayShape& ray);
+		RayCallback RaycastActorTargeted(const RayShape& ray, entt::entity target_ent);
 
 		bool RegistDynamicCapsule(entt::entity ent);
 		bool RegistDynamicSphere(entt::entity ent);

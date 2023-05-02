@@ -90,10 +90,13 @@ void CameraSystem::OnUpdate(entt::registry& reg)
 {
 	auto view_trans = reg.view<C_Transform>();
 
-	if (camera->tag == "Debug")
-		DebugCameraMovement();
-	else if(camera->tag == "Player")
-		PlayerCameraMovement();
+	if (enable_control)
+	{
+		if (camera->tag == "Debug")
+			DebugCameraMovement();
+		else if (camera->tag == "Player")
+			PlayerCameraMovement();
+	}
 
 	CameraAction();
 
@@ -164,6 +167,66 @@ XMMATRIX reality::CameraSystem::GetViewProj()
 	return view_matrix * projection_matrix;
 }
 
+bool reality::CameraSystem::PlaySequence(SequenceInfo seq_info, float reverse_after)
+{
+	if (is_sequence_playing == false)
+	{
+		current_seq_info_ = seq_info;
+		enable_control = false;
+		current_sequence_pos_ = seq_info.sequence_start;
+		current_target_pos_ = seq_info.target_start;
+		is_sequence_playing = true;
+
+		if (reverse_after > 0)
+			current_seq_info_.reverse = 1;
+	}
+	
+	static float speed = 100.f;
+	static float time = 0.0f;
+	time += TM_DELTATIME;
+	float t = time / current_seq_info_.play_time;
+
+	float seq_length = Vector3Length(current_seq_info_.sequence_end - current_seq_info_.sequence_start);
+	float distance_from_start = Distance(current_seq_info_.sequence_start, current_sequence_pos_);
+
+	if (distance_from_start >= seq_length)
+	{
+		static float finished_time = time;
+
+		if (reverse_after > 0)
+		{
+			if (current_seq_info_.reverse >= 1 && time > finished_time + reverse_after)
+			{
+				swap(current_seq_info_.sequence_start, current_seq_info_.sequence_end);
+				swap(current_seq_info_.target_start, current_seq_info_.target_end);
+				swap(current_seq_info_.acceler, current_seq_info_.decceler);
+				current_seq_info_.reverse -= 1;
+				time = 0;
+			}
+			else
+			{
+				is_sequence_playing = false;
+				enable_control = true;
+				return true;
+			}
+		}
+		else
+		{
+			return true;
+		}
+	}
+	else
+	{
+		current_sequence_pos_ = XMVectorLerp(current_seq_info_.sequence_start, current_seq_info_.sequence_end, t);
+		current_target_pos_ = XMVectorLerp(current_seq_info_.target_start, current_seq_info_.target_end, t);
+
+		view_matrix = XMMatrixLookAtLH(current_sequence_pos_, current_target_pos_, XMVectorSet(0, 1, 0, 0));
+		world_matrix = XMMatrixInverse(0, view_matrix);
+	}
+
+	return false;
+}
+
 void CameraSystem::DebugCameraMovement()
 {
 	XMVECTOR front_dir = camera->look *speed* TM_DELTATIME;
@@ -203,6 +266,31 @@ void CameraSystem::DebugCameraMovement()
 	{
 		camera->camera_pos += up_dir;
 	}
+
+	XMMATRIX rotation, view;
+	XMVECTOR scale_vector, rotation_center, rotation_quaternion;
+
+	XMVECTOR up_vector = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	camera->camera_pos.m128_f32[3] = 0;
+
+	scale_vector = XMVectorReplicate(1.0f);
+	rotation_center = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, camera->roll);
+
+	camera->rotation += (camera->target_rotation - camera->rotation) * TM_DELTATIME * 10;
+
+	XMVECTOR target_pos = camera->camera_pos;
+	target_pos.m128_f32[2] += 1;
+	view = XMMatrixLookAtLH(camera->camera_pos, target_pos, up_vector);
+	rotation_center = camera->camera_pos;
+	rotation = DirectX::XMMatrixAffineTransformation(scale_vector, XMVectorZero(), rotation_quaternion, rotation_center);
+	view = XMMatrixInverse(0, rotation);
+	camera->camera_pos = rotation.r[3];
+
+	this->view_matrix = view;
+	this->world_matrix = XMMatrixInverse(0, view);
+	this->rotation_matrix = rotation;
 }
 
 
@@ -214,6 +302,30 @@ void reality::CameraSystem::PlayerCameraMovement()
 	camera->pitch_yaw.x += pitch;
 	camera->pitch_yaw.y += yaw;
 	camera->roll = 0;
+
+	XMMATRIX rotation, view;
+	XMVECTOR scale_vector, rotation_center, rotation_quaternion;
+
+	XMVECTOR up_vector = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	camera->camera_pos.m128_f32[3] = 0;
+
+	scale_vector = XMVectorReplicate(1.0f);
+	rotation_center = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, camera->roll);
+
+	camera->rotation += (camera->target_rotation - camera->rotation) * TM_DELTATIME * 10;
+
+
+	rotation_center = camera->target_pos;
+	view = XMMatrixLookAtLH(camera->camera_pos + XMVECTOR{ camera->rotation, 0, camera->rotation, 0 }, camera->target_pos + XMVECTOR{ camera->rotation, 0, camera->rotation, 0 }, up_vector);
+	rotation = DirectX::XMMatrixAffineTransformation(scale_vector, rotation_center, rotation_quaternion, XMVectorZero());
+	rotation = XMMatrixInverse(0, rotation);
+	view = XMMatrixMultiply(rotation, view);
+
+	this->view_matrix = view;
+	this->world_matrix = XMMatrixInverse(0, view);
+	this->rotation_matrix = rotation;
 }
 
 void CameraSystem::CameraAction()
@@ -248,48 +360,13 @@ void CameraSystem::CreateMatrix()
 	camera->aspect = viewport->Width / viewport->Height;
 	projection_matrix = XMMatrixPerspectiveFovLH(camera->fov, camera->aspect, camera->near_z, camera->far_z);
 
-	XMMATRIX rotation_matrix, view_matrix;
-	XMVECTOR scale_vector, rotation_center, rotation_quaternion;
-
-	XMVECTOR up_vector = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	camera->camera_pos.m128_f32[3] = 0;
-
-	scale_vector = XMVectorReplicate(1.0f);
-	rotation_center = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	rotation_quaternion = DirectX::XMQuaternionRotationRollPitchYaw(camera->pitch_yaw.x, camera->pitch_yaw.y, camera->roll);
-
-	camera->rotation += (camera->target_rotation - camera->rotation) * TM_DELTATIME * 10;
-
-	if (camera->tag == "Debug") {
-		XMVECTOR target_pos = camera->camera_pos;
-		target_pos.m128_f32[2] += 1;
-		view_matrix = XMMatrixLookAtLH(camera->camera_pos, target_pos, up_vector);
-		rotation_center = camera->camera_pos;
-		rotation_matrix = DirectX::XMMatrixAffineTransformation(scale_vector, XMVectorZero(), rotation_quaternion, rotation_center);
-		view_matrix = XMMatrixInverse(0, rotation_matrix);
-		camera->camera_pos = rotation_matrix.r[3];
-	}
-	else {
-		rotation_center = camera->target_pos;
-		view_matrix = XMMatrixLookAtLH(camera->camera_pos + XMVECTOR{ camera->rotation, 0, camera->rotation, 0 }, camera->target_pos + XMVECTOR{ camera->rotation, 0, camera->rotation, 0 }, up_vector);
-		rotation_matrix = DirectX::XMMatrixAffineTransformation(scale_vector, rotation_center, rotation_quaternion, XMVectorZero());
-		rotation_matrix = XMMatrixInverse(0, rotation_matrix);
-		view_matrix = XMMatrixMultiply(rotation_matrix, view_matrix);
-	}
-
-	this->view_matrix = view_matrix;
-	this->world_matrix = XMMatrixInverse(0, view_matrix);
-
-	//cb_camera_info.data.view_matrix = XMMatrixTranspose(view_matrix);
-	//cb_camera_info.data.projection_matrix = XMMatrixTranspose(projection_matrix);
+	camera->camera_pos = world_matrix.r[3];
 	cb_camera_info.data.view_proj_matrix = XMMatrixTranspose(view_matrix * projection_matrix);
-	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(cb_camera_info.data.camera_position));
-	cb_camera_info.data.camera_position = XMMatrixInverse(nullptr, this->view_matrix).r[3];
+	cb_camera_info.data.camera_translation = XMMatrixTranspose(XMMatrixTranslationFromVector(camera->camera_pos));
+	cb_camera_info.data.camera_position = camera->camera_pos;
 	cb_camera_info.data.camera_position.m128_f32[3] = camera->far_z;
-	cb_camera_info.data.camera_look = XMVector3Normalize(XMMatrixInverse(nullptr, this->view_matrix).r[2]);
+	cb_camera_info.data.camera_look = XMVector3Normalize(XMMatrixInverse(nullptr, view_matrix).r[2]);
 
-	//camera->look = XMVector3Normalize(rotation_matrix.r[2]);
 	camera->look = cb_camera_info.data.camera_look;
 	camera->right = XMVector3Normalize(rotation_matrix.r[0]);
 	camera->up = XMVector3Normalize(rotation_matrix.r[1]);

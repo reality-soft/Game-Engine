@@ -696,7 +696,17 @@ void reality::QuadTreeMgr::UpdateCapsules()
 		{
 			destroied_actors.push_back(c_capsule.first);
 			c_capsule.second = nullptr;
+			continue;
 		}
+
+		XMVECTOR impulse = XMVector3Normalize(c_capsule.second->impulse_vector);
+		impulse *= c_capsule.second->impulse_strength * TM_DELTATIME;
+		impulse.m128_f32[1] = max(0, impulse.m128_f32[1]);
+
+		c_capsule.second->impulse_strength -= Vector3Length(impulse) * 5.f;
+		c_capsule.second->impulse_strength = max(0, c_capsule.second->impulse_strength);
+
+		SCENE_MGR->GetActor<Character>(c_capsule.first)->ApplyMovement(c_capsule.second->world.r[3] + impulse);
 	}
 
 	for (const auto& ent : destroied_actors)
@@ -800,6 +810,32 @@ RayCallback reality::QuadTreeMgr::RaycastCarOnly(const RayShape& ray)
 		return RayCallback();
 
 	return callback_list.begin()->second;
+}
+
+RayCallback reality::QuadTreeMgr::RaycastActorTargeted(const RayShape& ray, entt::entity target_ent = entt::null)
+{
+	RayCallback callback;
+
+	for (auto& item : dynamic_capsule_list)
+	{	
+
+		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
+			continue;
+
+		const auto& capsule = item.second->capsule;
+		callback = RayToCapsule(ray, capsule);
+		if (callback.success)
+		{
+			if (item.first == target_ent)
+			{
+				callback.is_actor = true;
+				callback.ent = item.first;
+				break;
+			}
+		}
+	}
+
+	return callback;
 }
 
 bool reality::QuadTreeMgr::RegistDynamicCapsule(entt::entity ent)

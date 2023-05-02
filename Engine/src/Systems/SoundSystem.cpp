@@ -13,7 +13,7 @@ void SoundSystem::OnUpdate(entt::registry& reg)
 
     CheckPlayingPool();
 
-    SetPlayingSoundVolume();
+    //SetPlayingSoundVolume();
 }
 
 void reality::SoundSystem::PlayBackground(string sound_name, bool looping, float fade_in, float volume)
