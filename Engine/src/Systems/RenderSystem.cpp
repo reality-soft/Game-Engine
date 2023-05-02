@@ -242,8 +242,9 @@ void RenderSystem::CreateEffectCB()
 
 		desc.ByteWidth = sizeof(CbEffect::Data);
 
-		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.Usage = D3D11_USAGE_DYNAMIC;
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 		subdata.pSysMem = &cb_effect_.data;
 		subdata.pSysMem = &cb_effect_.data;
@@ -264,8 +265,9 @@ void RenderSystem::CreateEffectCB()
 
 		desc.ByteWidth = sizeof(CbEmitter::Data);
 
-		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.Usage = D3D11_USAGE_DYNAMIC;
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 		subdata.pSysMem = &cb_emitter_.data;
 
@@ -294,8 +296,9 @@ void RenderSystem::CreateEffectCB()
 
 		desc.ByteWidth = sizeof(CbParticle::Data);
 
-		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.Usage = D3D11_USAGE_DYNAMIC;
 		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 		subdata.pSysMem = &cb_particle_.data;
 
@@ -430,7 +433,13 @@ void RenderSystem::SetEffectCB(Effect& effect, XMMATRIX& world)
 {
 	cb_effect_.data.world = XMMatrixTranspose(world);
 
-	device_context_->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	device_context_->Map(cb_effect_.buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, &cb_effect_.data, sizeof(CbEffect::Data));
+	device_context_->Unmap(cb_effect_.buffer.Get(), 0);
+
+	//device_context_->UpdateSubresource(cb_effect_.buffer.Get(), 0, nullptr, &cb_effect_.data, 0, 0);
 	device_context_->GSSetConstantBuffers(1, 1, cb_effect_.buffer.GetAddressOf());
 }
 
@@ -479,7 +488,13 @@ void RenderSystem::SetEmitterCB(Emitter& emitter)
 	}break;
 	}
 
-	device_context_->UpdateSubresource(cb_emitter_.buffer.Get(), 0, nullptr, &cb_emitter_.data, 0, 0);
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	device_context_->Map(cb_emitter_.buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, &cb_emitter_.data, sizeof(CbEmitter::Data));
+	device_context_->Unmap(cb_emitter_.buffer.Get(), 0);
+
+	//device_context_->UpdateSubresource(cb_emitter_.buffer.Get(), 0, nullptr, &cb_emitter_.data, 0, 0);
 	device_context_->GSSetConstantBuffers(2, 1, cb_emitter_.buffer.GetAddressOf());
 }
 
@@ -571,6 +586,12 @@ void RenderSystem::SetParticleCB(Particle& particle)
 
 	cb_particle_.data.transform_for_billboard = XMMatrixTranspose(srt);
 
-	device_context_->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	device_context_->Map(cb_particle_.buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, &cb_particle_.data, sizeof(CbParticle::Data));
+	device_context_->Unmap(cb_particle_.buffer.Get(), 0);
+
+	//device_context_->UpdateSubresource(cb_particle_.buffer.Get(), 0, nullptr, &cb_particle_.data, 0, 0);
 	device_context_->GSSetConstantBuffers(3, 1, cb_particle_.buffer.GetAddressOf());
 }
