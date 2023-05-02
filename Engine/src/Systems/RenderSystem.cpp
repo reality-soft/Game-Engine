@@ -108,7 +108,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 
 	for (auto& ent : view_skm)
 	{
-		//if (SCENE_MGR->GetActor<Actor>(ent)->visible) {
+		if (SCENE_MGR->GetActor<Actor>(ent)->visible) {
 			auto* skeletal_mesh_component = reg.try_get<C_SkeletalMesh>(ent);
 			auto* animation_component = reg.try_get<C_Animation>(ent);
 			if (skeletal_mesh_component == nullptr) {
@@ -116,7 +116,7 @@ void RenderSystem::OnUpdate(entt::registry& reg)
 			}
 			cb_skeletal_mesh_.data.transform_matrix = XMMatrixTranspose(skeletal_mesh_component->world);
 			RenderSkeletalMesh(skeletal_mesh_component, animation_component);
-		//}
+		}
 	}
 
 	DX11APP->GetDeviceContext()->RSSetState(DXStates::rs_solid_cull_none());
