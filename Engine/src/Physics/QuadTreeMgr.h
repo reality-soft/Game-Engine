@@ -132,10 +132,7 @@ namespace reality {
 		void ImportGuideLines(string mapdat_file, GuideType guide_type);
 		vector<GuideLine>* GetGuideLines(string name);
 
-		void ImportFloydRout(string mapdat_file);
-		map<UINT, FloydRout>& GetFloydRout();
 		vector<TriangleShape>& GetCarTriangles();
-		map<UINT, FloydRout> floyd_routs_;
 		vector<TriangleShape> car_triagnles_;
 
 		void SetBlockingFields(string name);

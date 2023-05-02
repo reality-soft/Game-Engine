@@ -28,7 +28,7 @@ namespace reality
 		void SetWorldTime(float noon_time, float night_time);
 		void SetSkyColorByTime(XMFLOAT4 start_color, XMFLOAT4 end_color);
 		void SetFogDistanceByTime(float start_distance, float end_distance);
-		void SetLightProperty(float _min_brightness, float _max_specular);
+		void SetLightProperty(XMFLOAT4 _noon_light_color, XMFLOAT4 _night_light_color, float min_spec, float max_spec);
 
 		void Update(XMVECTOR camera_pos, LightingSystem* sys_lighting);
 		void Render();
@@ -47,8 +47,12 @@ namespace reality
 
 		float current_time_;
 		XMFLOAT2 time_limits;
-		float min_directional_bright_;
-		float max_specular_strength_;
+
+		// Light Property
+		XMFLOAT4 noon_light_color_;
+		XMFLOAT4 night_light_color_;
+		float min_specular_;
+		float max_specular_;
 
 		DistanceFog distance_fog_;
 		SkySphere   sky_sphere_;

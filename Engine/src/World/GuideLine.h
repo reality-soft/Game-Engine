@@ -9,17 +9,6 @@ namespace reality
 		eSpawnPoint,
 	};
 
-	struct FloydRout
-	{
-		float distance = 1000000;
-		UINT start_index;
-		UINT dest_index;
-		UINT trans_index;
-		XMVECTOR start;
-		XMVECTOR dest;
-		XMVECTOR trans;
-	};
-
 	class DLL_API GuideLine
 	{
 	public:
