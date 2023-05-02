@@ -12,9 +12,9 @@ namespace reality
 	public:	
 		void OnCreate(entt::registry& reg) override;
 		void OnUpdate(entt::registry& reg) override;
-		void UpdateGlobalLight(float lerp_value, float min_bright, float max_specular);
+		void UpdateGlobalLight(float specular, XMFLOAT4 color);
 		CbGlobalLight::Data GetGlobalLightData();
-		void SetGlobalLightPos(XMFLOAT3 position);
+		void SetGlobalLightPos(XMFLOAT4 position);
 
 	private:
 		HRESULT CreateSunCB();

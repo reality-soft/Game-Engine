@@ -34,10 +34,12 @@ void reality::Environment::SetFogDistanceByTime(float start_distance, float end_
 	distance_fog_.SetMaxMinDistance(start_distance, end_distance);
 }
 
-void reality::Environment::SetLightProperty(float _min_brightness, float _max_specular)
+void reality::Environment::SetLightProperty(XMFLOAT4 _noon_light_color, XMFLOAT4 _night_light_color, float min_spec, float max_spec)
 {
-	min_directional_bright_ = _min_brightness;
-	max_specular_strength_ = _max_specular;
+	this->noon_light_color_ = _noon_light_color;
+	this->night_light_color_ = _night_light_color;
+	this->min_specular_ = min_spec;
+	this->max_specular_ = max_spec;
 }
 
 void reality::Environment::Update(XMVECTOR camera_pos, LightingSystem* sys_lighting)
@@ -70,8 +72,9 @@ void reality::Environment::Update(XMVECTOR camera_pos, LightingSystem* sys_light
 
 	sky_sphere_.Update(lerp_value);
 	distance_fog_.Update(lerp_value);
-	sys_lighting->UpdateGlobalLight(lerp_value, min_directional_bright_, max_specular_strength_);
 
+	
+	sys_lighting->UpdateGlobalLight(min_specular_ + (max_specular_ - min_specular_) * lerp_value, _XMFLOAT4(XMVectorLerp(_XMVECTOR4(night_light_color_), _XMVECTOR4(noon_light_color_), lerp_value)));
 	distance_fog_.UpdateFogStart(camera_pos);
 	distance_fog_.UpdateFogColor(sky_sphere_.GetSkyColor());
 
