@@ -230,6 +230,11 @@ void reality::UIBase::SetAlpha(float alpha)
 	for (auto& vertex : render_data_.vertex_list)
 		vertex.c.w = alpha;
 
+	UpdateRenderCB();
+}
+
+void reality::UIBase::UpdateRenderCB()
+{
 	DX11APP->GetDeviceContext()->UpdateSubresource(render_data_.vertex_buffer.Get(), 0, nullptr, render_data_.vertex_list.data(), 0, 0);
 }
 
