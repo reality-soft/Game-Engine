@@ -45,15 +45,11 @@ static std::string VectorToString(DirectX::XMFLOAT3& arg)
 
 static float RandomFloat()
 {
-	srand(time(NULL));
-
 	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
 static float RandomFloatInRange(float min, float max)
 {
-	srand(time(NULL));
-
 	float scaled = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
 	return min + (scaled * (max - min));
 }
