@@ -774,27 +774,20 @@ RayCallback reality::QuadTreeMgr::RaycastCarOnly(const RayShape& ray)
 	return callback_list.begin()->second;
 }
 
-RayCallback reality::QuadTreeMgr::RaycastActorTargeted(const RayShape& ray, entt::entity target_ent = entt::null)
+RayCallback reality::QuadTreeMgr::RaycastActorTargeted(const RayShape& ray, entt::entity target_ent)
 {
 	RayCallback callback;
 
-	for (auto& item : dynamic_capsule_list)
-	{	
+	auto iter = dynamic_capsule_list.find(target_ent);
+	if (iter == dynamic_capsule_list.end())
+		return RayCallback();
 
-		if (SCENE_MGR->GetActor<Actor>(item.first)->visible == false)
-			continue;
-
-		const auto& capsule = item.second->capsule;
-		callback = RayToCapsule(ray, capsule);
-		if (callback.success)
-		{
-			if (item.first == target_ent)
-			{
-				callback.is_actor = true;
-				callback.ent = item.first;
-				break;
-			}
-		}
+	auto capsule = iter->second->capsule;
+	callback = RayToCapsule(ray, capsule);
+	if (callback.success)
+	{
+		callback.is_actor = true;
+		callback.ent = target_ent;
 	}
 
 	return callback;
