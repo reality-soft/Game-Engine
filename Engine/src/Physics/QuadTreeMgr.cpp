@@ -322,8 +322,6 @@ void reality::QuadTreeMgr::Frame(CameraSystem* applied_camera)
 {
 	camera_frustum_.CreateFromMatrix(camera_frustum_, applied_camera->projection_matrix);
 	camera_frustum_.Transform(camera_frustum_, applied_camera->world_matrix);
-	//UpdateCapsules();
-	//UpdateSpheres();
 
 	visible_nodes = 0;
 	NodeCulling(root_node_);
@@ -974,15 +972,29 @@ void reality::QuadTreeMgr::CapsuleImpulse(entt::entity ent, C_CapsuleCollision& 
 
 	if (strength >= 0.001f)
 	{
-		auto actor = SCENE_MGR->GetActor<Actor>(ent);
-		if (actor == nullptr)
+		auto character = SCENE_MGR->GetActor<Character>(ent);
+		if (character == nullptr)
 			return;
 
 		impulse_vec = impulse_vec * strength * TM_DELTATIME;
 		impulse_vec.m128_f32[1] = max(0, impulse_vec.m128_f32[1]);
 
-		XMVECTOR actor_pos = actor->GetCurPosition();
-		actor->ApplyMovement(actor_pos + impulse_vec);
+		XMVECTOR actor_pos = character->GetCurPosition();
+
+		for (int i = 0; i < 4; ++i)
+		{
+			auto plane = character->blocking_planes_[i];
+
+			if (Vector3Length(_XMVECTOR4(plane)) <= 0.1f)
+				continue;
+
+			XMVECTOR plane_normal = XMVectorSet(plane.x, plane.y, plane.z, 0);
+
+			if (XMVectorGetX(XMVector3Dot(plane_normal, impulse_vec)) < 0.0f)
+				impulse_vec = VectorProjectPlane(impulse_vec, plane_normal);
+
+		}
+		character->ApplyMovement(actor_pos + impulse_vec);
 		c_capsule.impulse_strength -= Vector3Length(impulse_vec) * 5;
 	}
 }
