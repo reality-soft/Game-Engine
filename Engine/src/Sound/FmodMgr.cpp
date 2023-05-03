@@ -42,6 +42,12 @@ void FmodMgr::CreateFmodSystem()
     FMOD_RESULT hr;
     hr = FMOD::System_Create(&fmod_system_);
     hr = fmod_system_->init(100, FMOD_INIT_NORMAL, nullptr);
+    FMOD_VECTOR listenerPos = { 0.0f, 0.0f, 0.0f };
+    FMOD_VECTOR listenerVel = { 0.0f, 0.0f, 0.0f };
+    FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };
+    FMOD_VECTOR forward = { 1.0f, 0.0f, 0.0f };
+    hr = fmod_system_->set3DListenerAttributes(0, &listenerPos, &listenerVel, &forward, &up); 
+    hr = fmod_system_->set3DSettings(1.0f, 1.0f, 1.0f);
 }
 
 void FmodMgr::CheckPlayingPool()
@@ -87,12 +93,16 @@ void FmodMgr::SetPlayingSoundVolume()
 
 void FmodMgr::Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos)
 {
+    XMVECTOR nor_vel = XMVector3Normalize(-generate_pos);
+
     FMOD_VECTOR pos = { generate_pos.m128_f32[0], generate_pos.m128_f32[1], generate_pos.m128_f32[2] };
 
     FMOD_VECTOR vel;
-    vel.x = -pos.x;
-    vel.y = -pos.y;
-    vel.z = -pos.z;
+    vel.x = XMVectorGetX(nor_vel);
+    vel.y = XMVectorGetY(nor_vel);
+    vel.z = XMVectorGetZ(nor_vel);
+
+    FMOD_RESULT fr;
 
     Sound* sound_data = LoadSoundFromPool();
     sound_data->sound_filename = sound_name;
@@ -100,25 +110,25 @@ void FmodMgr::Play(string sound_name, SoundType sound_type, bool looping, float 
     sound_data->sound = RESOURCE->UseResource<FMOD::Sound>(sound_name);
     sound_data->sound->getLength(&sound_data->total_time, FMOD_TIMEUNIT_MS);
     sound_data->constant_volume = volume;
+    //fr = sound_data->sound->set3DMinMaxDistance(1.0f, 3000.0f);
 
-    //sound_data->sound->set3DMinMaxDistance(0, 10);
     sound_data->looping = looping;
-    sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-
-    FMOD_RESULT hr;
+    fr = sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 
     if (sound_type == MUSIC)
     {
-        hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->music_channel_group(), false, &sound_data->channel);
-        sound_data->channel->setVolume(volume * FMOD_MGR->music_volume_);
+        fr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->music_channel_group(), false, &sound_data->channel);
+        fr = sound_data->channel->setVolume(volume * FMOD_MGR->music_volume_);
     }
     else
     {
-        hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->sfx_channel_group(), false, &sound_data->channel);
-        sound_data->channel->setVolume(volume * FMOD_MGR->sfx_volume_);
+        fr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->sfx_channel_group(), false, &sound_data->channel);
+        fr = sound_data->channel->setVolume(volume * FMOD_MGR->sfx_volume_);
     }
-    sound_data->channel->set3DAttributes(&pos, &vel);
-    sound_data->channel->set3DLevel(6);
+    float distance = XMVectorGetX(XMVector3Length(generate_pos));
+    //fr = sound_data->channel->set3DMinMaxDistance(1.0f, 3000.0f);
+    //fr = sound_data->channel->set3DLevel(1.0f);
+    fr = sound_data->channel->set3DAttributes(&pos, nullptr);
 
     sound_play_list.push_back(sound_data);
 }
@@ -219,9 +229,12 @@ Sound* FmodMgr::LoadSoundFromPool()
 
 void FmodMgr::CreateFmodChannelGroup()
 {
-    FMOD_RESULT hr;
-    hr = fmod_system_->createChannelGroup("sfxChannelGroup", &sfx_channel_group_);
-    hr = fmod_system_->createChannelGroup("musicChannelGroup", &music_channel_group_);
+    FMOD_RESULT fr;
+    fr = fmod_system_->createChannelGroup("sfxChannelGroup", &sfx_channel_group_);
+    fr = fmod_system_->createChannelGroup("musicChannelGroup", &music_channel_group_);
+
+    fr = sfx_channel_group_->set3DMinMaxDistance(1.0f, 10000.0f);
+    fr = music_channel_group_->set3DLevel(1.0f);
 }
 
 float FmodMgr::GetMusicVolume()
