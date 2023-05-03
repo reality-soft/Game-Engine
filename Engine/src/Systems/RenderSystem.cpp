@@ -341,7 +341,7 @@ void RenderSystem::RenderBoxShape(entt::registry& reg)
 	{
 		auto& box = reg.get<C_BoxShape>(ent);
 
-		cb_transform_.data.transform_matrix = XMMatrixTranspose(box.local * box.world);
+		cb_transform_.data.transform_matrix = XMMatrixTranspose(box.world);
 
 		device_context_->UpdateSubresource(cb_transform_.buffer.Get(), 0, nullptr, &cb_transform_.data, 0, 0);
 		device_context_->VSSetConstantBuffers(1, 1, cb_transform_.buffer.GetAddressOf());
