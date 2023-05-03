@@ -52,14 +52,13 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
                 auto generator_transform2 = reg.try_get<C_CapsuleCollision>(entity2);
                 if (generator_transform2)
                 {
-                    XMVECTOR generator_position2 = XMVectorSet(generator_transform2->world.r[3].m128_f32[0], generator_transform2->world.r[3].m128_f32[1],
+                    XMVECTOR generator_position = XMVectorSet(generator_transform2->world.r[3].m128_f32[0], generator_transform2->world.r[3].m128_f32[1],
                         generator_transform2->world.r[3].m128_f32[2], 0);
-                    XMVECTOR listener_position2 = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
+                    XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
                         listener_transform.world.r[3].m128_f32[2], 0);
-                    XMVECTOR pos2 = generator_position2 - listener_position2;
+                    XMVECTOR pos2 = generator_position - listener_position;
                     FMOD_MGR->Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos2);
                 }
-                
             }
 
             // 재생했다면 큐에서 제거
