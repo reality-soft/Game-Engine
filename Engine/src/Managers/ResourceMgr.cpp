@@ -31,6 +31,7 @@ void ResourceMgr::LoadAllResource()
     LOCK_MUTEX_RESOURCE(directory_ + "/SKM/", &ResourceMgr::ImportSKM);
     LOCK_MUTEX_RESOURCE(directory_ + "/STM/", &ResourceMgr::ImportSTM);
     LOCK_MUTEX_RESOURCE(directory_ + "/ANIM/", &ResourceMgr::ImportANIM);
+    LOCK_MUTEX_RESOURCE(directory_ + "/Shader/", &ResourceMgr::ImportShaders);
     LOCK_MUTEX_RESOURCE(directory_ + "/Sound/", &ResourceMgr::ImportSound);
     LOCK_MUTEX_RESOURCE(directory_ + "/Texture/", &ResourceMgr::ImportTexture);
     LOCK_MUTEX_RESOURCE(directory_ + "/Material/", &ResourceMgr::ImportMaterial);
@@ -295,7 +296,7 @@ bool ResourceMgr::ImportSound(string filename)
 {
     FMOD::Sound* newSound;
 
-    FMOD_RESULT hr = FMOD_MGR->fmod_system()->createSound(filename.c_str(), (FMOD_MODE)(FMOD_3D), nullptr, &newSound);
+    FMOD_RESULT hr = FMOD_MGR->fmod_system()->createSound(filename.c_str(), FMOD_3D, nullptr, &newSound);
     if (hr != FMOD_OK)
     {
         return false;
