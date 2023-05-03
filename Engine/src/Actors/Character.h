@@ -36,6 +36,7 @@ namespace reality
 
 		void SetPos(const XMVECTOR& position);
 		XMMATRIX GetRotation();
+		XMVECTOR GetFront() { return front_; };
 	public:
 		void CancelMovement();
 	};
