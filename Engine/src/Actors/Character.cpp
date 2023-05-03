@@ -2,12 +2,10 @@
 #include "Character.h"
 #include "TimeMgr.h"
 #include "SceneMgr.h"
-
 void reality::Character::OnInit(entt::registry& registry)
 {
 	Actor::OnInit(registry);
 	registry.emplace_or_replace<C_Movement>(entity_id_, &transform_tree_);
-	movement_component_ = registry.try_get<C_Movement>(entity_id_);
 }
 
 void reality::Character::OnUpdate()
@@ -17,10 +15,15 @@ void reality::Character::OnUpdate()
 	transform_tree_.root_node->Rotate(*reg_scene_, entity_id_, cur_position_, rotation_);
 }
 
+reality::C_Movement* reality::Character::GetMovementComponent()
+{
+	return reg_scene_->try_get<C_Movement>(entity_id_);
+}
+
 void reality::Character::CancelMovement()
 {
-	movement_component_->velocity.m128_f32[0] = 0;
-	movement_component_->velocity.m128_f32[2] = 0;
+	GetMovementComponent()->velocity.m128_f32[0] = 0;
+	GetMovementComponent()->velocity.m128_f32[2] = 0;
 }
 
 void reality::Character::SetPos(const XMVECTOR& position)

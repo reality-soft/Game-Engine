@@ -51,8 +51,6 @@ LRESULT CALLBACK WindowProc(
 namespace reality {
 	bool Engine::OnInit(HINSTANCE hinstance, LPCWSTR title, E_Resolution resolution, bool titlebar)
 	{
-		srand(time(NULL));
-
 		POINT screen_size = { 0, 0 };
 		
 		current_resolution = resolution;
