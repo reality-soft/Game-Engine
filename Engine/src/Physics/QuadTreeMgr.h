@@ -35,7 +35,7 @@ namespace reality {
 		AABBShape area;
 		BoundingBox culling_aabb;
 		vector<TriangleShape> static_triangles;
-		list<entt::entity> static_actors;
+		//list<entt::entity> static_actors;
 	};
 
 	class DLL_API QuadTreeMgr
@@ -60,17 +60,11 @@ namespace reality {
 		void Release();
 	public:
 		void SetSpaceHeight(float min_y, float max_y);
-		void UpdateCapsules();
-		void UpdateSpheres();
 
 		RayCallback Raycast(const RayShape& ray, entt::entity owner_ent);
 		RayCallback RaycastActorOnly(const RayShape& ray, entt::entity owner_ent);
 		RayCallback RaycastCarOnly(const RayShape& ray);
 		RayCallback RaycastActorTargeted(const RayShape& ray, entt::entity target_ent);
-
-		bool RegistDynamicCapsule(entt::entity ent);
-		bool RegistDynamicSphere(entt::entity ent);
-		bool RegistStaticSphere(entt::entity ent);
 
 		SbTriangleCollision triangle_stbuffer;
 		SbCapsuleCollision capsule_stbuffer;
@@ -79,6 +73,7 @@ namespace reality {
 
 		ComPtr<ID3D11Buffer> staging_buffer_;
 		array<SbCollisionResult::Data, 32> collision_result_pool_;
+		array<SbCollisionResult::Data, 32> empty_pool_;
 
 		CbTransform capsule_mesh_transform;
 		bool InitCollisionMeshes();
@@ -95,12 +90,13 @@ namespace reality {
 		void RunPhysicsCS(string cs_id);
 		void MovementByPhysicsCS();
 		void SphereUpdateByPhysicsCS();
+		void CapsuleImpulse(entt::entity ent, C_CapsuleCollision& c_capsule);
 
-		SpaceNode* ParentNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node);
-		SpaceNode* ParentNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node);
-		bool	   LeafNodeQuery(C_CapsuleCollision* c_capsule, SpaceNode* node, vector<SpaceNode*>& out_nodes);
-		bool	   LeafNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
-		bool	   IncludingNodeQuery(C_SphereCollision* c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
+		SpaceNode* ParentNodeQuery(C_CapsuleCollision& c_capsule, SpaceNode* node);
+		SpaceNode* ParentNodeQuery(C_SphereCollision& c_sphere, SpaceNode* node);
+		bool	   LeafNodeQuery(C_CapsuleCollision& c_capsule, SpaceNode* node, vector<SpaceNode*>& out_nodes);
+		bool	   LeafNodeQuery(C_SphereCollision& c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
+		bool	   IncludingNodeQuery(C_SphereCollision& c_sphere, SpaceNode* node, vector<SpaceNode*>& out_nodes);
 		void	   RaycastNodeQuery(const RayShape& ray, SpaceNode* node, map<float, RayCallback>& callbacks);
 		void	   NodeCulling(SpaceNode* node);
 
@@ -110,8 +106,6 @@ namespace reality {
 		SpaceNode* root_node_ = nullptr;
 		map<UINT, SpaceNode*> total_nodes_;
 		map<UINT, SpaceNode*> leaf_nodes_;
-		map<entt::entity, C_CapsuleCollision*> dynamic_capsule_list;
-		map<entt::entity, C_SphereCollision*> dynamic_sphere_list;
 
 	private:
 		SpaceNode* BuildPhysicsTree(UINT depth, float min_x, float min_z, float max_x, float max_z);
