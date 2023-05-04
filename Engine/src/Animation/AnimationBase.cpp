@@ -41,13 +41,14 @@ void reality::AnimationBase::AnimationUpdate()
 		}
 	}
 
-	for (const auto& cur_notify : animation_.notifies_) {
+	for (auto& cur_notify : animation_.notifies_) {
 		if (cur_notify.is_managed == true) {
 			continue;
 		}
 
 		if (cur_notify.frame <= animation_.cur_frame_) {
 			EVENT->PushEvent(cur_notify.event);
+			cur_notify.is_managed = true;
 		}
 	}
 
