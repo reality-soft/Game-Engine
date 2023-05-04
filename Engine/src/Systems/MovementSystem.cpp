@@ -55,8 +55,8 @@ void reality::MovementSystem::OnUpdate(entt::registry& reg)
 
 		cur_y_axis_speed += movement_component->jump_pulse - movement_component->gravity_pulse * TM_DELTATIME;
 		movement_component->velocity.m128_f32[1] = cur_y_axis_speed;
-		
 		XMVECTOR cur_velocity = XMVector3Transform(movement_component->velocity, character->GetRotation());
+
 
 		for (int i = 0; i < 4; ++i)
 		{
