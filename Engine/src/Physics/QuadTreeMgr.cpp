@@ -638,6 +638,9 @@ RayCallback reality::QuadTreeMgr::Raycast(const RayShape& ray, entt::entity owne
 	{
 		auto& c_capsule = registry_->get<C_CapsuleCollision>(ent);
 
+		if (c_capsule.raycast_enable == false)
+			continue;
+
 		if (SCENE_MGR->GetActor<Actor>(ent)->visible == false)
 			continue;
 
@@ -668,6 +671,9 @@ RayCallback reality::QuadTreeMgr::RaycastActorOnly(const RayShape& ray, entt::en
 	for (const auto& ent : c_capsule_view)
 	{
 		auto& c_capsule = registry_->get<C_CapsuleCollision>(ent);
+
+		if (c_capsule.raycast_enable == false)
+			continue;
 
 		if (SCENE_MGR->GetActor<Actor>(ent)->visible == false)
 			continue;
@@ -716,6 +722,9 @@ RayCallback reality::QuadTreeMgr::RaycastActorTargeted(const RayShape& ray, entt
 
 	auto c_capsule_ptr = registry_->try_get<C_CapsuleCollision>(target_ent);
 	if (c_capsule_ptr == nullptr)
+		return RayCallback();
+
+	if (c_capsule_ptr->raycast_enable == false)
 		return RayCallback();
 
 	callback = RayToCapsule(ray, c_capsule_ptr->capsule);
