@@ -166,7 +166,7 @@ void EffectSystem::EmitParticle(Emitter* emitter)
 	particle.enable = true;
 
 	particle.timer = 0.0f;
-	particle.lifetime = randstep(emitter->life_time[0], emitter->life_time[1]);
+	particle.lifetime = RandomFloatInRange(emitter->life_time[0], emitter->life_time[1]);
 	particle.frame_ratio = 0.0f;
 
 	switch (emitter->color_setting_type)
@@ -180,35 +180,35 @@ void EffectSystem::EmitParticle(Emitter* emitter)
 	}
 
 	particle.position = {
-		randstep(emitter->initial_position[0].x, emitter->initial_position[1].x),
-		randstep(emitter->initial_position[0].y, emitter->initial_position[1].y),
-		randstep(emitter->initial_position[0].z, emitter->initial_position[1].z) };
+		RandomFloatInRange(emitter->initial_position[0].x, emitter->initial_position[1].x),
+		RandomFloatInRange(emitter->initial_position[0].y, emitter->initial_position[1].y),
+		RandomFloatInRange(emitter->initial_position[0].z, emitter->initial_position[1].z) };
 	particle.rotation = { 
-		randstep(emitter->initial_rotation[0].x, emitter->initial_rotation[1].x),
-		randstep(emitter->initial_rotation[0].y, emitter->initial_rotation[1].y),
-		randstep(emitter->initial_rotation[0].z, emitter->initial_rotation[1].z) };
+		RandomFloatInRange(emitter->initial_rotation[0].x, emitter->initial_rotation[1].x),
+		RandomFloatInRange(emitter->initial_rotation[0].y, emitter->initial_rotation[1].y),
+		RandomFloatInRange(emitter->initial_rotation[0].z, emitter->initial_rotation[1].z) };
 	particle.scale = {
-		randstep(emitter->initial_size[0].x, emitter->initial_size[1].x),
-		randstep(emitter->initial_size[0].y, emitter->initial_size[1].y),
-		randstep(emitter->initial_size[0].z, emitter->initial_size[1].z) };
+		RandomFloatInRange(emitter->initial_size[0].x, emitter->initial_size[1].x),
+		RandomFloatInRange(emitter->initial_size[0].y, emitter->initial_size[1].y),
+		RandomFloatInRange(emitter->initial_size[0].z, emitter->initial_size[1].z) };
 
 	particle.velocity = {
-		randstep(emitter->initial_velocity[0].x, emitter->initial_velocity[1].x),
-		randstep(emitter->initial_velocity[0].y, emitter->initial_velocity[1].y),
-		randstep(emitter->initial_velocity[0].z, emitter->initial_velocity[1].z) };
+		RandomFloatInRange(emitter->initial_velocity[0].x, emitter->initial_velocity[1].x),
+		RandomFloatInRange(emitter->initial_velocity[0].y, emitter->initial_velocity[1].y),
+		RandomFloatInRange(emitter->initial_velocity[0].z, emitter->initial_velocity[1].z) };
 
 	particle.add_size = {
-		randstep(emitter->add_size_per_lifetime[0].x, emitter->add_size_per_lifetime[1].x),
-		randstep(emitter->add_size_per_lifetime[0].y, emitter->add_size_per_lifetime[1].y),
-		randstep(emitter->add_size_per_lifetime[0].z, emitter->add_size_per_lifetime[1].z) };
+		RandomFloatInRange(emitter->add_size_per_lifetime[0].x, emitter->add_size_per_lifetime[1].x),
+		RandomFloatInRange(emitter->add_size_per_lifetime[0].y, emitter->add_size_per_lifetime[1].y),
+		RandomFloatInRange(emitter->add_size_per_lifetime[0].z, emitter->add_size_per_lifetime[1].z) };
 
 	particle.add_rotation = { 
-		randstep(emitter->add_rotation_per_lifetime[0].x, emitter->add_rotation_per_lifetime[1].x),
-		randstep(emitter->add_rotation_per_lifetime[0].y, emitter->add_rotation_per_lifetime[1].y),
-		randstep(emitter->add_rotation_per_lifetime[0].z, emitter->add_rotation_per_lifetime[1].z) };
+		RandomFloatInRange(emitter->add_rotation_per_lifetime[0].x, emitter->add_rotation_per_lifetime[1].x),
+		RandomFloatInRange(emitter->add_rotation_per_lifetime[0].y, emitter->add_rotation_per_lifetime[1].y),
+		RandomFloatInRange(emitter->add_rotation_per_lifetime[0].z, emitter->add_rotation_per_lifetime[1].z) };
 
 	particle.accelation = {
-		randstep(emitter->accelation_per_lifetime[0].x, emitter->accelation_per_lifetime[1].x),
-		randstep(emitter->accelation_per_lifetime[0].y, emitter->accelation_per_lifetime[1].y),
-		randstep(emitter->accelation_per_lifetime[0].z, emitter->accelation_per_lifetime[1].z) };
+		RandomFloatInRange(emitter->accelation_per_lifetime[0].x, emitter->accelation_per_lifetime[1].x),
+		RandomFloatInRange(emitter->accelation_per_lifetime[0].y, emitter->accelation_per_lifetime[1].y),
+		RandomFloatInRange(emitter->accelation_per_lifetime[0].z, emitter->accelation_per_lifetime[1].z) };
 }

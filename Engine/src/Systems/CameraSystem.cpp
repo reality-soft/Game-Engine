@@ -344,9 +344,9 @@ void CameraSystem::CameraAction()
 		}
 		else
 		{
-			float shake_displacementX = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
-			float shake_displacementY = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
-			float shake_displacementZ = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementX = RandomFloatInRange(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementY = RandomFloatInRange(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementZ = RandomFloatInRange(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
 
 			//camera->camera_pos = XMVectorAdd(camera->camera_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 			camera->roll = shake_displacementX;

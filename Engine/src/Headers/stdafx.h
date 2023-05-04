@@ -31,6 +31,7 @@
 #include <mutex>
 #include <future>
 #include <cmath>
+#include <random>
 #define _USE_MATH_DEFINES
 
 #include <windows.h>
