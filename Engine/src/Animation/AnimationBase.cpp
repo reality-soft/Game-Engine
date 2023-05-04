@@ -142,8 +142,8 @@ void reality::AnimationBase::SetAnimation(string animation_id, float blend_time,
 	else {
 		cur_anim_state_ = ANIM_STATE::ANIM_STATE_CUR_PREV;
 	}
-
-	copy(notifies.begin(), notifies.end(), animation_.notifies_.begin());
+	
+	animation_.notifies_ = notifies;
 
 	animation_.loop_ = loop;
 }
