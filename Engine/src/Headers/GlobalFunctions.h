@@ -43,20 +43,20 @@ static std::string VectorToString(DirectX::XMFLOAT3& arg)
 	return str;
 }
 
-static int RandomIntInRange(int min, int max)
+static int RandomIntInRange(int min_, int max_)
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_int_distribution<int> dis(min, max);
+	std::uniform_int_distribution<int> dis(min(min_, max_), max(min_, max_));
 
 	return dis(gen);
 }
 
-static float RandomFloatInRange(float min, float max)
+static float RandomFloatInRange(float min_, float max_)
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<float> dis(min, max);
+	std::uniform_real_distribution<float> dis(min(min_, max_), max(min_, max_));
 
 	return dis(gen);
 }
@@ -109,11 +109,6 @@ static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XM
 
 	return DirectX::XMScalarNearEqual(dot, 1.f, 0.001f) || DirectX::XMScalarNearEqual(dot, -1.f, 0.001f);
 }
-
-////#define randf(x) (x*rand()/(float)RAND_MAX)
-////#define randf2(x,off) (off+x*rand()/(float)RAND_MAX)
-////#define randstep(fMin,fMax) (fMin+((float)fMax-(float)fMin)*rand()/(float)RAND_MAX)
-////#define clamp(x,MinX,MaxX) if (x>MaxX) x=MaxX; else if (x<MinX) x=MinX;
 
 static DirectX::XMFLOAT4 LerpColor(DirectX::XMFLOAT4 start_color, DirectX::XMFLOAT4 end_color, float key)
 {
