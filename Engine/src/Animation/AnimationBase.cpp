@@ -2,6 +2,7 @@
 #include "AnimationBase.h"
 #include "TimeMgr.h"
 #include "ResourceMgr.h"
+#include "EventMgr.h"
 
 reality::AnimationBase::AnimationBase(string skeletal_mesh_id, int range, string bone_name)
 {
@@ -30,6 +31,20 @@ void reality::AnimationBase::AnimationUpdate()
 	if (animation_.cur_frame_ >= animation_.end_frame_) {
 		animation_ended_ = true;
 		animation_.cur_frame_ = animation_.start_frame_;
+
+		if (animation_.loop_ == false) {
+			SetAnimation("", 0.2f, true);
+		}
+	}
+
+	for (const auto& cur_notify : animation_.notifies_) {
+		if (cur_notify.is_managed == true) {
+			continue;
+		}
+
+		if (cur_notify.frame <= animation_.cur_frame_) {
+			EVENT->PushEvent(cur_notify.event);
+		}
 	}
 
 	OnUpdate();
@@ -90,7 +105,7 @@ reality::ANIM_STATE reality::AnimationBase::GetCurAnimState()
 	return cur_anim_state_;
 }
 
-void reality::AnimationBase::SetAnimation(string animation_id, float blend_time)
+void reality::AnimationBase::SetAnimation(string animation_id, float blend_time, bool loop, vector<AnimNotify> notifies)
 {
 	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_id);
 	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
@@ -127,4 +142,8 @@ void reality::AnimationBase::SetAnimation(string animation_id, float blend_time)
 	else {
 		cur_anim_state_ = ANIM_STATE::ANIM_STATE_CUR_PREV;
 	}
+
+	copy(notifies.begin(), notifies.end(), animation_.notifies_.begin());
+
+	animation_.loop_ = loop;
 }

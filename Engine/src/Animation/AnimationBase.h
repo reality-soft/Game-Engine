@@ -2,6 +2,9 @@
 #include "Animation.h"
 
 namespace reality {
+
+	class Event;
+
 	enum class ANIM_STATE {
 		ANIM_STATE_NONE,
 		ANIM_STATE_CUR_ONLY,
@@ -46,7 +49,7 @@ namespace reality {
 		ANIM_STATE GetCurAnimState();
 
 	public:
-		virtual void SetAnimation(string animation_id, float blend_time);
+		virtual void SetAnimation(string animation_id, float blend_time, bool loop, vector<AnimNotify> notifies = vector<AnimNotify>());
 
 	protected:
 		Animation animation_;
