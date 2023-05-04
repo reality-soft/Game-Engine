@@ -35,6 +35,10 @@ void reality::AnimationBase::AnimationUpdate()
 		if (animation_.loop_ == false) {
 			SetAnimation("", 0.2f, true);
 		}
+
+		for (auto& cur_notify : animation_.notifies_) {
+			cur_notify.is_managed = false;
+		}
 	}
 
 	for (const auto& cur_notify : animation_.notifies_) {
