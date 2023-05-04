@@ -31,6 +31,10 @@ void reality::AnimationBase::AnimationUpdate()
 	if (animation_.cur_frame_ >= animation_.end_frame_) {
 		animation_ended_ = true;
 		animation_.cur_frame_ = animation_.start_frame_;
+
+		if (animation_.loop_ == false) {
+			SetAnimation("", 0.2f, true);
+		}
 	}
 
 	for (const auto& cur_notify : animation_.notifies_) {
@@ -101,7 +105,7 @@ reality::ANIM_STATE reality::AnimationBase::GetCurAnimState()
 	return cur_anim_state_;
 }
 
-void reality::AnimationBase::SetAnimation(string animation_id, float blend_time, vector<AnimNotify> notifies)
+void reality::AnimationBase::SetAnimation(string animation_id, float blend_time, bool loop, vector<AnimNotify> notifies)
 {
 	OutAnimData* anim_resource = RESOURCE->UseResource<OutAnimData>(animation_id);
 	OutAnimData* prev_anim_resource = RESOURCE->UseResource<OutAnimData>(animation_.cur_anim_id_);
@@ -140,4 +144,6 @@ void reality::AnimationBase::SetAnimation(string animation_id, float blend_time,
 	}
 
 	copy(notifies.begin(), notifies.end(), animation_.notifies_.begin());
+
+	animation_.loop_ = loop;
 }

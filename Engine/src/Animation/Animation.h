@@ -15,5 +15,6 @@ namespace reality {
 		float cur_animation_time_ = 0.0f;
 		float cur_frame_ = 0.0f;
 		vector<AnimNotify> notifies_;
+		bool loop_;
 	};
 }

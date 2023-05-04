@@ -49,7 +49,7 @@ namespace reality {
 		ANIM_STATE GetCurAnimState();
 
 	public:
-		virtual void SetAnimation(string animation_id, float blend_time, vector<AnimNotify> notifies = vector<AnimNotify>());
+		virtual void SetAnimation(string animation_id, float blend_time, bool loop, vector<AnimNotify> notifies = vector<AnimNotify>());
 
 	protected:
 		Animation animation_;
