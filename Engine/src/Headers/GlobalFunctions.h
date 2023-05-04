@@ -102,11 +102,9 @@ static DirectX::XMVECTOR VectorProjectPlane(DirectX::XMVECTOR vector, DirectX::X
 
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
 {
-
 	DirectX::XMVECTOR normalized1 = DirectX::XMVector3Normalize(vector1);
 	DirectX::XMVECTOR normalized2 = DirectX::XMVector3Normalize(vector2);
-
-	
+		
 	float dot = DirectX::XMVectorGetX(DirectX::XMVector3Dot(normalized1, normalized2));
 
 	return DirectX::XMScalarNearEqual(dot, 1.f, 0.001f) || DirectX::XMScalarNearEqual(dot, -1.f, 0.001f);
