@@ -50,6 +50,14 @@ void reality::UI_Listbox::InitItemButton(XMFLOAT2 min, float width, float height
 	item_button_textures[E_UIState::UI_DISABLED] = disable;
 }
 
+void reality::UI_Listbox::SetItemButtonSound(string hover, string push, string select)
+{
+	for (auto& button : item_button_list_)
+	{
+		button->SetButtonSound(hover, push, select);
+	}
+}
+
 void reality::UI_Listbox::SetOpenPanelLocalRectByMin(XMFLOAT2 min, float width, float height)
 {
 	open_panel_->SetLocalRectByMin(min, width, height);
