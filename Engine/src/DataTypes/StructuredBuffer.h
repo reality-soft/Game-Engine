@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Shape.h"
-
 namespace reality
 {
 	class StructuredSRV
@@ -62,16 +60,43 @@ namespace reality
 		vector<SbCapsuleCollision::Data> elements;
 	};
 
+	class SbSphereCollision : public StructuredSRV
+	{
+	public:
+		struct Data
+		{
+			float radius;
+			XMFLOAT3 center;
+			int entity;
+			int node_numbers[4];
+		};
+
+	public:
+		void SetElementArraySize(UINT size);
+		vector<SbSphereCollision::Data> elements;
+	};
+
 	class SbCollisionResult : public StructuredUAV
 	{
 	public:
 		struct Data
 		{
-			int entity;
-			int collide_type;
+			struct CapsuleResult
+			{
+				int entity;
+				int collide_type;
 
-			XMFLOAT3 floor_position;
-			RayShape blocking_rays[4];
+				XMFLOAT3 floor_position;
+				XMFLOAT4 wall_planes[4];
+			} capsule_result;
+
+			struct SphereResult
+			{
+				int entity;
+				int is_collide;
+				XMFLOAT3 tri_normal;
+			} sphere_result;
+
 		};
 
 	public:

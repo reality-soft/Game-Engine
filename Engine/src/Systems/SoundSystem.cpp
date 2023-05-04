@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "TimeMgr.h"
 #include "SoundSystem.h"
 #include "ResourceMgr.h"
 #include "FmodMgr.h"
@@ -9,13 +10,21 @@ using namespace reality;
 void SoundSystem::OnUpdate(entt::registry& reg)
 {
     CheckGenerators(reg);
+}
 
-    CheckPlayingPool();
+void SoundSystem::PlayBackground(string sound_name, bool looping, float fade_in, float volume)
+{
+    FMOD_MGR->PlayBackground(sound_name, looping, fade_in, volume);
+}
+
+bool SoundSystem::FadeOutDelete(string sound_name, float fade_out)
+{
+    return FMOD_MGR->FadeOutDelete(sound_name, fade_out);
 }
 
 void SoundSystem::CheckGenerators(entt::registry& reg)
 {
-    // ¾÷µ¥ÀÌÆ®¿¡¼­´Â »ç¿îµå Á¦³Ê·¹ÀÌÅÍ ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ´Â ¿£Æ¼Æ¼µéÀÌ »ç¿îµå Å¥¸¦ °¡Áö°í ÀÖÀ¸¸é »ç¿îµå¸¦ Àç»ıÇÑ´Ù.
+    // ì—…ë°ì´íŠ¸ì—ì„œëŠ” ì‚¬ìš´ë“œ ì œë„ˆë ˆì´í„° ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§€ê³  ìˆëŠ” ì—”í‹°í‹°ë“¤ì´ ì‚¬ìš´ë“œ íë¥¼ ê°€ì§€ê³  ìˆìœ¼ë©´ ì‚¬ìš´ë“œë¥¼ ì¬ìƒí•œë‹¤.
     auto generators = reg.view<C_SoundGenerator>();
     for (auto entity : generators)
     {
@@ -24,110 +33,36 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
         {
             auto queue = generator.sound_queue_list.front();
 
-            // ¸®½º³Ê ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ´Â ¿£Æ¼Æ¼µé¿¡ ´ëÇØ 3D º¤ÅÍ °è»ê ÈÄ »ç¿îµå ¼³Á¤
+            // ë¦¬ìŠ¤ë„ˆ ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§€ê³  ìˆëŠ” ì—”í‹°í‹°ë“¤ì— ëŒ€í•´ 3D ë²¡í„° ê³„ì‚° í›„ ì‚¬ìš´ë“œ ì„¤ì •
             auto listeners = reg.view<C_SoundListener>();
             for (auto entity2 : listeners)
             {
-                auto& generator_transform = reg.get<C_Transform>(entity);
                 auto& listener_transform = reg.get<C_CapsuleCollision>(entity2);
-                // TODO : Transform ¼öÁ¤ ÈÄ °íÄ¥ ¿¹Á¤
-                XMVECTOR genertor_position = XMVectorSet(generator_transform.world.r[3].m128_f32[0], generator_transform.world.r[3].m128_f32[1],
-                    generator_transform.world.r[3].m128_f32[2], 0);
-                XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
-                    listener_transform.world.r[3].m128_f32[2], 0);
-                XMVECTOR pos = genertor_position - listener_position;
-                Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
+                auto generator_transform = reg.try_get<C_Transform>(entity);
+                if (generator_transform)
+                {
+                    XMVECTOR genertor_position = XMVectorSet(generator_transform->world.r[3].m128_f32[0], generator_transform->world.r[3].m128_f32[1],
+                        generator_transform->world.r[3].m128_f32[2], 0);
+                    XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
+                        listener_transform.world.r[3].m128_f32[2], 0);
+                    XMVECTOR pos = genertor_position - listener_position;
+                    FMOD_MGR->Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
+                }
+
+                auto generator_transform2 = reg.try_get<C_CapsuleCollision>(entity2);
+                if (generator_transform2)
+                {
+                    XMVECTOR generator_position = XMVectorSet(generator_transform2->world.r[3].m128_f32[0], generator_transform2->world.r[3].m128_f32[1],
+                        generator_transform2->world.r[3].m128_f32[2], 0);
+                    XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
+                        listener_transform.world.r[3].m128_f32[2], 0);
+                    XMVECTOR pos2 = generator_position - listener_position;
+                    FMOD_MGR->Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos2);
+                }
             }
 
-            // Àç»ıÇß´Ù¸é Å¥¿¡¼­ Á¦°Å
+            // ì¬ìƒí–ˆë‹¤ë©´ íì—ì„œ ì œê±°
             generator.sound_queue_list.pop();
         }
     }
-}
-
-void SoundSystem::CheckPlayingPool()
-{
-    for (auto iter = sound_play_list.begin(); iter != sound_play_list.end(); )
-    {
-        Sound* sound = *iter;
-        // Àç»ı ÁßÀÎ »ç¿îµåÀÇ ÇöÀç ½Ã°£ °»½Å
-        sound->channel->getPosition(&sound->current_time, FMOD_TIMEUNIT_MS);
-
-        // °»½ÅµÈ »ç¿îµå°¡ ³¡³µ´Ù¸é ÃÊ±âÈ­ ÇÏ°í Sound¸¸ Ç®¿¡ ³Ö±â
-        if (!sound->looping && sound->current_time >= sound->total_time)
-        {
-            sound->channel->stop();
-            sound->channel = nullptr;
-            sound->sound_filename = "";
-            sound->total_time = 0;
-            sound->current_time = 0;
-
-            iter = sound_play_list.erase(iter);
-
-            sound_pool.push(sound);
-
-            if (iter == sound_play_list.end())
-                break;
-        }
-        iter++;
-    }
-}
-
-void SoundSystem::Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos)
-{
-    FMOD_VECTOR pos = { generate_pos.m128_f32[0], generate_pos.m128_f32[1], generate_pos.m128_f32[2] };
-
-    FMOD_VECTOR vel;
-    vel.x = -pos.x;
-    vel.y = -pos.y;
-    vel.z = -pos.z;
-
-    Sound* sound_data = LoadSoundFromPool();
-    sound_data->sound_filename = sound_name;
-    sound_data->type = sound_type;
-    sound_data->sound = RESOURCE->UseResource<FMOD::Sound>(sound_name);
-     sound_data->sound->getLength(&sound_data->total_time, FMOD_TIMEUNIT_MS);
-
-    //sound_data->sound->set3DMinMaxDistance(0, 10);
-    sound_data->looping = looping;
-    sound_data->sound->setMode(looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-
-    FMOD_RESULT hr;
-
-    if (sound_type == MUSIC)
-    {
-        hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->music_channel_group(), false, &sound_data->channel);
-        sound_data->channel->setVolume(volume * FMOD_MGR->GetMusicVolume());
-    }
-    else
-    {
-        hr = FMOD_MGR->fmod_system()->playSound(sound_data->sound, FMOD_MGR->sfx_channel_group(), false, &sound_data->channel);
-        sound_data->channel->setVolume(volume * FMOD_MGR->GetSFXVolume());
-    }
-    sound_data->channel->set3DAttributes(&pos, &vel);
-    sound_data->channel->set3DLevel(6);
-
-    sound_play_list.push_back(sound_data);
-}
-
-void reality::SoundSystem::CreateSoundPool()
-{
-    Sound* init_sound_data = new Sound;
-    for (int i = 0; i < POOL_SIZE; i++)
-    {
-        Sound* newSound = new Sound(*init_sound_data);
-        sound_pool.push(newSound);
-    }
-        
-    delete init_sound_data;
-}
-
-Sound* reality::SoundSystem::LoadSoundFromPool()
-{
-    if (sound_pool.size() == 0)
-        CreateSoundPool();
-
-    Sound* sound = sound_pool.front();
-    sound_pool.pop();
-    return sound;
 }

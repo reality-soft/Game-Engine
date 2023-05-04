@@ -7,6 +7,7 @@ namespace reality
 	{
 	public:
 		void InitImage(string tex_id);
+		void SetImage(string tex_id);
 	};
 }
 

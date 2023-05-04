@@ -71,7 +71,7 @@ bool reality::StructuredUAV::Create(void* p_data)
 
 	uav_desc.Format = DXGI_FORMAT_UNKNOWN;
 	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	uav_desc.Buffer.NumElements = 64;
+	uav_desc.Buffer.NumElements = byte_width / byte_stride;
 
 	hr = DX11APP->GetDevice()->CreateUnorderedAccessView(buffer.Get(), &uav_desc, uav.GetAddressOf());
 	if (FAILED(hr))
@@ -112,16 +112,34 @@ void reality::SbCapsuleCollision::SetElementArraySize(UINT size)
 	byte_width = elements.size() * byte_stride;
 }
 
+void reality::SbSphereCollision::SetElementArraySize(UINT size)
+{
+	elements.resize(size);
+
+	for (auto& e : elements)
+	{
+		e.radius = 0;
+		e.center = { 0 ,0, 0 };
+	}
+
+	byte_stride = sizeof(SbSphereCollision::Data);
+	byte_width = elements.size() * byte_stride;
+}
+
+
 void reality::SbCollisionResult::SetElementArraySize(UINT size)
 {
 	elements.resize(size);
 
 	for (auto& e : elements)
 	{
-		e.entity = 0;
-		e.collide_type = 0;
-		e.floor_position = { 0, 0, 0 };
-		ZeroMemory(&e.blocking_rays, sizeof(e.blocking_rays));
+		e.capsule_result.entity = 0;
+		e.capsule_result.collide_type = 0;
+		e.capsule_result.floor_position = { 0, 0, 0 };
+		ZeroMemory(&e.capsule_result.wall_planes, sizeof(e.capsule_result.wall_planes));
+
+		e.sphere_result.entity = 0;
+		e.sphere_result.tri_normal = { 0, 0, 0 };
 	}
 
 	byte_stride = sizeof(SbCollisionResult::Data);

@@ -39,6 +39,7 @@ namespace reality
 	struct UIVertex
 	{
 		XMFLOAT2 p;
+		XMFLOAT4 c;
 		XMFLOAT2 t;
 	};
 }

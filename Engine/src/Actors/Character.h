@@ -5,36 +5,38 @@ namespace reality
 {
 	enum class MovementState
 	{
-		STAND_ON_FLOOR,
-		JUMP,
-		GRAVITY_FALL,
-		BLOCK_BY_WALL,
+		FALL,
+		WALK,
 	};
 
 	class DLL_API Character : public Actor
 	{
 	protected:
-		C_Movement*	 movement_component_;
 		XMVECTOR	 front_ = { 0, 0, 1, 0 };
 		XMVECTOR	 right_ = { 1, 0, 0, 0 };
 		XMVECTOR	 fall_ = { 0, -1, 0, 0 };
 		XMVECTOR	 jump_ =  { 0, 1, 0, 0 };
 
+	protected:
+		XMMATRIX rotation_ = XMMatrixIdentity();
+
 	public:
 		XMFLOAT3 floor_position = {0, 0, 0};
 		MovementState movement_state_;
-		vector<RayShape> blocking_walls_;
+		XMFLOAT4 blocking_planes_[4];
 
 	public:
 		void OnInit(entt::registry& registry) override;
 		void OnUpdate() override;
-		C_Movement* GetMovementComponent() { return movement_component_; }
-		void GravityFall(float _gravity);
-		XMMATRIX GetTranformMatrix() { return transform_matrix_; }
 
 	public:
-		XMVECTOR GetPos() const;
+		C_Movement* GetMovementComponent();
+		C_CapsuleCollision* GetCapsuleComponent();
+
 		void SetPos(const XMVECTOR& position);
-		void RotateAlongMovementDirection();
+		XMMATRIX GetRotation();
+		XMVECTOR GetFront() { return front_; };
+	public:
+		void CancelMovement();
 	};
 }

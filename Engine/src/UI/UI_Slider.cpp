@@ -13,7 +13,9 @@ void UI_Slider::InitSlider(string background, string normal, string hover, strin
 	render_data_.tex_id = background;
 	slider_ = make_shared<UI_Button>();
 	slider_->InitButton(normal, hover, push, select, disable);
-	AddChildUI(slider_);
+	AddChildUI("1_Slider", slider_);
+	value_ = 50.0f;
+	last_value_ = 50.0f;
 }
 
 void UI_Slider::Update()
@@ -21,6 +23,13 @@ void UI_Slider::Update()
 	UIBase::Update();
 
 	UpdateSliderPos();
+
+	if (value_ != last_value_)
+		is_changed_ = true;
+	else
+		is_changed_ = false;
+
+	last_value_ = value_;
 }
 
 void UI_Slider::UpdateSliderPos()
@@ -34,7 +43,7 @@ void UI_Slider::UpdateSliderPos()
 		slider_->SetLocalRectByCenter({ x * 1.0f / E_Resolution_Multiply[resolution], rect_transform_[E_Resolution::R1920x1080].world_rect.height / 2.0f},
 			slider_->rect_transform_[E_Resolution::R1920x1080].world_rect.width, slider_->rect_transform_[E_Resolution::R1920x1080].world_rect.height);
 
-		value_ = 100.0f * x / rect_transform_[resolution].world_rect.min.x;
+		value_ = 100.0f * x / rect_transform_[resolution].world_rect.width;
 	}
 }
 

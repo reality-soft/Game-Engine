@@ -9,7 +9,9 @@
 #pragma warning(disable : 26495)
 #pragma warning(disable : 26451)
 
+#ifdef _DEBUG
 #include <fbxsdk.h>
+#endif
 #include <fmod.hpp>
 #include <entt.hpp>
 #include <d3d11.h>
@@ -73,3 +75,5 @@ type& operator=(const type&) = delete;
 #define _XMVECTOR4(xmfloat) (DirectX::XMLoadFloat4(&xmfloat))
 #define _XMVECTOR3(xmfloat) (DirectX::XMLoadFloat3(&xmfloat))
 #define _XMVECTOR2(xmfloat) (DirectX::XMLoadFloat2(&xmfloat))
+
+#define TO_RAD(degree) (DirectX::XMConvertToRadians(degree))

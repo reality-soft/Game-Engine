@@ -28,7 +28,6 @@
 #include "Actors/Character.h"
 #include "Actors/FX_BaseEffectActor.h"
 #include "Actors/UIActor.h"
-#include "Actors/StaticObject.h"
 
 #include "World/Level.h"
 #include "World/Environment.h"

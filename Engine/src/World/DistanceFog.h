@@ -12,7 +12,7 @@ namespace reality
 		void UpdateFogStart(XMVECTOR fog_start);
 		void UpdateFogColor(XMFLOAT4 color);
 
-		void Update(XMFLOAT2 world_time, float current_time);
+		void Update(float lerp_value);
 		void Render();
 
 	private:

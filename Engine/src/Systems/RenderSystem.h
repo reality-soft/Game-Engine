@@ -17,7 +17,7 @@ namespace reality
 		virtual void OnCreate(entt::registry& reg);
 		virtual void OnUpdate(entt::registry& reg);
 
-		void PlayAnimation(const Skeleton& skeleton, C_Animation& animation_component);
+		void PlayAnimation(const Skeleton& skeleton, const C_Animation* const animation_component);
 		void RenderStaticMesh(const C_StaticMesh* const static_mesh);
 		void RenderSkeletalMesh(const C_SkeletalMesh* const skeletal_mesh_components, C_Animation* const animation_component);
 		
@@ -26,17 +26,15 @@ namespace reality
 		void CreateEffectBuffer();
 
 		void RenderBoxShape(entt::registry& reg);
-		void RenderBoundingBox(const C_BoundingBox* const);
 		void RenderEffects(entt::registry& reg);
 
 	public:
-		void SetTransformCB(const C_Transform* const transform_component, Transform& transform);
-		void SetSocketCB(const Socket& socket);
 		void SetEffectCB(Effect& effect, XMMATRIX& world);
 		void SetEmitterCB(Emitter& emitter);
 		void SetShaderAndMaterial(Emitter& emitter);
 		void SetStates(Emitter& emitter);
 		void SetParticleCB(Particle& particle);
+
 	public:
 
 	private:

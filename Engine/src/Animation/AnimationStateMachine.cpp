@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "AnimationStateMachine.h"
+#include "AnimationState.h"
 
 namespace reality {
     void AnimationStateMachine::OnInit()

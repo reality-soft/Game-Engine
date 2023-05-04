@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GUIMgr.h"
 
+#ifdef _DEBUG
 using namespace reality;
 
 void GUIMgr::Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
@@ -55,24 +56,6 @@ void GUIMgr::RenderWidgets()
 	ImGui::EndFrame();
 }
 
-void GUIMgr::AddWidget(string widget_name, GuiWidget* widget)
-{
-	if (FindWidget(widget_name) != nullptr)
-		return;
-
-	widget->Init();
-	widgets.insert(make_pair(widget_name, widget));
-}
-
-GuiWidget* GUIMgr::FindWidget(string widget_name)
-{
-	auto iter = widgets.find(widget_name);
-	if (iter != widgets.end())
-		return iter->second;
-	
-	return nullptr;
-}
-
 ImGuiContext* reality::GUIMgr::GetContext()
 {
 	return context;
@@ -95,3 +78,4 @@ ImFont* reality::GUIMgr::AddFont(string font_name, LPCSTR ttf_file, float font_s
 
 	return new_font;
 }
+#endif

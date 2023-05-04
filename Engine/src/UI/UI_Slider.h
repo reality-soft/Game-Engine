@@ -8,6 +8,8 @@ namespace reality
 	{
 	private:
 		float value_;
+		float last_value_;
+		bool is_changed_;
 		shared_ptr<UI_Button> slider_;
 	public:
 		void InitSlider(string background, string normal, string hover, string push = "", string select = "", string disable = "");
@@ -15,6 +17,7 @@ namespace reality
 		virtual void Update() override;
 		void UpdateSliderPos();
 		float GetValue();
+		bool GetIsChanged() { return is_changed_; };
 	};
 }
 

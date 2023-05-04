@@ -3,11 +3,6 @@
 
 namespace reality
 {
-	struct Transform {
-		XMMATRIX    world_matrix;
-		XMMATRIX    local_matrix;
-	};
-
 	struct SocketTransform {
 		XMMATRIX	owner_local = XMMatrixIdentity();
 		XMMATRIX	local_offset = XMMatrixIdentity();
@@ -18,8 +13,7 @@ namespace reality
 	{
 		CbTransform()
 		{
-			data.transform.world_matrix = XMMatrixIdentity();
-			data.transform.local_matrix = XMMatrixIdentity();
+			data.transform_matrix = XMMatrixIdentity();
 		}
 		CbTransform(const CbTransform& other)
 		{
@@ -28,7 +22,7 @@ namespace reality
 		}
 		struct Data
 		{
-			Transform transform;
+			XMMATRIX transform_matrix;
 		} data;
 
 		ComPtr<ID3D11Buffer> buffer;
@@ -44,8 +38,8 @@ namespace reality
 		}
 		struct Data
 		{
-			Transform		transform;
-			SocketTransform	socket_transform;
+			XMMATRIX transform_matrix;
+			XMMATRIX socket_matrix;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -61,15 +55,8 @@ namespace reality
 		}
 		struct Data
 		{
-			Transform   transform;
-			XMMATRIX	bind_pose[128];
-			XMMATRIX	prev_animation[128];
+			XMMATRIX    transform_matrix;
 			XMMATRIX	animation[128];
-			XMMATRIX	prev_slot_animation[128];
-			XMMATRIX	slot_animation[128];
-			float		slot_weights[128];
-			float		base_time_weight;
-			float		slot_time_weight;
 		} data;
 		ComPtr<ID3D11Buffer> buffer;
 	};
@@ -78,8 +65,7 @@ namespace reality
 	{
 		CbCameraInfo()
 		{
-			data.view_matrix = XMMatrixIdentity();
-			data.projection_matrix = XMMatrixIdentity();
+			data.view_proj_matrix = XMMatrixIdentity();
 			data.camera_translation = XMMatrixIdentity();
 			data.camera_position = XMVectorZero();
 			data.camera_look = XMVectorZero();
@@ -91,8 +77,7 @@ namespace reality
 		}
 		struct Data
 		{
-			XMMATRIX view_matrix;
-			XMMATRIX projection_matrix;
+			XMMATRIX view_proj_matrix;
 			XMMATRIX camera_translation;
 			XMVECTOR camera_position;
 			XMVECTOR camera_look;
@@ -156,30 +141,14 @@ namespace reality
 		ComPtr<ID3D11Buffer> buffer;
 	};
 
-	struct CbShadowMap
-	{
-		CbShadowMap()
-		{
-			data.shadow_view = XMMatrixIdentity();
-			data.shadow_proj = XMMatrixIdentity();
-		}
-		struct Data
-		{
-			XMMATRIX shadow_view;
-			XMMATRIX shadow_proj;
-		} data;
-
-		ComPtr<ID3D11Buffer> buffer;
-	};
-
 	struct CbGlobalLight
 	{
 		CbGlobalLight()
 		{
-			data.position = XMFLOAT3(15000, 15000, -15000);
-			data.brightness = 1.0f;
+			data.position = XMFLOAT4(5000, 5000, -5000, 0);
+			data.light_color = XMFLOAT4(1, 1, 1, 1);
 
-			data.direction = XMFLOAT3((-1.0f * XMVector3Normalize(XMLoadFloat3(&data.position))).m128_f32);
+			data.direction = XMFLOAT3((-1.0f * XMVector3Normalize(XMLoadFloat4(&data.position))).m128_f32);
 			data.specular_strength = 1.0f;
 			
 			data.ambient_up    = XMLoadFloat3(&data.direction) * 0.8;
@@ -193,8 +162,8 @@ namespace reality
 		}
 		struct Data
 		{
-			XMFLOAT3 position;
-			float brightness;
+			XMFLOAT4 position;
+			XMFLOAT4 light_color;
 
 			XMFLOAT3 direction;
 			float specular_strength;

@@ -45,17 +45,29 @@ static std::string VectorToString(DirectX::XMFLOAT3& arg)
 
 static float RandomFloat()
 {
-	srand(time(NULL));
-
 	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
 static float RandomFloatInRange(float min, float max)
 {
-	srand(time(NULL));
-
 	float scaled = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
 	return min + (scaled * (max - min));
+}
+
+static void RandomMarginFloat(float& f, float margin, bool up, bool down)
+{
+	if (up)
+	{
+		f += RandomFloatInRange(0, margin);
+	}
+	else if (down)
+	{
+		f -= RandomFloatInRange(0, margin);
+	}
+	else
+	{
+		f += RandomFloatInRange(-margin / 2, margin / 2);
+	}
 }
 
 static DirectX::XMVECTOR RandomPointInBox(const DirectX::XMVECTOR& center, const DirectX::XMVECTOR& half_size)
@@ -118,6 +130,12 @@ static DirectX::XMVECTOR Vector3Project(DirectX::XMVECTOR OB, DirectX::XMVECTOR 
 	return DirectX::XMVectorMultiply(DirectX::XMVectorDivide(OB, DirectX::XMVector3LengthSq(OB)), DirectX::XMVector3Dot(OA, OB));
 }
 
+static DirectX::XMVECTOR VectorProjectPlane(DirectX::XMVECTOR vector, DirectX::XMVECTOR plane_normal)
+{
+	DirectX::XMVECTOR proj = DirectX::XMVectorMultiply(DirectX::XMVector3Dot(vector, plane_normal), plane_normal);
+	return DirectX::XMVectorSubtract(vector, proj);
+}
+
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
 {
 
@@ -147,11 +165,11 @@ static DirectX::XMFLOAT4 LerpColor(DirectX::XMFLOAT4 start_color, DirectX::XMFLO
 	return lerped_color;
 }
 
-static DirectX::XMMATRIX TransformS(DirectX::XMFLOAT3& sacling)
+static DirectX::XMMATRIX TransformS(DirectX::XMFLOAT3 sacling)
 {
 	return DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&sacling));
 }
-static DirectX::XMMATRIX TransformR(DirectX::XMFLOAT3& roation)
+static DirectX::XMMATRIX TransformR(DirectX::XMFLOAT3 roation)
 {
 	DirectX::XMMATRIX rotation = DirectX::XMMatrixIdentity();
 	rotation *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(roation.x));
@@ -160,7 +178,74 @@ static DirectX::XMMATRIX TransformR(DirectX::XMFLOAT3& roation)
 
 	return rotation;
 }
-static DirectX::XMMATRIX TransformT(DirectX::XMFLOAT3& position)
+static DirectX::XMMATRIX TransformT(DirectX::XMFLOAT3 position)
 {
 	return DirectX::XMMatrixTranslationFromVector(XMLoadFloat3(&position));
+}
+
+static float FadeInAlpha(float start, float end, float cur_time)
+{
+	float alpha = 0.0f;
+
+	float fi_s, fi_e;
+	fi_s = start;
+	fi_e = end;
+
+	if (fi_s <= cur_time && cur_time <= fi_e) // fade_in
+	{
+		alpha = (fi_s - cur_time) / (fi_s - fi_e);
+	}
+	else if (fi_e <= cur_time)
+	{
+		alpha = 1.0f;
+	}
+
+	return alpha;
+}
+
+static float FadeOutAlpha(float start, float end, float cur_time)
+{
+	float alpha = 1.0f;
+
+	float fo_s, fo_e;
+	fo_s = start;
+	fo_e = end;
+
+	if (fo_s <= cur_time && cur_time <= fo_e) // fade_in
+	{
+		alpha = 1.0f - (fo_s - cur_time) / (fo_s - fo_e);
+	}
+	else if (fo_e <= cur_time)
+	{
+		alpha = 0.0f;
+	}
+
+	return alpha;
+}
+
+
+static float FadeAlpha(float start, float end, float fade_in, float fade_out, float cur_time)
+{
+	float alpha = 0.0f;
+
+	float fi_s, fi_e, fo_s, fo_e;
+	fi_s = start;
+	fi_e = fi_s + fade_in;
+	fo_s = end - fade_out;
+	fo_e = end;
+
+	if (fi_s <= cur_time && cur_time <= fi_e) // fade_in
+	{
+		alpha = cur_time / fade_in;
+	}
+	else if (fo_s <= cur_time && cur_time <= fo_e) // fade_out
+	{
+		alpha = 1.0f - (cur_time - fo_s) / fade_out;
+	}
+	else if (fi_e <= cur_time && cur_time <= fo_s)
+	{
+		alpha = 1.0f;
+	}
+
+	return alpha;
 }

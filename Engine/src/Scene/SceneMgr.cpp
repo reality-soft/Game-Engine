@@ -33,6 +33,11 @@ namespace reality{
 	{
 		if (scenes.find(scene_to_change_) != scenes.end())
 		{
+			if (cur_scene_ != nullptr)
+			{
+				cur_scene_->OnRelease();
+			}
+				
 			cur_scene_ = scenes[scene_to_change_];
 			COMPONENT->OnInit(cur_scene_->GetRegistryRef());
 		}
@@ -74,5 +79,19 @@ namespace reality{
 
 	int  SceneMgr::GetNumOfActor() {
 		return cur_scene_->GetActors().size();
+	}
+
+	int SceneMgr::GetNumOfActor(string tag)
+	{
+		int num = 0;
+		auto actors = cur_scene_->GetActors();
+		for (const auto& actor : actors)
+		{
+			if (actor.second->tag == tag)
+				num++;
+		}
+
+
+		return num;
 	}
 }

@@ -1,25 +1,28 @@
 #pragma once
-#include "AnimationState.h"
 #include "Transition.h"
 #include "AnimationBase.h"
 
 namespace reality {
+	class AnimationState;
+
 	class DLL_API AnimationStateMachine : public AnimationBase
 	{
 	public:
-		AnimationStateMachine(entt::entity owner_id) : owner_id_(owner_id) {}
+		AnimationStateMachine(entt::entity owner_id, string skeletal_mesh_id, int range, string bone_name = "") :
+			owner_id_(owner_id), 
+			AnimationBase(skeletal_mesh_id, range, bone_name) {}
 
 	public:
 		virtual void OnInit() override;
 		virtual void OnUpdate() override;
 
 	public:
-		entt::entity GetOwnerId() {
+		entt::entity GetOwnerId() const {
 			return owner_id_;
 		}
 
 	public:
-		AnimationState* GetCurrentAnimatinoState() {
+		AnimationState* GetCurrentAnimationState() {
 			return cur_state_.get();
 		}
 

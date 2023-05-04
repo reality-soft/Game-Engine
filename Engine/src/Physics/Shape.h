@@ -1,5 +1,6 @@
 #pragma once
 #define EPSILON 0.00001f
+#include "Mesh.h"
 
 namespace reality {
 
@@ -8,7 +9,7 @@ namespace reality {
         RayShape();
         RayShape(const XMVECTOR& _start, const XMVECTOR& _end);
         RayShape(const XMFLOAT3& _start, const XMFLOAT3& _end);
-        XMVECTOR GetRayVector();
+
         XMFLOAT3 start, end;
     };
 
@@ -16,11 +17,6 @@ namespace reality {
     {
         TriangleShape();
         TriangleShape(const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2);
-
-        bool SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b);
-        array<RayShape, 3> GetEdgeRays();
-        XMVECTOR GetMinXZ();
-        XMVECTOR GetMaxXZ();
 
         UINT index;
         XMFLOAT3 normal;
@@ -32,9 +28,6 @@ namespace reality {
         AABBShape() {}
         AABBShape(const XMFLOAT3& _min, const XMFLOAT3& _max);
         AABBShape(const XMFLOAT3& _center, const float& scale);
-        array<XMFLOAT3, 8> GetCorners();
-        array<TriangleShape, 12> GetTriangles();
-        array<RayShape, 4> GetYAxisRay();
 
         XMFLOAT3 min, max, center;
     };
@@ -53,8 +46,6 @@ namespace reality {
     {
         CapsuleShape();
         CapsuleShape(const XMFLOAT3& _base, const float& _height, const float& _radius);
-        array<XMVECTOR, 4> GetTipBaseAB();
-        AABBShape GetAsAABB();
 
         float height;
         float radius;
@@ -65,7 +56,6 @@ namespace reality {
     {
         PlaneShape() {}
         PlaneShape(XMVECTOR vec0, XMVECTOR vec1, XMVECTOR vec2);
-        float DotFromPoint(XMVECTOR point);
 
         FLOAT a, b, c, d;
         XMVECTOR normal;
@@ -81,4 +71,6 @@ namespace reality {
         TriangleShape topbottom_tries[4];
     };
 
+    void ConvertToTrianlgeShapes(vector<TriangleShape>& out, const SingleMesh<Vertex>& mesh);
+    void ConvertToAABBShape(AABBShape& out, const SingleMesh<Vertex>& mesh);
 }

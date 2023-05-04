@@ -42,7 +42,7 @@ bool reality::SkySphere::CreateSphere()
 	return true;
 }
 
-void reality::SkySphere::Update(XMFLOAT2 world_time, float current_time)
+void reality::SkySphere::Update(float lerp_value)
 {
 	DX11APP->GetDeviceContext()->VSSetShader(nullptr, 0, 0);
 	DX11APP->GetDeviceContext()->GSSetShader(nullptr, 0, 0);
@@ -51,31 +51,7 @@ void reality::SkySphere::Update(XMFLOAT2 world_time, float current_time)
 	DX11APP->GetDeviceContext()->IASetInputLayout(vs.get()->InputLayout());
 	DX11APP->GetDeviceContext()->VSSetShader(vs.get()->Get(), 0, 0);
 
-	float half_noon = world_time.x / 2;
-	float half_night = world_time.y / 2;
-
-	if (current_time > half_noon)
-		cb_sky.data.sky_color = skycolor_noon;
-
-	else if (current_time < half_night)
-		cb_sky.data.sky_color = skycolor_night;
-
-	else if (current_time <= half_noon && current_time >= half_night)
-	{
-		float a = half_noon - half_night;
-		float b = half_night - half_night;
-		float ct = current_time - half_night;
-		float lerp = ct / (a + b);
-
-		cb_sky.data.sky_color = LerpColor(skycolor_night, skycolor_noon, lerp);
-	}
-
-	//if (current_time > 0)
-	//	cb_sky.data.sky_color = LerpColor(skycolor_night, skycolor_noon, fabs(current_time) / world_time.x);
-
-	//else
-	//	cb_sky.data.sky_color = LerpColor(skycolor_noon, skycolor_night, fabs(current_time) / world_time.y);
-
+	cb_sky.data.sky_color = LerpColor(skycolor_night, skycolor_noon, lerp_value);
 
 	DX11APP->GetDeviceContext()->UpdateSubresource(cb_sky.buffer.Get(), 0, 0, &cb_sky.data, 0, 0);
 	DX11APP->GetDeviceContext()->PSSetConstantBuffers(1, 1, cb_sky.buffer.GetAddressOf());

@@ -65,7 +65,7 @@ void FX_BaseEffectActor::AddSoundQueue(string sound_name, SoundType type, bool l
 	sound_gen_comp.sound_queue_list.push(sound_queue);
 }
 
-void FX_BaseEffectActor::AddPointLightComponent(string pointlight_name, float lifetime)
+void FX_BaseEffectActor::AddPointLightComponent(string pointlight_name, float lifetime = -1.0f)
 {
 	auto& pointlight_comp = reg_scene_->emplace<C_PointLight>(entity_id_);
 	pointlight_comp.point_light_id = pointlight_name;

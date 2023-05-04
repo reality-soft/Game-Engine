@@ -17,18 +17,18 @@ void UIBase::Init()
 void UIBase::Update()
 {
 	UpdateThisUI();
-	for (auto child : child_ui_list_)
+	for (auto& pair : child_ui_list_)
 	{
-		child->Update();
+		pair.second->Update();
 	}
 }
 
 void UIBase::Render()
 {
 	RenderThisUI();
-	for (auto child : child_ui_list_)
+	for (auto& pair : child_ui_list_)
 	{
-		child->Render();
+		pair.second->Render();
 	}
 }
 
@@ -39,10 +39,10 @@ void UIBase::CreateRenderData()
 	render_data_.ps_id = "UIPS.cso";
 
 	// 정점 작성
-	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {+0.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {+1.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {+0.0f, +1.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {+1.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+0.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+1.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+0.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f}, {+1.0f, +1.0f} });
 
 	D3D11_BUFFER_DESC bufDesc;
 
@@ -192,16 +192,18 @@ void UIBase::UpdateRectTransform()
 	
 }
 
-void UIBase::AddChildUI(shared_ptr<UIBase> child_ui)
+void UIBase::AddChildUI(string name, shared_ptr<UIBase> child_ui)
 {
-	child_ui_list_.insert(child_ui);
+	child_ui_list_.insert({ name, child_ui });
 	child_ui->parent_ui_ = this;
 }
 
-void reality::UIBase::DeleteChildUI(shared_ptr<UIBase> child_ui)
+void reality::UIBase::DeleteChildUI(string name)
 {
-	child_ui_list_.erase(child_ui);
-	child_ui->parent_ui_ = nullptr;
+	if (child_ui_list_.find(name) == child_ui_list_.end())
+		return;
+	child_ui_list_[name]->parent_ui_ = nullptr;
+	child_ui_list_.erase(name);
 }
 
 E_UIState UIBase::GetCurrentState()
@@ -221,6 +223,19 @@ void UIBase::On()
 void UIBase::Off()
 {
 	onoff_ = false;
+}
+
+void reality::UIBase::SetAlpha(float alpha)
+{
+	for (auto& vertex : render_data_.vertex_list)
+		vertex.c.w = alpha;
+
+	UpdateRenderCB();
+}
+
+void reality::UIBase::UpdateRenderCB()
+{
+	DX11APP->GetDeviceContext()->UpdateSubresource(render_data_.vertex_buffer.Get(), 0, nullptr, render_data_.vertex_list.data(), 0, 0);
 }
 
 bool UIBase::GetOnOff()

@@ -36,10 +36,10 @@ void RenderTarget::CreateRenderData()
 	render_data_.ps_id = "UIPS.cso";
 
 	// 정점 작성
-	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {+0.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {+1.0f, +0.0f} });
-	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {+0.0f, +1.0f} });
-	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {+1.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+0.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, +1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+1.0f, +0.0f} });
+	render_data_.vertex_list.push_back({ { -1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+0.0f, +1.0f} });
+	render_data_.vertex_list.push_back({ { +1.0f, -1.0f }, {1.0f, 1.0f, 1.0f, 1.0f} ,{+1.0f, +1.0f} });
 
 	D3D11_BUFFER_DESC bufDesc;
 
@@ -274,8 +274,18 @@ shared_ptr<RenderTarget> RenderTargetMgr::LoadRT(std::string rtname)
 	}
 }
 
-void RenderTargetMgr::DeletingRT()
+bool RenderTargetMgr::DeletingRT(std::string rtname)
 {
+	auto iter = resdic_render_target_.find(rtname);
+	if (iter != resdic_render_target_.end())
+	{
+		resdic_render_target_.erase("rtname");
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void RenderTargetMgr::ResettingRT()

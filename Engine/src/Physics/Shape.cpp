@@ -19,12 +19,6 @@ reality::RayShape::RayShape(const XMFLOAT3& _start, const XMFLOAT3& _end)
     end = _end;
 }
 
-
-XMVECTOR reality::RayShape::GetRayVector()
-{
-    return _XMVECTOR3(start) - _XMVECTOR3(end);
-}
-
 reality::TriangleShape::TriangleShape()
 {
     vertex0 = _XMFLOAT3(XMVectorZero());
@@ -44,55 +38,6 @@ reality::TriangleShape::TriangleShape(const XMFLOAT3& v0, const XMFLOAT3& v1, co
     normal = _XMFLOAT3(XMVector3Normalize(XMVector3Cross(edge1, edge2)));
 }
 
-bool reality::TriangleShape::SameSide(XMVECTOR p1, XMVECTOR p2, XMVECTOR a, XMVECTOR b)
-{
-    XMVECTOR cp1 = XMVector3Cross(b - a, p1 - a);
-    XMVECTOR cp2 = XMVector3Cross(b - a, p2 - a);
-    if (XMVectorGetX(XMVector3Dot(cp1, cp2)) >= 0)
-        return true;
-    else
-        return false;
-}
-
-array<reality::RayShape, 3> reality::TriangleShape::GetEdgeRays()
-{
-    RayShape edge0(_XMVECTOR3(vertex0), _XMVECTOR3(vertex1));
-    RayShape edge1(_XMVECTOR3(vertex1), _XMVECTOR3(vertex2));
-    RayShape edge2(_XMVECTOR3(vertex2), _XMVECTOR3(vertex0));
-
-    return { edge0, edge1, edge2 };
-}
-
-XMVECTOR reality::TriangleShape::GetMinXZ()
-{
-    XMVECTOR min_xz = XMVectorZero();
-
-    min_xz.m128_f32[0] = vertex0.x;
-    min_xz.m128_f32[0] = min(min_xz.m128_f32[0], vertex1.x);
-    min_xz.m128_f32[0] = min(min_xz.m128_f32[0], vertex2.x);
-
-    min_xz.m128_f32[2] = vertex0.z;
-    min_xz.m128_f32[2] = min(min_xz.m128_f32[2], vertex1.z);
-    min_xz.m128_f32[2] = min(min_xz.m128_f32[2], vertex2.z);
-
-    return min_xz;
-}
-
-XMVECTOR reality::TriangleShape::GetMaxXZ()
-{
-    XMVECTOR max_xz = XMVectorZero();
-
-    max_xz.m128_f32[0] = vertex0.x;
-    max_xz.m128_f32[0] = max(max_xz.m128_f32[0], vertex1.x);
-    max_xz.m128_f32[0] = max(max_xz.m128_f32[0], vertex2.x);
-
-    max_xz.m128_f32[2] = vertex0.z;
-    max_xz.m128_f32[2] = max(max_xz.m128_f32[2],vertex1.z);
-    max_xz.m128_f32[2] = max(max_xz.m128_f32[2],vertex2.z);
-
-    return max_xz;
-}
-
 reality::AABBShape::AABBShape(const XMFLOAT3& _min, const XMFLOAT3& _max)
 {
     min = _min;
@@ -105,54 +50,6 @@ reality::AABBShape::AABBShape(const XMFLOAT3& _center, const float& scale)
     center = _center;
     min = _XMFLOAT3((_XMVECTOR3(center) - XMVectorSet(scale / 2, scale / 2, scale / 2, 0)));
     max = _XMFLOAT3((_XMVECTOR3(center) + XMVectorSet(scale / 2, scale / 2, scale / 2, 0)));
-}
-
-array<XMFLOAT3, 8> reality::AABBShape::GetCorners()
-{
-    array<XMFLOAT3, 8> corners;
-    corners[0] = XMFLOAT3(min.x, min.y, min.z);
-    corners[1] = XMFLOAT3(min.x, min.y, max.z);
-    corners[2] = XMFLOAT3(min.x, max.y, min.z);
-    corners[3] = XMFLOAT3(min.x, max.y, max.z);
-    corners[4] = XMFLOAT3(max.x, min.y, min.z);
-    corners[5] = XMFLOAT3(max.x, min.y, max.z);
-    corners[6] = XMFLOAT3(max.x, max.y, min.z);
-    corners[7] = XMFLOAT3(max.x, max.y, max.z);
-
-    return corners;
-}
-
-array<reality::TriangleShape, 12> reality::AABBShape::GetTriangles()
-{
-    XMFLOAT3* corners = GetCorners().data();
-    array<TriangleShape, 12> triangles;
-
-    triangles[0]  = TriangleShape(corners[0], corners[1], corners[2]);
-    triangles[1]  = TriangleShape(corners[2], corners[3], corners[0]);
-    triangles[2]  = TriangleShape(corners[7], corners[6], corners[5]);
-    triangles[3]  = TriangleShape(corners[5], corners[4], corners[7]);
-    triangles[4]  = TriangleShape(corners[1], corners[5], corners[6]);
-    triangles[5]  = TriangleShape(corners[6], corners[2], corners[1]);
-    triangles[6]  = TriangleShape(corners[4], corners[0], corners[3]);
-    triangles[7]  = TriangleShape(corners[3], corners[7], corners[4]);
-    triangles[8]  = TriangleShape(corners[4], corners[5], corners[1]);
-    triangles[9]  = TriangleShape(corners[1], corners[0], corners[4]);
-    triangles[10] = TriangleShape(corners[3], corners[2], corners[6]);
-    triangles[11] = TriangleShape(corners[6], corners[7], corners[3]);
-
-    return triangles;
-}
-
-array<reality::RayShape, 4> reality::AABBShape::GetYAxisRay()
-{
-    XMFLOAT3* corners = GetCorners().data();
-    array<RayShape, 4> y_ray;
-    y_ray[0] = RayShape(_XMVECTOR3(corners[2]), _XMVECTOR3(corners[0]));
-    y_ray[1] = RayShape(_XMVECTOR3(corners[6]), _XMVECTOR3(corners[4]));
-    y_ray[2] = RayShape(_XMVECTOR3(corners[3]), _XMVECTOR3(corners[1]));
-    y_ray[3] = RayShape(_XMVECTOR3(corners[7]), _XMVECTOR3(corners[5]));
-
-    return y_ray;
 }
 
 reality::SphereShape::SphereShape(const XMFLOAT3& _center, const float& _radius)
@@ -181,25 +78,6 @@ reality::CapsuleShape::CapsuleShape(const XMFLOAT3& _base, const float& _height,
     radius = _radius;
 }
 
-array<XMVECTOR, 4> reality::CapsuleShape::GetTipBaseAB()
-{
-    XMVECTOR tip = _XMVECTOR3(base) + XMVectorSet(0, height, 0, 0);
-
-    XMVECTOR normal = XMVector3Normalize(tip - _XMVECTOR3(base));
-    XMVECTOR lineend = normal * radius;
-    XMVECTOR A = _XMVECTOR3(base) + lineend;
-    XMVECTOR B = tip - lineend;
-
-    return { tip, _XMVECTOR3(base), A, B };
-}
-
-reality::AABBShape reality::CapsuleShape::GetAsAABB()
-{
-    XMVECTOR cap_min = _XMVECTOR3(base) + XMVectorSet(-radius, 0, -radius, 0);
-    XMVECTOR cap_max = _XMVECTOR3(base) + XMVectorSet(radius, height, radius, 0);
-    return AABBShape(_XMFLOAT3(cap_min), _XMFLOAT3(cap_max));
-}
-
 reality::PlaneShape::PlaneShape(XMVECTOR vec0, XMVECTOR vec1, XMVECTOR vec2)
 {
     XMVECTOR e1 = vec1 - vec0;
@@ -212,17 +90,6 @@ reality::PlaneShape::PlaneShape(XMVECTOR vec0, XMVECTOR vec1, XMVECTOR vec2)
     b = plane.m128_f32[1];
     c = plane.m128_f32[2];
     d = plane.m128_f32[3];
-}
-
-float reality::PlaneShape::DotFromPoint(XMVECTOR point)
-{
-    float distance =
-        a * point.m128_f32[0] +
-        b * point.m128_f32[1] +
-        c * point.m128_f32[2] +
-        d;
-
-    return distance;
 }
 
 reality::Frustum::Frustum(const XMMATRIX& mat_view_proj)
@@ -257,4 +124,43 @@ reality::Frustum::Frustum(const XMMATRIX& mat_view_proj)
     topbottom_tries[1] = TriangleShape(_XMFLOAT3(frustum_vertex[1]), _XMFLOAT3(frustum_vertex[6]), _XMFLOAT3(frustum_vertex[2]));
     topbottom_tries[2] = TriangleShape(_XMFLOAT3(frustum_vertex[0]), _XMFLOAT3(frustum_vertex[3]), _XMFLOAT3(frustum_vertex[4]));
     topbottom_tries[3] = TriangleShape(_XMFLOAT3(frustum_vertex[4]), _XMFLOAT3(frustum_vertex[3]), _XMFLOAT3(frustum_vertex[7]));
+}
+
+void reality::ConvertToTrianlgeShapes(vector<TriangleShape>& out, const SingleMesh<Vertex>& mesh)
+{
+    UINT num_triangle = mesh.vertices.size() / 3;
+    UINT index = 0;
+    for (UINT t = 0; t < num_triangle; t++)
+    {
+        TriangleShape tri_plane = TriangleShape(
+            mesh.vertices[index + 0].p,
+            mesh.vertices[index + 2].p,
+            mesh.vertices[index + 1].p
+        );
+
+        tri_plane.index = t;
+
+        out.push_back(tri_plane);
+        index += 3;
+    }
+    
+}
+
+void reality::ConvertToAABBShape(AABBShape& out, const SingleMesh<Vertex>& mesh)
+{
+    XMFLOAT3 aabb_min = {0, 0, 0};
+    XMFLOAT3 aabb_max = {0, 0, 0};
+
+    for (const auto vertex : mesh.vertices)
+    {
+        aabb_min.x = min(aabb_min.x, vertex.p.x);
+        aabb_min.y = min(aabb_min.y, vertex.p.y);
+        aabb_min.y = min(aabb_min.z, vertex.p.z);
+
+        aabb_max.x = max(aabb_max.x, vertex.p.x);
+        aabb_max.y = max(aabb_max.y, vertex.p.y);
+        aabb_max.y = max(aabb_max.z, vertex.p.z);
+    }
+
+    out = AABBShape(aabb_min, aabb_max);
 }

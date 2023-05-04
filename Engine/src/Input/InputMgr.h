@@ -37,6 +37,9 @@ namespace reality
 		int GetDeltaY();
 
 		void Active(bool shoud_active);
+
+		bool is_active = true;
+
 	private:
 		ComPtr<IDirectInput8> dinput;
 		ComPtr<IDirectInputDevice8> di_keyboard;
@@ -50,7 +53,6 @@ namespace reality
 
 		POINT current_mousepos;
 
-		bool is_active = true;
 	};
 
 }

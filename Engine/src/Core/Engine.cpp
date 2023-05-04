@@ -6,8 +6,11 @@
 #include "InputEventMgr.h"
 #include "SceneMgr.h"
 #include "FmodMgr.h"
+#include "WriteMgr.h"
 
+#ifdef _DEBUG
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
 LRESULT CALLBACK WindowProc(
 	HWND hWnd,
@@ -15,8 +18,10 @@ LRESULT CALLBACK WindowProc(
 	WPARAM wParam,
 	LPARAM lParam)
 {
+#ifdef _DEBUG
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
+#endif
 
 	switch (msg)
 	{
@@ -28,6 +33,7 @@ LRESULT CALLBACK WindowProc(
 		//ENGINE->OnResized();
 		break;
 
+#ifdef _DEBUG
 	case WM_DPICHANGED:
 		if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
 		{
@@ -37,6 +43,7 @@ LRESULT CALLBACK WindowProc(
 			::SetWindowPos(hWnd, NULL, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		break;
+#endif
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
@@ -48,18 +55,7 @@ namespace reality {
 		
 		current_resolution = resolution;
 
-		switch (resolution)
-		{
-		case E_Resolution::R1920x1080:
-			screen_size = { 1920, 1080 };
-			break;
-		case E_Resolution::R1280x720:
-			screen_size = { 1280, 720 };
-			break;
-		default:
-			screen_size = { 1920, 1080 };
-			break;
-		}
+		screen_size = E_Resolution_Size[resolution];
 
 		// À©µµ¿ì ÃÊ±âÈ­
 		if (InitWindow(hinstance, title, screen_size, titlebar) == false)
@@ -69,10 +65,13 @@ namespace reality {
 		if (DX11APP->OnInit(screen_size, hwnd) == false)
 			return false;
 
+#ifdef _DEBUG
 		GUI->Init(ENGINE->GetWindowHandle(), DX11APP->GetDevice(), DX11APP->GetDeviceContext());
+#endif		
 		DINPUT->Init();
 		TIMER->Init();
 		FMOD_MGR->Init();
+		WRITER->Init();
 
 		return true;
 	}
@@ -128,33 +127,22 @@ namespace reality {
 
 	void Engine::Resize(E_Resolution new_resolution)
 	{
-		POINT screen_size = { 0, 0 };
-
 		current_resolution = new_resolution;
 
-		switch (new_resolution)
-		{
-		case E_Resolution::R1920x1080:
-			screen_size = { 1920, 1080 };
-			break;
-		case E_Resolution::R1280x720:
-			screen_size = { 1280, 720 };
-			break;
-		default:
-			screen_size = { 1920, 1080 };
-			break;
-		}
+		POINT screen_size = E_Resolution_Size[new_resolution];
 
-		SetWindowPos(hwnd, NULL, GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2, screen_size.x, screen_size.y, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+		int x = GetSystemMetrics(SM_CXSCREEN) / 2 - screen_size.x / 2;
+		int y = GetSystemMetrics(SM_CYSCREEN) / 2 - screen_size.y / 2;
+
+		SetWindowPos(hwnd, NULL, x, y, screen_size.x, screen_size.y, SWP_NOZORDER | SWP_FRAMECHANGED);
 
 		RECT new_rc;
 		GetClientRect(hwnd, &new_rc);
 		wnd_size.x = new_rc.right - new_rc.left;
 		wnd_size.y = new_rc.bottom - new_rc.top;
 
-		E_Resolution_Size[new_resolution] = { wnd_size.x, wnd_size.y };
-
 		DX11APP->Resize(wnd_size.x, wnd_size.y);
+
 	}
 
 	bool Engine::InitWindow(HINSTANCE hinstance, LPCWSTR title, POINT screen_size, bool titlebar)

@@ -17,13 +17,13 @@ entt::entity reality::Actor::GetEntityId()
 	return entity_id_;
 }
 
-XMMATRIX reality::Actor::GetTransformMatrix()
+XMVECTOR reality::Actor::GetCurPosition()
 {
-	return transform_matrix_;
+	return cur_position_;
 }
 
-void reality::Actor::ApplyMovement(XMMATRIX transform_matrix)
+void reality::Actor::ApplyMovement(XMVECTOR translation_vector)
 {
-	transform_matrix_ = transform_matrix;
-	transform_tree_.root_node->Translate(*reg_scene_, entity_id_, transform_matrix_);
+	cur_position_ = translation_vector;
+	transform_tree_.root_node->Translate(*reg_scene_, entity_id_, XMMatrixTranslationFromVector(cur_position_));
 }

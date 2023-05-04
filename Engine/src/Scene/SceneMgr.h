@@ -6,9 +6,10 @@ namespace reality {
     enum E_SceneType
     {
         SCENE_NONE = 0,
-        START = 1,
-        LOADING = 2,
+        POP = 1,
+        START = 2,
         INGAME = 3,
+        ENDING = 4,
     };
 
     class DLL_API SceneMgr {
@@ -42,6 +43,7 @@ namespace reality {
         void InternalChangeScene();
     public:
         int  GetNumOfActor();
+        int  GetNumOfActor(string tag);
     private:
         E_SceneType         scene_to_change_;
         shared_ptr<Scene>   cur_scene_;

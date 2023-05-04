@@ -4,6 +4,7 @@
 #include "ResourceMgr.h"
 #include "Dx11App.h"
 
+#ifdef _DEBUG
 bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options, FbxVertexOption vertex_option)
 {
     FbxLoader fbx_loader;
@@ -112,6 +113,7 @@ bool reality::FbxMgr::ImportAndSaveFbx(string filename, FbxImportOption options,
     fbx_loader.Destroy();
     return true;
 }
+#endif
 
 void reality::FbxMgr::SaveStaticMesh(const StaticMesh& static_mesh, string filename)
 {
@@ -231,7 +233,7 @@ void reality::FbxMgr::SaveAnimation(const map<string, OutAnimData>& animation)
         vector<UINT> keys;
         vector<vector<XMMATRIX>> animation_matrices;
 
-        for (const auto& cur_pair : cur_anim.second.animations) {
+        for (const auto& cur_pair : cur_anim.second.animation_matrices) {
             keys.push_back(cur_pair.first);
             animation_matrices.push_back(cur_pair.second);
         }
@@ -380,7 +382,7 @@ reality::OutAnimData reality::FbxMgr::LoadAnimation(string filename)
     }
 
     for (int i = 0;i < num_of_keys;i++) {
-        animation_data.animations.insert({ keys[i], animation_matrices[i] });
+        animation_data.animation_matrices.insert({ keys[i], animation_matrices[i] });
     }
 
     animation_data.start_frame = file_exporter.ReadBinaryWithoutSize<UINT>(1)[0];
@@ -462,6 +464,7 @@ bool reality::FbxMgr::CreateBuffers(SingleMesh<SkinnedVertex>& mesh) {
     return true;
 }
 
+#ifdef _DEBUG
 void reality::FbxMgr::ReCalculateNormal(StaticMesh& static_mesh, FbxVertexOption vertex_option)
 {
     for (auto& mesh : static_mesh.meshes)
@@ -470,7 +473,7 @@ void reality::FbxMgr::ReCalculateNormal(StaticMesh& static_mesh, FbxVertexOption
         UINT index = 0;
         switch (vertex_option) {
         case FbxVertexOption::BY_CONTROL_POINT:
-            num_triangle = mesh.indices.size();
+            num_triangle = mesh.indices.size() / 3;
             break;
         case FbxVertexOption::BY_POLYGON_VERTEX:
             num_triangle = mesh.vertices.size() / 3;
@@ -579,3 +582,4 @@ void reality::FbxMgr::ReCalculateNormal(SkeletalMesh& skeletal_mesh, FbxVertexOp
         }
     }
 }
+#endif

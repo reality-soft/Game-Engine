@@ -32,6 +32,7 @@ namespace reality
 			string closed_disable = "", string opened_disable = "");
 
 		void InitItemButton(XMFLOAT2 min, float width, float height, float height_space, string normal, string hover, string push =" ", string select = "", string disable = "");
+		void SetItemButtonSound(string hover, string push, string select);
 
 		void SetOpenPanelLocalRectByMin	(XMFLOAT2 min, float width, float height);
 		void SetOpenPanelLocalRectByMax	(XMFLOAT2 max, float width, float height);
