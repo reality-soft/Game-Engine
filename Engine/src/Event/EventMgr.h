@@ -16,6 +16,10 @@ namespace reality {
 		{
 			event_queue_.push(make_shared<EventType>(args...));
 		}
+		void PushEvent(shared_ptr<Event> event)
+		{
+			event_queue_.push(event);
+		}
 	};
 }
 

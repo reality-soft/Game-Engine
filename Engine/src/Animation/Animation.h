@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "AnimNotify.h"
 
 namespace reality {
 	struct DLL_API Animation {
@@ -13,5 +14,6 @@ namespace reality {
 		float blend_time_ = 0.0f;
 		float cur_animation_time_ = 0.0f;
 		float cur_frame_ = 0.0f;
+		vector<AnimNotify> notifies_;
 	};
 }
