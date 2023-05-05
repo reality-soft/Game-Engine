@@ -185,6 +185,15 @@ void reality::QuadTreeMgr::InitImported()
 
 		node->culling_aabb.CreateFromPoints(node->culling_aabb, _XMVECTOR3(node->area.min), _XMVECTOR3(node->area.max));
 	}
+
+	for (const auto& tri : deviding_level_->level_triangles)
+	{
+		if (tri.index == 11102 || tri.index == 11103 ||
+			tri.index == 11104 || tri.index == 11105 ||
+			tri.index == 11106 || tri.index == 11107 ||
+			tri.index == 11108 || tri.index == 11109)
+			car_triagnles_.push_back(tri);
+	}
 }
 
 void reality::QuadTreeMgr::ImportGuideLines(string mapdat_file, GuideType guide_type)
