@@ -14,7 +14,7 @@ namespace reality
 		string normalmap;
 		string metalic;
 		string roughness;
-		string sepcular;
+		string specular;
 		string ambient;
 		string opacity;
 		string shader = "MeshSurfacePS.cso";

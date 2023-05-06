@@ -26,7 +26,7 @@ void reality::Material::SaveEmpty(string filename)
 	file_trans.WriteText("normalmap", "null");
 	file_trans.WriteText("metalic", "null");
 	file_trans.WriteText("roughness", "null");
-	file_trans.WriteText("sepcular", "null");
+	file_trans.WriteText("specular", "null");
 	file_trans.WriteText("ambient", "null");
 	file_trans.WriteText("opacity", "null");
 	file_trans.WriteText("shader", "null");
@@ -40,7 +40,7 @@ void reality::Material::Create()
 	Texture* nor = RESOURCE->UseResource<Texture>(normalmap);
 	Texture* met = RESOURCE->UseResource<Texture>(metalic);
 	Texture* rou = RESOURCE->UseResource<Texture>(roughness);
-	Texture* spe = RESOURCE->UseResource<Texture>(sepcular);
+	Texture* spe = RESOURCE->UseResource<Texture>(specular);
 	Texture* amb = RESOURCE->UseResource<Texture>(ambient);
 	Texture* opa = RESOURCE->UseResource<Texture>(opacity);
 	PixelShader* ps = RESOURCE->UseResource<PixelShader>(shader);
@@ -80,7 +80,7 @@ void reality::Material::Save(string filename)
 	file_trans.WriteText("normalmap", normalmap);
 	file_trans.WriteText("metalic", metalic);
 	file_trans.WriteText("roughness", roughness);
-	file_trans.WriteText("sepcular", sepcular);
+	file_trans.WriteText("specular", specular);
 	file_trans.WriteText("ambient", ambient);
 	file_trans.WriteText("opacity", opacity);
 	file_trans.WriteText("shader", shader);
@@ -106,7 +106,7 @@ void reality::Material::LoadAndCreate(string filename)
 	normalmap = file_trans.ReadText("normalmap");
 	metalic = file_trans.ReadText("metalic");
 	roughness = file_trans.ReadText("roughness");
-	sepcular = file_trans.ReadText("sepcular");
+	specular = file_trans.ReadText("specular");
 	ambient = file_trans.ReadText("ambient");
 	opacity = file_trans.ReadText("opacity");
 	shader = file_trans.ReadText("shader");
