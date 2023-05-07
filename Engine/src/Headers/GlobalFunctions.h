@@ -77,6 +77,12 @@ static void RandomMarginFloat(float& f, float margin, bool up, bool down)
 	}
 }
 
+static bool Probability(int percentage)
+{
+	int r = RandomIntInRange(0, 99);
+	return r < percentage;
+}
+
 static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
 {
 	// Subtract the 'from' point from the 'to' point to get the vector
