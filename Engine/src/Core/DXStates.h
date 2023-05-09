@@ -6,6 +6,7 @@ namespace reality
 	{
 	public:
 		static ID3D11BlendState*			bs_default();
+		static ID3D11BlendState*			bs_alpha_blending();
 		static ID3D11BlendState*			bs_alpha_to_coverage_enable();
 		static ID3D11BlendState*			bs_dual_source_blend();
 		static ID3D11BlendState*			bs_blend_higher_rgb();

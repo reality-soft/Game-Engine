@@ -530,7 +530,7 @@ void RenderSystem::SetStates(Emitter& emitter)
 		device_context_->OMSetBlendState(nullptr, nullptr, -1);
 		break;
 	case ALPHA_BLEND:
-		device_context_->OMSetBlendState(DXStates::bs_default(), nullptr, -1);
+		device_context_->OMSetBlendState(DXStates::bs_alpha_blending(), nullptr, -1);
 		break;
 	case DUALSOURCE_BLEND:
 		device_context_->OMSetBlendState(DXStates::bs_dual_source_blend(), nullptr, -1);
