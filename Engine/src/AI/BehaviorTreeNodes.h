@@ -46,7 +46,6 @@ namespace reality {
         virtual void ResetNodes();
 
     public:
-        void                   SetStatus(BehaviorStatus);
         virtual BehaviorStatus GetStatus();
 
     public:
@@ -79,6 +78,39 @@ namespace reality {
 
     public:
         virtual void Execute() override;
+    };
+
+    class DLL_API RandomSelectorNode : private BehaviorNode
+    {
+    public:
+        RandomSelectorNode() {
+            executing_child_node_index_ = -1;
+        };
+        RandomSelectorNode(const SelectorNode& other) : BehaviorNode(other) {
+            executing_child_node_index_ = -1;
+        }
+        RandomSelectorNode& operator=(const RandomSelectorNode& other) {
+            if (this != &other) {
+                BehaviorNode::operator=(other);
+            }
+            executing_child_node_index_ = -1;
+            return *this;
+        }
+
+    public:
+        template<typename BehaviorNodeType, typename... Args>
+        void AddChild(Args&&...args, int num_iter);
+
+    public:
+        virtual BehaviorStatus GetStatus() override { return status_; };
+
+    public:
+        virtual void Execute() override;
+        virtual void ResetNodes() override;
+
+    private:
+        vector<int> num_to_execute_;
+        vector<int> cur_num_executed_;
     };
 
     class DLL_API SequenceNode : public BehaviorNode
@@ -187,5 +219,13 @@ namespace reality {
     inline void BehaviorNode::AddChild(Args&&...args)
     {
         children_.push_back(make_shared<BehaviorNodeType>(args...));
+    }
+
+    template<typename BehaviorNodeType, typename ...Args>
+    inline void RandomSelectorNode::AddChild(Args && ...args, int num_iter)
+    {
+        children_.push_back(make_shared<BehaviorNodeType>(args...));
+        num_to_execute_.push_back(num_iter);
+        cur_num_executed_.push_back(0);
     }
 }
