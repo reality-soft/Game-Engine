@@ -86,6 +86,10 @@ namespace reality {
         }
         if (possible_indices.size() == 0) {
             status_ = BehaviorStatus::SUCCESS;
+            ResetNodes();
+            for (int i = 0;i < children_.size();i++) {
+                cur_num_executed_[i] = 0;
+            }
             return;
         }
 
@@ -121,7 +125,6 @@ namespace reality {
         executing_child_node_index_ = -1;
 
         for (int i = 0;i < children_.size();i++) {
-            cur_num_executed_[i] = 0;
             children_[i]->ResetNodes();
         }
     }
