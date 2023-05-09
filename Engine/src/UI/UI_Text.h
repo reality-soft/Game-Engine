@@ -15,6 +15,7 @@ namespace reality
 		void InitText(string text, E_Font font, XMFLOAT2 pos = {0.0f, 0.0f}, float size = 1.0f, XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
 		void SetText(string text);
 		void SetFont(E_Font font);
+		string GetText() { return text_; }
 	private:
 		virtual void RenderThisUI() override;
 	};
