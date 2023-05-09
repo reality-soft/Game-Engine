@@ -105,7 +105,7 @@ namespace reality {
             children_[executing_child_node_index_]->Execute();
             break;
         case BehaviorStatus::FAILURE:
-            cur_num_executed_[executing_child_node_index_]++;
+            cur_num_executed_[executing_child_node_index_] = num_to_execute_[executing_child_node_index_];
             executing_child_node_index_ = -1;
             break;
         case BehaviorStatus::SUCCESS:
