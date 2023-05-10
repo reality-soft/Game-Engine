@@ -2,12 +2,7 @@
 #include "stdafx.h"
 #include "BehaviorTreeNodes.h"
 
-namespace reality {
-    void BehaviorNode::SetStatus(BehaviorStatus new_status)
-    {
-        status_ = new_status;
-    }
-    
+namespace reality {   
     BehaviorStatus BehaviorNode::GetStatus()
     {
         return status_;
@@ -15,7 +10,7 @@ namespace reality {
 
     void BehaviorNode::ResetNodes()
     {
-        SetStatus(BehaviorStatus::IDLE);
+        status_ = BehaviorStatus::IDLE;
         executing_child_node_index_ = 0;
 
         for (const auto& child : children_) {
@@ -81,6 +76,57 @@ namespace reality {
         }
 	}
 
+    void RandomSelectorNode::Execute()
+    {
+        vector<int> possible_indices;
+        for (int i = 0;i < children_.size();i++) {
+            if (cur_num_executed_[i] < num_to_execute_[i]) {
+                possible_indices.push_back(i);
+            }
+        }
+        if (possible_indices.size() == 0) {
+            status_ = BehaviorStatus::SUCCESS;
+            ResetNodes();
+            return;
+        }
+
+        status_ = BehaviorStatus::RUNNING;
+
+        if (executing_child_node_index_ == -1) {
+            int execute_index = RandomIntInRange(0, possible_indices.size() - 1);
+            executing_child_node_index_ = possible_indices[execute_index];
+            children_[executing_child_node_index_]->ResetNodes();
+        }
+
+        BehaviorStatus child_status = children_[executing_child_node_index_]->GetStatus();
+
+        switch (child_status) {
+        case BehaviorStatus::IDLE:
+        case BehaviorStatus::RUNNING:
+            children_[executing_child_node_index_]->Execute();
+            break;
+        case BehaviorStatus::FAILURE:
+            cur_num_executed_[executing_child_node_index_]++;
+            executing_child_node_index_ = -1;
+            break;
+        case BehaviorStatus::SUCCESS:
+            cur_num_executed_[executing_child_node_index_]++;
+            executing_child_node_index_ = -1;
+            break;
+        }
+    }
+
+    void RandomSelectorNode::ResetNodes()
+    {
+        status_ = BehaviorStatus::IDLE;
+        executing_child_node_index_ = -1;
+
+        for (int i = 0;i < children_.size();i++) {
+            children_[i]->ResetNodes();
+            cur_num_executed_[i] = 0;
+        }
+    }
+
     void IfElseIfNode::Execute()
     {
         if (children_.size() == 0) {
@@ -114,7 +160,7 @@ namespace reality {
 
     void IfElseIfNode::ResetNodes()
     {
-        SetStatus(BehaviorStatus::IDLE);
+        status_ = BehaviorStatus::IDLE;
         executing_child_node_index_ = 0;
 
         for (const auto& child : children_) {
@@ -181,7 +227,6 @@ namespace reality {
 
     void ActionNode::Execute()
     {
-        BehaviorStatus result = Action();
-        SetStatus(result);
+        status_ = Action();
     }
 }

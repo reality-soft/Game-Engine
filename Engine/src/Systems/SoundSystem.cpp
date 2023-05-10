@@ -38,27 +38,21 @@ void SoundSystem::CheckGenerators(entt::registry& reg)
             for (auto entity2 : listeners)
             {
                 auto& listener_transform = reg.get<C_CapsuleCollision>(entity2);
-                auto generator_transform = reg.try_get<C_Transform>(entity);
-                if (generator_transform)
-                {
-                    XMVECTOR genertor_position = XMVectorSet(generator_transform->world.r[3].m128_f32[0], generator_transform->world.r[3].m128_f32[1],
-                        generator_transform->world.r[3].m128_f32[2], 0);
-                    XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
-                        listener_transform.world.r[3].m128_f32[2], 0);
-                    XMVECTOR pos = genertor_position - listener_position;
-                    FMOD_MGR->Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
-                }
+                XMVECTOR listener_position = listener_transform.world.r[3];
+                XMVECTOR generator_position;
 
-                auto generator_transform2 = reg.try_get<C_CapsuleCollision>(entity2);
-                if (generator_transform2)
-                {
-                    XMVECTOR generator_position = XMVectorSet(generator_transform2->world.r[3].m128_f32[0], generator_transform2->world.r[3].m128_f32[1],
-                        generator_transform2->world.r[3].m128_f32[2], 0);
-                    XMVECTOR listener_position = XMVectorSet(listener_transform.world.r[3].m128_f32[0], listener_transform.world.r[3].m128_f32[1],
-                        listener_transform.world.r[3].m128_f32[2], 0);
-                    XMVECTOR pos2 = generator_position - listener_position;
-                    FMOD_MGR->Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos2);
-                }
+                auto transform = reg.try_get<C_Transform>(entity);
+                auto capsule_collision = reg.try_get<C_CapsuleCollision>(entity);
+                auto sphere_collision = reg.try_get<C_SphereCollision>(entity);
+                if (transform)
+                    generator_position = transform->world.r[3];
+                else if(capsule_collision)
+                    generator_position = capsule_collision->world.r[3];
+                else if (sphere_collision)
+                    generator_position = sphere_collision->world.r[3];
+
+                XMVECTOR pos = generator_position - listener_position;
+                FMOD_MGR->Play(queue.sound_filename, queue.sound_type, queue.is_looping, queue.sound_volume, pos);
             }
 
             // 재생했다면 큐에서 제거

@@ -16,6 +16,8 @@ namespace reality
         FMOD::ChannelGroup* music_channel_group_;
         float sfx_volume_;
         float music_volume_;
+        float min_distance_ = 0.0f;
+        float max_distance_ = 30000.0f;
     private:
         list<Sound*>	sound_play_list;
         queue<Sound*>	sound_pool;
