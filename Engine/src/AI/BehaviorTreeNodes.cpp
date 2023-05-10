@@ -87,8 +87,6 @@ namespace reality {
         if (possible_indices.size() == 0) {
             status_ = BehaviorStatus::SUCCESS;
             ResetNodes();
-            for (int i = 0;i < children_.size();i++) {
-            }
             return;
         }
 
