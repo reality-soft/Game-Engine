@@ -57,7 +57,7 @@ namespace reality {
 
     protected:
         std::vector<shared_ptr<BehaviorNode>> children_;
-       
+
     protected:
         BehaviorStatus status_ = BehaviorStatus::IDLE;
         int executing_child_node_index_ = 0;
@@ -80,7 +80,7 @@ namespace reality {
         virtual void Execute() override;
     };
 
-    class DLL_API RandomSelectorNode : private BehaviorNode
+    class DLL_API RandomSelectorNode : public BehaviorNode
     {
     public:
         RandomSelectorNode() {
@@ -98,11 +98,13 @@ namespace reality {
         }
 
     public:
-        template<typename BehaviorNodeType, typename... Args>
-        void AddChild(Args&&...args, int num_iter);
+        virtual BehaviorStatus GetStatus() override { return status_; };
 
     public:
-        virtual BehaviorStatus GetStatus() override { return status_; };
+        void SetNumToExecute(int iter_num) {
+            num_to_execute_.push_back(iter_num);
+            cur_num_executed_.push_back(0);
+        };
 
     public:
         virtual void Execute() override;
@@ -219,13 +221,5 @@ namespace reality {
     inline void BehaviorNode::AddChild(Args&&...args)
     {
         children_.push_back(make_shared<BehaviorNodeType>(args...));
-    }
-
-    template<typename BehaviorNodeType, typename ...Args>
-    inline void RandomSelectorNode::AddChild(Args && ...args, int num_iter)
-    {
-        children_.push_back(make_shared<BehaviorNodeType>(args...));
-        num_to_execute_.push_back(num_iter);
-        cur_num_executed_.push_back(0);
     }
 }

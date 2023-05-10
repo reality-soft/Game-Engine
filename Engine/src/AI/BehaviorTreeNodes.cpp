@@ -88,7 +88,6 @@ namespace reality {
             status_ = BehaviorStatus::SUCCESS;
             ResetNodes();
             for (int i = 0;i < children_.size();i++) {
-                cur_num_executed_[i] = 0;
             }
             return;
         }
@@ -109,7 +108,7 @@ namespace reality {
             children_[executing_child_node_index_]->Execute();
             break;
         case BehaviorStatus::FAILURE:
-            cur_num_executed_[executing_child_node_index_] = num_to_execute_[executing_child_node_index_];
+            cur_num_executed_[executing_child_node_index_]++;
             executing_child_node_index_ = -1;
             break;
         case BehaviorStatus::SUCCESS:
@@ -126,6 +125,7 @@ namespace reality {
 
         for (int i = 0;i < children_.size();i++) {
             children_[i]->ResetNodes();
+            cur_num_executed_[i] = 0;
         }
     }
 
