@@ -301,7 +301,7 @@ void reality::CameraSystem::PlayerCameraMovement()
 
 	camera->pitch_yaw.x += pitch;
 	camera->pitch_yaw.y += yaw;
-	camera->roll = 0;
+	//camera->roll = 0;
 
 	XMMATRIX rotation, view;
 	XMVECTOR scale_vector, rotation_center, rotation_quaternion;
@@ -350,6 +350,7 @@ void CameraSystem::CameraAction()
 
 			//camera->camera_pos = XMVectorAdd(camera->camera_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 			camera->roll = shake_displacementX;
+			OutputDebugStringA(to_string(camera->roll).c_str());
 			//camera->target_pos = XMVectorAdd(camera->target_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 		}
 	}
