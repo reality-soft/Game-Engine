@@ -85,8 +85,12 @@ namespace reality {
             }
         }
         if (possible_indices.size() == 0) {
-            status_ = BehaviorStatus::SUCCESS;
+            status_ = BehaviorStatus::FAILURE;
             ResetNodes();
+            for (int i = 0;i < children_.size();i++) {
+                children_[i]->ResetNodes();
+                cur_num_executed_[i] = 0;
+            }
             return;
         }
 
@@ -106,10 +110,12 @@ namespace reality {
             children_[executing_child_node_index_]->Execute();
             break;
         case BehaviorStatus::FAILURE:
+            status_ = BehaviorStatus::FAILURE;
             cur_num_executed_[executing_child_node_index_]++;
             executing_child_node_index_ = -1;
             break;
         case BehaviorStatus::SUCCESS:
+            status_ = BehaviorStatus::SUCCESS;
             cur_num_executed_[executing_child_node_index_]++;
             executing_child_node_index_ = -1;
             break;
@@ -120,11 +126,6 @@ namespace reality {
     {
         status_ = BehaviorStatus::IDLE;
         executing_child_node_index_ = -1;
-
-        for (int i = 0;i < children_.size();i++) {
-            children_[i]->ResetNodes();
-            cur_num_executed_[i] = 0;
-        }
     }
 
     void IfElseIfNode::Execute()

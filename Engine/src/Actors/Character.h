@@ -17,7 +17,7 @@ namespace reality
 		XMVECTOR	 fall_ = { 0, -1, 0, 0 };
 		XMVECTOR	 jump_ =  { 0, 1, 0, 0 };
 
-	protected:
+	public:
 		XMMATRIX rotation_ = XMMatrixIdentity();
 
 	public:
