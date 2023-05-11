@@ -62,7 +62,7 @@ namespace reality
 
 	struct DLL_API C_CapsuleCollision : public C_Transform
 	{
-		bool raycast_enable = true;
+		bool hit_enable = true;
 
 		reality::CapsuleShape capsule;
 		UINT enclosed_node_index = 0;
