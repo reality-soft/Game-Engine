@@ -48,6 +48,7 @@ namespace reality
 		bool enable_control = true;
 		bool is_sequence_playing = false;
 		bool PlaySequence(SequenceInfo seq_info, float reverse_after);
+		bool ZoomToTarget(XMVECTOR target_pos, XMVECTOR zoom_pos, float play_time, float return_after);
 
 	private:
 		void DebugCameraMovement();
