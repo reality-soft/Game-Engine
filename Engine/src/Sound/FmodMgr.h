@@ -47,6 +47,7 @@ namespace reality
         void CreateFmodChannelGroup(); 
         void Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos);
         void PlayBackground(string sound_name, bool looping, float fade_in, float volume);
+        void Stop(string sound_name);
         bool FadeOutDelete(string sound_name, float fade_out);
     public:
         float GetMusicVolume();

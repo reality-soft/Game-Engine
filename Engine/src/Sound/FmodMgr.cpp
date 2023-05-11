@@ -170,20 +170,25 @@ void FmodMgr::PlayBackground(string sound_name, bool looping, float fade_in, flo
     sound_play_list.push_back(sound_data);
 }
 
+void FmodMgr::Stop(string sound_name)
+{
+    for (const auto& sound : sound_play_list)
+    {
+        sound->total_time = 0;
+        sound->looping = false;
+    }
+    
+}
+
 bool FmodMgr::FadeOutDelete(string sound_name, float fade_out)
 {
-
     static float timer = 0.0f;
     timer += TM_DELTATIME;
     float time_lerp = max(0.0f, 1.0f - timer / fade_out);
 
     if (time_lerp <= 0.0001f)
     {
-        for (const auto& sound : sound_play_list)
-        {
-            if(sound->sound_filename == sound_name)
-                ReturnToSoundPool(sound);
-        }
+        Stop(sound_name);
         return true;
     }
 
