@@ -337,7 +337,7 @@ void CameraSystem::CameraAction()
 		if (camera->shaking_timer > camera->shake_time)
 		{
 			camera->is_shaking = false;
-			camera->shaking_timer = 0.0f; 
+			camera->shaking_timer = 0.0f;
 			camera->shake_time = 0.0f;
 			camera->shake_magnitude = 0.0f;
 			camera->shake_frequency = 0.0f;
@@ -354,6 +354,8 @@ void CameraSystem::CameraAction()
 			//camera->target_pos = XMVectorAdd(camera->target_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 		}
 	}
+	else
+		camera->roll = 0;
 }
 
 void CameraSystem::CreateMatrix()
