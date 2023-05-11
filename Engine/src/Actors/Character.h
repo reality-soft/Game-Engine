@@ -38,5 +38,6 @@ namespace reality
 		XMVECTOR GetFront() { return front_; };
 	public:
 		void CancelMovement();
+		bool rotate_enable_ = true;
 	};
 }

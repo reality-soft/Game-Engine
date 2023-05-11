@@ -10,9 +10,12 @@ void reality::Character::OnInit(entt::registry& registry)
 
 void reality::Character::OnUpdate()
 {
-	front_ = XMVector3Transform(XMVECTOR{ 0.0f, 0.0f, 1.0f, 0.0f }, rotation_);
-	right_ = XMVector3Transform(XMVECTOR{ 1.0f, 0.0f, 0.0f, 0.0f }, rotation_);
-	transform_tree_.root_node->Rotate(*reg_scene_, entity_id_, cur_position_, rotation_);
+	if (rotate_enable_)
+	{
+		front_ = XMVector3Transform(XMVECTOR{ 0.0f, 0.0f, 1.0f, 0.0f }, rotation_);
+		right_ = XMVector3Transform(XMVECTOR{ 1.0f, 0.0f, 0.0f, 0.0f }, rotation_);
+		transform_tree_.root_node->Rotate(*reg_scene_, entity_id_, cur_position_, rotation_);
+	}
 }
 
 reality::C_Movement* reality::Character::GetMovementComponent()
