@@ -350,7 +350,6 @@ void CameraSystem::CameraAction()
 
 			//camera->camera_pos = XMVectorAdd(camera->camera_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 			camera->roll = shake_displacementX;
-			OutputDebugStringA(to_string(camera->roll).c_str());
 			//camera->target_pos = XMVectorAdd(camera->target_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 		}
 	}
