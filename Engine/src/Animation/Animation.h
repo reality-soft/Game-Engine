@@ -7,7 +7,7 @@ namespace reality {
 		unordered_map<UINT, XMMATRIX> animation_matrices;
 		unordered_map<UINT, XMMATRIX> prev_animation_matrices;
 		unordered_map<UINT, int>	  bone_id_to_weight_;
-		float range_;
+		float range_ = 1;
 		string cur_anim_id_ = "";
 		float start_frame_ = 0.0f;
 		float end_frame_ = 0.0f;
