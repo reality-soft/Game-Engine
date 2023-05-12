@@ -174,8 +174,12 @@ void FmodMgr::Stop(string sound_name)
 {
     for (const auto& sound : sound_play_list)
     {
-        sound->total_time = 0;
-        sound->looping = false;
+        if (sound->sound_filename == sound_name)
+        {
+            sound->total_time = 0;
+            sound->looping = false;
+        }
+        
     }
     
 }
