@@ -46,7 +46,6 @@ namespace reality {
         virtual void ResetNodes();
 
     public:
-        void                   SetStatus(BehaviorStatus);
         virtual BehaviorStatus GetStatus();
 
     public:
@@ -58,7 +57,7 @@ namespace reality {
 
     protected:
         std::vector<shared_ptr<BehaviorNode>> children_;
-       
+
     protected:
         BehaviorStatus status_ = BehaviorStatus::IDLE;
         int executing_child_node_index_ = 0;
@@ -79,6 +78,41 @@ namespace reality {
 
     public:
         virtual void Execute() override;
+    };
+
+    class DLL_API RandomSelectorNode : public BehaviorNode
+    {
+    public:
+        RandomSelectorNode() {
+            executing_child_node_index_ = -1;
+        };
+        RandomSelectorNode(const SelectorNode& other) : BehaviorNode(other) {
+            executing_child_node_index_ = -1;
+        }
+        RandomSelectorNode& operator=(const RandomSelectorNode& other) {
+            if (this != &other) {
+                BehaviorNode::operator=(other);
+            }
+            executing_child_node_index_ = -1;
+            return *this;
+        }
+
+    public:
+        virtual BehaviorStatus GetStatus() override { return status_; };
+
+    public:
+        void SetNumToExecute(int iter_num) {
+            num_to_execute_.push_back(iter_num);
+            cur_num_executed_.push_back(0);
+        };
+
+    public:
+        virtual void Execute() override;
+        virtual void ResetNodes() override;
+
+    private:
+        vector<int> num_to_execute_;
+        vector<int> cur_num_executed_;
     };
 
     class DLL_API SequenceNode : public BehaviorNode

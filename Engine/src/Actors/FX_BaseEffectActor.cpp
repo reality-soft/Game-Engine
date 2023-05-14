@@ -53,18 +53,6 @@ void FX_BaseEffectActor::AddSoundGeneratorComponent()
 	transform_tree_.root_node->OnUpdate(*reg_scene_, entity_id_);
 }
 
-void FX_BaseEffectActor::AddSoundQueue(string sound_name, SoundType type, bool looping, float volume)
-{
-	auto& sound_gen_comp = reg_scene_->get<C_SoundGenerator>(GetEntityId());
-	sound_gen_comp.local = XMMatrixIdentity();
-	SoundQueue sound_queue;
-	sound_queue.sound_filename = sound_name;
-	sound_queue.is_looping = looping;
-	sound_queue.sound_type = type;
-	sound_queue.sound_volume = volume;
-	sound_gen_comp.sound_queue_list.push(sound_queue);
-}
-
 void FX_BaseEffectActor::AddPointLightComponent(string pointlight_name, float lifetime = -1.0f)
 {
 	auto& pointlight_comp = reg_scene_->emplace<C_PointLight>(entity_id_);

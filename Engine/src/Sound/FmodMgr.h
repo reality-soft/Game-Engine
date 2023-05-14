@@ -16,6 +16,8 @@ namespace reality
         FMOD::ChannelGroup* music_channel_group_;
         float sfx_volume_;
         float music_volume_;
+        float min_distance_ = 0.0f;
+        float max_distance_ = 30000.0f;
     private:
         list<Sound*>	sound_play_list;
         queue<Sound*>	sound_pool;
@@ -45,6 +47,7 @@ namespace reality
         void CreateFmodChannelGroup(); 
         void Play(string sound_name, SoundType sound_type, bool looping, float volume, FXMVECTOR generate_pos);
         void PlayBackground(string sound_name, bool looping, float fade_in, float volume);
+        void Stop(string sound_name);
         bool FadeOutDelete(string sound_name, float fade_out);
     public:
         float GetMusicVolume();

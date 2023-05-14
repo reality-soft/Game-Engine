@@ -27,6 +27,7 @@ ID3D11BlendState* reality::DXStates::bs_default()
         bd.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
         bd.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
         bd.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+
         // Alpha 성분을 혼합하는 명령
         bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
         bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
@@ -46,6 +47,51 @@ ID3D11BlendState* reality::DXStates::bs_default()
     else
         return blend_state.Get();
 }
+
+ID3D11BlendState* reality::DXStates::bs_alpha_blending()
+{
+    static ComPtr<ID3D11BlendState>        blend_state;
+
+    if (blend_state.Get() == nullptr)
+    {
+        D3D11_BLEND_DESC bd;
+        ZeroMemory(&bd, sizeof(bd));
+
+        bd.AlphaToCoverageEnable = false;
+        bd.IndependentBlendEnable = false;
+
+        bd.RenderTarget[0].BlendEnable = TRUE;
+
+        // 알파 블랜딩 공식
+        // Src : 이제 뿌려질 도형
+        // Dest : 이미 뿌려진 Buffer
+        // finalColor = SrcColor * SrcAlpha + DestColor * (1.0f-SrcAlpha)
+
+        // RGB 성분을 혼합하는 명령
+        bd.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+        bd.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        bd.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+
+        // Alpha 성분을 혼합하는 명령
+        bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+        bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+
+        // 마지막으로 계산된 알파값으로 어떤 성분을 뿌릴지 결정
+        bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+        HRESULT hr = DX11APP->GetDevice()->CreateBlendState(&bd, blend_state.GetAddressOf());
+
+        if (blend_state.Get() == nullptr)
+            assert(nullptr);
+
+        return blend_state.Get();
+    }
+
+    else
+        return blend_state.Get();
+}
+
 
 ID3D11BlendState* reality::DXStates::bs_dual_source_blend()
 {

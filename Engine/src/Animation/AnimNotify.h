@@ -6,7 +6,7 @@ namespace reality {
 	class Event;
 
 	struct DLL_API AnimNotify {
-		int frame;
+		float frame;
 		std::shared_ptr<Event> event;
 		bool is_managed = false;
 	};

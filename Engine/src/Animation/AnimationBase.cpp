@@ -35,15 +35,20 @@ void reality::AnimationBase::AnimationUpdate()
 		if (animation_.loop_ == false) {
 			SetAnimation("", 0.2f, true);
 		}
+
+		for (auto& cur_notify : animation_.notifies_) {
+			cur_notify.is_managed = false;
+		}
 	}
 
-	for (const auto& cur_notify : animation_.notifies_) {
+	for (auto& cur_notify : animation_.notifies_) {
 		if (cur_notify.is_managed == true) {
 			continue;
 		}
 
 		if (cur_notify.frame <= animation_.cur_frame_) {
 			EVENT->PushEvent(cur_notify.event);
+			cur_notify.is_managed = true;
 		}
 	}
 
@@ -142,8 +147,8 @@ void reality::AnimationBase::SetAnimation(string animation_id, float blend_time,
 	else {
 		cur_anim_state_ = ANIM_STATE::ANIM_STATE_CUR_PREV;
 	}
-
-	copy(notifies.begin(), notifies.end(), animation_.notifies_.begin());
+	
+	animation_.notifies_ = notifies;
 
 	animation_.loop_ = loop;
 }

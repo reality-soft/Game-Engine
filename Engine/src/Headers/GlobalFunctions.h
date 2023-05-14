@@ -43,15 +43,22 @@ static std::string VectorToString(DirectX::XMFLOAT3& arg)
 	return str;
 }
 
-static float RandomFloat()
+static int RandomIntInRange(int min_, int max_)
 {
-	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dis(min(min_, max_), max(min_, max_));
+
+	return dis(gen);
 }
 
-static float RandomFloatInRange(float min, float max)
+static float RandomFloatInRange(float min_, float max_)
 {
-	float scaled = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
-	return min + (scaled * (max - min));
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(min(min_, max_), max(min_, max_));
+
+	return dis(gen);
 }
 
 static void RandomMarginFloat(float& f, float margin, bool up, bool down)
@@ -70,47 +77,10 @@ static void RandomMarginFloat(float& f, float margin, bool up, bool down)
 	}
 }
 
-static DirectX::XMVECTOR RandomPointInBox(const DirectX::XMVECTOR& center, const DirectX::XMVECTOR& half_size)
+static bool Probability(int percentage)
 {
-	srand(time(NULL));
-
-	DirectX::XMFLOAT3 center_float, half_size_float;
-	DirectX::XMStoreFloat3(&center_float, center);
-	DirectX::XMStoreFloat3(&half_size_float, half_size);
-
-	float x = center_float.x + (2.0f * half_size_float.x * static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) - half_size_float.x);
-	float y = center_float.y + (2.0f * half_size_float.y * static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) - half_size_float.y);
-	float z = center_float.z + (2.0f * half_size_float.z * static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) - half_size_float.z);
-
-	return DirectX::XMVectorSet(x, y, z, 1.0f);
-}
-
-static DirectX::XMVECTOR RandomVectorInCone(DirectX::XMVECTOR direction, float cone_angle)
-{
-	srand((time(NULL)));
-
-	float radians = DirectX::XMConvertToRadians(cone_angle);
-	// Generate a random point on the unit circle in the xz-plane
-
-	float angle = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * DirectX::XM_2PI;
-	float x = std::cos(angle);
-	float z = std::sin(angle);
-
-	// Compute the axis and angle of rotation from the x-axis to the direction vector
-	DirectX::XMVECTOR xAxis = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-	DirectX::XMVECTOR axis = DirectX::XMVector3Cross(xAxis, direction);
-	float angleFromX = std::acos(DirectX::XMVectorGetX(DirectX::XMVector3Dot(xAxis, direction)));
-
-	// Rotate the random point around the direction vector by a random angle within the cone angle
-	float coneAngle = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * radians;
-	DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationAxis(axis, coneAngle);
-	DirectX::XMVECTOR point = DirectX::XMVectorSet(x, 0.0f, z, 1.0f);
-	point = DirectX::XMVector3Transform(point, rotation);
-
-	// Transform the random point to world space and normalize it
-	DirectX::XMVECTOR normal = DirectX::XMVector3Normalize(DirectX::XMVector3TransformNormal(point, DirectX::XMMatrixRotationY(angleFromX)));
-
-	return normal;
+	int r = RandomIntInRange(0, 99);
+	return r < percentage;
 }
 
 static float Distance(DirectX::XMVECTOR p1, DirectX::XMVECTOR p2)
@@ -138,20 +108,13 @@ static DirectX::XMVECTOR VectorProjectPlane(DirectX::XMVECTOR vector, DirectX::X
 
 static bool IsParallelVector(const DirectX::XMVECTOR& vector1, const DirectX::XMVECTOR& vector2)
 {
-
 	DirectX::XMVECTOR normalized1 = DirectX::XMVector3Normalize(vector1);
 	DirectX::XMVECTOR normalized2 = DirectX::XMVector3Normalize(vector2);
-
-
+		
 	float dot = DirectX::XMVectorGetX(DirectX::XMVector3Dot(normalized1, normalized2));
 
 	return DirectX::XMScalarNearEqual(dot, 1.f, 0.001f) || DirectX::XMScalarNearEqual(dot, -1.f, 0.001f);
 }
-
-#define randf(x) (x*rand()/(float)RAND_MAX)
-#define randf2(x,off) (off+x*rand()/(float)RAND_MAX)
-#define randstep(fMin,fMax) (fMin+((float)fMax-(float)fMin)*rand()/(float)RAND_MAX)
-#define clamp(x,MinX,MaxX) if (x>MaxX) x=MaxX; else if (x<MinX) x=MinX;
 
 static DirectX::XMFLOAT4 LerpColor(DirectX::XMFLOAT4 start_color, DirectX::XMFLOAT4 end_color, float key)
 {

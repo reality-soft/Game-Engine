@@ -180,7 +180,10 @@ bool reality::CameraSystem::PlaySequence(SequenceInfo seq_info, float reverse_af
 		if (reverse_after > 0)
 			current_seq_info_.reverse = 1;
 	}
-	
+
+	//current_seq_info_.target_end = seq_info.target_end;
+	//current_seq_info_.sequence_end = seq_info.sequence_end;
+	//
 	static float speed = 100.f;
 	static float time = 0.0f;
 	time += TM_DELTATIME;
@@ -192,10 +195,10 @@ bool reality::CameraSystem::PlaySequence(SequenceInfo seq_info, float reverse_af
 	if (distance_from_start >= seq_length)
 	{
 		static float finished_time = time;
-
-		if (reverse_after > 0)
+		
+		if (current_seq_info_.reverse >= 1)
 		{
-			if (current_seq_info_.reverse >= 1 && time > finished_time + reverse_after)
+			if (time > finished_time + reverse_after)
 			{
 				swap(current_seq_info_.sequence_start, current_seq_info_.sequence_end);
 				swap(current_seq_info_.target_start, current_seq_info_.target_end);
@@ -203,15 +206,11 @@ bool reality::CameraSystem::PlaySequence(SequenceInfo seq_info, float reverse_af
 				current_seq_info_.reverse -= 1;
 				time = 0;
 			}
-			else
-			{
-				is_sequence_playing = false;
-				enable_control = true;
-				return true;
-			}
 		}
 		else
 		{
+			is_sequence_playing = false;
+			enable_control = true;
 			return true;
 		}
 	}
@@ -223,6 +222,47 @@ bool reality::CameraSystem::PlaySequence(SequenceInfo seq_info, float reverse_af
 		view_matrix = XMMatrixLookAtLH(current_sequence_pos_, current_target_pos_, XMVectorSet(0, 1, 0, 0));
 		world_matrix = XMMatrixInverse(0, view_matrix);
 	}
+
+	return false;
+}
+
+bool reality::CameraSystem::ZoomToTarget(XMVECTOR target_pos, XMVECTOR zoom_pos, float zoom_time, float return_after)
+{
+	static auto start_target_pos = GetCamera()->target_pos;
+	static auto start_camera_pos = world_matrix.r[3];
+
+	enable_control = false;
+	is_sequence_playing = true;
+
+	static float time = 0.0f;
+	time += TM_DELTATIME;
+	float t = time / zoom_time;
+	t = min(1.0f, t);
+	t = max(0.0f, t);
+
+	static bool returning = false;
+
+	if (time > zoom_time + return_after && returning == false)
+	{
+		time = 0.0f;
+		returning = true;
+	}
+	else if (returning)
+	{
+		t = 1.0f - t;
+		if (t < 0.00001f)
+		{
+			enable_control = true;
+			is_sequence_playing = false;
+			return true;
+		}
+	}
+
+	XMVECTOR target_position = XMVectorLerp(start_target_pos, target_pos, t);
+	XMVECTOR zoom_position = XMVectorLerp(start_camera_pos, zoom_pos, t);
+
+	view_matrix = XMMatrixLookAtLH(zoom_position, target_position, XMVectorSet(0, 1, 0, 0));
+	world_matrix = XMMatrixInverse(0, view_matrix);
 
 	return false;
 }
@@ -301,7 +341,7 @@ void reality::CameraSystem::PlayerCameraMovement()
 
 	camera->pitch_yaw.x += pitch;
 	camera->pitch_yaw.y += yaw;
-	camera->roll = 0;
+	//camera->roll = 0;
 
 	XMMATRIX rotation, view;
 	XMVECTOR scale_vector, rotation_center, rotation_quaternion;
@@ -337,22 +377,24 @@ void CameraSystem::CameraAction()
 		if (camera->shaking_timer > camera->shake_time)
 		{
 			camera->is_shaking = false;
-			camera->shaking_timer = 0.0f; 
+			camera->shaking_timer = 0.0f;
 			camera->shake_time = 0.0f;
 			camera->shake_magnitude = 0.0f;
 			camera->shake_frequency = 0.0f;
 		}
 		else
 		{
-			float shake_displacementX = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
-			float shake_displacementY = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
-			float shake_displacementZ = randstep(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementX = RandomFloatInRange(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementY = RandomFloatInRange(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
+			float shake_displacementZ = RandomFloatInRange(-camera->shake_magnitude, camera->shake_magnitude) * sin(TIMER->GetDeltaTime() * camera->shake_frequency);
 
 			//camera->camera_pos = XMVectorAdd(camera->camera_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 			camera->roll = shake_displacementX;
 			//camera->target_pos = XMVectorAdd(camera->target_pos, XMVectorSet(shake_displacementX, shake_displacementY, shake_displacementZ, 0.0f));
 		}
 	}
+	else
+		camera->roll = 0;
 }
 
 void CameraSystem::CreateMatrix()
